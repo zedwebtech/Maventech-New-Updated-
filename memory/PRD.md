@@ -1011,3 +1011,11 @@ Goal: product/plan images must never break on thank-you page, emails, receipts, 
 - The 4 plan icons were 512px PNGs (182–297 KB) displayed at 84px. Downscaled to 256px and generated optimized PNG (51–85 KB, kept for email/PDF fallback) + WebP (9–16 KB) siblings in assets/images/subscriptions/.
 - subscriptions.php now renders `<picture>` with a WebP `<source>` (only when the .webp exists on disk) + PNG `<img>` fallback (width/height=84 for CLS).
 - Subscriptions page icon weight: ~1040 KB -> ~48 KB (95% smaller). Verified all 4 render via WebP with PNG fallback intact for older clients/email.
+
+---
+## Company logo optimized + fixed (2026-06-25)
+- Discovered the configured `company_logo` was a 1x1px (0.1 KB) placeholder pointing at a STALE preview host (stage-show-2…), so the brand mark was effectively blank in the header/footer, emails and receipts.
+- Generated a real, brand-accurate mark (blue gradient rounded square + white "M" + accent dot, matching render_logo SVG) via GD: `/uploads/company/logo-mark.png` (4.1 KB) + `logo-mark.webp` (3.0 KB).
+- New `brand_logo_html()` helper (functions.php) renders a `<picture>` with the WebP source + raster fallback (WebP only when the sibling exists), used by header.php + footer.php; falls back to inline SVG when no logo. Web pages now load the 3 KB WebP; emails/PDFs/old browsers keep the PNG.
+- Set company_logo to the local mark in the live DB, database.sql seed, and an idempotent start.sh migration (only replaces empty/placeholder/stale-preview values, never a real admin upload). Email logo now resolves to an absolute, real PNG.
+- Verified: header/footer render <picture>+WebP on home and regional pages; both assets 200; email logo absolute.

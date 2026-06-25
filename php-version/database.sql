@@ -1028,7 +1028,7 @@ INSERT IGNORE INTO `settings` (`k`, `v`, `updated_at`) VALUES ('api_token','76cc
 INSERT IGNORE INTO `settings` (`k`, `v`, `updated_at`) VALUES ('chat_schema_v3','1','2026-06-23 10:35:37');
 INSERT IGNORE INTO `settings` (`k`, `v`, `updated_at`) VALUES ('company_address','135 CAROLINA ST G2, VALLEJO, CA 94590','2026-06-12 15:00:47');
 INSERT IGNORE INTO `settings` (`k`, `v`, `updated_at`) VALUES ('company_email','services@maventechsoftware.com','2026-06-12 14:53:49');
-INSERT IGNORE INTO `settings` (`k`, `v`, `updated_at`) VALUES ('company_logo','https://stage-show-2.preview.emergentagent.com/uploads/company/logo-356b9f03.png','2026-06-12 14:53:58');
+INSERT IGNORE INTO `settings` (`k`, `v`, `updated_at`) VALUES ('company_logo','/uploads/company/logo-mark.png','2026-06-12 14:53:58');
 INSERT IGNORE INTO `settings` (`k`, `v`, `updated_at`) VALUES ('company_name','Maventech Software','2026-06-12 14:58:17');
 INSERT IGNORE INTO `settings` (`k`, `v`, `updated_at`) VALUES ('company_phone','1-805-823-9961','2026-06-12 14:53:49');
 INSERT IGNORE INTO `settings` (`k`, `v`, `updated_at`) VALUES ('cron_token','0b8166da24a08c53bdd92d069f68b8a8bd643009','2026-06-23 10:35:43');

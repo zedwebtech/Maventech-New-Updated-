@@ -25,7 +25,7 @@
       <div class="col-lg-4">
         <div class="d-flex align-items-center gap-2 mb-2">
           <?php if (!empty($brandLogo)): ?>
-            <img src="<?= esc($brandLogo) ?>" alt="<?= esc($brandName) ?>" style="height:42px;width:auto;max-width:140px;object-fit:contain;" width="140" height="42" loading="lazy" decoding="async">
+            <?= brand_logo_html(42, 'width="140" height="42" loading="lazy" decoding="async"') ?>
           <?php else: ?>
             <?= render_logo(42) ?>
           <?php endif; ?>

@@ -1690,6 +1690,29 @@ function render_logo(int $size = 40, ?string $letter = null): string
         . '</svg>';
 }
 
+/**
+ * Site brand logo for the header/footer. Serves the configured logo as a
+ * <picture> with an optimized WebP source + raster fallback (the WebP is only
+ * offered when the sibling file actually exists on disk), so every page loads
+ * the lighter WebP while emails/PDFs and old browsers keep the raster. Falls
+ * back to the inline SVG mark when no logo is configured.
+ */
+function brand_logo_html(int $h = 42, string $imgAttrs = ''): string
+{
+    $logo = function_exists('company_info') ? trim((string)(company_info()['logo'] ?? '')) : '';
+    if ($logo === '') return render_logo($h);
+    $name  = esc((string)(company_info()['name'] ?? 'Logo'));
+    $style = 'height:' . $h . 'px;width:auto;max-width:140px;object-fit:contain;';
+    $img   = '<img src="' . esc($logo) . '" alt="' . $name . '" style="' . $style . '" ' . trim($imgAttrs) . '>';
+    $webp     = preg_replace('/\.(png|jpe?g)$/i', '.webp', $logo);
+    $webpPath = (string)(parse_url((string)$webp, PHP_URL_PATH) ?? '');
+    $hasWebp  = $webp !== $logo && $webpPath !== '' && is_file(__DIR__ . '/../' . ltrim($webpPath, '/'));
+    return $hasWebp
+        ? '<picture><source srcset="' . esc((string)$webp) . '" type="image/webp">' . $img . '</picture>'
+        : $img;
+}
+
+
 // Stores a contact/support form submission
 function save_support_message(array $d): void
 {

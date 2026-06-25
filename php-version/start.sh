@@ -106,6 +106,14 @@ mysql -uroot ucode_store -e "UPDATE regions SET active=1 WHERE code='EU'" 2>/dev
 # plan images never break. Idempotent — only rewrites the stale CDN value.
 mysql -uroot ucode_store -e "UPDATE subscription_plans SET icon_image=CONCAT('/assets/images/subscriptions/', slug, '.png') WHERE icon_image LIKE '%static.prod-images.emergentagent.com%' OR icon_image='' OR icon_image IS NULL" 2>/dev/null || true
 
+# Self-host the company logo. It was seeded as a 1x1 placeholder pointing at a
+# stale Emergent preview host, so the brand mark was effectively blank on the
+# header/footer, emails and receipts. Point it at the bundled optimized
+# logo-mark.png (WebP sibling is served automatically on the web). Idempotent —
+# only replaces an empty / placeholder / stale-preview value, never a real
+# admin-uploaded logo.
+mysql -uroot ucode_store -e "UPDATE settings SET v='/uploads/company/logo-mark.png' WHERE k='company_logo' AND (v='' OR v IS NULL OR v LIKE '%emergentagent.com%' OR v LIKE '%logo-356b9f03%')" 2>/dev/null || true
+
 
 # 3) Export integration keys from .env files (preview convenience)
 # Load /app/php-version/.env first (PHP-store-specific secrets like Emergent
