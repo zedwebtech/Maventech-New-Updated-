@@ -698,10 +698,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
           $regionToCurrency = ['US'=>'USD','UK'=>'GBP','EU'=>'EUR','CA'=>'CAD','AU'=>'AUD'];
           $countryLabels    = ['US'=>'United States','UK'=>'United Kingdom','AU'=>'Australia','CA'=>'Canada','EU'=>'Europe'];
           $countryFlags     = ['US'=>'🇺🇸','UK'=>'🇬🇧','AU'=>'🇦🇺','CA'=>'🇨🇦','EU'=>'🇪🇺'];
-          $__cleanUri = $_SERVER['REQUEST_URI'] ?? '/';
-          $__cleanUri = preg_replace('/([?&])cur=[^&]*/', '$1', $__cleanUri);
-          $__cleanUri = rtrim($__cleanUri, '?&');
-          if ($__cleanUri === '' ) $__cleanUri = '/';
+          $__cleanUri = country_switch_base();
           foreach (all_regions() as $regRow):
             $rc = $regRow['code'];
             if (!isset($regionToCurrency[$rc])) continue;
@@ -787,10 +784,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
             $regionToCurrencyM = ['US'=>'USD','UK'=>'GBP','EU'=>'EUR','CA'=>'CAD','AU'=>'AUD'];
             $countryLabelsM    = ['US'=>'United States','UK'=>'United Kingdom','AU'=>'Australia','CA'=>'Canada','EU'=>'Europe'];
             $countryFlagsM     = ['US'=>'🇺🇸','UK'=>'🇬🇧','AU'=>'🇦🇺','CA'=>'🇨🇦','EU'=>'🇪🇺'];
-            $__cleanUriM = $_SERVER['REQUEST_URI'] ?? '/';
-            $__cleanUriM = preg_replace('/([?&])cur=[^&]*/', '$1', $__cleanUriM);
-            $__cleanUriM = rtrim($__cleanUriM, '?&');
-            if ($__cleanUriM === '' ) $__cleanUriM = '/';
+            $__cleanUriM = country_switch_base();
             foreach (all_regions() as $regRowM):
               $rcM = $regRowM['code'];
               if (!isset($regionToCurrencyM[$rcM])) continue;

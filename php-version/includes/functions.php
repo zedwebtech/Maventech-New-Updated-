@@ -788,6 +788,21 @@ function country_url(string $path, ?string $code = null): string {
     return ($pre === '' ? '/' : $pre . '/') . $path;
 }
 
+/** Bare request path for the header country switcher: the current REQUEST_URI
+ *  with any existing country prefix (/us /uk /au /ca /eu) and the cur=/mv_cc=
+ *  params removed. This guarantees switching region never stacks prefixes —
+ *  e.g. on /ca/shop, the "Australia" link must resolve to /au/shop, NOT
+ *  /au/ca/shop (the latter 404s on production Apache, where REQUEST_URI keeps
+ *  the original prefixed path). Works on both the dev router and Apache. */
+function country_switch_base(): string {
+    $uri = $_SERVER['REQUEST_URI'] ?? '/';
+    $uri = preg_replace('/([?&])(cur|mv_cc)=[^&]*/', '$1', (string)$uri);
+    $uri = preg_replace('#^/(us|uk|au|ca|eu)(?=/|$|\?)#i', '', $uri);
+    $uri = rtrim($uri, '?&');
+    if ($uri === '' || $uri[0] !== '/') $uri = '/' . ltrim($uri, '/');
+    return $uri === '' ? '/' : $uri;
+}
+
 /**
  * Is this order line a hands-on SERVICE (not a software license)?
  * Service items never get a license key, never make an order "pending",

@@ -974,3 +974,13 @@ corner) — no explicit "X" close.
 - **hreflang:** already implemented in `includes/header.php` (en-US/en-GB/en-CA/en-AU/en + x-default) and `sitemap-xml.php`. Verified emitting on all pages.
 - **Full E2E QA (testing agent iter-22):** 100% pass, no bugs. Verified all 5 regional storefronts + currency conversion (CA$/£/AU$/€/$), cart, coupon MAVEN20, DEMO checkout → order-success, admin login + all 16 admin tabs, AI chat lead capture, newsletter, dark mode, 404 handling. No PHP errors on any page.
 - **UX niceties applied:** `/register.php` now 301→`/track-order.php` (was admin login); `/contact-us[.php]` 301→`/contact.php` (router.php + .htaccess).
+
+---
+## Bug Fix — Country switcher stacked prefixes on deployed domain (2026-06-25)
+**Issue:** On the deployed domain (Apache/cPanel), switching country didn't open the right regional page. Default US works, but when already on a regional page (e.g. /ca/shop), clicking AU/UK/etc produced a stacked path like /au/ca/shop → 404.
+**Root cause:** The header country switcher built links from `$_SERVER['REQUEST_URI']`. On the dev preview, router.php rewrites REQUEST_URI to the bare (prefix-stripped) path, so links were fine. On production Apache, REQUEST_URI keeps the original `/ca/shop`, so a new prefix stacked on top.
+**Fix:** Added `country_switch_base()` in `includes/functions.php` — strips any existing country prefix (/us /uk /au /ca /eu) and the cur=/mv_cc= params from REQUEST_URI, returning the bare path. Both desktop + mobile switchers in `includes/header.php` now use it. Works identically on the dev router and production Apache.
+**Verified on a real Apache + .htaccess instance (production scenario):** From /ca/shop the switcher renders /au/shop, /uk/shop, /eu/shop, /shop(US), /ca/shop (no stacking); each resolves 200 with the correct currency (AUD/GBP/EUR/USD/CAD). US is canonical (no prefix); /us* 301→bare path.
+
+### NOTE for this preview pod
+PHP + MariaDB are apt-installed and DO NOT survive a pod restart (only /app persists). If the preview is down after a restart, reinstall: `apt-get install -y php-cli php-mysql php-curl php-mbstring php-xml php-gd php-zip php-bcmath mariadb-server mariadb-client`, start mariadb (`mysqld_safe &`), then `supervisorctl restart frontend` (start.sh reseeds the DB). This is a preview-only concern; real cPanel/Apache hosting always has PHP+MySQL.
