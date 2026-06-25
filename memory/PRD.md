@@ -1029,3 +1029,11 @@ Generated a full matching icon set from the brand mark (blue gradient rounded sq
 - icon-192.png + icon-512.png (opaque full-bleed — PWA "any maskable", referenced by manifest)
 - Updated <head> apple-touch-icon to 180x180 and theme-color to #0B5CFF; manifest theme_color -> #0B5CFF.
 All static files (no migration needed); all serve 200 with correct content-types. Verified visually.
+
+---
+## Branded Open Graph / Twitter share card (2026-06-25)
+- Redesigned og-default.php (serves /og-default.png) to match the new brand mark: deep-navy gradient bg, glowing blue rounded-square "M" logo + accent dot, brand name with accent underline, "Genuine Microsoft Office & Windows 11 License Keys" tagline, and a green "Instant delivery - One-time purchase" CTA pill. 1200x630 PNG (~92 KB).
+- Auto-fits the brand name + tagline to the safe width so no text ever clips (works for any company name); graceful fallback if no TTF font.
+- Added disk caching (uploads/og/og-default-<hash>.png keyed by brand + design version) so social-bot crawls are served instantly instead of re-rendering; falls back to live render if dir not writable.
+- Head meta already complete: og:image/twitter:image absolute, og:image:width/height 1200x630, twitter:card=summary_large_image, og:image:alt, locale. Updated theme-color to #0B5CFF.
+- Product pages keep their own dynamic card (og-product.png?slug=…, verified 200). Verified the default card renders polished with no clipping.
