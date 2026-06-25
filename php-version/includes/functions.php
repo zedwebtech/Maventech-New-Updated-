@@ -12,9 +12,14 @@ if (session_status() === PHP_SESSION_NONE) {
     if (PHP_SAPI !== 'cli') {
         $sessionLifetime = 60 * 60 * 24 * 30; // 30 days
         @ini_set('session.gc_maxlifetime', (string)$sessionLifetime);
+        // Ensure cookie-based sessions are enabled — some shared hosts ship a
+        // php.ini with session.use_cookies disabled, which makes
+        // session_set_cookie_params() emit a warning and breaks login persistence.
+        @ini_set('session.use_cookies', '1');
+        @ini_set('session.use_only_cookies', '1');
         $sessionSecure = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off')
                       || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
-        session_set_cookie_params([
+        @session_set_cookie_params([
             'lifetime' => $sessionLifetime,
             'path'     => '/',
             'secure'   => $sessionSecure,

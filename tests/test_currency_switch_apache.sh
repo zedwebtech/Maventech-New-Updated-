@@ -4,7 +4,7 @@
 # Uses a SHARED cookie jar to preserve the PHP session across requests.
 set -uo pipefail
 
-BASE="http://localhost:8182"
+BASE="${BASE:-http://localhost:8181}"
 JAR="$(mktemp)"
 trap "rm -f $JAR" EXIT
 
