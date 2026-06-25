@@ -1,3 +1,5 @@
+<!-- 2026-06-25: Fixed blank /sitemap.xml (XSL stylesheet /assets/sitemap.xsl was 502ing in preview because router.php let PHP built-in server handle .xsl → Cloudflare rejected stray Host header). router.php now serves .xsl explicitly as text/xsl; .htaccess adds AddType text/xsl + DEFLATE. Added prominent 'View XML Sitemap' button to /sitemap.php (HTML page kept). Verified iteration_23 (100% pass). -->
+
 # Maventech Software Store — PRD
 
 ## Original problem statement
