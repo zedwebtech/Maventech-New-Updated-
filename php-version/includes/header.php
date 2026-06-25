@@ -56,6 +56,11 @@ if (!isset($canonicalUrl)) {
  * friendly out of the box — no SVG (Facebook & WhatsApp ignore SVG OGs).
  * ============================================================================== */
 $_defaultOgImg   = site_url() . '/og-default.png';
+// Absolute brand logo for JSON-LD (Google requires an absolute Organization
+// logo URL; the visual <img> elsewhere uses the relative value just fine).
+$brandLogoAbs = $brandLogo !== ''
+    ? (preg_match('#^https?://#i', $brandLogo) ? $brandLogo : rtrim(site_url(), '/') . '/' . ltrim($brandLogo, '/'))
+    : (site_url() . '/assets/images/favicon/icon-512.png');
 $ogImage         = $ogImage         ?? $_defaultOgImg;
 // Normalise relative paths → absolute (social bots require absolute URLs).
 if (!preg_match('~^https?://~i', $ogImage)) {
@@ -359,7 +364,7 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
             'taxID'     => trim((string)($co['vat_id']     ?? '')) ?: null,
             'foundingDate' => trim((string)($co['founded_at'] ?? '')) ?: null,
             'url'   => site_url() . '/',
-            'logo'  => $brandLogo ?: (site_url() . '/assets/images/badges/microsoft-verified.svg'),
+            'logo'  => $brandLogoAbs,
             'email' => $brandEmail ?: null,
             // address on Organization too (not just LocalBusiness) — Google Ads
             // policy requires verifiable business identity on the root entity.
@@ -429,7 +434,7 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
             '@type' => 'Brand',
             '@id'   => site_url() . '/#brand',
             'name'  => $brandName,
-            'logo'  => $brandLogo ?: (site_url() . '/assets/images/badges/microsoft-verified.svg'),
+            'logo'  => $brandLogoAbs,
             'slogan'=> 'Genuine software licences. Instant digital delivery.',
             'url'   => site_url() . '/',
             'aggregateRating' => $orgRating,
@@ -441,7 +446,7 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
             '@id'   => site_url() . '/#localbusiness',
             'name'  => $brandName,
             'url'   => site_url() . '/',
-            'image' => $brandLogo ?: (site_url() . '/assets/images/badges/microsoft-verified.svg'),
+            'image' => $brandLogoAbs,
             'telephone' => $brandPhone ?: null,
             'email'     => $brandEmail ?: null,
             'address'   => array_filter([

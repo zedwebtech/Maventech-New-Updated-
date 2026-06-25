@@ -1037,3 +1037,11 @@ All static files (no migration needed); all serve 200 with correct content-types
 - Added disk caching (uploads/og/og-default-<hash>.png keyed by brand + design version) so social-bot crawls are served instantly instead of re-rendering; falls back to live render if dir not writable.
 - Head meta already complete: og:image/twitter:image absolute, og:image:width/height 1200x630, twitter:card=summary_large_image, og:image:alt, locale. Updated theme-color to #0B5CFF.
 - Product pages keep their own dynamic card (og-product.png?slug=…, verified 200). Verified the default card renders polished with no clipping.
+
+---
+## JSON-LD structured data — made rich-result eligible (2026-06-25)
+The store already had extensive, valid JSON-LD (Organization, LocalBusiness, WebSite+SearchAction, Brand, Product w/ Offer price+availability+shipping+returns, conditional AggregateRating+Review, BreadcrumbList, FAQPage, HowTo, Article, CollectionPage+ItemList). Fixed the bugs that were silently blocking Google rich results:
+- product.php: Product schema `image` was ROOT-RELATIVE (/uploads/...) — Google requires ABSOLUTE; now normalized to absolute (array form), falls back to /og-default.png. Confirmed priceValidUntil present, price/currency regional, availability InStock/OutOfStock from live key inventory.
+- header.php: Organization + LocalBusiness `logo`/`image` were relative — added `$brandLogoAbs` (absolute) used in all 3 schema spots; falls back to /assets/images/favicon/icon-512.png.
+- Validated: all JSON-LD blocks parse as valid JSON on home/product/shop/category/contact (0 invalid).
+- RATINGS NOTE: AggregateRating is correctly review-backed and only emits when published reviews exist (Google policy). Currently 0 published reviews in customer_reviews, so star ratings won't appear in SERP until real post-purchase reviews come in — intentionally NOT seeding fake reviews (manual-action risk).

@@ -153,11 +153,21 @@ foreach ($brandLookup as $kw => $br) {
 $availableNow = function_exists('available_keys_count') ? available_keys_count($product['slug']) : 0;
 $availability = $availableNow > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
 
+// Google's Product schema REQUIRES an absolute image URL — a root-relative
+// path (/uploads/...) is a validation error that suppresses the rich result.
+$schemaImage = (string)($product['image'] ?? '');
+if ($schemaImage !== '' && !preg_match('#^https?://#i', $schemaImage)) {
+    $schemaImage = rtrim(site_url(), '/') . '/' . ltrim($schemaImage, '/');
+}
+if ($schemaImage === '') {
+    $schemaImage = rtrim(site_url(), '/') . '/og-default.png';
+}
+
 $jsonLd = [
     '@context'    => 'https://schema.org',
     '@type'       => 'Product',
     'name'        => $product['name'],
-    'image'       => $product['image'],
+    'image'       => [$schemaImage],
     'description' => $pageDescription,
     'sku'         => $product['slug'],
     'mpn'         => $product['slug'],
