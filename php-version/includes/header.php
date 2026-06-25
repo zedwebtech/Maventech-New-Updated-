@@ -698,8 +698,8 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
               on its right edge. */ ?>
       <div class="dropdown trustbar-currency" data-testid="trustbar-currency">
         <button class="trustbar-utility-btn dropdown-toggle" data-bs-toggle="dropdown" data-testid="currency-selector" style="white-space:nowrap;">
-          <?php $__ctry = current_country_code(); $__ctryFlag = ['US'=>'🇺🇸','UK'=>'🇬🇧','AU'=>'🇦🇺','CA'=>'🇨🇦','EU'=>'🇪🇺'][$__ctry] ?? '🌐'; ?>
-          <span class="me-1"><?= $__ctryFlag ?></span><?= esc($cur['code']) ?>
+          <?php $__ctry = current_country_code(); ?>
+          <?= esc($cur['code']) ?>
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
           <?php
@@ -784,8 +784,8 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
           <button class="trustbar-utility-btn dropdown-toggle" data-bs-toggle="dropdown"
                   data-testid="currency-selector-mobile"
                   style="background:var(--bs-tertiary-bg);border:1px solid var(--bs-border-color);color:var(--bs-body-color);border-radius:999px;padding:6px 12px;font-size:.85rem;font-weight:600;">
-            <?php $__ctryM = current_country_code(); $__ctryFlagM = ['US'=>'🇺🇸','UK'=>'🇬🇧','AU'=>'🇦🇺','CA'=>'🇨🇦','EU'=>'🇪🇺'][$__ctryM] ?? '🌐'; ?>
-            <span class="me-1"><?= $__ctryFlagM ?></span><?= esc($cur['code']) ?>
+            <?php $__ctryM = current_country_code(); ?>
+            <?= esc($cur['code']) ?>
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
             <?php
