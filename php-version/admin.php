@@ -6690,7 +6690,16 @@ elseif ($tab === 'company'):
   $tk_gLab_v   = (string)setting_get('google_ads_purchase_label', '');
   $tk_uet_v    = (string)setting_get('bing_uet_tag_id',           '');
   $tk_clar_v   = (string)setting_get('clarity_project_id',        defined('CLARITY_PROJECT_ID') ? CLARITY_PROJECT_ID : '');
+  $tk_gmc_v    = (string)setting_get('google_merchant_id',        defined('GOOGLE_MERCHANT_ID') ? GOOGLE_MERCHANT_ID : '');
   $tk_msg      = (string)($_GET['tracking_msg'] ?? '');
+  // Tiny status pill shown next to each field label: green check when a value
+  // is saved, muted "Not set" when the field is still empty — gives an
+  // at-a-glance view of which IDs/tokens still need to be filled in.
+  $tkStatus = function (string $v): string {
+      return $v !== ''
+          ? '<span class="badge text-bg-success" style="font-size:.6rem;" title="Submitted"><i class="bi bi-check-circle-fill me-1"></i>Set</span>'
+          : '<span class="badge text-bg-light text-secondary border" style="font-size:.6rem;" title="Not submitted yet"><i class="bi bi-circle me-1"></i>Not set</span>';
+  };
   ?>
   <div class="card-e card-e--plain p-4 mb-3" id="tracking-card" data-testid="tracking-card">
     <div class="d-flex align-items-center gap-2 mb-3">
@@ -6707,58 +6716,58 @@ elseif ($tab === 'company'):
       <input type="hidden" name="action" value="save_tracking_ids">
       <div class="row g-3">
         <div class="col-md-6">
-          <label class="form-label small mb-1" for="tk_ga4">GA4 Measurement ID</label>
+          <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_ga4"><span>GA4 Measurement ID</span><?= $tkStatus($tk_ga4_v) ?></label>
           <input class="form-control form-control-sm" id="tk_ga4" name="ga4_measurement_id"
                  value="<?= esc($tk_ga4_v) ?>" placeholder="G-XXXXXXXXXX"
                  pattern="^G-[A-Za-z0-9]{6,12}$" data-testid="tk-ga4-input">
           <small class="text-muted">analytics.google.com → Admin → Data Streams</small>
         </div>
         <div class="col-md-6">
-          <label class="form-label small mb-1" for="tk_gtag">Google Tag ID</label>
+          <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_gtag"><span>Google Tag ID</span><?= $tkStatus($tk_gtag_v) ?></label>
           <input class="form-control form-control-sm" id="tk_gtag" name="google_tag_id"
                  value="<?= esc($tk_gtag_v) ?>" placeholder="GT-XXXXXXX"
                  pattern="^GT-[A-Za-z0-9]{6,12}$" data-testid="tk-gtag-input">
           <small class="text-muted">tagmanager.google.com / ads.google.com → Google tag (loads gtag.js)</small>
         </div>
         <div class="col-md-6">
-          <label class="form-label small mb-1" for="tk_gtm">Google Tag Manager Container ID</label>
+          <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_gtm"><span>Google Tag Manager Container ID</span><?= $tkStatus($tk_gtm_v) ?></label>
           <input class="form-control form-control-sm" id="tk_gtm" name="gtm_container_id"
                  value="<?= esc($tk_gtm_v) ?>" placeholder="GTM-XXXXXXX"
                  pattern="^GTM-[A-Za-z0-9]{5,12}$" data-testid="tk-gtm-input">
           <small class="text-muted">tagmanager.google.com → Workspace → container ID (adds GTM head + noscript snippets)</small>
         </div>
         <div class="col-md-6">
-          <label class="form-label small mb-1" for="tk_clarity">Microsoft Clarity Project ID</label>
+          <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_clarity"><span>Microsoft Clarity Project ID</span><?= $tkStatus($tk_clar_v) ?></label>
           <input class="form-control form-control-sm" id="tk_clarity" name="clarity_project_id"
                  value="<?= esc($tk_clar_v) ?>" placeholder="abc1234xyz"
                  pattern="^[A-Za-z0-9]{6,15}$" data-testid="tk-clarity-input">
           <small class="text-muted">clarity.microsoft.com — free heatmaps + Bing-Ads quality boost</small>
         </div>
         <div class="col-md-6">
-          <label class="form-label small mb-1" for="tk_gads">Google Ads Conversion ID</label>
+          <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_gads"><span>Google Ads Conversion ID</span><?= $tkStatus($tk_gAds_v) ?></label>
           <input class="form-control form-control-sm" id="tk_gads" name="google_ads_tag_id"
                  value="<?= esc($tk_gAds_v) ?>" placeholder="AW-1234567890"
                  pattern="^AW-[0-9]{6,15}$" data-testid="tk-gads-input">
           <small class="text-muted">ads.google.com → Conversions → Purchase event</small>
         </div>
         <div class="col-md-6">
-          <label class="form-label small mb-1" for="tk_gads_label">Google Ads Purchase Label</label>
+          <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_gads_label"><span>Google Ads Purchase Label</span><?= $tkStatus($tk_gLab_v) ?></label>
           <input class="form-control form-control-sm" id="tk_gads_label" name="google_ads_purchase_label"
                  value="<?= esc($tk_gLab_v) ?>" placeholder="aBcDeFgHiJk"
                  pattern="^[A-Za-z0-9_-]{4,30}$" data-testid="tk-gads-label-input">
           <small class="text-muted">Paired with the ID above — the value after the "/" in send_to</small>
         </div>
         <div class="col-md-6">
-          <label class="form-label small mb-1" for="tk_uet">Bing UET Tag ID</label>
+          <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_uet"><span>Bing UET Tag ID</span><?= $tkStatus($tk_uet_v) ?></label>
           <input class="form-control form-control-sm" id="tk_uet" name="bing_uet_tag_id"
                  value="<?= esc($tk_uet_v) ?>" placeholder="98765432"
                  pattern="^[0-9]{4,12}$" data-testid="tk-uet-input">
           <small class="text-muted">ads.microsoft.com → Tools → UET tag</small>
         </div>
         <div class="col-md-6">
-          <label class="form-label small mb-1" for="tk_gmc">Google Merchant Center ID</label>
+          <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_gmc"><span>Google Merchant Center ID</span><?= $tkStatus($tk_gmc_v) ?></label>
           <input class="form-control form-control-sm" id="tk_gmc" name="google_merchant_id"
-                 value="<?= esc((string)setting_get('google_merchant_id', '')) ?>" placeholder="12345678"
+                 value="<?= esc($tk_gmc_v) ?>" placeholder="12345678"
                  pattern="^[0-9]{6,15}$" data-testid="tk-gmc-input">
           <small class="text-muted">merchants.google.com — unlocks the "Verified by Google Customers" badge after opt-in surveys</small>
         </div>
