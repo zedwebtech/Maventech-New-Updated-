@@ -100,7 +100,7 @@ define('BAIDU_SITE_VERIFICATION',  getenv('BAIDU_SITE_VERIFICATION')  ?: '');
 // saved in the admin panel. A value saved in admin → SEO / Tracking ALWAYS
 // overrides the default below (the admin panel writes to the settings table,
 // which is read first; these constants are only the fallback).
-define('GA4_MEASUREMENT_ID', getenv('GA4_MEASUREMENT_ID') ?: '');               // G-XXXXXXXXXX (GA4 — none set yet)
+define('GA4_MEASUREMENT_ID', getenv('GA4_MEASUREMENT_ID') ?: 'G-9824E82NN1');   // G-XXXXXXXXXX (GA4)
 define('GOOGLE_TAG_ID',      getenv('GOOGLE_TAG_ID')      ?: 'GT-TQV4X72G');    // Google tag (gtag.js loader)
 define('GTM_CONTAINER_ID',   getenv('GTM_CONTAINER_ID')   ?: 'GTM-N6Q7FKS2');   // Google Tag Manager container
 define('GOOGLE_ADS_TAG_ID',  getenv('GOOGLE_ADS_TAG_ID')  ?: 'AW-18263028048'); // Google Ads conversion tag
