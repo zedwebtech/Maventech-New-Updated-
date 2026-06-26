@@ -5,7 +5,7 @@
   <!-- Newsletter band -->
   <div class="border-bottom border-secondary-subtle" style="border-color: rgba(255,255,255,.12) !important;">
     <div class="container text-center py-5">
-      <h3 class="text-white fw-bold fs-2">Join our list and save up to <span style="color:#67e8f9;">81%</span></h3>
+      <h2 class="text-white fw-bold fs-2">Join our list and save up to <span style="color:#67e8f9;">81%</span></h2>
       <p class="small mb-4">Subscribe and receive exclusive weekly deals straight to your inbox!</p>
       <form class="d-flex gap-2 mx-auto" style="max-width: 420px;" onsubmit="subscribeNewsletter(event)">
         <input type="email" required class="form-control rounded-pill px-3" placeholder="Enter your email" data-testid="newsletter-email">
@@ -45,8 +45,8 @@
 
         <div class="small fw-bold text-white mb-2">Subscribe for Deals</div>
         <form class="d-flex gap-2 mb-3" style="max-width: 320px;" onsubmit="subscribeNewsletter(event)">
-          <input type="email" required class="form-control form-control-sm" placeholder="Enter your email">
-          <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-arrow-right"></i></button>
+          <input type="email" required class="form-control form-control-sm" placeholder="Enter your email" aria-label="Email address for deals newsletter">
+          <button class="btn btn-sm btn-primary" type="submit" aria-label="Subscribe to deals newsletter"><i class="bi bi-arrow-right"></i></button>
         </form>
 
         <p class="small mb-1"><i class="bi bi-telephone me-2 text-info"></i><a href="tel:<?= esc(tel_e164($brandPhone)) ?>"><?= esc($brandPhone) ?></a></p>
@@ -66,7 +66,7 @@
 
       <!-- Products -->
       <div class="col-lg-2 col-md-4 col-6">
-        <h6 class="text-white fw-bold mb-3">Products</h6>
+        <h3 class="h6 text-white fw-bold mb-3">Products</h3>
         <ul class="list-unstyled small d-grid gap-2">
           <li><a href="category.php?slug=office-2024-pc">Microsoft Office 2024</a></li>
           <li><a href="category.php?slug=office-2021-pc">Microsoft Office 2021</a></li>
@@ -80,7 +80,7 @@
 
       <!-- Support -->
       <div class="col-lg-3 col-md-4 col-6">
-        <h6 class="text-white fw-bold mb-3">Support</h6>
+        <h3 class="h6 text-white fw-bold mb-3">Support</h3>
         <ul class="list-unstyled small d-grid gap-2">
           <li><a href="account.php">My Account</a></li>
           <li><a href="track-order.php" data-testid="footer-order-history-link">Track Order &amp; Receipts</a></li>
@@ -96,7 +96,7 @@
 
       <!-- Company -->
       <div class="col-lg-3 col-md-4 col-6">
-        <h6 class="text-white fw-bold mb-3">Company</h6>
+        <h3 class="h6 text-white fw-bold mb-3">Company</h3>
         <ul class="list-unstyled small d-grid gap-2">
           <li><a href="about-us.php">About Us</a></li>
           <li><a href="page.php?slug=why-choose-us">Why Choose Us</a></li>
@@ -151,7 +151,7 @@
           ['Do Not Sell My Info', 'page.php?slug=do-not-sell'], ['Disclaimer', 'page.php?slug=disclaimer'], ['Sitemap', 'sitemap.php'],
       ];
       foreach ($legal as $idx => [$ll, $lh]): ?>
-        <a href="<?= $lh ?>"><?= $ll ?></a><?= $idx < count($legal) - 1 ? '<span class="text-secondary">|</span>' : '' ?>
+        <a href="<?= $lh ?>"><?= $ll ?></a><?= $idx < count($legal) - 1 ? '<span aria-hidden="true" style="color:#94a3b8;">|</span>' : '' ?>
       <?php endforeach; ?>
     </div>
     <div class="text-center small">© <?= date('Y') ?> <?= esc($brandName) ?>. All rights reserved.</div>

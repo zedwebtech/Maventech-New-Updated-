@@ -544,9 +544,21 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   <link rel="preload" as="font" type="font/woff2" href="/assets/vendor/fonts/Inter.woff2" crossorigin>
   <link rel="preload" as="font" type="font/woff2" href="/assets/vendor/fonts/bootstrap-icons-subset.woff2" crossorigin>
   <link href="assets/vendor/fonts.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/vendor/fonts.css')) ?>" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons.min.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/vendor/bootstrap-icons.min.css')) ?>" rel="stylesheet">
+  <?php
+    // Non-critical CSS — loaded async (off the render-blocking critical path)
+    // to cut First/Largest Contentful Paint. bootstrap-icons: the icon WOFF2
+    // is already preloaded above, so glyphs paint the instant this tiny stylesheet
+    // applies. dark-mode-polish: refinements only (core theme lives in style.css).
+    $iconsCss = 'assets/vendor/bootstrap-icons.min.css?v=' . esc(@filemtime(__DIR__ . '/../assets/vendor/bootstrap-icons.min.css'));
+    $darkCss  = 'assets/css/dark-mode-polish.css?v=' . esc(@filemtime(__DIR__ . '/../assets/css/dark-mode-polish.css'));
+  ?>
+  <link rel="preload" as="style" href="<?= $iconsCss ?>" onload="this.onload=null;this.rel='stylesheet'">
   <link href="assets/css/style.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/css/style.css')) ?>" rel="stylesheet">
-  <link href="assets/css/dark-mode-polish.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/css/dark-mode-polish.css')) ?>" rel="stylesheet">
+  <link rel="preload" as="style" href="<?= $darkCss ?>" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link href="<?= $iconsCss ?>" rel="stylesheet">
+    <link href="<?= $darkCss ?>" rel="stylesheet">
+  </noscript>
   <script>window.SITE_PHONE = '<?= esc($brandPhone) ?>'; window.CART_SLUGS = <?= json_encode(array_keys(cart())) ?>;</script>
 
   <?php
@@ -750,7 +762,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
         <span class="cart-count-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger <?= cart_count() === 0 ? 'd-none' : '' ?>" data-testid="cart-count-mobile"><?= cart_count() ?></span>
       </a>
     </div>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" data-testid="navbar-toggler">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Open navigation menu" data-testid="navbar-toggler">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="mainNav">

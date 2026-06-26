@@ -396,7 +396,7 @@ include __DIR__ . '/includes/header.php';
         <div class="col-lg-3 col-sm-6">
           <div class="card h-100 p-3">
             <div class="fs-3 fw-bold text-primary opacity-50"><?= $n ?></div>
-            <h6 class="fw-bold mt-1"><?= $t ?></h6>
+            <h3 class="h6 fw-bold mt-1"><?= $t ?></h3>
             <small class="text-secondary"><?= $d ?></small>
           </div>
         </div>
@@ -499,7 +499,7 @@ include __DIR__ . '/includes/header.php';
         <div class="col-lg-4 col-sm-6">
           <div class="card h-100 p-3">
             <i class="bi <?= $ic ?> text-primary fs-3"></i>
-            <h6 class="fw-bold mt-2"><?= $t ?></h6>
+            <h3 class="h6 fw-bold mt-2"><?= $t ?></h3>
             <small class="text-secondary"><?= $d ?></small>
           </div>
         </div>

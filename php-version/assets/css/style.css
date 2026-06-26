@@ -2937,7 +2937,7 @@ body {
 }
 
 /* --- BADGES — corporate blue accents --- */
-.badge.text-bg-danger { background: #FEE2E2 !important; color: var(--theme-danger) !important; }
+.badge.text-bg-danger { background: #FEE2E2 !important; color: #b91c1c !important; }
 .badge.text-bg-warning { background: #FFF3CD !important; color: #856404 !important; }
 .badge.text-bg-info { background: var(--theme-primary-light) !important; color: var(--theme-primary) !important; }
 .badge.text-bg-light { background: var(--theme-bg-muted) !important; color: var(--theme-text) !important; }
@@ -3134,6 +3134,24 @@ body .brand-grad,
   color: transparent !important;
   -webkit-text-fill-color: transparent !important;
   animation: brand-shimmer-dark 8s linear infinite !important;
+}
+/* The footer is ALWAYS dark (.footer-dark), so its brand wordmark must use
+   the bright blue gradient even in light mode — the light-mode dark-blue
+   gradient above failed WCAG AA contrast (3.7:1) on the near-black footer. */
+.footer-dark .brand-grad {
+  background: linear-gradient(
+    90deg,
+    #60A5FA 0%,
+    #3B82F6 25%,
+    #38BDF8 50%,
+    #3B82F6 75%,
+    #60A5FA 100%
+  ) !important;
+  background-size: 280% 100% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
 }
 [data-bs-theme="dark"] .brand-grad,
 [data-bs-theme="dark"] .footer-dark .brand-grad {
@@ -4242,6 +4260,14 @@ body:not(.adm) .brand-grad,
   color: var(--zoom-blue) !important;
   font-weight: 700;
   letter-spacing: -.02em;
+}
+
+/* The footer is ALWAYS dark navy, so solid Zoom blue (#0B5CFF) on it only
+   reaches 3.7:1 — below WCAG AA. Use the lighter brand blue (same as the
+   dark-hero wordmark) so the footer logo is legible (≈8:1) and on-brand. */
+body:not(.adm) .footer-dark .brand-grad {
+  color: #79A6FF !important;
+  -webkit-text-fill-color: #79A6FF !important;
 }
 
 body:not(.adm) .brand-text {
