@@ -4270,6 +4270,28 @@ body:not(.adm) .footer-dark .brand-grad {
   -webkit-text-fill-color: #79A6FF !important;
 }
 
+/* --- Accessibility: minimum touch-target size on mobile ---------------------
+   Lighthouse flags clustered interactive links/buttons under 24px tall.  We
+   give the trustbar controls and footer nav links a larger tap area on small
+   screens WITHOUT altering content/product-card links (which keep their
+   layout and pass via the spacing exception). */
+@media (max-width: 768px) {
+  .trustbar-phone-link,
+  .trustbar-deal-shop,
+  .trustbar-deal-code,
+  .trustbar-utility-btn {
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .footer-dark li > a,
+  .footer-dark .footer-links a {
+    display: inline-block;
+    min-height: 24px;
+    padding-block: 5px;
+  }
+}
+
 body:not(.adm) .brand-text {
   font-family: "Inter", "Manrope", system-ui, sans-serif !important;
   font-weight: 700 !important;
