@@ -441,6 +441,11 @@ function seo_bot_ensure_schema(PDO $pdo): void
  */
 function _seo_public_site_url(): string
 {
+    // Delegate to the central helper, which prefers the admin-configured
+    // domain but never returns an Emergent preview / cluster-internal host.
+    if (function_exists('public_base_url')) {
+        return public_base_url();
+    }
     $configured = '';
     try {
         $configured = function_exists('setting_get') ? trim((string)setting_get('site_domain_url', '')) : '';
@@ -1320,7 +1325,7 @@ SYS;
     // (Bing's GPTBot/Copilot, Perplexity, Yandex AI) re-fetch these
     // discovery files when IndexNow notifies them — the ping costs us
     // one cheap POST and routinely shaves hours off re-crawl latency.
-    $publicHost   = trim((string)setting_get('site_domain_url', '')) ?: site_url();
+    $publicHost   = public_base_url();
     $publicBase   = rtrim($publicHost, '/');
     $pingTargets  = [$publicBase . '/llms.txt', $publicBase . '/agents.json'];
     [$pingStatus, $pingCount] = _seo_indexnow_submit_urls($pingTargets, $report);

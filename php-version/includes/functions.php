@@ -1499,7 +1499,7 @@ function active_vibe_promo(): ?array
         // - `logo_file`          → on-disk path for Dompdf invoices.
         $rel = ltrim((string)$row['logo_path'], '/');
         $row['logo_url']  = '/' . $rel;
-        $publicHost = trim((string)setting_get('site_domain_url', '')) ?: site_url();
+        $publicHost = public_base_url();
         $row['logo_url_absolute'] = rtrim($publicHost, '/') . '/' . $rel;
         $row['logo_file'] = __DIR__ . '/../' . $rel;
     } else {
@@ -1848,6 +1848,33 @@ function site_url(): string
     if (defined('SITE_URL') && SITE_URL !== '') return rtrim(SITE_URL, '/');
     return 'http://localhost';
 }
+
+/**
+ * Canonical PUBLIC base URL for every absolute link that must be customer- /
+ * Googlebot-facing: sitemap <loc>, canonical fallback, emails, review links,
+ * the SEO bot, etc.
+ *
+ * It prefers the admin-configured domain (`site_domain_url`, then `main_url`)
+ * but will NEVER return an Emergent preview / cluster-internal / localhost
+ * host — those are development hosts and must never leak into a deployed
+ * site's URLs.  When deployed to maventechsoftware.com the live request host
+ * (via site_url()) is used automatically, even if a stale preview URL is still
+ * sitting in the settings table (e.g. a DB copied over from the preview pod).
+ */
+function public_base_url(): string
+{
+    foreach (['site_domain_url', 'main_url'] as $k) {
+        try { $v = trim((string)setting_get($k, '')); } catch (Throwable $e) { $v = ''; }
+        if ($v === '') continue;
+        $h = strtolower((string)parse_url($v, PHP_URL_HOST));
+        if ($h === '') continue;
+        if (preg_match('/(?:\.preview\.emergentagent\.com|\.preview\.emergentcf\.cloud|\.emergent\.host)$/i', $h)) continue;
+        if (in_array($h, ['localhost', '127.0.0.1', '0.0.0.0'], true)) continue;
+        return rtrim($v, '/');
+    }
+    return rtrim(site_url(), '/');
+}
+
 
 /**
  * Persist the real public domain into the `site_domain_url` / `main_url`

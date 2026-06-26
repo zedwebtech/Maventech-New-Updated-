@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Build the public reset URL.  Prefer the admin-configured
                     // `site_domain_url` because $_SERVER['HTTP_HOST'] inside the
                     // CDN proxy can be the internal cluster name.
-                    $publicHost = trim((string)setting_get('site_domain_url', '')) ?: site_url();
+                    $publicHost = public_base_url();
                     $resetUrl   = rtrim($publicHost, '/') . '/reset-password.php?token=' . $raw;
 
                     $brand = htmlspecialchars(SITE_BRAND, ENT_QUOTES, 'UTF-8');

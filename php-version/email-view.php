@@ -86,7 +86,7 @@ function regenerate_email_html_for_view(array $em): string {
                 $rt->execute([$order['id'] ?? 0]);
                 $rvTok = (string)($rt->fetchColumn() ?: '');
             } catch (Throwable $e) {}
-            $reviewUrl = $rvTok !== '' ? (rtrim((trim((string)setting_get('site_domain_url','')) ?: site_url()), '/') . '/review.php?t=' . $rvTok) : '';
+            $reviewUrl = $rvTok !== '' ? (rtrim((public_base_url()), '/') . '/review.php?t=' . $rvTok) : '';
             return build_order_email_html($order, $items, $assignments, $tok, $reviewUrl);
         }
         // Other templates — render via the generic template renderer with order vars

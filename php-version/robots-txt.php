@@ -16,7 +16,7 @@ header('Content-Type: text/plain; charset=UTF-8');
 header('Cache-Control: public, max-age=3600');
 header('X-Robots-Tag: noindex');
 
-$base = rtrim(site_url(), '/');
+$base = function_exists('public_base_url') ? public_base_url() : rtrim(site_url(), '/');
 
 // ----- Search & AI crawlers we explicitly allow -----
 $aiCrawlers = [

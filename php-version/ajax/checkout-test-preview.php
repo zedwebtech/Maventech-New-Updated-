@@ -69,7 +69,7 @@ foreach ($items as $i) {
 }
 
 $trackToken = 'demo' . bin2hex(random_bytes(6));
-$demoReviewUrl = rtrim((trim((string)setting_get('site_domain_url','')) ?: site_url()), '/') . '/review.php?t=demo' . bin2hex(random_bytes(6));
+$demoReviewUrl = rtrim((public_base_url()), '/') . '/review.php?t=demo' . bin2hex(random_bytes(6));
 $emailHtml  = build_order_email_html($preview, $items, $assignments, $trackToken, $demoReviewUrl);
 $emailSubj  = setting_get('email_template_subject', 'Your Microsoft product key — Order #{{order_number}}');
 $emailSubj  = str_replace(['{{order_number}}', '{{first_name}}', '{{customer_email}}'], [$preview['order_number'], $first, $email], $emailSubj);

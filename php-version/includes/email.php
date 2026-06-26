@@ -1694,7 +1694,7 @@ function fulfill_order(int $orderId, bool $forceAdminOverride = false): void {
             $pdo->prepare('INSERT INTO customer_reviews (order_id, product_slug, customer_email, customer_name, request_token, region) VALUES (?,?,?,?,?,?)')
                 ->execute([$orderId, $primaryItem['product_slug'], $order['email'], trim(($order['first_name'] ?? '') . ' ' . ($order['last_name'] ?? '')), $rtok, $order['region'] ?? 'US']);
         }
-        $reviewBase = trim((string)setting_get('site_domain_url', '')) ?: site_url();
+        $reviewBase = public_base_url();
         $reviewUrl  = rtrim($reviewBase, '/') . '/review.php?t=' . $rtok;
     }
 

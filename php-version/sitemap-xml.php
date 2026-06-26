@@ -27,10 +27,11 @@ header('Content-Type: application/xml; charset=UTF-8');
 header('Cache-Control: public, max-age=1800');
 
 // Prefer the admin-configured canonical domain over the request host so
-// the sitemap always emits the URL Google has on file — even when this
-// PHP process is reached via an internal ingress hostname.
-$canonical = trim((string)setting_get('site_domain_url', ''));
-$base = $canonical !== '' ? rtrim($canonical, '/') : rtrim(site_url(), '/');
+// the sitemap always emits the URL Google has on file — but NEVER an Emergent
+// preview / cluster-internal host (public_base_url() guarantees this), so a
+// deployed sitemap only ever contains the real production domain.
+$base     = public_base_url();
+$canonical = $base;
 $today    = date('Y-m-d');
 $nowUtc   = gmdate('Y-m-d\TH:i:s\Z');
 $urls     = [];

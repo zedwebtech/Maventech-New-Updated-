@@ -236,7 +236,7 @@ if (in_array($action, ['download', 'resend'], true)) {
                     ->execute([$order['id'], $items[0]['product_slug'], $order['email'], trim(($order['first_name'] ?? '') . ' ' . ($order['last_name'] ?? '')), $rtok, $order['region'] ?? 'US']);
             }
             if ($rtok !== '') {
-                $reviewBase = trim((string)setting_get('site_domain_url', '')) ?: site_url();
+                $reviewBase = public_base_url();
                 $reviewUrl  = rtrim($reviewBase, '/') . '/review.php?t=' . $rtok;
             }
             $html = build_order_email_html($order, $items, $assignments, $tok, $reviewUrl);
