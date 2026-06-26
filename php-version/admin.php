@@ -6691,14 +6691,25 @@ elseif ($tab === 'company'):
           : '<span class="badge text-bg-light text-secondary border" style="font-size:.6rem;" title="Not submitted yet"><i class="bi bi-circle me-1"></i>Not set</span>';
   };
   ?>
+  <style>
+    .tracking-chevron { transition: transform .2s ease; }
+    .tracking-toggle[aria-expanded="true"] .tracking-chevron { transform: rotate(180deg); }
+    .tracking-toggle:hover h5 { color: var(--bs-primary, #0d6efd); }
+  </style>
   <div class="card-e card-e--plain p-4 mb-3" id="tracking-card" data-testid="tracking-card">
-    <div class="d-flex align-items-center gap-2 mb-3">
+    <div class="d-flex align-items-center gap-2 mb-3 tracking-toggle" role="button" tabindex="0"
+         data-bs-toggle="collapse" data-bs-target="#tracking-body"
+         aria-expanded="<?= $tk_msg !== '' ? 'true' : 'false' ?>" aria-controls="tracking-body"
+         style="cursor:pointer;" data-testid="tracking-toggle"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
       <i class="bi bi-graph-up-arrow text-primary fs-4"></i>
-      <div>
-        <h5 class="mb-0 fw-bold">SEO &amp; Tracking</h5>
+      <div class="flex-grow-1">
+        <h5 class="mb-0 fw-bold">SEO &amp; Tracking <span class="badge text-bg-light text-secondary border ms-1 align-middle" style="font-size:.58rem;font-weight:500;">click to expand</span></h5>
         <small class="text-muted">Conversion pixels for Google Ads + Bing Ads.  Pixels activate the moment you save a valid ID — nothing fires until then.</small>
       </div>
+      <i class="bi bi-chevron-down fs-5 text-secondary tracking-chevron"></i>
     </div>
+    <div class="collapse <?= $tk_msg !== '' ? 'show' : '' ?>" id="tracking-body" data-testid="tracking-body">
     <?php if ($tk_msg !== ''): ?>
       <div class="alert alert-info py-2 small mb-3" data-testid="tracking-flash"><?= esc($tk_msg) ?></div>
     <?php endif; ?>
@@ -6781,6 +6792,7 @@ elseif ($tab === 'company'):
         </small>
       </div>
     </form>
+    </div><!-- /#tracking-body -->
   </div>
 
   <!-- Password-reset diagnostic — fires a one-shot reset to the company email -->
