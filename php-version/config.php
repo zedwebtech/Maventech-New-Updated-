@@ -102,6 +102,7 @@ define('BAIDU_SITE_VERIFICATION',  getenv('BAIDU_SITE_VERIFICATION')  ?: '');
 // which is read first; these constants are only the fallback).
 define('GA4_MEASUREMENT_ID', getenv('GA4_MEASUREMENT_ID') ?: '');               // G-XXXXXXXXXX (GA4 — none set yet)
 define('GOOGLE_TAG_ID',      getenv('GOOGLE_TAG_ID')      ?: 'GT-TQV4X72G');    // Google tag (gtag.js loader)
+define('GTM_CONTAINER_ID',   getenv('GTM_CONTAINER_ID')   ?: 'GTM-N6Q7FKS2');   // Google Tag Manager container
 define('GOOGLE_ADS_TAG_ID',  getenv('GOOGLE_ADS_TAG_ID')  ?: 'AW-18263028048'); // Google Ads conversion tag
 define('CLARITY_PROJECT_ID', getenv('CLARITY_PROJECT_ID') ?: 'xcp5vd09fb');     // Microsoft Clarity project id
 define('GOOGLE_MERCHANT_ID', getenv('GOOGLE_MERCHANT_ID') ?: '5815017210');     // Google Merchant Center id

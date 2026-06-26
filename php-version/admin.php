@@ -1014,6 +1014,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $rules = [
             'ga4_measurement_id'        => '/^G-[A-Z0-9]{6,12}$/i',                 // G-XXXXXXXXXX
             'google_tag_id'             => '/^GT-[A-Z0-9]{6,12}$/i',                // GT-XXXXXXX (Google tag)
+            'gtm_container_id'          => '/^GTM-[A-Z0-9]{5,12}$/i',               // GTM-XXXXXXX (Tag Manager)
             'google_ads_tag_id'         => '/^AW-[0-9]{6,15}$/i',                   // AW-1234567890
             'google_ads_purchase_label' => '/^[A-Za-z0-9_-]{4,30}$/',                // conversion label
             'bing_uet_tag_id'           => '/^[0-9]{4,12}$/',                       // UET tag id
@@ -6684,6 +6685,7 @@ elseif ($tab === 'company'):
   <?php
   $tk_ga4_v    = (string)setting_get('ga4_measurement_id',        '');
   $tk_gtag_v   = (string)setting_get('google_tag_id',             defined('GOOGLE_TAG_ID') ? GOOGLE_TAG_ID : '');
+  $tk_gtm_v    = (string)setting_get('gtm_container_id',          defined('GTM_CONTAINER_ID') ? GTM_CONTAINER_ID : '');
   $tk_gAds_v   = (string)setting_get('google_ads_tag_id',         defined('GOOGLE_ADS_TAG_ID') ? GOOGLE_ADS_TAG_ID : '');
   $tk_gLab_v   = (string)setting_get('google_ads_purchase_label', '');
   $tk_uet_v    = (string)setting_get('bing_uet_tag_id',           '');
@@ -6717,6 +6719,13 @@ elseif ($tab === 'company'):
                  value="<?= esc($tk_gtag_v) ?>" placeholder="GT-XXXXXXX"
                  pattern="^GT-[A-Za-z0-9]{6,12}$" data-testid="tk-gtag-input">
           <small class="text-muted">tagmanager.google.com / ads.google.com → Google tag (loads gtag.js)</small>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small mb-1" for="tk_gtm">Google Tag Manager Container ID</label>
+          <input class="form-control form-control-sm" id="tk_gtm" name="gtm_container_id"
+                 value="<?= esc($tk_gtm_v) ?>" placeholder="GTM-XXXXXXX"
+                 pattern="^GTM-[A-Za-z0-9]{5,12}$" data-testid="tk-gtm-input">
+          <small class="text-muted">tagmanager.google.com → Workspace → container ID (adds GTM head + noscript snippets)</small>
         </div>
         <div class="col-md-6">
           <label class="form-label small mb-1" for="tk_clarity">Microsoft Clarity Project ID</label>

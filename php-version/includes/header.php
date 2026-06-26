@@ -99,6 +99,16 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
 ?>>
 <head>
   <meta charset="UTF-8">
+  <?php $gtmId = trim((string)setting_get('gtm_container_id', defined('GTM_CONTAINER_ID') ? GTM_CONTAINER_ID : '')); ?>
+  <?php if ($gtmId !== ''): ?>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','<?= esc($gtmId) ?>');</script>
+  <!-- End Google Tag Manager -->
+  <?php endif; ?>
   <script>
     // Apply saved theme BEFORE styles render — prevents light-mode flicker on every navigation.
     // Honour the server-rendered data-bs-theme first (when the user is
@@ -613,6 +623,12 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
 
 </head>
 <body data-brand-motion="<?= esc(setting_get('company_logo_motion', 'bounce')) ?>" data-brand-vibe="<?= esc(setting_get('company_brand_vibe', 'classic')) ?>">
+<?php if (!empty($gtmId)): ?>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<?= esc($gtmId) ?>"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<?php endif; ?>
 
 <?php if ($checkoutHeader): ?>
 <!-- Slim secure-checkout header -->
