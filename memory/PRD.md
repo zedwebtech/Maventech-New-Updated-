@@ -1072,3 +1072,8 @@ The store already had extensive, valid JSON-LD (Organization, LocalBusiness, Web
 - order-success.php: new Google-branded "Leave us a Google review" card in the success rail (4-color bar, G logo, gold stars, button → opens review link new tab; dark-mode supported; testid google-review-card / google-review-btn). Shows on real (non-demo) orders when URL set.
 - Post on-site-review submit (rating>=4, not already-reviewed): thank-you state reveals "Post my review on Google" button (testid success-review-google-share) that copies the customer's written comment to clipboard then opens the Google review page. Note: Google has no API to push site reviews into a Business Profile — this copy-and-redirect is the compliant pattern.
 - Verified via Playwright on MVT-DEMO-002: card renders; 5★ submit shows confetti + share button; test review cleaned up afterward.
+
+## 2026-06 — Admin field for Google Review Link
+- admin.php SEO & Tracking card: added "Google Review Link" full-width URL input (testid tk-grev-input) with the same green/grey Set/Not set pill ($tkStatus). Reads setting google_review_url (default GOOGLE_REVIEW_URL).
+- save_tracking_ids handler: URL-validated separately via filter_var (FILTER_VALIDATE_URL); empty clears it, invalid is ignored + flagged in the flash.
+- order-success.php already reads google_review_url, so admin now controls both the standalone Google review card and the post-submit "Post my review on Google" share button. Verified login→save→persist via Playwright; restored real link https://g.page/r/CY0H1wdUhWorEBM/review.

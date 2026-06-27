@@ -1030,6 +1030,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             setting_set($key, $val);
         }
+        // Google review link is a URL, not an ID — validate separately.
+        $grev = trim((string)($_POST['google_review_url'] ?? ''));
+        if ($grev === '' || filter_var($grev, FILTER_VALIDATE_URL)) {
+            setting_set('google_review_url', $grev);
+        } else {
+            $errors[] = 'google_review_url';
+        }
         $flash = $errors ? ('Saved with ' . count($errors) . ' invalid ID(s) ignored: ' . implode(', ', $errors))
                          : 'Tracking IDs saved';
         header('Location: admin.php?tab=company&tracking_msg=' . urlencode($flash) . '#tracking-card'); exit;
@@ -6681,6 +6688,7 @@ elseif ($tab === 'company'):
   $tk_uet_v    = (string)setting_get('bing_uet_tag_id',           '');
   $tk_clar_v   = (string)setting_get('clarity_project_id',        defined('CLARITY_PROJECT_ID') ? CLARITY_PROJECT_ID : '');
   $tk_gmc_v    = (string)setting_get('google_merchant_id',        defined('GOOGLE_MERCHANT_ID') ? GOOGLE_MERCHANT_ID : '');
+  $tk_grev_v   = (string)setting_get('google_review_url',         defined('GOOGLE_REVIEW_URL') ? GOOGLE_REVIEW_URL : '');
   $tk_msg      = (string)($_GET['tracking_msg'] ?? '');
   // Tiny status pill shown next to each field label: green check when a value
   // is saved, muted "Not set" when the field is still empty — gives an
@@ -6771,6 +6779,13 @@ elseif ($tab === 'company'):
                  value="<?= esc($tk_gmc_v) ?>" placeholder="12345678"
                  pattern="^[0-9]{6,15}$" data-testid="tk-gmc-input">
           <small class="text-muted">merchants.google.com — unlocks the "Verified by Google Customers" badge after opt-in surveys</small>
+        </div>
+        <div class="col-12">
+          <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_grev"><span>Google Review Link <i class="bi bi-google text-primary ms-1"></i></span><?= $tkStatus($tk_grev_v) ?></label>
+          <input class="form-control form-control-sm" id="tk_grev" name="google_review_url" type="url"
+                 value="<?= esc($tk_grev_v) ?>" placeholder="https://g.page/r/XXXXXXXX/review"
+                 data-testid="tk-grev-input">
+          <small class="text-muted">Your Google Business Profile "Write a review" link — powers the stylish "Leave us a Google review" card on the order-success page. Get it from Google Business Profile → Ask for reviews → copy link.</small>
         </div>
         <div class="col-md-6 d-flex flex-column">
           <label class="form-label small mb-1">Active trackers</label>
