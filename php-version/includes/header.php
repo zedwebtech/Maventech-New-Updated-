@@ -552,20 +552,14 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   <link rel="preload" as="font" type="font/woff2" href="/assets/vendor/fonts/bootstrap-icons-subset.woff2" crossorigin>
   <link href="assets/vendor/fonts.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/vendor/fonts.css')) ?>" rel="stylesheet">
   <?php
-    // Non-critical CSS — loaded async (off the render-blocking critical path)
-    // to cut First/Largest Contentful Paint. bootstrap-icons: the icon WOFF2
-    // is already preloaded above, so glyphs paint the instant this tiny stylesheet
-    // applies. dark-mode-polish: refinements only (core theme lives in style.css).
-    $iconsCss = 'assets/vendor/bootstrap-icons.min.css?v=' . esc(@filemtime(__DIR__ . '/../assets/vendor/bootstrap-icons.min.css'));
-    $darkCss  = 'assets/css/dark-mode-polish.css?v=' . esc(@filemtime(__DIR__ . '/../assets/css/dark-mode-polish.css'));
+    // NOTE: these are loaded SYNCHRONOUSLY (render-blocking) on purpose.
+    // Deferring them (preload→onload swap) made icon glyphs and dark-mode
+    // refinements apply AFTER first paint, which caused a large Cumulative
+    // Layout Shift (CLS).  The tiny blocking cost is far cheaper than the CLS.
   ?>
-  <link rel="preload" as="style" href="<?= $iconsCss ?>" onload="this.onload=null;this.rel='stylesheet'">
+  <link href="<?= 'assets/vendor/bootstrap-icons.min.css?v=' . esc(@filemtime(__DIR__ . '/../assets/vendor/bootstrap-icons.min.css')) ?>" rel="stylesheet">
   <link href="assets/css/style.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/css/style.css')) ?>" rel="stylesheet">
-  <link rel="preload" as="style" href="<?= $darkCss ?>" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript>
-    <link href="<?= $iconsCss ?>" rel="stylesheet">
-    <link href="<?= $darkCss ?>" rel="stylesheet">
-  </noscript>
+  <link href="<?= 'assets/css/dark-mode-polish.css?v=' . esc(@filemtime(__DIR__ . '/../assets/css/dark-mode-polish.css')) ?>" rel="stylesheet">
   <script>window.SITE_PHONE = '<?= esc($brandPhone) ?>'; window.CART_SLUGS = <?= json_encode(array_keys(cart())) ?>;</script>
 
   <?php
@@ -626,7 +620,7 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
 <?php if (!empty($gtmId)): ?>
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<?= esc($gtmId) ?>"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 <?php endif; ?>
 
