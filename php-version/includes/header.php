@@ -552,14 +552,19 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   <link rel="preload" as="font" type="font/woff2" href="/assets/vendor/fonts/bootstrap-icons-subset.woff2" crossorigin>
   <link href="assets/vendor/fonts.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/vendor/fonts.css')) ?>" rel="stylesheet">
   <?php
-    // NOTE: these are loaded SYNCHRONOUSLY (render-blocking) on purpose.
-    // Deferring them (preload→onload swap) made icon glyphs and dark-mode
-    // refinements apply AFTER first paint, which caused a large Cumulative
-    // Layout Shift (CLS).  The tiny blocking cost is far cheaper than the CLS.
+    // bootstrap-icons + style.css stay SYNCHRONOUS — they affect the visible
+    // layout/icons, so deferring them caused a large CLS.
+    // dark-mode-polish.css, however, contains ONLY [data-bs-theme="dark"] rules.
+    // For the default (light) theme it changes nothing, so deferring it off the
+    // critical path is zero-CLS-risk and reclaims render-blocking time.  The
+    // core dark theme itself lives in style.css (still synchronous), so even
+    // dark-mode users see no layout shift — only late-applied colour polish.
+    $darkCss = 'assets/css/dark-mode-polish.css?v=' . esc(@filemtime(__DIR__ . '/../assets/css/dark-mode-polish.css'));
   ?>
   <link href="<?= 'assets/vendor/bootstrap-icons.min.css?v=' . esc(@filemtime(__DIR__ . '/../assets/vendor/bootstrap-icons.min.css')) ?>" rel="stylesheet">
   <link href="assets/css/style.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/css/style.css')) ?>" rel="stylesheet">
-  <link href="<?= 'assets/css/dark-mode-polish.css?v=' . esc(@filemtime(__DIR__ . '/../assets/css/dark-mode-polish.css')) ?>" rel="stylesheet">
+  <link rel="preload" as="style" href="<?= $darkCss ?>" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="<?= $darkCss ?>" rel="stylesheet"></noscript>
   <script>window.SITE_PHONE = '<?= esc($brandPhone) ?>'; window.CART_SLUGS = <?= json_encode(array_keys(cart())) ?>;</script>
 
   <?php
