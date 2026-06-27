@@ -332,7 +332,7 @@ if ($action === 'book') {
         if ($toEmail === '') $toEmail = trim((string)setting_get('company_support_email', ''));
         if ($toEmail === '' && defined('SUPPORT_EMAIL')) $toEmail = (string)SUPPORT_EMAIL;
         if ($toEmail !== '') {
-            $brand     = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software';
+            $brand     = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech';
             $siteUrl   = function_exists('site_url') ? rtrim(site_url(), '/') : '';
             $adminLink = $siteUrl . '/admin.php?tab=install-schedule&open=' . $scheduleId;
             $cName     = htmlspecialchars((string)$lead['name'],  ENT_QUOTES, 'UTF-8') ?: '(no name)';

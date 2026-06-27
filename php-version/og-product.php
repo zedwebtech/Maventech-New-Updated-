@@ -124,7 +124,7 @@ $green   = imagecolorallocate($im, 0x22, 0xc5, 0x5e);
 $muted   = imagecolorallocate($im, 0xcb, 0xe2, 0xff);
 
 $ci    = function_exists('company_info') ? company_info() : [];
-$brand = $ci['name'] ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+$brand = $ci['name'] ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
 
 if ($fontBold) {
     // Tiny brand pill

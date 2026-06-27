@@ -800,7 +800,7 @@ function _seo_refresh_stale_metadata(PDO $pdo, array &$report): array
 
     foreach ($stale as $p) {
         $sys = <<<SYS
-You are an expert e-commerce SEO copywriter for Maventech Software, an authorised
+You are an expert e-commerce SEO copywriter for Maventech, an authorised
 reseller of digital license keys (Microsoft, Bitdefender, Norton, McAfee, Adobe,
 Autodesk, etc.).  For the product below, return STRICT JSON with exactly two keys:
 
@@ -1159,8 +1159,8 @@ function _seo_generate_daily_llms_txt(PDO $pdo, array &$report): array
     }
 
     // Collect everything the model needs to write an accurate llms.txt.
-    $ci      = function_exists('company_info') ? company_info() : ['name'=>'Maventech Software','email'=>'','phone'=>'','address'=>''];
-    $brand   = $ci['name']  ?: 'Maventech Software';
+    $ci      = function_exists('company_info') ? company_info() : ['name'=>'Maventech','email'=>'','phone'=>'','address'=>''];
+    $brand   = $ci['name']  ?: 'Maventech';
     $email   = $ci['email'] ?? '';
     $phone   = $ci['phone'] ?? '';
     $siteUrl = rtrim(site_url(), '/');
@@ -1415,7 +1415,7 @@ function _seo_generate_one_blog_post(PDO $pdo, string $apiKey, string $baseUrl, 
     $rc = $regionContext[$targetRegion] ?? $regionContext['US'];
 
     $sys = <<<SYS
-You are a senior content strategist for Maventech Software, an authorised
+You are a senior content strategist for Maventech, an authorised
 reseller of genuine digital software license keys (Microsoft, Bitdefender,
 Norton, McAfee, Adobe, Autodesk, etc.). Your job is to write a SHORT,
 ORIGINAL, SEO-friendly blog article that helps buyers in {$rc['country']}
@@ -1783,7 +1783,7 @@ function seo_publish_featured_trends_article(array &$report, bool $force = false
     $audienceLine = $regionAudienceMap[$targetRegion] ?? $regionAudienceMap['ALL'];
 
     $sys = <<<SYS
-You are the senior editorial writer for Maventech Software.  Your job is to
+You are the senior editorial writer for Maventech.  Your job is to
 publish ONE longer, opinion-piece-style article that contextualises a
 product against the broader industry trends of 2026.  Write for {$audienceLine}.
 

@@ -48,7 +48,7 @@ $disallowedPaths = [
     '/ajax/', '/uploads/', '/cron.php', '/setup-check.php',
     '/*?session_id=', '/*?order=',
 ];
-?># <?= defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software' ?> — robots.txt
+?># <?= defined('SITE_BRAND') ? SITE_BRAND : 'Maventech' ?> — robots.txt
 # Dynamically generated from <?= $base ?> at <?= date('c') ?>.
 # Edit /robots-txt.php to change the rules; this file is served from <?= $_SERVER['REQUEST_URI'] ?? '/robots.txt' ?>.
 

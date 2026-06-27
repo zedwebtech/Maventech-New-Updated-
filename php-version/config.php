@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// Maventech Software Store - Configuration
+// Maventech Store - Configuration
 // Edit these values to match your hosting environment.
 // ============================================================
 
@@ -67,8 +67,8 @@ define('ADMIN_EMAIL',    getenv('ADMIN_EMAIL')    ?: 'admin@maventechsoftware.co
 define('ADMIN_PASSWORD', getenv('ADMIN_PASSWORD') ?: 'Admin@UC2026!');
 
 // --- Company ---
-define('SITE_BRAND', 'Maventech Software');
-define('SITE_LEGAL', 'Maventech Software');
+define('SITE_BRAND', 'Maventech');
+define('SITE_LEGAL', 'Maventech');
 // SITE_PHONE / SITE_EMAIL / SITE_ADDRESS / SITE_HOURS are resolved from the
 // admin → Company Info settings at the bottom of includes/settings.php so any
 // change in the admin panel propagates across the entire site, emails & PDFs.

@@ -32,7 +32,7 @@ if ($post) {
     // when the auto-blogger refreshes the post via cron.  Falls back to
     // the publish date when no modification has happened yet.
     $modifiedDate = !empty($post['updated_at']) ? date('c', strtotime((string)$post['updated_at'])) : ($articleDate ?: date('c'));
-    $authorName = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software';
+    $authorName = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech';
 
     // Word count for the wordCount + timeRequired signals — improves
     // E-E-A-T scoring in Google's quality framework.
@@ -69,7 +69,7 @@ if ($post) {
             'url'          => site_url() . '/about-us.php',
             'worksFor'     => [
                 '@type' => 'Organization',
-                'name'  => defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software',
+                'name'  => defined('SITE_BRAND') ? SITE_BRAND : 'Maventech',
                 '@id'   => site_url() . '/#organization',
             ],
             'knowsAbout'   => ['Microsoft licensing', 'Office software', 'Windows activation', 'Cybersecurity', 'Genuine software resale'],
@@ -77,7 +77,7 @@ if ($post) {
         'publisher'     => [
             '@type' => 'Organization',
             '@id'   => site_url() . '/#organization',
-            'name'  => defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software',
+            'name'  => defined('SITE_BRAND') ? SITE_BRAND : 'Maventech',
             'url'   => site_url() . '/',
             'logo'  => [
                 '@type' => 'ImageObject',

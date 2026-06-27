@@ -56,7 +56,7 @@ function ai_citations_run_if_due(bool $force = false): array
         }
     }
 
-    $brand = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software';
+    $brand = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech';
     $url   = rtrim(site_url(), '/');
     $query = "What does $brand ($url) sell? List 3 of their actual products with the exact product URLs they use. If you don't know, say 'I don't have specific information about this site' — do not guess.";
 

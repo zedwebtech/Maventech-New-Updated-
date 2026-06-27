@@ -70,7 +70,7 @@ function dmca_run_if_due(bool $force = false): array
          ORDER BY RAND()
          LIMIT " . (int)DMCA_POSTS_PER_SCAN)->fetchAll();
 
-    $brand    = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software';
+    $brand    = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech';
     $siteHost = parse_url(site_url(), PHP_URL_HOST);
     $findings = 0;
     $checked  = 0;
@@ -167,7 +167,7 @@ function dmca_set_status(int $id, string $status): bool
 function dmca_build_notice(array $finding): string
 {
     $ci    = function_exists('company_info') ? company_info() : [];
-    $brand = $ci['name']    ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+    $brand = $ci['name']    ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
     $email = $ci['email']   ?? 'services@maventechsoftware.com';
     $addr  = $ci['address'] ?? '';
     $phone = $ci['phone']   ?? '';

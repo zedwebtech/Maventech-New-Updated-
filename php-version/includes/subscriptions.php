@@ -332,7 +332,7 @@ function sub_pdf_paths(array $order, array $sub, array $plan): array
 function sub_generate_certificate_pdf(array $order, array $sub, array $plan): string
 {
     require_once __DIR__ . '/pdf.php';
-    $co  = function_exists('company_info') ? company_info() : ['name' => 'Maventech Software'];
+    $co  = function_exists('company_info') ? company_info() : ['name' => 'Maventech'];
     $cur = (string)($sub['currency'] ?? 'USD');
 
     $featRows = '';
@@ -367,7 +367,7 @@ function sub_generate_certificate_pdf(array $order, array $sub, array $plan): st
 
     // Company information block (with toll-free) so the customer always has
     // our contact details on the downloaded subscription document.
-    $cName = htmlspecialchars((string)($co['name']    ?? 'Maventech Software'), ENT_QUOTES, 'UTF-8');
+    $cName = htmlspecialchars((string)($co['name']    ?? 'Maventech'), ENT_QUOTES, 'UTF-8');
     $cAddr = htmlspecialchars((string)($co['address'] ?? ''), ENT_QUOTES, 'UTF-8');
     $cPh   = htmlspecialchars((string)(function_exists('company_phone_for_country') ? company_phone_for_country($order['country'] ?? null) : ($co['phone'] ?? (defined('SITE_PHONE') ? SITE_PHONE : ''))), ENT_QUOTES, 'UTF-8');
     $cEm   = htmlspecialchars((string)($co['email']   ?? ''), ENT_QUOTES, 'UTF-8');
@@ -409,7 +409,7 @@ function sub_generate_certificate_pdf(array $order, array $sub, array $plan): st
 function sub_send_confirmation(array $order, array $sub, array $plan): void
 {
     $co     = function_exists('company_info') ? company_info() : [];
-    $brand  = $co['name']  ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+    $brand  = $co['name']  ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
     $phone  = (function_exists('company_phone_for_country') ? company_phone_for_country($order['country'] ?? null) : ($co['phone'] ?? '')) ?: (defined('SITE_PHONE') ? SITE_PHONE : '');
     $email  = $co['email'] ?? '';
     $cur    = (string)($sub['currency'] ?? 'USD');

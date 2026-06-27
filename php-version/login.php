@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Pull the brand/logo so the heading mirrors the rest of the panel.
 $co        = function_exists('company_info') ? company_info() : [];
-$brandName = $co['name']  ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+$brandName = $co['name']  ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
 $brandLogo = $co['logo']  ?? '';
 ?>
 <!doctype html>

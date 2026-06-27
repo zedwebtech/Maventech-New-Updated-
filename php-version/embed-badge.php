@@ -32,7 +32,7 @@ header('Access-Control-Allow-Origin: *'); // allow cross-origin embed
 header('Cache-Control: public, max-age=3600'); // 1h CDN cache
 
 $site = rtrim(site_url(), '/');
-$brand = function_exists('company_info') ? (company_info()['name'] ?? 'Maventech Software') : 'Maventech Software';
+$brand = function_exists('company_info') ? (company_info()['name'] ?? 'Maventech') : 'Maventech';
 
 /* Pull the freshest deal info so the badge reflects current promo % off. */
 $topDealPct = 0;

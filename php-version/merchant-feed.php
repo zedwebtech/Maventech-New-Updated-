@@ -45,7 +45,7 @@ header('X-Robots-Tag: noindex, nofollow'); // the feed itself shouldn't be index
 
 $site    = rtrim(site_url(), '/');
 $ci      = company_info();
-$brand   = $ci['name'] ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+$brand   = $ci['name'] ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
 $updated = gmdate('D, d M Y H:i:s') . ' GMT';
 // Dynamic self-link — whichever feed alias the crawler hit
 // (/merchant-feed.xml, /feed/google-products.xml, etc.) is echoed back

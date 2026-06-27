@@ -17,7 +17,7 @@ header('X-Robots-Tag: noindex');
 
 $ci    = function_exists('company_info') ? company_info() : [];
 $base  = rtrim(site_url(), '/');
-$brand = $ci['name']  ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+$brand = $ci['name']  ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
 $email = $ci['email'] ?? 'services@maventechsoftware.com';
 ?># ai.txt — AI / LLM crawler manifest for <?= $brand ?>
 

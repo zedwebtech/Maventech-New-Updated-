@@ -17,7 +17,7 @@ if (function_exists('mv_sync_public_domain')) { mv_sync_public_domain(); }
 require_once __DIR__ . '/seo-bot.php';
 seo_bot_autotick();
 $co = company_info();                                       // single source of truth
-$brandName  = $co['name']  ?: (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+$brandName  = $co['name']  ?: (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
 $brandEmail = $co['email'] ?: (defined('SITE_EMAIL') ? SITE_EMAIL : '');
 $brandPhone = company_phone_for_country() ?: (defined('SITE_PHONE') ? SITE_PHONE : '');
 $brandLogo  = $co['logo']  ?: '';

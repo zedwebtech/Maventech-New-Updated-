@@ -2,7 +2,7 @@
 /* ===========================================================================
  *  STOREFRONT PWA MANIFEST  —  /manifest.webmanifest
  *  ---------------------------------------------------------------------------
- *  Lets users "Install Maventech Software" to their iOS / Android home screen.
+ *  Lets users "Install Maventech" to their iOS / Android home screen.
  *  Installed instances get a real app icon (no browser chrome on iOS 16.4+
  *  and all modern Android browsers), a dedicated splash screen, and — most
  *  importantly for us — appear in the OS's app-switcher / dock, giving us

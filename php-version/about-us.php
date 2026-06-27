@@ -85,7 +85,7 @@ $features = [
     <div class="text-center mx-auto" style="max-width: 760px;">
       <div class="d-flex justify-content-center mb-3"><?= render_logo(56) ?></div>
       <span class="eyebrow">OUR STORY</span>
-      <h1 class="display-5 fw-bold mt-1">About <span class="brand-grad">Maventech Software</span></h1>
+      <h1 class="display-5 fw-bold mt-1">About <span class="brand-grad">Maventech</span></h1>
       <p class="text-secondary mt-2 fs-5">Your trusted partner for genuine Microsoft software</p>
     </div>
   </div>
@@ -173,7 +173,7 @@ $features = [
       $trustRows = [
         ['bi-shield-check',   'Independent reseller — not Microsoft', 'Microsoft® is a trademark of Microsoft Corporation. We are independent of, and not affiliated with, Microsoft Corporation.', 'page.php?slug=disclaimer'],
         ['bi-arrow-counterclockwise', '30-day money-back guarantee', 'Refund any licence within 30 days of purchase — full amount, no questions asked.',         'page.php?slug=refund-policy'],
-        ['bi-clock-history',  'Founded 2018 · in continuous operation', 'Maventech Software has shipped genuine licences continuously since January 2018.',         'page.php?slug=terms-of-service'],
+        ['bi-clock-history',  'Founded 2018 · in continuous operation', 'Maventech has shipped genuine licences continuously since January 2018.',         'page.php?slug=terms-of-service'],
         ['bi-lock-fill',      'PCI-DSS-secured checkout',                'Payments processed by Stripe & PayPal; we never see or store full card numbers.',             'page.php?slug=payment-policy'],
         ['bi-eye-slash-fill', 'GDPR + CCPA-aware data handling',         'Customer data is collected for fulfilment only and never sold to third parties.',              'page.php?slug=privacy-policy'],
         ['bi-headset',        'Real human support — Mon–Sat, 9am–6pm ET','Live phone + chat. Average first-response time under 15 minutes during business hours.',     'contact.php'],

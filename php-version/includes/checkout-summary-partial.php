@@ -19,7 +19,7 @@ if (!isset($items)) { return; }
   <a href="index.php" class="logo-3d d-inline-flex align-items-center justify-content-center gap-2 mb-1 text-decoration-none" data-testid="co-banner-brand">
     <?= render_logo(36) ?>
     <span class="text-start">
-      <span class="brand-text d-block lh-1">Maventech <span class="brand-grad">Software</span></span>
+      <span class="brand-text d-block lh-1"><span class="brand-grad">Maventech</span></span>
       <?php if (setting_get('show_authorized_reseller_badge', '1') === '1'): ?>
       <small class="brand-tag" data-testid="brand-tag-authorized-reseller-checkout">AUTHORIZED RESELLER</small>
       <?php endif; ?>

@@ -212,7 +212,7 @@ function apply_company_branding(string $html): string
             $name  = trim((string)($co['name']  ?? ''));
             $phone = trim((string)($co['phone'] ?? ''));
             $email = trim((string)($co['email'] ?? ''));
-            $defName  = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software';
+            $defName  = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech';
             $defPhone = defined('SITE_PHONE') ? SITE_PHONE : '1-805-823-9961';
             $defEmail = defined('SITE_EMAIL') ? SITE_EMAIL : 'services@maventechsoftware.com';
 

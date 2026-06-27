@@ -1,7 +1,7 @@
 {
   "name": "Maventech Admin",
   "short_name": "Maventech",
-  "description": "Maventech Software admin console — orders, leads, reviews, emails and installs at a glance.",
+  "description": "Maventech admin console — orders, leads, reviews, emails and installs at a glance.",
   "start_url": "/admin.php?source=pwa",
   "scope": "/",
   "display": "standalone",

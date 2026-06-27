@@ -576,8 +576,8 @@ function product_faqs(array $product): array {
     $installStepsPlain = strip_tags(str_replace('<br>', "\n", installation_steps_for($product)));
     $installStepsPlain = preg_replace('/\s+/', ' ', trim($installStepsPlain));
 
-    $co = function_exists('company_info') ? company_info() : ['name' => 'Maventech Software', 'phone' => '', 'email' => ''];
-    $brandStore = $co['name'] ?? 'Maventech Software';
+    $co = function_exists('company_info') ? company_info() : ['name' => 'Maventech', 'phone' => '', 'email' => ''];
+    $brandStore = $co['name'] ?? 'Maventech';
     $supportHrs = defined('SITE_HOURS') ? SITE_HOURS : 'Mon-Sat, 9 AM - 6 PM EST';
 
     $faqs = [
@@ -1376,7 +1376,7 @@ function notify_company_of_sale(array $order, array $items, array $pdfPaths = []
     if ($to === '' && defined('SITE_EMAIL')) $to = SITE_EMAIL;
     if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) return;
 
-    $brand    = $co['name'] ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+    $brand    = $co['name'] ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
     $brandE   = htmlspecialchars((string)$brand, ENT_QUOTES, 'UTF-8');
     $ordNo    = (string)($order['order_number'] ?? '');
     $cust     = trim((string)($order['first_name'] ?? '') . ' ' . (string)($order['last_name'] ?? ''));
@@ -1460,7 +1460,7 @@ function notify_company_of_sale(array $order, array $items, array $pdfPaths = []
  */
 function build_pending_delivery_email_html(array $order, array $items): string {
     $co      = company_info();
-    $brand   = $co['name']  ?: (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+    $brand   = $co['name']  ?: (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
     $support = $co['email'] ?: (defined('SITE_EMAIL') ? SITE_EMAIL : '');
     $phone   = company_phone_for_country($order['country'] ?? null) ?: (defined('SITE_PHONE') ? SITE_PHONE : '');
     $first   = trim((string)($order['first_name'] ?? '')) ?: 'there';
@@ -1765,7 +1765,7 @@ function fulfill_order(int $orderId, bool $forceAdminOverride = false): void {
  */
 function send_customer_service_ack(string $to, string $name, string $subjectLine, string $userMessage, string $source = 'contact'): void {
     $co = company_info();
-    $brand   = $co['name']  ?: (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+    $brand   = $co['name']  ?: (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
     $support = $co['email'] ?: (defined('SITE_EMAIL') ? SITE_EMAIL : '');
     $phone   = $co['phone'] ?: (defined('SITE_PHONE') ? SITE_PHONE : '');
     $hours   = defined('SITE_HOURS') ? SITE_HOURS : 'Mon-Sat, 9 AM - 6 PM EST';

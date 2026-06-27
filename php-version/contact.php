@@ -6,7 +6,7 @@ $pageDescription = 'Get in touch with ' . SITE_BRAND . ' for sales, activation h
 /* ================== SEO + AEO + GEO: ContactPage + Organization =====
    Tells Google / Bing / ChatGPT / Perplexity exactly who to contact
    and how.  The ContactPoint nodes power AI assistant answers like
-   "How do I reach Maventech Software support?" with a clickable
+   "How do I reach Maventech support?" with a clickable
    phone number + email + opening hours. */
 $jsonLdContact = [
     '@context' => 'https://schema.org',
@@ -32,7 +32,7 @@ $jsonLdContact = [
         ])),
         // Single contactPoint array with BOTH support tracks — gives AI
         // assistants a clean 2-entry block to extract for queries like
-        // "How do I contact Maventech Software?" / "Where's their sales line?".
+        // "How do I contact Maventech?" / "Where's their sales line?".
         'contactPoint' => array_values(array_filter([
             [
                 '@type'             => 'ContactPoint',
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($companyTo === '') $companyTo = trim((string)setting_get('contact_email', ''));
                 if ($companyTo === '' && defined('SITE_EMAIL')) $companyTo = SITE_EMAIL;
                 if ($companyTo !== '' && filter_var($companyTo, FILTER_VALIDATE_EMAIL)) {
-                    $brand  = $co['name'] ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+                    $brand  = $co['name'] ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
                     $phoneC = trim((string)($_POST['phone'] ?? ''));
                     $ordC   = trim((string)($_POST['order_number'] ?? ''));
                     $nameE  = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');

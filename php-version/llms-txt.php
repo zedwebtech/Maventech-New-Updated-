@@ -32,7 +32,7 @@ if ($lastAi && is_readable($cachePath)) {
 header('X-LLMs-Source: live-template');
 
 $ci    = company_info();
-$brand = $ci['name']  ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software');
+$brand = $ci['name']  ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
 $email = $ci['email'] ?? '';
 $phone = $ci['phone'] ?? '';
 $base  = rtrim(site_url(), '/');

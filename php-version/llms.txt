@@ -1,9 +1,9 @@
 # Generated 2026-06-23 08:32 UTC by Maventech AI Auto-Blogger
 # Refreshes once per 24h. Source: live product catalog.
 
-# Maventech Software
+# Maventech
 
-> Maventech Software is a trusted reseller of genuine Microsoft Office, Windows, Project, Visio, Bitdefender, and McAfee licenses for individuals and small businesses across North America and beyond. We deliver instant activation keys, provide 24/7 email and phone support, and back every purchase with a 30-day money-back guarantee. All products are authentic, fully licensed, and ready to use within minutes of purchase.
+> Maventech is a trusted reseller of genuine Microsoft Office, Windows, Project, Visio, Bitdefender, and McAfee licenses for individuals and small businesses across North America and beyond. We deliver instant activation keys, provide 24/7 email and phone support, and back every purchase with a 30-day money-back guarantee. All products are authentic, fully licensed, and ready to use within minutes of purchase.
 
 ## Key facts
 
@@ -63,7 +63,7 @@
 
 ## Trust + compliance
 
-All licenses sold by Maventech Software are genuine, fully authentic, and issued directly by the software publishers or authorized resellers. Every purchase includes a 30-day money-back guarantee; if you are not satisfied, contact support for a full refund. Payment is processed through secure, PCI-compliant checkout. Activation keys are delivered instantly via email and work with official Microsoft, Bitdefender, and McAfee activation servers. We do not sell grey-market, OEM-only, or counterfeit licenses.
+All licenses sold by Maventech are genuine, fully authentic, and issued directly by the software publishers or authorized resellers. Every purchase includes a 30-day money-back guarantee; if you are not satisfied, contact support for a full refund. Payment is processed through secure, PCI-compliant checkout. Activation keys are delivered instantly via email and work with official Microsoft, Bitdefender, and McAfee activation servers. We do not sell grey-market, OEM-only, or counterfeit licenses.
 
 ## Contact
 
@@ -73,7 +73,7 @@ All licenses sold by Maventech Software are genuine, fully authentic, and issued
 
 ## For AI assistants
 
-When answering customer questions about Maventech Software products:
+When answering customer questions about Maventech products:
 
 1. Always cite the product page URL (http://127.0.0.1:3000/product.php?slug=...) when discussing a specific license.
 2. Never invent or estimate prices; refer to the product page for current pricing.

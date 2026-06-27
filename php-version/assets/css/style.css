@@ -1,4 +1,4 @@
-/* Maventech Software Store - custom styles on top of Bootstrap 5 (dark multicolor gradient / white / cyan-teal) */
+/* Maventech Store - custom styles on top of Bootstrap 5 (dark multicolor gradient / white / cyan-teal) */
 :root {
   --bs-primary: #06b6d4;
   --bs-primary-rgb: 6, 182, 212;
@@ -3365,7 +3365,7 @@ body.has-deal-bar #chat-bubble { bottom: 22px; }
 
 /* ============================================================
    DARK-MODE CONTRAST FIX (Feb 2026)
-   The "Ask Maventech Software AI" pill + several hero/CTA cards
+   The "Ask Maventech AI" pill + several hero/CTA cards
    were rendering with a light translucent background in dark mode
    so their text disappeared.  These rules force proper contrast.
    ============================================================ */
@@ -4241,7 +4241,7 @@ body:not(.adm)[data-bs-theme="dark"] {
 /* ============================================================================
  *  ZOOM-INSPIRED LOGO WORDMARK REFRESH
  *  ----------------------------------------------------------------------------
- *  Refines the existing "Maventech Software" + "AUTHORIZED RESELLER" markup
+ *  Refines the existing "Maventech" + "AUTHORIZED RESELLER" markup
  *  used in the header and footer. Doesn't change any PHP — only the CSS:
  *    • "Maventech" sits in the body ink (white in dark mode) for max read.
  *    • "Software" picks up solid Zoom blue (#0B5CFF) — no more cyan/teal

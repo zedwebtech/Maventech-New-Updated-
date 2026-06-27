@@ -258,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($toEmail === '') $toEmail = trim((string)setting_get('company_email', ''));
                 if ($toEmail === '' && defined('ADMIN_EMAIL')) $toEmail = (string)ADMIN_EMAIL;
                 if ($toEmail !== '') {
-                    $brand    = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech Software';
+                    $brand    = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech';
                     $siteUrl  = function_exists('site_url') ? rtrim(site_url(), '/') : '';
                     $cName    = htmlspecialchars($proName ?: 'Customer', ENT_QUOTES, 'UTF-8');
                     $cEmail   = htmlspecialchars(trim($_POST['email'] ?? ''), ENT_QUOTES, 'UTF-8');
