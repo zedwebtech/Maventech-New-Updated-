@@ -3183,17 +3183,18 @@ body .brand-grad,
 /* --- "AUTHORIZED RESELLER" brand tag — bold, refined, elegant --- */
 .brand-tag {
   display: inline-block;
-  font-size: .62rem !important;
+  font-size: .5rem !important;
   font-weight: 800 !important;
-  letter-spacing: .22em !important;
+  letter-spacing: .1em !important;
   color: #1565C0 !important;
   text-transform: uppercase;
-  padding: .15rem .5rem;
-  margin-top: .1rem;
+  padding: .1rem .4rem;
+  margin-top: .12rem;
   border-radius: 4px;
   background: rgba(21, 101, 192, .08);
   border: 1px solid rgba(21, 101, 192, .22);
   line-height: 1.2;
+  white-space: nowrap;
 }
 [data-bs-theme="dark"] .brand-tag {
   color: #93C5FD !important;
