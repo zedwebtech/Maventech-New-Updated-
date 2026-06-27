@@ -1060,3 +1060,9 @@ The store already had extensive, valid JSON-LD (Organization, LocalBusiness, Web
 - Fix: UPDATE pages SET content = REPLACE(content,'Maventech Software','{{company_name}}'). The existing company_placeholders_apply() in functions.php resolves {{company_name}} → company_info()['name'] at render, so any future rename in admin Company Info propagates everywhere automatically.
 - Verified via curl on /page.php?slug=disclaimer|terms-of-service|faqs: only "Maventech" renders; lowercase "maventech" remaining are @maventechsoftware.com email links (correct, untouched). No leftover {{}} tokens.
 - email_outbox holds 5 historical sent-mail records still containing the old string — left as-is (immutable records, no future effect).
+
+## 2026-06 — GSC "Invalid object type for field <parent_node>" (Review snippets) fix
+- Root cause: old production crawl (Jun 15) had aggregateRating on the Brand node — Google rejects self-serving ratings on Brand/Organization (invalid review snippet + manual-action risk).
+- Current header.php Brand node already had no aggregateRating; removed leftover dead $orgRating block so it can't be reintroduced. Verified live (home/affiliate/blog): zero aggregateRating at Organization/LocalBusiness/Brand; aggregateRating remains ONLY in product.php (valid, review-backed).
+- Stale report artifacts (old "Maventech Software" name, leaked indexnow-checker.preview.emergentagent.com logo URL) are all already fixed in current code. GSC shows "Validation looking good" — clears on next crawl after deploy.
+- ENV: pod reset wiped PHP 8.2 + MariaDB + DB data; reinstalled via apt (php8.2-cli/mysql/gd/mbstring/curl/xml/zip/intl/bcmath + mariadb-server) and re-seeded via start.sh. Rebrand to "Maventech" persisted in seed.

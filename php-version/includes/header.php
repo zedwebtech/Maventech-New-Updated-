@@ -278,22 +278,12 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   <!-- ===================== /Open Graph / Twitter / LinkedIn ===================== -->
   <!-- Structured data: Organization + WebSite + (optional) LocalBusiness for AEO/GEO -->
   <script type="application/ld+json"><?php
-    // Pull aggregate rating from customer_reviews so the org/site schema
-    // surfaces star-rating to AI search engines (ChatGPT/Perplexity/etc.)
-    // and Google Knowledge Panel.
-    $orgRating = null;
-    try {
-        $r = db()->query("SELECT ROUND(AVG(rating), 1) AS avg_rating, COUNT(*) AS n FROM customer_reviews WHERE status='published' OR status='approved'")->fetch();
-        if ($r && (int)$r['n'] > 0) {
-            $orgRating = [
-                '@type'       => 'AggregateRating',
-                'ratingValue' => (string)$r['avg_rating'],
-                'reviewCount' => (int)$r['n'],
-                'bestRating'  => '5',
-                'worstRating' => '1',
-            ];
-        }
-    } catch (Throwable $e) { /* schema is best-effort */ }
+    // NOTE: We deliberately do NOT attach an aggregateRating to the
+    // Organization / LocalBusiness / Brand nodes. Google treats self-serving
+    // ratings on these org-level types as invalid for review snippets
+    // ("Invalid object type for field <parent_node>") and a manual-action risk.
+    // Star ratings are emitted only on Product schema (product.php), backed by
+    // real published customer reviews.
     // ---- Authoritative business identity for AI search + Google Knowledge Panel ----
     // Resolve as much of the postal address as we can from the single-line
     // `company_address` setting + the company city/region/country/postal fields
