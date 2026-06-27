@@ -757,7 +757,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
       <?php else: ?>
         <?= render_logo(42) ?>
       <?php endif; ?>
-      <span>
+      <span class="brand-stack">
         <?php
           // Split brand name so the LAST word picks up the gradient accent.
           $bnParts = preg_split('/\s+/', trim($brandName));

@@ -3196,6 +3196,10 @@ body .brand-grad,
   line-height: 1.2;
   white-space: nowrap;
 }
+/* Centre the wordmark over the (wider) AUTHORIZED RESELLER badge so the lock-up
+   reads as a balanced, centered stack rather than left-aligned. */
+.brand-stack { display: inline-flex; flex-direction: column; align-items: center; }
+.brand-stack .brand-text { text-align: center; }
 [data-bs-theme="dark"] .brand-tag {
   color: #93C5FD !important;
   background: rgba(147, 197, 253, .1);
