@@ -1066,3 +1066,9 @@ The store already had extensive, valid JSON-LD (Organization, LocalBusiness, Web
 - Current header.php Brand node already had no aggregateRating; removed leftover dead $orgRating block so it can't be reintroduced. Verified live (home/affiliate/blog): zero aggregateRating at Organization/LocalBusiness/Brand; aggregateRating remains ONLY in product.php (valid, review-backed).
 - Stale report artifacts (old "Maventech Software" name, leaked indexnow-checker.preview.emergentagent.com logo URL) are all already fixed in current code. GSC shows "Validation looking good" — clears on next crawl after deploy.
 - ENV: pod reset wiped PHP 8.2 + MariaDB + DB data; reinstalled via apt (php8.2-cli/mysql/gd/mbstring/curl/xml/zip/intl/bcmath + mariadb-server) and re-seeded via start.sh. Rebrand to "Maventech" persisted in seed.
+
+## 2026-06 — Stylish Google review CTA on order-success
+- Added GOOGLE_REVIEW_URL constant in config.php (default https://g.page/r/CY0H1wdUhWorEBM/review), overridable via `google_review_url` setting.
+- order-success.php: new Google-branded "Leave us a Google review" card in the success rail (4-color bar, G logo, gold stars, button → opens review link new tab; dark-mode supported; testid google-review-card / google-review-btn). Shows on real (non-demo) orders when URL set.
+- Post on-site-review submit (rating>=4, not already-reviewed): thank-you state reveals "Post my review on Google" button (testid success-review-google-share) that copies the customer's written comment to clipboard then opens the Google review page. Note: Google has no API to push site reviews into a Business Profile — this copy-and-redirect is the compliant pattern.
+- Verified via Playwright on MVT-DEMO-002: card renders; 5★ submit shows confetti + share button; test review cleaned up afterward.

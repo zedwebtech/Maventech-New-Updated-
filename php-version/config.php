@@ -106,6 +106,10 @@ define('GTM_CONTAINER_ID',   getenv('GTM_CONTAINER_ID')   ?: 'GTM-N6Q7FKS2');   
 define('GOOGLE_ADS_TAG_ID',  getenv('GOOGLE_ADS_TAG_ID')  ?: 'AW-18263028048'); // Google Ads conversion tag
 define('CLARITY_PROJECT_ID', getenv('CLARITY_PROJECT_ID') ?: 'xcp5vd09fb');     // Microsoft Clarity project id
 define('GOOGLE_MERCHANT_ID', getenv('GOOGLE_MERCHANT_ID') ?: '5815017210');     // Google Merchant Center id
+// Google Business Profile "Write a review" link — shown as a stylish post-purchase
+// CTA so happy buyers can leave a Google review in one tap. Override in admin via
+// the `google_review_url` setting. Format: https://g.page/r/XXXX/review
+define('GOOGLE_REVIEW_URL',  getenv('GOOGLE_REVIEW_URL')  ?: 'https://g.page/r/CY0H1wdUhWorEBM/review');
 // Public-facing company contact / sender email (used across the site & emails).
 define('SITE_EMAIL',         getenv('SITE_EMAIL')         ?: 'services@maventechsoftware.com');
 

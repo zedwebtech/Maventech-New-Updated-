@@ -665,6 +665,15 @@ if ($isPaid && $gmcId !== '' && !empty($order['email'])):
         </div>
         <div class="fw-bold mt-2" style="font-size:1.1rem;color:#0f172a;">Thank you for your review!</div>
         <div style="font-size:.86rem;color:#94a3b8;" id="srThanksMsg">Your feedback has been published and helps other customers.</div>
+        <!-- Funnel the happy on-site reviewer to Google with their words pre-copied -->
+        <div id="srGoogleShareWrap" style="display:none;margin-top:18px;">
+          <div style="font-size:.82rem;color:#475569;font-weight:600;margin-bottom:10px;">Mind sharing it on Google too?</div>
+          <button type="button" class="gr-btn" id="srGoogleShare" style="max-width:330px;margin:0 auto;" data-testid="success-review-google-share">
+            <svg viewBox="0 0 48 48" aria-hidden="true" style="width:18px;height:18px;flex-shrink:0;"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34A21.99 21.99 0 0 0 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>
+            <span id="srGoogleShareLabel">Post my review on Google</span>
+          </button>
+          <div id="srGoogleShareHint" style="display:none;font-size:.74rem;color:#10b981;font-weight:600;margin-top:9px;"><i class="bi bi-clipboard-check me-1"></i>Your review was copied &mdash; just paste &amp; post on Google.</div>
+        </div>
       </div>
     </div>
     <script>
@@ -677,6 +686,7 @@ if ($isPaid && $gmcId !== '' && !empty($order['email'])):
         var LABELS  = {0:'Tap a star to rate',1:'Poor — 1 star',2:'Fair — 2 stars',3:'Good — 3 stars',4:'Great — 4 stars',5:'Excellent — 5 stars'};
         var PRODUCT = <?= json_encode($reviewProductName ?: 'this product') ?>;
         var ORDER   = <?= json_encode((string)$order['order_number']) ?>;
+        var GREVIEW = <?= json_encode(trim((string)setting_get('google_review_url', defined('GOOGLE_REVIEW_URL') ? GOOGLE_REVIEW_URL : ''))) ?>;
 
         function paint(n){
           stars.forEach(function(s){
@@ -746,6 +756,21 @@ if ($isPaid && $gmcId !== '' && !empty($order['email'])):
               if (d.already) { document.getElementById('srThanksMsg').textContent = 'You have already reviewed this order. Thank you!'; }
               else if (d.published === false) { document.getElementById('srThanksMsg').textContent = 'Thanks for your feedback — our team will follow up to make things right.'; }
               document.getElementById('srThanks').style.display='block';
+              // Funnel happy reviewers (4-5★) to Google with their words pre-copied.
+              if (GREVIEW && !d.already && rating >= 4) {
+                var savedComment = cmt.value.trim();
+                var wrap = document.getElementById('srGoogleShareWrap');
+                var gbtn = document.getElementById('srGoogleShare');
+                if (wrap && gbtn) {
+                  wrap.style.display = 'block';
+                  gbtn.onclick = function(){
+                    function go(){ window.open(GREVIEW, '_blank', 'noopener'); var h=document.getElementById('srGoogleShareHint'); if(h) h.style.display='block'; }
+                    if (savedComment && navigator.clipboard && navigator.clipboard.writeText) {
+                      navigator.clipboard.writeText(savedComment).then(go, go);
+                    } else { go(); }
+                  };
+                }
+              }
             } else {
               errBox.style.display='block'; errBox.textContent = d.error || 'Could not submit your review.';
               btn.disabled = false; btn.innerHTML = '<i class="bi bi-send-fill me-1"></i>Submit Review';
@@ -935,6 +960,45 @@ if ($isPaid && $gmcId !== '' && !empty($order['email'])):
 
       <?php if (trim($reviewCardHtml ?? '') !== ''): ?>
         <div class="success-rail-review mt-4" data-testid="success-rail-review"><?= $reviewCardHtml ?></div>
+      <?php endif; ?>
+
+      <?php
+        /* ===== Stylish "Leave us a Google review" card. Distinct from the
+           on-site review card above — Google-branded, links straight to the
+           Business Profile review page. Shown after every real purchase. ===== */
+        $googleReviewUrl = trim((string)setting_get('google_review_url', defined('GOOGLE_REVIEW_URL') ? GOOGLE_REVIEW_URL : ''));
+        if (!$isDemo && $googleReviewUrl !== ''):
+      ?>
+      <style>
+        .gr-card{position:relative;border:1px solid #e6eef2;border-radius:20px;background:#fff;box-shadow:0 16px 44px rgba(15,23,42,.08);overflow:hidden;}
+        .gr-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#4285F4 0 25%,#EA4335 25% 50%,#FBBC05 50% 75%,#34A853 75% 100%);}
+        .gr-inner{padding:26px 24px;text-align:center;}
+        .gr-logo{width:44px;height:44px;margin:0 auto 12px;display:block;}
+        .gr-title{font-weight:800;font-size:1.15rem;color:#0f172a;letter-spacing:-.2px;margin:0 0 4px;}
+        .gr-sub{font-size:.84rem;color:#94a3b8;margin:0 0 12px;line-height:1.5;}
+        .gr-stars{color:#FBBC05;font-size:21px;letter-spacing:4px;margin-bottom:15px;text-shadow:0 3px 10px rgba(251,188,5,.30);}
+        .gr-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;width:100%;background:#fff;color:#3c4043;border:1.5px solid #dadce0;border-radius:999px;padding:12px 18px;font-weight:700;font-size:.92rem;text-decoration:none;transition:box-shadow .15s, border-color .15s, transform .12s;cursor:pointer;}
+        .gr-btn:hover{box-shadow:0 10px 24px rgba(60,64,67,.20);border-color:#c6cacd;transform:translateY(-1px);color:#3c4043;}
+        .gr-btn svg{width:18px;height:18px;flex-shrink:0;}
+        .gr-foot{font-size:.72rem;color:#cbd5e1;margin-top:12px;}
+        [data-bs-theme="dark"] .gr-card{background:#1e293b;border-color:#334155;box-shadow:0 16px 44px rgba(0,0,0,.45);}
+        [data-bs-theme="dark"] .gr-title{color:#f1f5f9;}
+        [data-bs-theme="dark"] .gr-btn{background:#0b1220;color:#e8eaed;border-color:#3c4043;}
+        [data-bs-theme="dark"] .gr-btn:hover{background:#111a2e;color:#e8eaed;}
+      </style>
+      <div class="gr-card mt-4" data-testid="google-review-card">
+        <div class="gr-inner">
+          <svg class="gr-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34A21.99 21.99 0 0 0 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>
+          <div class="gr-title">Loved your purchase?</div>
+          <div class="gr-sub">Share it on Google &mdash; it takes 30 seconds and helps other shoppers buy with confidence.</div>
+          <div class="gr-stars" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <a href="<?= esc($googleReviewUrl) ?>" target="_blank" rel="noopener nofollow" class="gr-btn" data-testid="google-review-btn">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34A21.99 21.99 0 0 0 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>
+            Leave us a Google review
+          </a>
+          <div class="gr-foot"><i class="bi bi-box-arrow-up-right me-1"></i>Opens Google in a new tab</div>
+        </div>
+      </div>
       <?php endif; ?>
 
       <?php if (trim($contactCardHtml ?? '') !== ''): ?>
