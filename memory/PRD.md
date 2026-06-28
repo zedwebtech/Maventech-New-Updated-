@@ -1111,3 +1111,10 @@ The store already had extensive, valid JSON-LD (Organization, LocalBusiness, Web
 - Fix: added '@id' to the single complete Product in product.php (site_url()/product.php?slug=...#product); changed Article.about in seo-content.php to a pure reference ['@id'=>$url.'#product'] instead of duplicating a partial Product+Offer.
 - Verified: product pages now render exactly ONE Product entity (with image+offers+description+sku); Article.about is an @id ref. Product image file resolves (200). Applies site-wide to all products.
 - Deploy to maventechsoftware.com + Validate Fix in GSC to clear.
+
+## 2026-06 — Desktop PageSpeed: defer third-party tracking (TBT 1,140ms fix)
+- Desktop perf 64; dominated by TBT 1,140ms, main-thread 3.6s, unused JS 285KiB — all from GTM + gtag(GA4/Ads) + Bing UET + Clarity executing on first paint. FCP/LCP/CLS already green.
+- includes/header.php: added a tiny bootstrap (window.__mvTrk queue) that runs all registered tracker inits on FIRST user interaction (scroll/mousemove/mousedown/touchstart/keydown/pointerdown, capture+passive) OR load+3s idle fallback. Converted all 4 tracker snippets to window.__mvTrk.push(fn) — gtag.js now injected dynamically inside the queued fn (no static <script async src>).
+- Buffering stubs added early: window.dataLayer, window.gtag (dataLayer pusher), window.uetq=[] — so conversion events fired before tags load (product view_item, begin_checkout, and the order-success PURCHASE/conversion + uetq.push) are queued and flushed when real tags load. No conversions lost (worst case: page abandoned <3s with zero interaction).
+- Verified (Playwright): BEFORE interaction = 0 tracker requests; AFTER interaction = clarity.ms + googletagmanager.com load. Bing only loads when its ID is set.
+- Did NOT touch CSS loading (CLS=0, FCP/LCP 0.9s) to avoid reintroducing the prior CLS regression. Deploy to clear in PSI/CrUX.

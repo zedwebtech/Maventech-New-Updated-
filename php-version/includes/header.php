@@ -99,14 +99,45 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
 ?>>
 <head>
   <meta charset="UTF-8">
+  <script>
+    /* Performance: defer ALL third-party tracking (GTM, gtag/GA4/Ads, Bing UET,
+       Clarity) until the FIRST user interaction or ~3s after load — whichever
+       comes first. Cuts Total Blocking Time / main-thread work on first paint
+       without losing analytics (real users interact; idle fallback covers the
+       rest). Trackers register a fn via window.__mvTrk.push(fn). */
+    (function(){
+      // Buffering stubs so conversion events (gtag('event','purchase'), uetq.push)
+      // fired before the real tags load are queued and flushed later — gtag is a
+      // dataLayer pusher and UET reads the pre-existing uetq array, so nothing is lost.
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function(){ window.dataLayer.push(arguments); };
+      window.uetq = window.uetq || [];
+
+      window.__mvTrk = window.__mvTrk || [];
+      var fired = false;
+      var evts = ['scroll','mousemove','mousedown','touchstart','keydown','pointerdown'];
+      function cleanup(){ evts.forEach(function(e){ window.removeEventListener(e, run, true); }); }
+      function run(){
+        if (fired) return; fired = true; cleanup();
+        var q = window.__mvTrk;
+        window.__mvTrk = { push: function(fn){ try { fn(); } catch(e){} } };
+        for (var i=0;i<q.length;i++){ try { q[i](); } catch(e){} }
+      }
+      evts.forEach(function(e){ window.addEventListener(e, run, {passive:true, capture:true}); });
+      window.addEventListener('load', function(){ setTimeout(run, 3000); });
+      window.__mvLoadTrackers = run;
+    })();
+  </script>
   <?php $gtmId = trim((string)setting_get('gtm_container_id', defined('GTM_CONTAINER_ID') ? GTM_CONTAINER_ID : '')); ?>
   <?php if ($gtmId !== ''): ?>
-  <!-- Google Tag Manager -->
-  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  <!-- Google Tag Manager (deferred until first interaction / idle) -->
+  <script>window.__mvTrk.push(function(){
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
   j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','<?= esc($gtmId) ?>');</script>
+  })(window,document,'script','dataLayer','<?= esc($gtmId) ?>');
+  });</script>
   <!-- End Google Tag Manager -->
   <?php endif; ?>
   <script>
@@ -580,34 +611,37 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
       // multi-destination pattern.  Priority: Google tag → GA4 → Ads.
       $primaryGtagId = $tk_gtag !== '' ? $tk_gtag : ($tk_ga4 !== '' ? $tk_ga4 : $tk_gAds);
   ?>
-  <!-- Google tag (gtag.js) — covers Google tag (GT-) + GA4 + Google Ads -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=<?= esc($primaryGtagId) ?>"></script>
-  <script>
+  <!-- Google tag (gtag.js) — deferred; covers Google tag (GT-) + GA4 + Google Ads -->
+  <script>window.__mvTrk.push(function(){
+    var s=document.createElement('script');s.async=true;
+    s.src='https://www.googletagmanager.com/gtag/js?id=<?= esc($primaryGtagId) ?>';
+    document.head.appendChild(s);
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
+    window.gtag = window.gtag || gtag;
     gtag('js', new Date());
     <?php if ($tk_gtag !== ''): ?>gtag('config', '<?= esc($tk_gtag) ?>');<?php endif; ?>
     <?php if ($tk_ga4 !== ''): ?>gtag('config', '<?= esc($tk_ga4) ?>');<?php endif; ?>
     <?php if ($tk_gAds !== ''): ?>gtag('config', '<?= esc($tk_gAds) ?>');<?php endif; ?>
-  </script>
+  });</script>
   <?php endif; ?>
 
   <?php if ($tk_uet !== ''): ?>
-  <!-- Bing Universal Event Tracking (UET) -->
-  <script>
+  <!-- Bing Universal Event Tracking (UET) — deferred -->
+  <script>window.__mvTrk.push(function(){
     (function(w,d,t,r,u){var f,n,i;w[u]=w[u]||[],f=function(){var o={ti:"<?= esc($tk_uet) ?>",enableAutoSpaTracking:true};o.q=w[u],w[u]=new UET(o),w[u].push("pageLoad")},n=d.createElement(t),n.src=r,n.async=1,n.onload=n.onreadystatechange=function(){var s=this.readyState;s&&s!=="loaded"&&s!=="complete"||(f(),n.onload=n.onreadystatechange=null)},i=d.getElementsByTagName(t)[0],i.parentNode.insertBefore(n,i)})(window,document,"script","//bat.bing.com/bat.js","uetq");
-  </script>
+  });</script>
   <?php endif; ?>
 
   <?php if ($tk_clarity !== ''): ?>
-  <!-- Microsoft Clarity (free heatmaps + session replay; signals quality to Bing Ads) -->
-  <script type="text/javascript">
+  <!-- Microsoft Clarity — deferred (heatmaps + session replay; signals quality to Bing Ads) -->
+  <script type="text/javascript">window.__mvTrk.push(function(){
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "<?= esc($tk_clarity) ?>");
-  </script>
+  });</script>
   <?php endif; ?>
 
 </head>
