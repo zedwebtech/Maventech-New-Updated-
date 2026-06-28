@@ -79,6 +79,83 @@ function mv_guide_abs_url(string $slug): string
 }
 
 /**
+ * Per-product installer (one-click EN 64-bit) + activation/sign-in URL.
+ * This is the single source of truth used both to seed the products table AND
+ * as a LIVE fallback (so the Download / Activate buttons render everywhere even
+ * before the DB has been seeded). Office-for-Mac has no one-click installer
+ * (obtained after sign-in), so installer is null there.
+ */
+function mv_product_install_meta(string $slug): array
+{
+    static $map = null;
+    if ($map === null) {
+        $DL  = 'https://download.winandoffice.com';
+        $OFF = 'https://setup.office.com';              // Office / Project / Visio
+        $WIN = 'https://account.microsoft.com/account'; // Windows
+        $map = [
+            // Office / Project / Visio — Windows (key)
+            'microsoft-office-2024-professional-plus-windows'                     => ["$DL/Volume/office/2024/EN/Office_2024_EN_64Bits.exe", $OFF],
+            'microsoft-office-2024-professional-plus-lifetime-license-windows-pc' => ["$DL/Volume/office/2024/EN/Office_2024_EN_64Bits.exe", $OFF],
+            'microsoft-office-home-2024-pc'                                       => ["$DL/Volume/office/2024/EN/Office_2024_EN_standard_64Bits.exe", $OFF],
+            'microsoft-office-home-business-2024-pc'                              => ["$DL/Volume/office/2024/EN/Office_2024_EN_standard_64Bits.exe", $OFF],
+            'microsoft-office-2021-professional-plus-windows'                     => ["$DL/Volume/office/2021/EN/Office_2021_EN_64Bits.exe", $OFF],
+            'microsoft-word-2021-windows'                                         => ["$DL/Volume/office/2021/EN/Office_2021_EN_64Bits.exe", $OFF],
+            'microsoft-excel-2021-windows'                                        => ["$DL/Volume/office/2021/EN/Office_2021_EN_64Bits.exe", $OFF],
+            'microsoft-office-2019-home-student-windows'                          => ["$DL/Volume/office/2019/EN/Office_2019_EN_standard_64Bits.exe", $OFF],
+            'microsoft-office-2019-home-business-pc'                              => ["$DL/Volume/office/2019/EN/Office_2019_EN_standard_64Bits.exe", $OFF],
+            'microsoft-office-2019-professional-plus-windows'                     => ["$DL/Volume/office/2019/EN/Office_2019_EN_64Bits.exe", $OFF],
+            'microsoft-project-2024-professional-pc'                              => ["$DL/Volume/project/2024/EN/project_2024_EN_64Bits.exe", $OFF],
+            'microsoft-project-professional-2021-pc'                              => ["$DL/Volume/project/2021/EN/project_2021_EN_64Bits.exe", $OFF],
+            'ms-project-professional-2019-pc'                                     => ["$DL/Volume/project/2019/EN/project_2019_EN_64Bits.exe", $OFF],
+            'microsoft-visio-2024-professional-windows-pc'                        => ["$DL/Volume/visio/2024/EN/visio_2024_EN_64Bits.exe", $OFF],
+            'microsoft-visio-2021-professional-windows-pc'                        => ["$DL/Volume/visio/2021/EN/visio_2021_EN_pro_64Bits.exe", $OFF],
+            'ms-visio-professional-2019-pc'                                       => ["$DL/Volume/visio/2019/EN/visio_2019_EN_64Bits.exe", $OFF],
+            // Office Retail (ISO)
+            'microsoft-office-2021-home-business-windows'                         => ["$DL/Retail/Office/EN/HomeBusiness2021Retail.iso", $OFF],
+            'microsoft-office-2021-home-student-windows'                          => ["$DL/Retail/Office/EN/HomeStudent2021Retail.iso", $OFF],
+            // Office for Mac (no one-click installer)
+            'microsoft-office-home-business-2024-mac'                             => [null, $OFF],
+            'microsoft-office-home-2024-mac'                                      => [null, $OFF],
+            'microsoft-office-2021-home-student-mac'                              => [null, $OFF],
+            'microsoft-office-2021-home-business-mac'                             => [null, $OFF],
+            'microsoft-word-2021-mac-lifetime-license-no-subscription'            => [null, $OFF],
+            'microsoft-excel-2021-mac-lifetime-license-no-subscription'           => [null, $OFF],
+            'microsoft-office-home-and-business-2019-mac'                         => [null, $OFF],
+            'microsoft-office-home-and-student-2019-mac'                          => [null, $OFF],
+            // Windows desktop (Media Creation Tool)
+            'windows-11-home' => ["$DL/Retail/Desktop/MediaCreationTool.exe",     $WIN],
+            'windows-11-pro'  => ["$DL/Retail/Desktop/MediaCreationTool.exe",     $WIN],
+            'windows-10-home' => ["$DL/Retail/Desktop/MediaCreationTool22H2.exe", $WIN],
+            'windows-10-pro'  => ["$DL/Retail/Desktop/MediaCreationTool22H2.exe", $WIN],
+        ];
+    }
+    if (!isset($map[$slug])) return [];
+    return ['installer' => $map[$slug][0], 'activation' => $map[$slug][1]];
+}
+
+/**
+ * Resolve the three install links for a product, preferring values already
+ * stored on the product row (admin-editable) and falling back to the central
+ * mapping above. Returns ['installer','guide','activation'] (strings, '' when
+ * none). Guide always points to our own /install-guide.php page when a guide
+ * template exists for the product.
+ */
+function mv_resolve_install_links(string $slug, array $existing = []): array
+{
+    $meta      = mv_product_install_meta($slug);
+    $installer = trim((string)($existing['installer_url'] ?? ''));
+    if ($installer === '' && !empty($meta['installer'])) $installer = (string)$meta['installer'];
+
+    $guide = trim((string)($existing['install_guide_url'] ?? ''));
+    if ($guide === '' && mv_guide_template_for_slug($slug) !== null) $guide = mv_guide_path($slug);
+
+    $activation = trim((string)($existing['activation_url'] ?? ''));
+    if ($activation === '' && !empty($meta['activation'])) $activation = (string)$meta['activation'];
+
+    return ['installer' => $installer, 'guide' => $guide, 'activation' => $activation];
+}
+
+/**
  * The four install-flow templates. Each: label, platform, flow[] (flowchart
  * pills), system[] (requirements), steps[] (numbered, optional screenshot),
  * activation (HTML). {{installer}} / {{activation}} placeholders in the copy

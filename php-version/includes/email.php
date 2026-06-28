@@ -1,6 +1,7 @@
 <?php
 // Order fulfillment + transactional email with tracking + editable template.
 require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/install-guides.php';
 require_once __DIR__ . '/settings.php';
 
 /**
@@ -1649,14 +1650,17 @@ function fulfill_order(int $orderId, bool $forceAdminOverride = false): void {
             if ($keyRow) $assignStmt->execute([$orderId, $keyRow['id']]);
         }
         if (!$keyRow) $allDelivered = false;
+        $mvLinks = function_exists('mv_resolve_install_links')
+            ? mv_resolve_install_links((string)($item['product_slug'] ?? ''), $item)
+            : ['installer' => $item['installer_url'] ?? '', 'guide' => $item['install_guide_url'] ?? ''];
         $assignments[] = [
             'name' => $item['name'],
             'image' => $item['image'],
             'description' => $item['description'] ?? '',
             'installation_guide' => $item['installation_guide'] ?? '',
             'activation_url' => activation_url_for_product($item['name'], $item['brand'] ?? '', $item['activation_url'] ?? ''),
-            'install_guide_url' => mv_absolute_url($item['install_guide_url'] ?? ''),
-            'installer_url' => mv_absolute_url($item['installer_url'] ?? ''),
+            'install_guide_url' => mv_absolute_url($mvLinks['guide'] ?? ''),
+            'installer_url' => mv_absolute_url($mvLinks['installer'] ?? ''),
             'key' => $keyRow['license_key'] ?? null,
             'seats' => $seats,
             'brand' => $item['brand'] ?? '',

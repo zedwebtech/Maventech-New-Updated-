@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/install-guides.php';
 require_once __DIR__ . '/includes/email.php';
 require_once __DIR__ . '/includes/stripe.php';
 $pageTitle = 'Order Confirmed | ' . SITE_BRAND;
@@ -214,6 +215,21 @@ if ($order && $order['status'] === 'paid') {
             unset($it);
         }
     } catch (Throwable $e) { /* non-fatal */ }
+
+    // Fill Download / Installation-guide / Sign-in links from the central
+    // mapping when the product row doesn't carry them (covers demo previews and
+    // not-yet-seeded environments) so all three buttons render consistently.
+    if (!empty($orderItems) && is_array($orderItems) && function_exists('mv_resolve_install_links')) {
+        foreach ($orderItems as &$it) {
+            $slug = (string)($it['product_slug'] ?? '');
+            if ($slug === '') continue;
+            $links = mv_resolve_install_links($slug, $it);
+            if (empty($it['installer_url']))      $it['installer_url']      = $links['installer'];
+            if (empty($it['install_guide_url']))  $it['install_guide_url']  = $links['guide'];
+            if (empty($it['activation_url']))     $it['activation_url']     = $links['activation'];
+        }
+        unset($it);
+    }
 }
 
 // Has any item on this order still not been assigned a license key? If so it's
@@ -565,8 +581,8 @@ if ($isPaid && $gmcId !== '' && !empty($order['email'])):
                   <i class="bi bi-book me-1"></i>View installation guide
                 </a>
                 <?php if (!empty($oi['installer_url'])): ?>
-                  <a href="<?= esc($oi['installer_url']) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-success rounded-pill" data-testid="success-installer-btn" style="font-size:.72rem;padding:4px 12px;background:linear-gradient(135deg,#16a34a,#15803d);border:0;">
-                    <i class="bi bi-download me-1"></i>Download installer
+                  <a href="<?= esc($oi['installer_url']) ?>" target="_blank" rel="noopener" class="btn btn-sm rounded-pill" data-testid="success-installer-btn" style="font-size:.72rem;padding:4px 12px;background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;">
+                    <i class="bi bi-download me-1"></i>Download now
                   </a>
                 <?php endif; ?>
               </div>
@@ -897,7 +913,7 @@ if ($isPaid && $gmcId !== '' && !empty($order['email'])):
               <?php endif; ?>
               <a href="<?= !empty($gi['install_guide_url']) ? esc($gi['install_guide_url']) : 'page.php?slug=installation-guide' ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary rounded-pill" data-testid="guide-installguide-btn" style="font-size:.72rem;"><i class="bi bi-book me-1"></i>Installation guide</a>
               <?php if (!empty($gi['installer_url'])): ?>
-                <a href="<?= esc($gi['installer_url']) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-success rounded-pill" data-testid="guide-installer-btn" style="font-size:.72rem;background:linear-gradient(135deg,#16a34a,#15803d);border:0;"><i class="bi bi-download me-1"></i>Download installer</a>
+                <a href="<?= esc($gi['installer_url']) ?>" target="_blank" rel="noopener" class="btn btn-sm rounded-pill" data-testid="guide-installer-btn" style="font-size:.72rem;background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi bi-download me-1"></i>Download installer</a>
               <?php endif; ?>
             </div>
             <div class="text-secondary small" style="font-size:.78rem;line-height:1.5;"><?= installation_steps_for($gi) ?></div>

@@ -655,9 +655,11 @@ include __DIR__ . '/includes/header.php';
        in scripts/seed-manual-urls.php). Rendered only when the product has at
        least one of these links — antivirus/other products without a manual
        simply don't show the block. */
-    $pInstaller = trim((string)($product['installer_url']     ?? ''));
-    $pGuide     = trim((string)($product['install_guide_url'] ?? ''));
-    $pActivate  = trim((string)($product['activation_url']    ?? ''));
+    require_once __DIR__ . '/includes/install-guides.php';
+    $pLinks     = mv_resolve_install_links((string)($product['slug'] ?? ''), $product);
+    $pInstaller = $pLinks['installer'];
+    $pGuide     = $pLinks['guide'];
+    $pActivate  = $pLinks['activation'];
   ?>
   <?php if ($pInstaller !== '' || $pGuide !== '' || $pActivate !== ''): ?>
   <section class="mt-5" data-testid="product-install-block">
@@ -667,7 +669,7 @@ include __DIR__ . '/includes/header.php';
         <p class="small text-secondary mb-3">Official installer, step-by-step installation guide and the activation / sign-in page for <strong><?= esc($product['name']) ?></strong> &mdash; the same links we email after purchase.</p>
         <div class="d-flex flex-wrap gap-2">
           <?php if ($pInstaller !== ''): ?>
-            <a href="<?= esc($pInstaller) ?>" target="_blank" rel="nofollow noopener" class="btn btn-success rounded-pill px-4 fw-semibold" data-testid="install-download-btn"><i class="bi bi-box-arrow-down me-2"></i>Download installer</a>
+            <a href="<?= esc($pInstaller) ?>" target="_blank" rel="nofollow noopener" class="btn rounded-pill px-4 fw-semibold" data-testid="install-download-btn" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi bi-box-arrow-down me-2"></i>Download installer</a>
           <?php endif; ?>
           <?php if ($pGuide !== ''): ?>
             <a href="<?= esc($pGuide) ?>" target="_blank" rel="nofollow noopener" class="btn btn-primary rounded-pill px-4 fw-semibold" data-testid="install-guide-btn"><i class="bi bi-journal-text me-2"></i>Installation guide</a>

@@ -21,6 +21,7 @@
  * The page itself is `noindex, nofollow` (handled in includes/header.php).
  */
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/install-guides.php';
 require_once __DIR__ . '/includes/email.php';
 
 $noIndex   = true;
@@ -408,9 +409,10 @@ include __DIR__ . '/includes/header.php';
               if ($ps === '') continue;
               $p = get_product($ps);
               if (!$p) continue;
-              $gi = trim((string)($p['install_guide_url'] ?? ''));
-              $di = trim((string)($p['installer_url'] ?? ''));
-              $ai = trim((string)($p['activation_url'] ?? ''));
+              $links = mv_resolve_install_links($ps, $p);
+              $gi = $links['guide'];
+              $di = $links['installer'];
+              $ai = $links['activation'];
               if ($gi === '' && $di === '' && $ai === '') continue;
               $ohInstall[] = ['name' => ($it['name'] ?? $p['name']), 'guide' => $gi, 'installer' => $di, 'activate' => $ai];
           }
@@ -423,7 +425,7 @@ include __DIR__ . '/includes/header.php';
                 <div class="small fw-semibold mb-1" style="color:#0f172a;"><?= esc($row['name']) ?></div>
                 <div class="d-flex flex-wrap gap-2">
                   <?php if ($row['installer'] !== ''): ?>
-                    <a href="<?= esc($row['installer']) ?>" target="_blank" rel="nofollow noopener" class="btn btn-sm btn-success rounded-pill" data-testid="oh-installer-btn" style="font-size:.72rem;background:linear-gradient(135deg,#16a34a,#15803d);border:0;"><i class="bi bi-box-arrow-down me-1"></i>Download installer</a>
+                    <a href="<?= esc($row['installer']) ?>" target="_blank" rel="nofollow noopener" class="btn btn-sm rounded-pill" data-testid="oh-installer-btn" style="font-size:.72rem;background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi bi-box-arrow-down me-1"></i>Download installer</a>
                   <?php endif; ?>
                   <?php if ($row['guide'] !== ''): ?>
                     <a href="<?= esc($row['guide']) ?>" class="btn btn-sm btn-outline-primary rounded-pill" data-testid="oh-installguide-btn" style="font-size:.72rem;"><i class="bi bi-journal-text me-1"></i>Installation guide</a>

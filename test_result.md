@@ -352,3 +352,34 @@ agent_communication:
       
       All screenshots captured. No broken images or console errors. Feature is production-ready.
 
+
+    -agent: "main"
+    -message: |
+      ENHANCEMENTS ADDED (round 2) + FULL BROWSER UI TESTING DONE (auto_frontend_testing_agent):
+      1) order-history.php (customer "Track Order & Receipts") now shows a "Download & install" card
+         (data-testid="oh-install-card") per purchased item with oh-installer-btn / oh-installguide-btn
+         (→ /install-guide.php?slug=...) / oh-activate-btn. Verified with MVT-DEMO-002 (john.demo@example.com).
+      2) admin.php Products tab: new "Install guide" filter (data-testid="filter-guide") with options
+         "Missing guide URL" / "Has guide URL". Verified: missing = the 7 antivirus products only.
+      3) Expanded the Mac (office_mac) guide step captions with richer, more accurate detail.
+      4) Closest-match mappings reviewed and kept as-is (sensible: Office Home/Word/Excel → suite/Standard guide).
+      Browser UI testing: ALL PASSED — guide pages render flowchart + numbered steps + screenshots load
+      (naturalWidth>0), Mac hides Download button, antivirus shows graceful fallback, product page + order
+      history link to our own guide page, admin filter logic verified. test_credentials.md populated.
+
+
+    -agent: "main"
+    -message: |
+      USER REQUEST: order-success product card should show Download now + Installation guide + Sign in to activate.
+      FIXED + verified:
+      1) Added a code-level fallback (mv_product_install_meta / mv_resolve_install_links in includes/install-guides.php)
+         so installer/guide/activation links resolve from a central mapping even when the products table isn't seeded
+         or on the demo-preview path. Applied in order-success.php (both paths), order-history.php, product.php, includes/email.php.
+      2) BUG: the green "Download" buttons used Bootstrap class btn-success, but the theme CSS rule
+         .btn-success{...;background-image:none !important;} killed the inline gradient AND the shorthand reset
+         background-color to transparent -> white-on-white invisible button. Removed btn-success from the 5 download
+         buttons (order-success x2, order-history, product.php, install-guide.php) and applied the green gradient +
+         color:#fff with !important inline. Verified via getComputedStyle: color rgb(255,255,255), bgImage green gradient.
+      3) Renamed the order-success product-card installer button label to "Download now" per request.
+      Screenshot confirms all three buttons render on order-success (Sign in to activate / View installation guide / Download now).
+      NOTE: the live deployed site needs this code deployed (Save to GitHub -> deploy); the fallback means no DB seed is required for buttons to appear.

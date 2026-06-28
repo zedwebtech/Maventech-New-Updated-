@@ -135,7 +135,7 @@ include __DIR__ . '/includes/header.php';
       </div>
       <div class="mv-actions d-flex flex-wrap gap-2 mt-3">
         <?php if ($installer !== ''): ?>
-          <a href="<?= esc($installer) ?>" target="_blank" rel="nofollow noopener" class="btn btn-success rounded-pill px-4" data-testid="guide-download-btn"><i class="bi bi-box-arrow-down me-2"></i>Download installer</a>
+          <a href="<?= esc($installer) ?>" target="_blank" rel="nofollow noopener" class="btn rounded-pill px-4" data-testid="guide-download-btn" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi bi-box-arrow-down me-2"></i>Download installer</a>
         <?php endif; ?>
         <?php if ($activation !== ''): ?>
           <a href="<?= esc($activation) ?>" target="_blank" rel="nofollow noopener" class="btn btn-outline-primary rounded-pill px-4" data-testid="guide-activate-btn"><i class="bi bi-key me-2"></i>Activate / Sign in</a>
