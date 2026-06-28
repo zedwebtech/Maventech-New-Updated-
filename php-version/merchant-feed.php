@@ -317,7 +317,12 @@ foreach ($products as $p) {
     // SKU drives both g:id-level uniqueness and the MPN; GTIN is emitted only
     // when a real barcode (UPC/EAN/JAN/ISBN) has been entered in the admin.
     $skuVal  = trim((string)($p['sku'] ?: $p['slug']));
-    $gtinVal = preg_replace('/\D+/', '', (string)($p['gtin'] ?? '')); // digits only
+    // Only forward a GLOBALLY valid GTIN. The synthetic "200…" GS1 in-store
+    // GTINs are not globally valid (Google: "Not a globally valid GTIN"), so we
+    // drop them and let identifier_exists fall back to brand + MPN.
+    $gtinVal = (function_exists('is_valid_global_gtin') && is_valid_global_gtin((string)($p['gtin'] ?? '')))
+        ? preg_replace('/\D+/', '', (string)$p['gtin'])
+        : '';
     echo "      <g:mpn>"           . feed_xml_esc($skuVal) . "</g:mpn>\n";
     echo "      <g:sku>"           . feed_xml_esc($skuVal) . "</g:sku>\n";
     if ($gtinVal !== '') {

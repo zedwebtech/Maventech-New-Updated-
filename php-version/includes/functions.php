@@ -866,6 +866,29 @@ function company_placeholders_apply(string $html, ?string $cc = null): string {
     return strtr($html, $map);
 }
 
+/**
+ * True only for a GLOBALLY valid GTIN (real GS1 identifier). Rejects the
+ * GS1 restricted / in-store ranges (GTIN-12/13 starting with "2", and the
+ * 02/04/05 prefixes) that pass the check digit but are NOT globally unique —
+ * which is exactly what Google flags as "Not a globally valid GTIN".
+ * Software license keys typically have NO real GTIN, so callers should omit
+ * the field entirely when this returns false (brand + MPN still identify it).
+ */
+function is_valid_global_gtin($raw): bool {
+    $g = preg_replace('/\D+/', '', (string)$raw);
+    $len = strlen($g);
+    if (!in_array($len, [8, 12, 13, 14], true)) return false;
+    if (in_array($len, [12, 13], true) && $g[0] === '2') return false;          // restricted / in-store range
+    if (in_array(substr($g, 0, 2), ['02', '04', '05'], true)) return false;     // restricted distribution / coupons
+    $digits = array_reverse(str_split($g));
+    $sum = 0;
+    for ($i = 1; $i < $len; $i++) {
+        $sum += ((int)$digits[$i]) * (($i % 2 === 1) ? 3 : 1);
+    }
+    $check = (10 - ($sum % 10)) % 10;
+    return $check === (int)$digits[0];
+}
+
 
 /** Returns the list of currency codes whose region is currently active in admin. */
 function active_currency_codes(): array {

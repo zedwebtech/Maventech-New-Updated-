@@ -187,7 +187,6 @@ $jsonLd = [
     'description' => $schemaDescription,
     'sku'         => $schemaSku,
     'mpn'         => $schemaMpn,
-    'gtin13'      => $product['gtin'] ?? null,
     'brand'       => ['@type' => 'Brand', 'name' => $detectedBrand],
     'category'    => ucfirst((string)($product['category'] ?? 'Software')),    'offers'      => [
         '@type'         => 'Offer',
@@ -257,7 +256,16 @@ $jsonLd = [
         ],
     ],
 ];
-if (empty($jsonLd['gtin13'])) unset($jsonLd['gtin13']);
+// gtin — only emit when it is a GLOBALLY valid GS1 identifier. The catalog's
+// synthetic "200…" GTINs (GS1 in-store/restricted range) are NOT globally
+// valid and trip Google's "Not a globally valid GTIN"; software keys have no
+// real GTIN, so we omit it and rely on brand + mpn + sku as identifiers.
+$rawGtin = (string)($product['gtin'] ?? '');
+if (function_exists('is_valid_global_gtin') && is_valid_global_gtin($rawGtin)) {
+    $gtinDigits = preg_replace('/\D+/', '', $rawGtin);
+    $gtinProp   = ['8' => 'gtin8', '12' => 'gtin12', '13' => 'gtin13', '14' => 'gtin14'][(string)strlen($gtinDigits)] ?? 'gtin';
+    $jsonLd[$gtinProp] = $gtinDigits;
+}
 // Star ratings / review counts — sourced from real published customer
 // reviews via product_review_stats() / product_reviews().  When the
 // product has at least one published review, attach Google's
@@ -616,7 +624,7 @@ include __DIR__ . '/includes/header.php';
               elsewhere.  Kept compact + tinted so it doesn't distract from
               the buy flow above. */ ?>
       <div class="d-flex flex-wrap gap-3 small text-secondary mt-3 pt-3 border-top" data-testid="product-identifiers">
-        <?php if (!empty($product['gtin'])): ?>
+        <?php if (!empty($product['gtin']) && function_exists('is_valid_global_gtin') && is_valid_global_gtin((string)$product['gtin'])): ?>
           <span><strong class="text-body">GTIN:</strong> <span class="font-monospace" data-testid="product-gtin"><?= esc($product['gtin']) ?></span></span>
         <?php endif; ?>
         <?php if (!empty($product['sku'])): ?>

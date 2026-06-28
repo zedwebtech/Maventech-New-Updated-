@@ -1091,3 +1091,11 @@ The store already had extensive, valid JSON-LD (Organization, LocalBusiness, Web
 - IMPORTANT FIX: seo-bot.php is NOT globally included in admin.php (only inside specific handlers), so the handler MUST require it or mv_product_image_creds() can't resolve the key → silently fell back to stock. Handler now requires seo-bot.php first.
 - Frontend JS regenBlogImage(): POSTs, swaps the thumbnail src with cache-bust ?t=, spin animation, handles empty-thumb placeholder. CSS .post-regen + pr-spin keyframe; dark-mode styled.
 - Verified via curl (ai:true, ~20s, file mtime+size changed) and Playwright browser (in-place refresh to /uploads/blog/...webp?t=). Test posts + seed script removed.
+
+## 2026-06 — GSC Merchant Listings: "Not a globally valid GTIN" + missing fields
+- Reported on microsoft-excel-2021-mac... (and others). Root cause of GTIN error: seed-gtins.php mints synthetic GTINs with the GS1 "200…" in-store/restricted prefix — valid check digit but NOT globally unique → Google rejects.
+- Added is_valid_global_gtin() in includes/functions.php (length 8/12/13/14 + GS1 mod-10 check + rejects restricted ranges: 12/13-digit starting '2', and 02/04/05 prefixes).
+- product.php: removed hardcoded gtin13; now emits gtinN only when is_valid_global_gtin() passes (else omitted, relying on brand+mpn+sku). Also gated the on-page visible "GTIN:" line behind the same validator.
+- merchant-feed.php: <g:gtin> emitted only when globally valid; identifier_exists falls back to brand+MPN.
+- The other 3 errors (hasMerchantReturnPolicy, shippingDetails, description) were already in current code — STALE from old production crawl; clear on deploy. Verified main Product JSON-LD on preview: description present, no gtin keys, shippingDetails(6), hasMerchantReturnPolicy present, price 119.99 USD. Merchant feed: 0 restricted GTINs.
+- ENV: pod reset AGAIN this session (3rd time) — reinstalled PHP8.2 + MariaDB + reseed; .env (EMERGENT_LLM_KEY) persisted in /app. Deploy to maventechsoftware.com to clear GSC.
