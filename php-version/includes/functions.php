@@ -867,6 +867,33 @@ function company_placeholders_apply(string $html, ?string $cc = null): string {
 }
 
 /**
+ * Return a web path to a MINIFIED, cache-busted copy of a CSS file.
+ * The minified file (…min.css) is regenerated automatically whenever the
+ * source changes (mtime compare), so editing the source "just works".
+ * Safe whitespace/comment minifier — no rule changes, so zero CLS risk.
+ * Falls back to the original path if the target dir isn't writable.
+ */
+function min_css_url(string $srcFsPath, string $srcWebPath): string {
+    if (!is_file($srcFsPath)) return $srcWebPath;
+    $minFs  = preg_replace('/\.css$/', '.min.css', $srcFsPath);
+    $minWeb = preg_replace('/\.css$/', '.min.css', $srcWebPath);
+    $srcMt  = (int)@filemtime($srcFsPath);
+    if (!is_file($minFs) || (int)@filemtime($minFs) < $srcMt) {
+        $css = (string)@file_get_contents($srcFsPath);
+        if ($css === '') return $srcWebPath . '?v=' . $srcMt;
+        $css = preg_replace('!/\*.*?\*/!s', '', $css);            // strip comments
+        $css = preg_replace('/\s+/', ' ', $css);                  // collapse whitespace
+        $css = preg_replace('/\s*([{}:;,>~+])\s*/', '$1', $css);  // trim around tokens
+        $css = str_replace(';}', '}', (string)$css);
+        $css = trim((string)$css);
+        if (@file_put_contents($minFs, $css) === false) {
+            return $srcWebPath . '?v=' . $srcMt;                  // dir not writable → original
+        }
+    }
+    return $minWeb . '?v=' . (int)@filemtime($minFs);
+}
+
+/**
  * True only for a GLOBALLY valid GTIN (real GS1 identifier). Rejects the
  * GS1 restricted / in-store ranges (GTIN-12/13 starting with "2", and the
  * 02/04/05 prefixes) that pass the check digit but are NOT globally unique —

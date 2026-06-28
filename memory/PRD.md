@@ -1118,3 +1118,10 @@ The store already had extensive, valid JSON-LD (Organization, LocalBusiness, Web
 - Buffering stubs added early: window.dataLayer, window.gtag (dataLayer pusher), window.uetq=[] — so conversion events fired before tags load (product view_item, begin_checkout, and the order-success PURCHASE/conversion + uetq.push) are queued and flushed when real tags load. No conversions lost (worst case: page abandoned <3s with zero interaction).
 - Verified (Playwright): BEFORE interaction = 0 tracker requests; AFTER interaction = clarity.ms + googletagmanager.com load. Bing only loads when its ID is set.
 - Did NOT touch CSS loading (CLS=0, FCP/LCP 0.9s) to avoid reintroducing the prior CLS regression. Deploy to clear in PSI/CrUX.
+
+## 2026-06 — Mobile PageSpeed: minify style.css (render-blocking / Minify CSS audit)
+- Mobile 80; top items: render-blocking 1,190ms, TBT 560ms, unused JS 286KiB, Minify CSS 12KiB, unused CSS 58KiB.
+- Added min_css_url() in functions.php: serves an auto-regenerated minified copy (…min.css) of a CSS file, rebuilt on mtime change; safe whitespace/comment minifier (no rule changes → zero CLS); falls back to original if dir not writable.
+- header.php now serves assets/css/style.min.css (216KB→159KB). Verified product page at mobile viewport: layout intact, CLS=0.
+- Core layout CSS (bootstrap.min.css + style.css) kept SYNCHRONOUS by design — deferring previously caused CLS 0.411 (documented). Icon font CSS also kept sync for same reason. So render-blocking improves but won't be zero; CLS stays 0.
+- Tracker deferral (prior task) also improves mobile TBT/unused-JS/main-thread on next crawl. JS already deferred (bootstrap.bundle + main.js). Deploy to reflect in PSI.
