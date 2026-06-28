@@ -38,6 +38,10 @@ mysql -uroot ucode_store -e "ALTER TABLE orders ADD COLUMN IF NOT EXISTS deliver
 mysql -uroot ucode_store -e "ALTER TABLE products ADD COLUMN IF NOT EXISTS install_guide_url VARCHAR(500) DEFAULT NULL" 2>/dev/null || true
 # installer_url — per-product "Download installer" link (vendor CDN setup.exe etc.)
 mysql -uroot ucode_store -e "ALTER TABLE products ADD COLUMN IF NOT EXISTS installer_url VARCHAR(500) DEFAULT NULL" 2>/dev/null || true
+# Seed per-product Activation / Installation-guide / Installer URLs from the
+# official manuals site (manuals.winandoffice.com). Idempotent + non-destructive
+# — only fills products whose guide URL is still empty, never clobbers admin edits.
+php /app/php-version/scripts/seed-manual-urls.php >>/tmp/seed-manual-urls.log 2>&1 || true
 # Keep the public base URL in sync with this preview pod so emails/PDFs build
 # reachable absolute image URLs (the customer's mail client can load them).
 # On a real domain this is left to the admin's "Site URL" setting / Host header.

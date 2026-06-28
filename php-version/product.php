@@ -648,6 +648,42 @@ include __DIR__ . '/includes/header.php';
     </div>
   </div>
 
+  <?php
+    /* ── Download, install & activate ─────────────────────────────────────
+       One-click installer, official installation guide and activation /
+       sign-in page sourced from manuals.winandoffice.com (seeded per product
+       in scripts/seed-manual-urls.php). Rendered only when the product has at
+       least one of these links — antivirus/other products without a manual
+       simply don't show the block. */
+    $pInstaller = trim((string)($product['installer_url']     ?? ''));
+    $pGuide     = trim((string)($product['install_guide_url'] ?? ''));
+    $pActivate  = trim((string)($product['activation_url']    ?? ''));
+  ?>
+  <?php if ($pInstaller !== '' || $pGuide !== '' || $pActivate !== ''): ?>
+  <section class="mt-5" data-testid="product-install-block">
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-4">
+        <h2 class="h5 fw-bold mb-1"><i class="bi bi-download text-primary me-2"></i>Download, install &amp; activate</h2>
+        <p class="small text-secondary mb-3">Official installer, step-by-step installation guide and the activation / sign-in page for <strong><?= esc($product['name']) ?></strong> &mdash; the same links we email after purchase.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <?php if ($pInstaller !== ''): ?>
+            <a href="<?= esc($pInstaller) ?>" target="_blank" rel="nofollow noopener" class="btn btn-success rounded-pill px-4 fw-semibold" data-testid="install-download-btn"><i class="bi bi-box-arrow-down me-2"></i>Download installer</a>
+          <?php endif; ?>
+          <?php if ($pGuide !== ''): ?>
+            <a href="<?= esc($pGuide) ?>" target="_blank" rel="nofollow noopener" class="btn btn-primary rounded-pill px-4 fw-semibold" data-testid="install-guide-btn"><i class="bi bi-journal-text me-2"></i>Installation guide</a>
+          <?php endif; ?>
+          <?php if ($pActivate !== ''): ?>
+            <a href="<?= esc($pActivate) ?>" target="_blank" rel="nofollow noopener" class="btn btn-outline-primary rounded-pill px-4 fw-semibold" data-testid="install-activate-btn"><i class="bi bi-key me-2"></i>Activate / Sign in</a>
+          <?php endif; ?>
+        </div>
+        <?php if ($pInstaller === '' && $pGuide !== ''): ?>
+          <p class="small text-secondary mt-3 mb-0"><i class="bi bi-info-circle me-1"></i>On Mac, the installer is downloaded after you sign in &mdash; full steps are in the installation guide above.</p>
+        <?php endif; ?>
+      </div>
+    </div>
+  </section>
+  <?php endif; ?>
+
   <!-- AEO: Quick-Answer callout — 40-60 word direct answer Google AI
        Overviews + Perplexity routinely grab as the citation snippet. -->
   <?= render_aeo_answer(
