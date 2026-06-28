@@ -400,6 +400,44 @@ include __DIR__ . '/includes/header.php';
           </div>
         <?php endif; ?>
 
+        <?php
+          // Per-item Download / Installation-guide / Activate links (from the products table).
+          $ohInstall = [];
+          foreach (($order['items'] ?? []) as $it) {
+              $ps = $it['product_slug'] ?? '';
+              if ($ps === '') continue;
+              $p = get_product($ps);
+              if (!$p) continue;
+              $gi = trim((string)($p['install_guide_url'] ?? ''));
+              $di = trim((string)($p['installer_url'] ?? ''));
+              $ai = trim((string)($p['activation_url'] ?? ''));
+              if ($gi === '' && $di === '' && $ai === '') continue;
+              $ohInstall[] = ['name' => ($it['name'] ?? $p['name']), 'guide' => $gi, 'installer' => $di, 'activate' => $ai];
+          }
+        ?>
+        <?php if ($ohInstall): ?>
+          <div class="border rounded-3 p-3 mb-3" data-testid="oh-install-card" style="background:#f8fafc;">
+            <div class="fw-semibold mb-2" style="color:#0f172a;"><i class="bi bi-download text-primary me-1"></i>Download &amp; install</div>
+            <?php foreach ($ohInstall as $row): ?>
+              <div class="mb-2" data-testid="oh-install-row">
+                <div class="small fw-semibold mb-1" style="color:#0f172a;"><?= esc($row['name']) ?></div>
+                <div class="d-flex flex-wrap gap-2">
+                  <?php if ($row['installer'] !== ''): ?>
+                    <a href="<?= esc($row['installer']) ?>" target="_blank" rel="nofollow noopener" class="btn btn-sm btn-success rounded-pill" data-testid="oh-installer-btn" style="font-size:.72rem;background:linear-gradient(135deg,#16a34a,#15803d);border:0;"><i class="bi bi-box-arrow-down me-1"></i>Download installer</a>
+                  <?php endif; ?>
+                  <?php if ($row['guide'] !== ''): ?>
+                    <a href="<?= esc($row['guide']) ?>" class="btn btn-sm btn-outline-primary rounded-pill" data-testid="oh-installguide-btn" style="font-size:.72rem;"><i class="bi bi-journal-text me-1"></i>Installation guide</a>
+                  <?php endif; ?>
+                  <?php if ($row['activate'] !== ''): ?>
+                    <a href="<?= esc($row['activate']) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-primary rounded-pill" data-testid="oh-activate-btn" style="font-size:.72rem;background:linear-gradient(135deg,#06b6d4,#0891b2);border:0;"><i class="bi bi-key me-1"></i>Activate / Sign in</a>
+                  <?php endif; ?>
+                </div>
+              </div>
+            <?php endforeach; ?>
+            <small class="text-secondary"><i class="bi bi-info-circle me-1"></i>Step-by-step instructions with screenshots are on each Installation guide page.</small>
+          </div>
+        <?php endif; ?>
+
         <div class="border-top pt-3 d-flex flex-wrap gap-2 align-items-center">
           <a href="?action=download&kind=receipt" class="btn btn-primary rounded-pill px-4" data-testid="oh-download-receipt">
             <i class="bi bi-receipt me-1"></i> Download Receipt (PDF)

@@ -7459,6 +7459,7 @@ elseif ($tab === 'products'):
     'pmax'    => $_GET['pmax'] ?? '',
     'stock'   => $_GET['stock'] ?? '',
     'region'  => $_GET['p_region'] ?? '',
+    'guide'   => $_GET['guide'] ?? '',
     'sort'    => $_GET['sort'] ?? 'newest',
   ];
   $where = ['1=1']; $args = [];
@@ -7478,6 +7479,8 @@ elseif ($tab === 'products'):
   if ($f['pmin']!=='')   { $where[] = 'p.price >= ?'; $args[] = (float)$f['pmin'] / $rate; }
   if ($f['pmax']!=='')   { $where[] = 'p.price <= ?'; $args[] = (float)$f['pmax'] / $rate; }
   if ($f['region']) { $where[] = 'p.region = ?'; $args[] = $f['region']; }
+  if ($f['guide']==='missing')   { $where[] = "(p.install_guide_url IS NULL OR p.install_guide_url = '')"; }
+  elseif ($f['guide']==='set')   { $where[] = "(p.install_guide_url IS NOT NULL AND p.install_guide_url <> '')"; }
 
   // ---- Sort
   $orderBy = match ($f['sort']) {
@@ -7757,6 +7760,10 @@ elseif ($tab === 'products'):
         <div class="col-6 col-md-3 col-lg-2">
           <label class="small text-muted mb-1"><i class="bi bi-globe me-1"></i>Region</label>
           <select class="form-select form-select-sm" name="p_region"><option value="">All regions</option><?php foreach(all_regions() as $r): ?><option value="<?= esc($r['code']) ?>" <?= $f['region']===$r['code']?'selected':'' ?>><?= esc($r['code']) ?> · <?= esc($r['currency_symbol']) ?></option><?php endforeach; ?></select>
+        </div>
+        <div class="col-6 col-md-3 col-lg-2">
+          <label class="small text-muted mb-1"><i class="bi bi-journal-text me-1"></i>Install guide</label>
+          <select class="form-select form-select-sm" name="guide" data-testid="filter-guide"><option value="">Any</option><option value="missing" <?= $f['guide']==='missing'?'selected':'' ?>>Missing guide URL</option><option value="set" <?= $f['guide']==='set'?'selected':'' ?>>Has guide URL</option></select>
         </div>
         <div class="col-6 col-md-3 col-lg-2">
           <label class="small text-muted mb-1"><i class="bi bi-currency-dollar me-1"></i>Price (<?= esc($rg['currency_symbol']) ?>)</label>
