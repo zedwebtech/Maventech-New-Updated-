@@ -10,7 +10,10 @@
  *    • the order-success page     (per-product install buttons)
  *
  *  Each entry sets:
- *    install_guide_url  → the manual page on manuals.winandoffice.com
+ *    install_guide_url  → our own native guide page (/install-guide.php?slug=...)
+ *                         rendered from includes/install-guides.php (NOT a
+ *                         third-party site). Re-runs migrate any old external
+ *                         manuals.winandoffice.com guide URL to the local page.
  *    installer_url      → the one-click English 64-bit installer (when one
  *                         exists; Office-for-Mac is downloaded after sign-in,
  *                         so it stays NULL)
@@ -31,8 +34,8 @@
  *  Run:  php /app/php-version/scripts/seed-manual-urls.php
  *  ========================================================================== */
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/install-guides.php';   // mv_guide_path()
 
-$MAN = 'https://manuals.winandoffice.com';   // manual-page base
 $DL  = 'https://download.winandoffice.com';   // installer CDN base
 $OFFICE_ACT  = 'https://setup.office.com';            // MS Office / Project / Visio
 $WINDOWS_ACT = 'https://account.microsoft.com/account'; // Windows
@@ -118,7 +121,12 @@ $upd = $db->prepare(
             install_url_mode     = 'manual',
             activation_url_mode  = 'manual'
       WHERE slug = :slug
-        AND (install_guide_url IS NULL OR install_guide_url = '')"
+        AND (
+            install_guide_url IS NULL
+            OR install_guide_url = ''
+            OR install_guide_url LIKE 'http://manuals.winandoffice.com/%'
+            OR install_guide_url LIKE 'https://manuals.winandoffice.com/%'
+        )"
 );
 
 $seeded = 0; $skipped = 0; $missing = 0;
@@ -132,14 +140,14 @@ foreach ($MAP as $slug => [$guideSlug, $installer, $activation]) {
         continue;
     }
     $upd->execute([
-        ':guide'      => "$MAN/$guideSlug/",
+        ':guide'      => mv_guide_path($slug),   // our own on-site guide page
         ':installer'  => $installer,        // null stays NULL for Mac
         ':activation' => $activation,
         ':slug'       => $slug,
     ]);
     if ($upd->rowCount() > 0) {
-        echo sprintf("  [seed] %-58s guide=%s/%s  installer=%s\n",
-            $slug, 'manuals', $guideSlug, $installer ? 'yes' : '— (sign-in)');
+        echo sprintf("  [seed] %-58s guide=%s  flow=%s  installer=%s\n",
+            $slug, mv_guide_path($slug), $guideSlug, $installer ? 'yes' : '- (sign-in)');
         $seeded++;
     } else {
         $skipped++;   // already had a guide URL — left untouched

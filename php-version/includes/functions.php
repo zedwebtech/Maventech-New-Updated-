@@ -2033,6 +2033,22 @@ function to_public_url(?string $url): ?string
     return $proto . '://' . $currentHost . $path . ($q !== null ? '?' . $q : '');
 }
 
+/**
+ * Turn a root-relative URL ("/install-guide.php?slug=...") into an absolute
+ * one against the current public host so it works inside emails / PDFs where
+ * relative links can't be resolved. Absolute URLs are returned unchanged
+ * (after preview-host healing); empty values pass through untouched.
+ */
+function mv_absolute_url(?string $url): string
+{
+    $url = trim((string)$url);
+    if ($url === '') return '';
+    if (preg_match('~^https?://~i', $url)) return (string)to_public_url($url);
+    if ($url[0] === '/') return rtrim((string)site_url(), '/') . $url;
+    return $url;
+}
+
+
 /* ---------------- Coupons: code => percent off ---------------- */
 function coupons(): array
 {

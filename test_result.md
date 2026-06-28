@@ -155,17 +155,44 @@ frontend:
         -working: true
         -agent: "testing"
         -comment: "✅ VERIFIED - Order-success page buttons working correctly. Tested demo order MVT-DEMO-002 (contains microsoft-office-home-business-2024-pc). Found 4 buttons total: (1) success-installer-btn → Office_2024_EN_standard_64Bits.exe, (2) success-activate-btn → setup.office.com, (3) success-installguide-btn → manuals.winandoffice.com/o24s/, (4) guide-installer-btn → Office_2024_EN_standard_64Bits.exe. All buttons present with correct hrefs from seeded product data."
+  - task: "Native on-site installation guide pages (/install-guide.php) with flowchart + screenshots"
+    implemented: true
+    working: true
+    file: "php-version/install-guide.php, php-version/includes/install-guides.php, php-version/uploads/guides/*"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Built our OWN installation-guide pages (no longer link out to manuals.winandoffice.com). install-guide.php?slug=<slug> renders a branded guide with site header/footer: hero (Download installer + Activate/Sign in buttons), a CSS flowchart stepper, numbered step-by-step instructions with REAL screenshots self-hosted at /uploads/guides/{office,retail,mac,windows}/, system-requirements card, license & activation card, Need-help CTA, plus HowTo JSON-LD. 4 install-flow templates (office_key, office_retail, office_mac, windows) cover all 30 products, personalised with each product's name + its own installer/activation links. Antivirus (no template) gets a graceful fallback."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED - All native guide pages working correctly. Tested: (1) microsoft-office-2024-professional-plus-windows: HTTP 200, data-testid='install-guide' present, flowchart present, 6 steps with 5 screenshots in /uploads/guides/office/ (all HTTP 200), hero has Download installer → Office_2024_EN_64Bits.exe + Activate → setup.office.com. (2) microsoft-office-2021-home-business-windows: HTTP 200, 6 steps, ISO/retail flow with 5 screenshots (2 retail/, 3 office/), all HTTP 200. (3) microsoft-office-home-business-2024-mac: HTTP 200, 8 steps, NO Download installer button (correct for Mac), has Activate/Sign in → setup.office.com, 7 screenshots in /uploads/guides/mac/ (all HTTP 200). (4) windows-11-pro: HTTP 200, 6 steps, Download installer → MediaCreationTool.exe + Activate → account.microsoft.com/account, 5 screenshots in /uploads/guides/windows/ (all HTTP 200). (5) bitdefender-antivirus-for-mac-1-mac-1-year: HTTP 200, NO data-testid='install-guide' (correct graceful fallback), shows 'Browse products' + 'Contact support' buttons."
+  - task: "Repoint install_guide_url to our own guide page + absolutize for email"
+    implemented: true
+    working: true
+    file: "php-version/scripts/seed-manual-urls.php, php-version/database.sql, php-version/includes/functions.php, php-version/includes/email.php, php-version/email-view.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Migrated all 30 products install_guide_url from external manuals.winandoffice.com to our own relative /install-guide.php?slug=<slug> (0 external links remain in DB or database.sql). Added mv_absolute_url() helper, applied in email.php + email-view.php so relative guide/installer links become absolute (current host) inside emails."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED - URL migration complete and working correctly. Database checks: (1) 30 products have install_guide_url LIKE '/install-guide.php%' ✅. (2) 0 products have install_guide_url LIKE '%manuals.winandoffice.com%' ✅. (3) 7 antivirus products (6 Bitdefender + 1 McAfee) correctly have NULL install_guide_url/installer_url/activation_url ✅. Product page test (microsoft-office-2024-professional-plus-windows): Installation guide button (data-testid='install-guide-btn') now points to /install-guide.php?slug=microsoft-office-2024-professional-plus-windows (our own page) ✅, while Download installer + Activate buttons remain external (Office_2024_EN_64Bits.exe, setup.office.com) ✅. Order-success page test (MVT-DEMO-002 with microsoft-office-home-business-2024-pc): Installation guide button (data-testid='guide-installguide-btn') points to /install-guide.php?slug=microsoft-office-home-business-2024-pc ✅, Download installer → Office_2024_EN_standard_64Bits.exe ✅, Install & sign in → setup.office.com ✅."
+
 
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Seed per-product manual URLs (activation / install-guide / installer) from manuals.winandoffice.com"
-    - "Product page 'Download, install & activate' block (Download installer / Installation guide / Activate-Sign in buttons)"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -209,5 +236,84 @@ agent_communication:
       - All buttons populated from seeded product data ✅
       
       All requirements from the review request have been validated and are working correctly.
+
+    -agent: "main"
+    -message: |
+      NEW WORK TO VALIDATE — we replaced the external manuals link with our OWN guide pages.
+      PHP store on the preview URL; "backend" = PHP endpoints via curl/HTTP. You may read MariaDB locally (mysql -uroot ucode_store).
+
+      1) NATIVE GUIDE PAGE — GET /install-guide.php?slug=<slug> and assert HTTP 200 + the page contains:
+         data-testid="install-guide", a flowchart (data-testid="guide-flowchart"), numbered steps (data-testid="guide-step-N"),
+         and locally-hosted screenshots (img src starting with /uploads/guides/...). Verify each <img> under /uploads/guides/ returns HTTP 200.
+         Test one slug per family:
+           - microsoft-office-2024-professional-plus-windows (office_key: 6 steps, Download+Activate buttons, installer .../Office_2024_EN_64Bits.exe)
+           - microsoft-office-2021-home-business-windows (office_retail: ISO mount steps)
+           - microsoft-office-home-business-2024-mac (office_mac: 8 steps, has Activate/Sign in; Mac has NO one-click installer button on the guide hero)
+           - windows-11-pro (windows: MediaCreationTool installer, account.microsoft.com activate)
+         And bitdefender-antivirus-for-mac-1-mac-1-year → graceful fallback page (HTTP 200, NO data-testid="install-guide", shows "Contact support").
+      2) URL MIGRATION — confirm in DB: SELECT COUNT(*) FROM products WHERE install_guide_url LIKE '/install-guide.php%' == 30, and COUNT(*) WHERE install_guide_url LIKE '%manuals.winandoffice.com%' == 0. Antivirus rows still NULL.
+      3) PRODUCT PAGE — GET /product.php?slug=microsoft-office-2024-professional-plus-windows: the "Installation guide" button (data-testid="install-guide-btn") href must now be /install-guide.php?slug=microsoft-office-2024-professional-plus-windows (our own page), while Download installer + Activate stay external.
+      4) ORDER-SUCCESS — for demo order MVT-DEMO-002, the "Installation guide" button href should now point to our /install-guide.php?slug=... page (relative), not manuals.winandoffice.com.
+      Do NOT modify code. Report pass/fail per item with actual hrefs/status codes observed.
+
+    -agent: "testing"
+    -message: |
+      ✅ ALL TESTS PASSED - Native guide pages and URL migration fully validated.
+      
+      FRONTEND TASK: "Native on-site installation guide pages" - ✅ WORKING
+      All guide pages tested via HTTP with complete validation:
+      
+      1) microsoft-office-2024-professional-plus-windows (office_key):
+         - HTTP 200 ✅
+         - data-testid="install-guide" present ✅
+         - data-testid="guide-flowchart" present ✅
+         - 6 steps (guide-step-1 through guide-step-6) ✅
+         - 5 screenshots in /uploads/guides/office/ (step-run.jpg, step-install.jpg, step-open.jpg, step-changekey.jpg, step-enterkey.jpg) - all HTTP 200 ✅
+         - Hero: Download installer → https://download.winandoffice.com/Volume/office/2024/EN/Office_2024_EN_64Bits.exe ✅
+         - Hero: Activate → https://setup.office.com ✅
+      
+      2) microsoft-office-2021-home-business-windows (office_retail):
+         - HTTP 200 ✅
+         - 6 steps present ✅
+         - 5 screenshots (2 in retail/, 3 in office/) - all HTTP 200 ✅
+         - ISO/retail flow confirmed ✅
+      
+      3) microsoft-office-home-business-2024-mac (office_mac):
+         - HTTP 200 ✅
+         - 8 steps present ✅
+         - NO Download installer button (correct for Mac - installer obtained after sign-in) ✅
+         - Activate/Sign in button present → https://setup.office.com ✅
+         - 7 screenshots in /uploads/guides/mac/ (mac-1.jpg, mac-2.png, mac-3.png, mac-4.png, mac-6.png, mac-7.png, mac-8.png) - all HTTP 200 ✅
+      
+      4) windows-11-pro (windows):
+         - HTTP 200 ✅
+         - 6 steps present ✅
+         - Download installer → https://download.winandoffice.com/Retail/Desktop/MediaCreationTool.exe ✅
+         - Activate → https://account.microsoft.com/account ✅
+         - 5 screenshots in /uploads/guides/windows/ (step-media.png, step-settings.jpg, step-change.jpg, step-key.jpg, step-activated.jpg) - all HTTP 200 ✅
+      
+      5) bitdefender-antivirus-for-mac-1-mac-1-year (no template - graceful fallback):
+         - HTTP 200 ✅
+         - NO data-testid="install-guide" (correct - graceful fallback page) ✅
+         - Shows "Browse products" and "Contact support" buttons ✅
+      
+      FRONTEND TASK: "Repoint install_guide_url to our own guide page" - ✅ WORKING
+      
+      Database migration verified:
+      - 30 products have install_guide_url LIKE '/install-guide.php%' ✅
+      - 0 products have install_guide_url LIKE '%manuals.winandoffice.com%' ✅
+      - 7 antivirus products have NULL install_guide_url/installer_url/activation_url ✅
+      
+      Product page verified (microsoft-office-2024-professional-plus-windows):
+      - Installation guide button (data-testid="install-guide-btn") → /install-guide.php?slug=microsoft-office-2024-professional-plus-windows ✅
+      - Download installer button → https://download.winandoffice.com/Volume/office/2024/EN/Office_2024_EN_64Bits.exe (external) ✅
+      - Activate button → https://setup.office.com (external) ✅
+      
+      Order-success page verified (MVT-DEMO-002 with microsoft-office-home-business-2024-pc):
+      - Installation guide button (data-testid="guide-installguide-btn") → /install-guide.php?slug=microsoft-office-home-business-2024-pc ✅
+      - Download installer button → https://download.winandoffice.com/Volume/office/2024/EN/Office_2024_EN_standard_64Bits.exe (external) ✅
+      - Install & sign in button → https://setup.office.com (external) ✅
+      
+      All requirements from the review request validated successfully. No issues found.
 
 #====================================================================================================

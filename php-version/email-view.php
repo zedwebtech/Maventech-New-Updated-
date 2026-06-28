@@ -58,7 +58,7 @@ function regenerate_email_html_for_view(array $em): string {
                         'description'       => $item['description'] ?? '',
                         'installation_guide'=> $item['installation_guide'] ?? '',
                         'activation_url'    => activation_url_for_product($item['name'], $item['brand'] ?? '', $item['activation_url'] ?? ''),
-                        'install_guide_url' => $item['install_guide_url'] ?? '',
+                        'install_guide_url' => mv_absolute_url($item['install_guide_url'] ?? ''),
                         'key'               => $key,
                     ];
                 }
