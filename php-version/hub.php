@@ -39,6 +39,12 @@ $topic = $TOPICS[$topicSlug] ?? null;
    in one place — assets, nav, footer, hub body links and the cart AJAX. */
 $baseHref = site_url() . country_prefix() . '/';
 if (!$topic) {
+    // Bare /hub.php with NO topic is not a real page — 301 it to the region
+    // shop so it leaves the index cleanly (an invalid topic still 404s below).
+    if ($topicSlug === '') {
+        header('Location: ' . (country_prefix() ?: '') . '/shop.php', true, 301);
+        exit;
+    }
     http_response_code(404);
     // 404s must be noindex so Google never indexes them and never flags a
     // "broken canonical". Point canonical at the (valid) region shop, not at
