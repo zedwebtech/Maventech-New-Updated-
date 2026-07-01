@@ -224,6 +224,18 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "inventory.php product License Key Inventory — per-country pools (US/UK/CA/AU/EU) filter + region-scoped add/list"
+    implemented: true
+    working: true
+    file: "php-version/inventory.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "Bug: the Inventory Mgmt product page (inventory.php ?view=product&tab=keys) added keys with NO region (all defaulted to US) and listed/counted ALL keys ignoring country, so a US key appeared available for AU too. Fix: add_keys inserts with posted key_region (mv_normalize_region); keys tab has a Country pool selector (US/UK/CA/AU/EU pills w/ per-country available counts); keys list + Available/Sold/Expired + header total scoped to selected country; add form posts key_region + 'Add to <XX> Inventory'; delete/expire preserve country. VERIFIED via curl on windows-11-pro: US pool 'License Keys — US (6)'; adding 2 keys with key_region=AU stored region=AU; AU pool shows those 2 while US still 6 with NO leakage. Cleaned up."
+
   - task: "Sales Detail customer-lookup filter (name/email/phone/order#/date)"
     implemented: true
     working: true

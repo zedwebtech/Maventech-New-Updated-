@@ -106,10 +106,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'add_keys') {
         $slug = $_POST['product_slug'];
         $keys = array_filter(array_map('trim', explode("\n", $_POST['keys'] ?? '')));
-        $stmt = $pdo->prepare('INSERT INTO license_keys (product_slug, license_key) VALUES (?, ?)');
+        // Which COUNTRY pool are we adding to (US/UK/CA/AU/EU). Each country has
+        // its OWN separate key inventory — a US key never fulfils an AU/UK order.
+        $kr   = function_exists('mv_normalize_region') ? mv_normalize_region($_POST['key_region'] ?? 'US') : strtoupper(trim((string)($_POST['key_region'] ?? 'US')));
+        $stmt = $pdo->prepare('INSERT INTO license_keys (product_slug, license_key, region) VALUES (?, ?, ?)');
         $added = 0;
-        foreach ($keys as $k) { try { $stmt->execute([$slug, $k]); $added++; } catch (Exception $e) {} }
-        header('Location: inventory.php?view=product&slug=' . urlencode($slug) . '&tab=keys&msg=' . urlencode("$added key(s) added."));
+        foreach ($keys as $k) { try { $stmt->execute([$slug, $k, $kr]); $added++; } catch (Exception $e) {} }
+        header('Location: inventory.php?view=product&slug=' . urlencode($slug) . '&tab=keys&kr=' . urlencode($kr) . '&msg=' . urlencode("$added key(s) added to $kr pool."));
         exit;
     }
     if ($action === 'delete_key') {
@@ -363,7 +366,17 @@ include __DIR__ . '/includes/admin-shell.php';
 
       $tab = $_GET['tab'] ?? 'overview';
 
-      // Key counts
+      // Country pools (US/UK/CA/AU/EU): each product keeps a SEPARATE key
+      // inventory per country. $kr = currently-selected country on the keys tab.
+      $salesRegions = function_exists('mv_sales_regions') ? mv_sales_regions() : ['US','UK','CA','AU','EU'];
+      $kr = function_exists('mv_normalize_region') ? mv_normalize_region($_GET['kr'] ?? 'US') : strtoupper((string)($_GET['kr'] ?? 'US'));
+      // Available-key count per country (for the selector badges).
+      $regionAvail = [];
+      $rcSt = $pdo->prepare("SELECT region, COUNT(*) c FROM license_keys WHERE product_slug=? AND status='available' GROUP BY region");
+      $rcSt->execute([$slug]);
+      foreach ($rcSt->fetchAll() as $r) { $regionAvail[$r['region']] = (int)$r['c']; }
+
+      // Key counts (whole product, all countries — for the summary cards)
       $keyCounts = $pdo->prepare("SELECT
           SUM(status='available') AS available,
           SUM(status='sold')      AS sold,
@@ -373,11 +386,21 @@ include __DIR__ . '/includes/admin-shell.php';
       $keyCounts->execute([$slug]);
       $kc = $keyCounts->fetch();
 
-      // Keys listing
+      // Key counts for the SELECTED country (drives the keys-tab list + header)
+      $krCountsSt = $pdo->prepare("SELECT
+          SUM(status='available') AS available,
+          SUM(status='sold')      AS sold,
+          SUM(status='expired')   AS expired,
+          COUNT(*) AS total
+          FROM license_keys WHERE product_slug=? AND region=?");
+      $krCountsSt->execute([$slug, $kr]);
+      $krc = $krCountsSt->fetch();
+
+      // Keys listing — scoped to the selected country pool.
       $keys = $pdo->prepare('SELECT lk.*, o.order_number, o.email, o.first_name, o.last_name
           FROM license_keys lk LEFT JOIN orders o ON o.id = lk.order_id
-          WHERE lk.product_slug=? ORDER BY lk.created_at DESC LIMIT 500');
-      $keys->execute([$slug]);
+          WHERE lk.product_slug=? AND lk.region=? ORDER BY lk.created_at DESC LIMIT 500');
+      $keys->execute([$slug, $kr]);
       $keys = $keys->fetchAll();
 
       // Allocation history (only sold)
@@ -443,24 +466,48 @@ include __DIR__ . '/includes/admin-shell.php';
       </div>
 
     <?php elseif ($tab === 'keys'): ?>
+      <!-- Country pool selector — each country has its OWN separate key inventory -->
+      <div class="card p-3 mb-3" data-testid="keys-region-selector">
+        <div class="small fw-semibold text-secondary mb-2"><i class="bi bi-globe2 me-1"></i>License-key country pool — select a country to view / add its keys</div>
+        <div class="d-flex flex-wrap gap-2">
+          <?php foreach ($salesRegions as $rc):
+            $rcCnt = (int)($regionAvail[$rc] ?? 0);
+            $isAct = ($rc === $kr);
+            $rcName = function_exists('mv_region_label') ? mv_region_label($rc) : $rc;
+          ?>
+            <a href="inventory.php?view=product&slug=<?= esc($slug) ?>&tab=keys&kr=<?= esc($rc) ?>"
+               class="btn btn-sm <?= $isAct ? 'btn-primary' : 'btn-outline-secondary' ?>"
+               data-testid="keys-region-<?= esc($rc) ?>" title="<?= esc($rcName) ?>">
+              <?= esc($rc) ?> <span class="badge <?= $rcCnt>0 ? 'bg-success' : 'bg-light text-dark' ?> ms-1"><?= $rcCnt ?></span>
+            </a>
+          <?php endforeach; ?>
+        </div>
+      </div>
+
       <div class="row g-3">
         <div class="col-lg-4">
           <div class="card p-3">
-            <h6 class="fw-bold mb-2"><i class="bi bi-key me-1"></i> Add License Keys</h6>
+            <h6 class="fw-bold mb-2"><i class="bi bi-key me-1"></i> Add License Keys — <span class="text-primary"><?= esc($kr) ?></span></h6>
             <form method="post" data-testid="add-keys-form">
               <input type="hidden" name="action" value="add_keys">
               <input type="hidden" name="product_slug" value="<?= esc($slug) ?>">
-              <textarea name="keys" class="form-control form-control-sm font-monospace" rows="9" placeholder="One key per line:&#10;XXXXX-XXXXX-XXXXX-XXXXX&#10;YYYYY-YYYYY-YYYYY-YYYYY" required></textarea>
-              <button class="btn btn-primary btn-sm w-100 mt-2">Add to Inventory</button>
+              <input type="hidden" name="key_region" value="<?= esc($kr) ?>">
+              <textarea name="keys" class="form-control form-control-sm font-monospace" rows="9" placeholder="One key per line:&#10;XXXXX-XXXXX-XXXXX-XXXXX&#10;YYYYY-YYYYY-YYYYY-YYYYY" required data-testid="add-keys-textarea"></textarea>
+              <button class="btn btn-primary btn-sm w-100 mt-2" data-testid="add-keys-submit">Add to <?= esc($kr) ?> Inventory</button>
             </form>
             <hr>
-            <small class="text-secondary">Keys are auto-assigned to a customer when their order is marked Paid; the customer then receives an automated email with the key + installation guide.</small>
+            <div class="d-flex justify-content-around text-center small mb-2">
+              <div><div class="fw-bold text-success" data-testid="kr-available"><?= (int)$krc['available'] ?></div><span class="text-secondary">Available</span></div>
+              <div><div class="fw-bold text-primary"><?= (int)$krc['sold'] ?></div><span class="text-secondary">Sold</span></div>
+              <div><div class="fw-bold text-warning"><?= (int)$krc['expired'] ?></div><span class="text-secondary">Expired</span></div>
+            </div>
+            <small class="text-secondary">Showing the <strong><?= esc($kr) ?></strong> pool only. Keys are auto-assigned from the buyer's own country pool when their order is marked Paid.</small>
           </div>
         </div>
         <div class="col-lg-8">
           <div class="card p-0">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
-              <strong>License Keys (<?= (int)$kc['total'] ?>)</strong>
+              <strong>License Keys — <?= esc($kr) ?> (<?= (int)$krc['total'] ?>)</strong>
             </div>
             <div class="table-responsive">
               <table class="table table-sm mb-0 align-middle" data-testid="keys-table">
@@ -469,7 +516,7 @@ include __DIR__ . '/includes/admin-shell.php';
                 </thead>
                 <tbody>
                   <?php if (empty($keys)): ?>
-                    <tr><td colspan="6" class="text-center text-secondary py-4">No keys yet. Add some on the left.</td></tr>
+                    <tr><td colspan="6" class="text-center text-secondary py-4" data-testid="keys-empty">No keys in the <strong><?= esc($kr) ?></strong> pool yet. Add some on the left.</td></tr>
                   <?php endif; ?>
                   <?php foreach ($keys as $k):
                       $statusColor = ['available'=>'success','sold'=>'primary','expired'=>'secondary'][$k['status']] ?? 'dark';
@@ -485,7 +532,7 @@ include __DIR__ . '/includes/admin-shell.php';
                           <form method="post" class="d-inline" onsubmit="return confirm('Delete key?')">
                             <input type="hidden" name="action" value="delete_key">
                             <input type="hidden" name="key_id" value="<?= (int)$k['id'] ?>">
-                            <input type="hidden" name="back" value="inventory.php?view=product&slug=<?= esc($slug) ?>&tab=keys">
+                            <input type="hidden" name="back" value="inventory.php?view=product&slug=<?= esc($slug) ?>&tab=keys&kr=<?= esc($kr) ?>">
                             <button class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></button>
                           </form>
                         <?php endif; ?>
@@ -493,7 +540,7 @@ include __DIR__ . '/includes/admin-shell.php';
                           <form method="post" class="d-inline" onsubmit="return confirm('Mark as expired?')">
                             <input type="hidden" name="action" value="expire_key">
                             <input type="hidden" name="key_id" value="<?= (int)$k['id'] ?>">
-                            <input type="hidden" name="back" value="inventory.php?view=product&slug=<?= esc($slug) ?>&tab=keys">
+                            <input type="hidden" name="back" value="inventory.php?view=product&slug=<?= esc($slug) ?>&tab=keys&kr=<?= esc($kr) ?>">
                             <button class="btn btn-sm btn-outline-warning py-0 px-2"><i class="bi bi-clock"></i></button>
                           </form>
                         <?php endif; ?>
