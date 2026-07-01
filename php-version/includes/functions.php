@@ -850,6 +850,32 @@ function company_phone_for_country(?string $cc = null): string {
  * live values from Company Info — so updating a number/email/address in admin
  * propagates to every page automatically. Phone is country-aware ($cc).
  */
+/**
+ * One-time data cleanup: older seeds stored the support phone as a LITERAL
+ * number inside policy-page HTML, so updating it in Admin → Company Info never
+ * propagated to those pages. This converts the legacy hardcoded number into the
+ * dynamic {{support_phone}} placeholder so Company Info becomes the single
+ * source of truth everywhere. Guarded by a settings flag → runs at most once.
+ */
+function mv_placeholderize_legacy_page_phones(): void {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+    try {
+        if (setting_get('pages_phone_placeholderized', '') === '1') return;
+        db()->exec(
+            "UPDATE pages SET content = " .
+            "REPLACE(REPLACE(REPLACE(content," .
+            "'tel:1-888-632-9902','tel:{{support_phone_tel}}')," .
+            "'+1 888-632-9902','{{support_phone}}')," .
+            "'1-888-632-9902','{{support_phone}}') " .
+            "WHERE content LIKE '%888-632-9902%'"
+        );
+        setting_set('pages_phone_placeholderized', '1');
+    } catch (Throwable $e) { /* silent — non-critical */ }
+}
+
+
 function company_placeholders_apply(string $html, ?string $cc = null): string {
     if ($html === '' || strpos($html, '{{') === false) return $html;
     $co    = company_info();

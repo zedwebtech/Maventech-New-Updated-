@@ -6,6 +6,8 @@ if ($slug === 'contact-us') { // rich contact page replaced the DB page
     header('Location: contact.php');
     exit;
 }
+// Ensure policy pages use the dynamic company phone (one-time cleanup).
+mv_placeholderize_legacy_page_phones();
 $page = null;
 if ($slug) {
     $stmt = db()->prepare('SELECT * FROM pages WHERE slug = ?');

@@ -206,9 +206,20 @@ metadata:
   test_sequence: 3
   run_ui: false
 
+  - task: "UI fixes: (a) policy pages phone consistency, (b) admin per-country stock breakdown on product cards, (c) merged checkout Details+Payment into one card"
+    implemented: true
+    working: true
+    file: "php-version/includes/functions.php, php-version/page.php, php-version/admin.php, php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "(a) PHONE CONSISTENCY BUG: policy pages had the support phone HARDCODED in stored page content (+1 888-632-9902), so Admin→Company Info updates didn't reach them (header showed company_phone=1-805-823-9961). Fix: mv_placeholderize_legacy_page_phones() (functions.php) — a one-time, settings-flag-guarded migration that rewrites the legacy literal number in pages.content to the dynamic {{support_phone}}/{{support_phone_tel}} placeholders; called from page.php. Now Company Info is the single source of truth everywhere. VERIFIED via curl: after loading a policy page, 0 pages contain 888-632-9902, flag pages_phone_placeholderized=1, and page renders 1-805-823-9961 + tel:+18058239961. (b) PER-COUNTRY STOCK: admin.php products tab now shows a per-country available-key breakdown badge row on each product card (US/UK/CA/AU/EU with counts) via a single grouped query ($regionStock). VERIFIED via authenticated curl: windows-11-pro shows 'US 6, UK 0, CA 0, AU 0, EU 0' matching DB. (c) CHECKOUT MERGE: merged the separate 'Your Details' and 'Payment' cards into ONE card in checkout.php (removed card-1 close + card-2 open, added .co-merge-divider). VERIFIED via curl-populated cart + checkout GET: only 2 .co-banner cards render (order summary + single merged Details/Payment card), payment co-head is inside the contact card, divider present, page not redirected. NOTE: automation browser cannot hold cart/login session against this preview (tool quirk) so screenshots of authed/cart pages redirect; all verification done server-side via curl + DB. Pending: Task-1 (admin banner) awaiting user to re-share the correct screenshot (the attached one was a Citi statement)."
+
 test_plan:
-  current_focus:
-    - "Country-scoped license-key inventory (US/UK/CA/AU/EU): separate key pool per product per country + country-aware assignment"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

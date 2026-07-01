@@ -501,11 +501,9 @@ include __DIR__ . '/includes/header.php';
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Banner 4: Payment — short & sweet -->
-    <div class="card co-banner p-3" data-testid="co-banner-payment">
-      <div class="co-head d-flex align-items-center gap-3 mb-3">
+      <hr class="co-merge-divider my-4">
+      <!-- Payment — merged into the SAME card as Your Details for a cleaner, single-box checkout -->
+      <div class="co-head d-flex align-items-center gap-3 mb-3" data-testid="co-banner-payment">
         <span class="co-num">2</span>
         <div class="lh-sm">
           <h6 class="fw-bold mb-0">Payment</h6>
@@ -591,6 +589,8 @@ include __DIR__ . '/includes/header.php';
 </div>
 
 <style>
+/* Merged "Your Details + Payment" single-card divider */
+.co-merge-divider{ border:0; border-top:1px dashed var(--border,#e5e7eb); opacity:.9; }
 /* Checkout entrance + Pay button accent */
 @keyframes coFadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 .co-summary-sticky { animation: coFadeUp .5s cubic-bezier(.22,.61,.36,1) both; }

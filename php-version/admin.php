@@ -7509,6 +7509,14 @@ elseif ($tab === 'products'):
   if ($f['stock']==='out')   $products = array_filter($products, fn($p) => $p['avail_keys'] == 0);
   if ($f['stock']==='low')   $products = array_filter($products, fn($p) => $p['avail_keys'] > 0 && $p['avail_keys'] < 5);
 
+  // Per-country available-key counts for each product (US/UK/CA/AU/EU breakdown)
+  // so the admin can see how many keys are in stock for each country at a glance.
+  $regionStock = [];
+  try {
+      $rsAll = $pdo->query("SELECT product_slug, region, COUNT(*) c FROM license_keys WHERE status='available' GROUP BY product_slug, region");
+      foreach ($rsAll->fetchAll() as $r) { $regionStock[$r['product_slug']][$r['region']] = (int)$r['c']; }
+  } catch (Throwable $e) {}
+
   // ---- Filter dropdown values
   $years  = $pdo->query('SELECT DISTINCT year FROM products WHERE year IS NOT NULL ORDER BY year DESC')->fetchAll(PDO::FETCH_COLUMN);
   $oss    = $pdo->query('SELECT DISTINCT platform FROM products ORDER BY platform')->fetchAll(PDO::FETCH_COLUMN);
@@ -7851,9 +7859,20 @@ elseif ($tab === 'products'):
             <?php endif; ?>
           </div>
           <div class="d-flex justify-content-between mt-2 pt-2" style="font-size:11px;border-top:1px dashed var(--border);">
-            <span title="Available keys"><span class="<?= $av==0?'text-danger':($av<5?'text-warning':'text-success') ?>">●</span> <strong><?= $av ?></strong> stock</span>
+            <span title="Available keys (all countries)"><span class="<?= $av==0?'text-danger':($av<5?'text-warning':'text-success') ?>">●</span> <strong><?= $av ?></strong> stock</span>
             <span title="Sold keys" class="text-primary"><i class="bi bi-cart-check"></i> <strong><?= $sd ?></strong> sold</span>
             <span class="<?= $p['is_active']?'text-success':'text-muted' ?>"><?= $p['is_active']?'Active':'Off' ?></span>
+          </div>
+          <?php
+            // Per-country stock breakdown (US / UK / CA / AU / EU). Each country
+            // has its own key pool, so show how many keys are available for each.
+            $rsMap = $regionStock[$p['slug']] ?? [];
+            $rsRegions = function_exists('mv_sales_regions') ? mv_sales_regions() : ['US','UK','CA','AU','EU'];
+          ?>
+          <div class="d-flex flex-wrap gap-1 mt-2" title="Available license keys per country" data-testid="prod-region-stock-<?= esc($p['slug']) ?>">
+            <?php foreach ($rsRegions as $rcode): $cnt = (int)($rsMap[$rcode] ?? 0); ?>
+              <span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px;<?= $cnt>0 ? 'background:#dcfce7;color:#166534;' : 'background:#f1f5f9;color:#94a3b8;' ?>" data-testid="prstock-<?= esc($p['slug']) ?>-<?= esc($rcode) ?>"><?= esc($rcode) ?> <?= $cnt ?></span>
+            <?php endforeach; ?>
           </div>
           <div class="d-flex gap-1 mt-3">
             <a href="?tab=products&edit=<?= urlencode($p['slug']) ?>" class="btn btn-soft-blue btn-sm flex-grow-1 py-1" style="font-size:11px;" data-testid="edit-<?= esc($p['slug']) ?>" title="Edit product info"><i class="bi bi-pencil"></i> Edit</a>
