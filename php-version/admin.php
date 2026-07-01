@@ -8909,6 +8909,25 @@ elseif ($tab === 'orders'):
 // SALES DETAIL (full with email status)
 // ============================================================================
 elseif ($tab === 'sales'):
+  // ---- Sales Detail filters (support lookup): name / email / order# / date.
+  // When ANY filter is active we search across ALL regions so an agent on a
+  // call can find the customer regardless of which store region they bought in.
+  $sq    = trim((string)($_GET['sq'] ?? ''));
+  $sFrom = trim((string)($_GET['sd_from'] ?? ''));
+  $sTo   = trim((string)($_GET['sd_to'] ?? ''));
+  $salesFiltering = ($sq !== '' || $sFrom !== '' || $sTo !== '');
+
+  $sWhere = ["o.status IN ('paid','delivered')"];
+  $sArgs  = [];
+  if (!$salesFiltering) { $sWhere[] = "o.region = ?"; $sArgs[] = $region_code; }
+  if ($sq !== '') {
+      $sWhere[] = "(o.order_number LIKE ? OR o.email LIKE ? OR o.first_name LIKE ? OR o.last_name LIKE ? OR CONCAT(o.first_name,' ',o.last_name) LIKE ? OR o.phone LIKE ?)";
+      $like = '%'.$sq.'%';
+      array_push($sArgs, $like, $like, $like, $like, $like, $like);
+  }
+  if ($sFrom !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $sFrom)) { $sWhere[] = "o.created_at >= ?"; $sArgs[] = $sFrom.' 00:00:00'; }
+  if ($sTo   !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $sTo))   { $sWhere[] = "o.created_at <= ?"; $sArgs[] = $sTo.' 23:59:59'; }
+
   // One row per ORDER (fixes the multiplicative duplicate-rows bug). Multi-line orders
   // get their line items + license keys aggregated into a single comma list.
   $sales = $pdo->prepare("
@@ -8927,18 +8946,54 @@ elseif ($tab === 'sales'):
               WHERE em.order_id = o.id AND em.template_code = 'order_delivery'
               ORDER BY em.id DESC LIMIT 1) AS email_id
     FROM orders o
-    WHERE o.status IN ('paid','delivered') AND o.region=?
+    WHERE " . implode(' AND ', $sWhere) . "
     GROUP BY o.id
     ORDER BY o.created_at DESC LIMIT 500");
-  $sales->execute([$region_code]);
+  $sales->execute($sArgs);
+  $salesRows = $sales->fetchAll();
+  $curSym = ['USD'=>'$','GBP'=>'£','CAD'=>'C$','AUD'=>'A$','EUR'=>'€','INR'=>'₹'];
 ?>
-  <h5 class="fw-bold mb-1">Sales Detail — <?= esc($rg['name']) ?></h5>
+  <h5 class="fw-bold mb-1">Sales Detail<?= $salesFiltering ? '' : ' — '.esc($rg['name']) ?></h5>
   <p class="text-muted small mb-3">Click any row to expand the full customer + payment + device detail.</p>
+
+  <!-- Customer lookup filter (name / email / phone / order # / date range) -->
+  <form method="get" class="card-e p-3 mb-3" data-testid="sales-filter-form" style="border:1px solid var(--border);">
+    <input type="hidden" name="tab" value="sales">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-lg-5">
+        <label class="form-label small mb-1 fw-semibold"><i class="bi bi-search me-1"></i>Search customer</label>
+        <input type="text" name="sq" value="<?= esc($sq) ?>" class="form-control form-control-sm" placeholder="Name, email, phone or order #…" data-testid="sales-filter-q" autofocus>
+      </div>
+      <div class="col-6 col-lg-2">
+        <label class="form-label small mb-1 fw-semibold">From date</label>
+        <input type="date" name="sd_from" value="<?= esc($sFrom) ?>" class="form-control form-control-sm" data-testid="sales-filter-from">
+      </div>
+      <div class="col-6 col-lg-2">
+        <label class="form-label small mb-1 fw-semibold">To date</label>
+        <input type="date" name="sd_to" value="<?= esc($sTo) ?>" class="form-control form-control-sm" data-testid="sales-filter-to">
+      </div>
+      <div class="col-12 col-lg-3 d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-sm flex-grow-1" data-testid="sales-filter-submit"><i class="bi bi-funnel me-1"></i>Filter</button>
+        <?php if ($salesFiltering): ?>
+          <a href="?tab=sales" class="btn btn-soft-gray btn-sm" data-testid="sales-filter-clear"><i class="bi bi-x-lg"></i> Clear</a>
+        <?php endif; ?>
+      </div>
+    </div>
+    <?php if ($salesFiltering): ?>
+      <div class="small text-muted mt-2" data-testid="sales-filter-result">
+        <i class="bi bi-info-circle me-1"></i><strong><?= count($salesRows) ?></strong> matching order<?= count($salesRows)===1?'':'s' ?> across <strong>all regions</strong><?= $sq!=='' ? ' for "'.esc($sq).'"' : '' ?>.
+      </div>
+    <?php endif; ?>
+  </form>
+
   <div class="tbl-e">
     <table class="table mb-0 sales-table">
       <thead><tr><th>Date</th><th>Order#</th><th>Customer</th><th>Country</th><th>Products</th><th>Amount</th><th>Method</th><th>License Keys</th><th>Email</th><th></th></tr></thead>
       <tbody>
-        <?php foreach ($sales as $s):
+        <?php if (!$salesRows): ?>
+          <tr><td colspan="10" class="text-center text-muted py-4" data-testid="sales-empty"><i class="bi bi-inbox me-1"></i><?= $salesFiltering ? 'No orders match your search.' : 'No sales yet.' ?></td></tr>
+        <?php endif; ?>
+        <?php foreach ($salesRows as $s):
           $emStatus = $s['email_opened_at'] ? 'opened' : ($s['email_status'] ?: 'pending');
           $rowId    = 'sale-detail-'.(int)$s['id'];
           $method   = $s['payment_method'] ?: 'card';
@@ -8959,7 +9014,7 @@ elseif ($tab === 'sales'):
             <td><small><strong><?= esc($s['first_name'].' '.$s['last_name']) ?></strong><br><span class="text-muted"><?= esc($s['email']) ?></span></small></td>
             <td><small><?= esc($s['country'] ?: '—') ?></small></td>
             <td><small><?= esc(mb_strimwidth($s['products'] ?? '—', 0, 60, '…')) ?></small></td>
-            <td><strong><?= region_money((float)$s['total']) ?></strong></td>
+            <td><strong><?php $osym = $curSym[strtoupper((string)($s['currency'] ?? ''))] ?? null; echo $osym !== null ? $osym.number_format((float)$s['total'],2) : region_money((float)$s['total']); ?></strong></td>
             <td><small>
               <?php if ($method === 'paypal'): ?>
                 <i class="bi bi-paypal" style="color:#003087"></i> PayPal

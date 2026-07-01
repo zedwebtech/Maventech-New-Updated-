@@ -224,6 +224,18 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Sales Detail customer-lookup filter (name/email/phone/order#/date)"
+    implemented: true
+    working: true
+    file: "php-version/admin.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "Added a filter bar at the top of Admin → Sales Detail: text search (matches order_number, email, first/last name, full name, phone) + From/To date range. When any filter is active the query searches ALL regions (so a support agent on a call can find the customer regardless of store region); with no filter it keeps the region-scoped default view. Amount column now shows each order's OWN currency symbol (USD/GBP/CAD/AUD/EUR/INR) instead of blindly prepending the active region symbol. Added result count + empty state. VERIFIED via authenticated curl: search by name 'Priya'→MVT-DEMO-003; by email→MV26070178A5A; by order#→MVT-DEMO-002; date range 2026-06-12→only that day's 2 orders (excl. July order); combined name+date narrows correctly; no-match shows 'No orders match your search'."
+
 agent_communication:
     -agent: "main"
     -message: |
