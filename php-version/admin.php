@@ -7895,7 +7895,7 @@ elseif ($tab === 'products'):
     $hasDisc  = $editOrig > $editPrice;
   ?>
   <div class="modal d-block" style="background:rgba(0,0,0,.55);" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
       <div class="modal-content card-e" style="background:var(--card-bg);">
         <div class="modal-header" style="border-color:var(--border);">
           <h5 class="modal-title"><i class="bi bi-<?= $isAdd?'plus-square':'pencil-square' ?> me-2"></i><?= $isAdd?'Add Product':'Edit Product' ?></h5>
@@ -12828,5 +12828,29 @@ elseif ($tab === 'reviews'):
   </div>
 
 <?php endif; ?>
+
+<script>
+/* Admin bootstrap modals (.modal.d-block) render inside the admin content
+   wrapper, which is its own stacking context (z-index:1) sitting BELOW the
+   sticky admin top bar (z-index:1030) — that made a modal's header + X tuck
+   under the top bar. Moving the modal to <body> lets its native z-index sit
+   above the bar; centering keeps it in the middle of the screen. */
+(function(){
+  function liftModals(){
+    document.querySelectorAll('.modal.d-block').forEach(function(m){
+      var dlg = m.querySelector('.modal-dialog');
+      if (dlg && dlg.classList.contains('modal-dialog-scrollable') && !dlg.classList.contains('modal-dialog-centered')) {
+        dlg.classList.add('modal-dialog-centered');
+      }
+      if (m.parentNode !== document.body) document.body.appendChild(m);
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', liftModals);
+  } else {
+    liftModals();
+  }
+})();
+</script>
 
 <?php include __DIR__ . '/includes/admin-shell-end.php'; ?>
