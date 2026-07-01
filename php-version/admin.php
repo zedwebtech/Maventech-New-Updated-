@@ -8909,22 +8909,33 @@ elseif ($tab === 'orders'):
 // SALES DETAIL (full with email status)
 // ============================================================================
 elseif ($tab === 'sales'):
-  // ---- Sales Detail filters (support lookup): name / email / order# / date.
-  // When ANY filter is active we search across ALL regions so an agent on a
-  // call can find the customer regardless of which store region they bought in.
-  $sq    = trim((string)($_GET['sq'] ?? ''));
-  $sFrom = trim((string)($_GET['sd_from'] ?? ''));
-  $sTo   = trim((string)($_GET['sd_to'] ?? ''));
-  $salesFiltering = ($sq !== '' || $sFrom !== '' || $sTo !== '');
+  // ---- Sales Detail filters (support lookup): SEPARATE fields for
+  // name / email / phone / order#, plus a Region selector and a date range.
+  $fName   = trim((string)($_GET['f_name']   ?? ''));
+  $fEmail  = trim((string)($_GET['f_email']  ?? ''));
+  $fPhone  = trim((string)($_GET['f_phone']  ?? ''));
+  $fOrder  = trim((string)($_GET['f_order']  ?? ''));
+  $fRegion = strtoupper(trim((string)($_GET['f_region'] ?? ''))); // '' = All regions
+  $sFrom   = trim((string)($_GET['sd_from']  ?? ''));
+  $sTo     = trim((string)($_GET['sd_to']    ?? ''));
+  $salesRegionList = function_exists('mv_sales_regions') ? mv_sales_regions() : ['US','UK','CA','AU','EU'];
+  $regionChosen = in_array($fRegion, $salesRegionList, true);
+  $textFilter   = ($fName !== '' || $fEmail !== '' || $fPhone !== '' || $fOrder !== '' || $sFrom !== '' || $sTo !== '');
+  $salesFiltering = $textFilter || $regionChosen;
 
   $sWhere = ["o.status IN ('paid','delivered')"];
   $sArgs  = [];
-  if (!$salesFiltering) { $sWhere[] = "o.region = ?"; $sArgs[] = $region_code; }
-  if ($sq !== '') {
-      $sWhere[] = "(o.order_number LIKE ? OR o.email LIKE ? OR o.first_name LIKE ? OR o.last_name LIKE ? OR CONCAT(o.first_name,' ',o.last_name) LIKE ? OR o.phone LIKE ?)";
-      $like = '%'.$sq.'%';
-      array_push($sArgs, $like, $like, $like, $like, $like, $like);
+  // Region scope: explicit choice wins; if no filters at all, default to the
+  // admin's current region view; otherwise (filters but region=All) search all.
+  if ($regionChosen)          { $sWhere[] = "o.region = ?"; $sArgs[] = $fRegion; }
+  elseif (!$salesFiltering)   { $sWhere[] = "o.region = ?"; $sArgs[] = $region_code; }
+  if ($fName !== '') {
+      $sWhere[] = "(o.first_name LIKE ? OR o.last_name LIKE ? OR CONCAT(o.first_name,' ',o.last_name) LIKE ?)";
+      $l = '%'.$fName.'%'; array_push($sArgs, $l, $l, $l);
   }
+  if ($fEmail !== '') { $sWhere[] = "o.email LIKE ?";        $sArgs[] = '%'.$fEmail.'%'; }
+  if ($fPhone !== '') { $sWhere[] = "o.phone LIKE ?";        $sArgs[] = '%'.$fPhone.'%'; }
+  if ($fOrder !== '') { $sWhere[] = "o.order_number LIKE ?"; $sArgs[] = '%'.$fOrder.'%'; }
   if ($sFrom !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $sFrom)) { $sWhere[] = "o.created_at >= ?"; $sArgs[] = $sFrom.' 00:00:00'; }
   if ($sTo   !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $sTo))   { $sWhere[] = "o.created_at <= ?"; $sArgs[] = $sTo.' 23:59:59'; }
 
@@ -8956,24 +8967,45 @@ elseif ($tab === 'sales'):
   <h5 class="fw-bold mb-1">Sales Detail<?= $salesFiltering ? '' : ' — '.esc($rg['name']) ?></h5>
   <p class="text-muted small mb-3">Click any row to expand the full customer + payment + device detail.</p>
 
-  <!-- Customer lookup filter (name / email / phone / order # / date range) -->
+  <!-- Customer lookup filter — separate fields: name / email / phone / order# / region / date range -->
   <form method="get" class="card-e p-3 mb-3" data-testid="sales-filter-form" style="border:1px solid var(--border);">
     <input type="hidden" name="tab" value="sales">
     <div class="row g-2 align-items-end">
-      <div class="col-12 col-lg-5">
-        <label class="form-label small mb-1 fw-semibold"><i class="bi bi-search me-1"></i>Search customer</label>
-        <input type="text" name="sq" value="<?= esc($sq) ?>" class="form-control form-control-sm" placeholder="Name, email, phone or order #…" data-testid="sales-filter-q" autofocus>
+      <div class="col-12 col-md-6 col-lg-3">
+        <label class="form-label small mb-1 fw-semibold"><i class="bi bi-person me-1"></i>Name</label>
+        <input type="text" name="f_name" value="<?= esc($fName) ?>" class="form-control form-control-sm" placeholder="Customer name" data-testid="sales-filter-name">
       </div>
-      <div class="col-6 col-lg-2">
+      <div class="col-12 col-md-6 col-lg-3">
+        <label class="form-label small mb-1 fw-semibold"><i class="bi bi-envelope me-1"></i>Email</label>
+        <input type="text" name="f_email" value="<?= esc($fEmail) ?>" class="form-control form-control-sm" placeholder="Email address" data-testid="sales-filter-email">
+      </div>
+      <div class="col-6 col-md-6 col-lg-3">
+        <label class="form-label small mb-1 fw-semibold"><i class="bi bi-telephone me-1"></i>Phone</label>
+        <input type="text" name="f_phone" value="<?= esc($fPhone) ?>" class="form-control form-control-sm" placeholder="Phone number" data-testid="sales-filter-phone">
+      </div>
+      <div class="col-6 col-md-6 col-lg-3">
+        <label class="form-label small mb-1 fw-semibold"><i class="bi bi-hash"></i>Order #</label>
+        <input type="text" name="f_order" value="<?= esc($fOrder) ?>" class="form-control form-control-sm" placeholder="Order number" data-testid="sales-filter-order">
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <label class="form-label small mb-1 fw-semibold"><i class="bi bi-globe2 me-1"></i>Region</label>
+        <select name="f_region" class="form-select form-select-sm" data-testid="sales-filter-region">
+          <option value="">All regions</option>
+          <?php foreach ($salesRegionList as $rcode): ?>
+            <option value="<?= esc($rcode) ?>" <?= $fRegion===$rcode?'selected':'' ?>><?= esc($rcode) ?> — <?= esc(function_exists('mv_region_label')?mv_region_label($rcode):$rcode) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
         <label class="form-label small mb-1 fw-semibold">From date</label>
         <input type="date" name="sd_from" value="<?= esc($sFrom) ?>" class="form-control form-control-sm" data-testid="sales-filter-from">
       </div>
-      <div class="col-6 col-lg-2">
+      <div class="col-6 col-md-4 col-lg-2">
         <label class="form-label small mb-1 fw-semibold">To date</label>
         <input type="date" name="sd_to" value="<?= esc($sTo) ?>" class="form-control form-control-sm" data-testid="sales-filter-to">
       </div>
-      <div class="col-12 col-lg-3 d-flex gap-2">
-        <button type="submit" class="btn btn-primary btn-sm flex-grow-1" data-testid="sales-filter-submit"><i class="bi bi-funnel me-1"></i>Filter</button>
+      <div class="col-6 col-lg-6 d-flex gap-2 justify-content-lg-end">
+        <button type="submit" class="btn btn-primary btn-sm px-4" data-testid="sales-filter-submit"><i class="bi bi-funnel me-1"></i>Filter</button>
         <?php if ($salesFiltering): ?>
           <a href="?tab=sales" class="btn btn-soft-gray btn-sm" data-testid="sales-filter-clear"><i class="bi bi-x-lg"></i> Clear</a>
         <?php endif; ?>
@@ -8981,7 +9013,8 @@ elseif ($tab === 'sales'):
     </div>
     <?php if ($salesFiltering): ?>
       <div class="small text-muted mt-2" data-testid="sales-filter-result">
-        <i class="bi bi-info-circle me-1"></i><strong><?= count($salesRows) ?></strong> matching order<?= count($salesRows)===1?'':'s' ?> across <strong>all regions</strong><?= $sq!=='' ? ' for "'.esc($sq).'"' : '' ?>.
+        <i class="bi bi-info-circle me-1"></i><strong><?= count($salesRows) ?></strong> matching order<?= count($salesRows)===1?'':'s' ?>
+        <?= $regionChosen ? 'in region <strong>'.esc($fRegion).'</strong>' : 'across <strong>all regions</strong>' ?>.
       </div>
     <?php endif; ?>
   </form>
