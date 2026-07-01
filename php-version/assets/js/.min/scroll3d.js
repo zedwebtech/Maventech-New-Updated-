@@ -69,20 +69,22 @@ return true;
 var MAX = 5;
 tiltCards.forEach(function (el) {
 el.classList.add('s3d-tilt');
-var raf = null;
+var raf = null, rect = null;
+el.addEventListener('mouseenter', function () { rect = el.getBoundingClientRect(); });
 el.addEventListener('mousemove', function (e) {
-if (raf) return;
+if (raf || !rect) return;
+var cx = e.clientX, cy = e.clientY;
 raf = requestAnimationFrame(function () {
 raf = null;
-var r = el.getBoundingClientRect();
-var px = (e.clientX - r.left) / r.width - 0.5;
-var py = (e.clientY - r.top) / r.height - 0.5;
+var px = (cx - rect.left) / rect.width - 0.5;
+var py = (cy - rect.top) / rect.height - 0.5;
 el.classList.add('s3d-tilting');
 el.style.transform = 'perspective(900px) rotateX(' + (-py * MAX).toFixed(2) +
 'deg) rotateY(' + (px * MAX).toFixed(2) + 'deg) translateZ(0)';
 });
 });
 el.addEventListener('mouseleave', function () {
+rect = null;
 el.classList.remove('s3d-tilting');
 el.style.transform = '';
 });

@@ -224,6 +224,18 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "PageSpeed mobile: reduce render-blocking CSS + fix non-composited animation & forced reflow (scroll3d)"
+    implemented: true
+    working: true
+    file: "php-version/includes/header.php, php-version/assets/css/scroll3d.css, php-version/assets/js/scroll3d.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "From PageSpeed Insights mobile report (Perf 86, TBT 510ms). Safe fixes for items partly introduced by the scroll3d enhancement: (1) scroll3d.css now loads async via preload+onload swap (+<noscript> fallback) instead of a render-blocking <link> — removes it from the critical render chain (~997ms flagged). (2) scroll3d.css .s3d-tilt no longer transitions box-shadow — only transform is animated (GPU-composited) to satisfy 'avoid non-composited animations'. (3) scroll3d.js tilt caches getBoundingClientRect on mouseenter instead of reading layout every mousemove (fixes 'forced reflow'). VERIFIED via curl: homepage emits the async preload link for scroll3d.css (no blocking stylesheet ref except noscript), assets serve 200, box-shadow transitions removed. NOTE to user: remaining big PageSpeed items are third-party/infra — ~520KiB unused JS is from Google Tag Manager/gtag (would require trimming analytics) and ~147KiB image savings needs resized/responsive product images (image pipeline); left as-is to avoid risk."
+
   - task: "inventory.php product License Key Inventory — per-country pools (US/UK/CA/AU/EU) filter + region-scoped add/list"
     implemented: true
     working: true
