@@ -224,6 +224,18 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Responsive product thumbnails (PageSpeed image delivery) — cached on-the-fly resizer + srcset"
+    implemented: true
+    working: true
+    file: "php-version/img.php, php-version/includes/functions.php, php-version/index.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "PageSpeed flagged oversized images (720x720 products shown ~106-200px; 240x240 MS icons shown ~48-90px). Added img.php — a cached WebP thumbnailer (?s=<local path>&w=<width>) via GD, with traversal guards, width whitelist, no-upscale, long cache headers, cached under uploads/cache/thumbs/{w}/. SAFE FALLBACK: if GD unavailable/source missing/already small it 302-redirects to the original, and thumb_url() returns the original when GD isn't loaded — zero regression on any host. Helpers thumb_url()/product_srcset()/product_img_attrs() added. Updated product card renderers (shop grid+rows), homepage featured/related/list images, and hero MS icons to emit src+srcset (1x/2x) at display size + lazy/async + width/height. Added uploads/cache/ to .gitignore. VERIFIED via curl: product 720²→320px 10.7KB→4.4KB (-59%); MS icon 240² PNG 9KB→96px 1.36KB (-85%); shop/home/product render srcset via img.php + 200; traversal blocked (400). NOTE: real host needs PHP-GD (standard) for thumbnails else originals served (no breakage)."
+
   - task: "PageSpeed mobile: reduce render-blocking CSS + fix non-composited animation & forced reflow (scroll3d)"
     implemented: true
     working: true

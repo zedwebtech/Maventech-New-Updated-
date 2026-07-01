@@ -80,10 +80,10 @@ include __DIR__ . '/includes/header.php';
               <span class="hero-art-glow glow-1"></span>
               <span class="hero-art-glow glow-2"></span>
               <span class="hero-brand-watermark"><?= render_logo(340) ?></span>
-              <span class="hero-tile tile-1"><img src="<?= esc($hi['word']) ?>" alt="Microsoft Word" width="48" height="48" decoding="async"></span>
-              <span class="hero-tile tile-2"><img src="<?= esc($hi['excel']) ?>" alt="Microsoft Excel" width="48" height="48" decoding="async"></span>
-              <span class="hero-tile tile-3"><img src="<?= esc($hi['powerpoint']) ?>" alt="Microsoft PowerPoint" width="48" height="48" decoding="async"></span>
-              <span class="hero-tile tile-4"><img src="<?= esc($hi['outlook']) ?>" alt="Microsoft Outlook" width="48" height="48" decoding="async"></span>
+              <span class="hero-tile tile-1"><img <?= product_img_attrs($hi['word'], 96) ?> alt="Microsoft Word" width="48" height="48" decoding="async"></span>
+              <span class="hero-tile tile-2"><img <?= product_img_attrs($hi['excel'], 96) ?> alt="Microsoft Excel" width="48" height="48" decoding="async"></span>
+              <span class="hero-tile tile-3"><img <?= product_img_attrs($hi['powerpoint'], 96) ?> alt="Microsoft PowerPoint" width="48" height="48" decoding="async"></span>
+              <span class="hero-tile tile-4"><img <?= product_img_attrs($hi['outlook'], 96) ?> alt="Microsoft Outlook" width="48" height="48" decoding="async"></span>
               <span class="hero-ring"></span>
               <span class="hero-podium"></span>
             </div>
@@ -175,7 +175,7 @@ include __DIR__ . '/includes/header.php';
           <div class="col-lg-3 col-sm-6">
             <a href="product.php?slug=<?= esc($p['slug']) ?>" class="card h-100 p-3 text-decoration-none">
               <div class="d-flex gap-2 align-items-center">
-                <img src="<?= esc($p['image']) ?>" alt="<?= esc(product_img_alt($p)) ?>" title="<?= esc($p['name']) ?>" style="width:54px;height:54px;object-fit:contain;" class="bg-body-tertiary rounded p-1" loading="lazy" decoding="async" width="54" height="54">
+                <img <?= product_img_attrs($p['image'], 72) ?> alt="<?= esc(product_img_alt($p)) ?>" title="<?= esc($p['name']) ?>" style="width:54px;height:54px;object-fit:contain;" class="bg-body-tertiary rounded p-1" loading="lazy" decoding="async" width="54" height="54">
                 <div>
                   <div class="small fw-semibold text-body lh-sm"><?= esc($p['name']) ?></div>
                   <span class="fw-bold text-primary small"><?= format_price((float)$p['price']) ?></span>
@@ -266,7 +266,7 @@ include __DIR__ . '/includes/header.php';
               <a href="product.php?slug=<?= esc($feat['slug']) ?>" class="d-block">
                 <div class="spotlight-img-wrap rounded-4 p-3 position-relative">
                   <span class="badge text-bg-warning text-dark position-absolute top-0 start-0 m-2" style="z-index:2;">BEST SELLER</span>
-                  <img src="<?= esc($feat['image']) ?>" alt="<?= esc(product_img_alt($feat)) ?>" title="<?= esc($feat['name']) ?>" loading="lazy" decoding="async" width="200" height="200">
+                  <img <?= product_img_attrs($feat['image'], 240) ?> alt="<?= esc(product_img_alt($feat)) ?>" title="<?= esc($feat['name']) ?>" loading="lazy" decoding="async" width="200" height="200">
                 </div>
               </a>
             </div>
@@ -294,7 +294,7 @@ include __DIR__ . '/includes/header.php';
           <?php foreach ($sideSellers as $p): ?>
             <div class="card side-product-row p-3 d-flex flex-row align-items-center gap-3" data-testid="side-seller-<?= esc($p['slug']) ?>">
               <a href="product.php?slug=<?= esc($p['slug']) ?>" class="side-thumb">
-                <img src="<?= esc($p['image']) ?>" alt="<?= esc(product_img_alt($p)) ?>" title="<?= esc($p['name']) ?>" loading="lazy" decoding="async" width="200" height="200">
+                <img <?= product_img_attrs($p['image'], 240) ?> alt="<?= esc(product_img_alt($p)) ?>" title="<?= esc($p['name']) ?>" loading="lazy" decoding="async" width="200" height="200">
               </a>
               <div class="flex-grow-1 min-w-0">
                 <a href="product.php?slug=<?= esc($p['slug']) ?>" class="text-decoration-none text-body fw-bold small d-block"><?= esc($p['name']) ?></a>

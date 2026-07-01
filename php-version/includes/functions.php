@@ -1833,6 +1833,38 @@ function render_menu_promo(bool $compact = false): string
 
 /* ---------------- SEO helpers ---------------- */
 // Rich descriptive alt text for product images (Google Images / Merchant Center friendly)
+/**
+ * Responsive-image helpers. thumb_url() returns a cached, downscaled WebP URL
+ * (via img.php) for LOCAL raster product/asset images; it returns the original
+ * unchanged for remote/CDN/data/SVG images or when GD isn't available — so it
+ * is always safe. product_srcset() builds a 1x/2x srcset for fixed-size cards.
+ */
+function thumb_url(?string $src, int $w): string {
+    $src = trim((string)$src);
+    if ($src === '' || !extension_loaded('gd')) return $src;
+    $path = parse_url($src, PHP_URL_PATH);
+    if ($path === false || $path === null) $path = $src;
+    // Only our own local uploads/assets raster images (skip svg, remote, data:).
+    if (!preg_match('#^/?(uploads|assets)/.+\.(webp|png|jpe?g)$#i', $path)) return $src;
+    return 'img.php?s=' . rawurlencode(ltrim($path, '/')) . '&w=' . $w;
+}
+
+/** srcset value ("url 1x, url2x 2x") for a fixed-display-size image, or '' if not resizable. */
+function product_srcset(?string $src, int $w): string {
+    $one = thumb_url($src, $w);
+    if ($one === trim((string)$src)) return ''; // not a resizable local image
+    return $one . ' 1x, ' . thumb_url($src, $w * 2) . ' 2x';
+}
+
+/** Convenience: prints ready-to-use src + srcset attributes for a card image. */
+function product_img_attrs(?string $src, int $w): string {
+    $srcset = product_srcset($src, $w);
+    $out = 'src="' . esc(thumb_url($src, $w)) . '"';
+    if ($srcset !== '') $out .= ' srcset="' . esc($srcset) . '"';
+    return $out;
+}
+
+
 function product_img_alt(array $p): string
 {
     $pct = (!empty($p['original_price']) && $p['original_price'] > $p['price'])
@@ -2164,7 +2196,7 @@ function render_product_row(array $p): string
       <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 gap-sm-4">
         <a href="product.php?slug=' . esc($p['slug']) . '" class="flex-shrink-0 mx-auto mx-sm-0">
           <div class="shop-row-img rounded-4">
-            <img src="' . esc($p['image']) . '" alt="' . esc(product_img_alt($p)) . '" title="' . esc($p['name']) . '" loading="lazy">
+            <img ' . product_img_attrs($p['image'], 240) . ' alt="' . esc(product_img_alt($p)) . '" title="' . esc($p['name']) . '" loading="lazy" decoding="async" width="240" height="240">
           </div>
         </a>
         <div class="flex-grow-1 min-w-0">
@@ -2218,7 +2250,7 @@ function render_product_card(array $p): string
       ' . $badge . $discount . '
       <a href="product.php?slug=' . esc($p['slug']) . '" class="text-decoration-none">
         <div class="ratio ratio-1x1 bg-body-tertiary rounded-top product-img-wrap">
-          <img src="' . esc($p['image']) . '" alt="' . esc(product_img_alt($p)) . '" title="' . esc($p['name']) . '" class="object-fit-contain p-3" loading="lazy" decoding="async" width="320" height="320">
+          <img ' . product_img_attrs($p['image'], 320) . ' alt="' . esc(product_img_alt($p)) . '" title="' . esc($p['name']) . '" class="object-fit-contain p-3" loading="lazy" decoding="async" width="320" height="320">
         </div>
       </a>
       <div class="card-body d-flex flex-column">
