@@ -37,8 +37,22 @@ function regions_bootstrap(): void {
                 ('US', 'United States',  'USD', '$',  0.0000, 1),
                 ('UK', 'United Kingdom', 'GBP', '£',  0.2000, 1),
                 ('CA', 'Canada',         'CAD', 'C$', 0.1300, 1),
-                ('EU', 'Europe',         'EUR', '€',  0.2000, 0)");
+                ('AU', 'Australia',      'AUD', 'A$', 0.1000, 1),
+                ('EU', 'Europe',         'EUR', '€',  0.2000, 1)");
         }
+        // Idempotent guarantee: the store sells to 5 countries, each with its
+        // OWN license-key pool (US, UK, Canada, Australia, Europe). Make sure
+        // every one of those regions exists — INSERT IGNORE never clobbers an
+        // admin's existing row (name/tax/currency edits are preserved).
+        $pdo->exec("INSERT IGNORE INTO regions (code, name, currency, currency_symbol, tax_rate, active) VALUES
+            ('US', 'United States',  'USD', '$',  0.0000, 1),
+            ('UK', 'United Kingdom', 'GBP', '£',  0.2000, 1),
+            ('CA', 'Canada',         'CAD', 'C$', 0.1300, 1),
+            ('AU', 'Australia',      'AUD', 'A$', 0.1000, 1),
+            ('EU', 'Europe',         'EUR', '€',  0.2000, 1)");
+        // Australia + Europe are live sales segments for this store, so make
+        // sure they're active (older seeds shipped EU inactive).
+        $pdo->exec("UPDATE regions SET active = 1 WHERE code IN ('AU','EU') AND active = 0");
 
         // products / orders / license_keys / customer_reviews need a `region` column.
         // Detect via INFORMATION_SCHEMA so this works on MySQL 5.6 / 5.7 / 8 / MariaDB.
@@ -135,7 +149,7 @@ function region_filter_sql(string $alias = ''): string {
 
 /** Static FX map (USD base). For production wire to live FX API. */
 function region_rates(): array {
-    return ['US' => 1.00, 'UK' => 0.79, 'CA' => 1.37, 'EU' => 0.92];
+    return ['US' => 1.00, 'UK' => 0.79, 'CA' => 1.37, 'AU' => 1.52, 'EU' => 0.92];
 }
 
 /** Convert a USD-stored price into the active region's currency value. */
@@ -148,3 +162,30 @@ function region_price(float $usd): float {
 function region_money_from_usd(float $usd): string {
     return region_money(region_price($usd));
 }
+
+/**
+ * The 5 country segments this store sells to. Each has its OWN separate
+ * license-key inventory pool (a US key never fulfils a UK/AU/CA/EU order).
+ */
+function mv_sales_regions(): array {
+    return ['US', 'UK', 'CA', 'AU', 'EU'];
+}
+
+/**
+ * Normalise any country/region string to one of the 5 sales-region codes.
+ * Accepts common aliases (GB→UK, USA→US, AUS→AU, CAN→CA) and falls back to
+ * 'US' for anything unrecognised so a key is always pulled from a real pool.
+ */
+function mv_normalize_region(?string $code): string {
+    $c = strtoupper(preg_replace('/[^A-Z]/i', '', (string)$code));
+    $aliases = ['GB' => 'UK', 'GBR' => 'UK', 'USA' => 'US', 'CAN' => 'CA', 'AUS' => 'AU', 'EUR' => 'EU'];
+    if (isset($aliases[$c])) $c = $aliases[$c];
+    return in_array($c, mv_sales_regions(), true) ? $c : 'US';
+}
+
+/** Human label for a region code, e.g. 'AU' → 'Australia'. */
+function mv_region_label(string $code): string {
+    $labels = ['US' => 'United States', 'UK' => 'United Kingdom', 'CA' => 'Canada', 'AU' => 'Australia', 'EU' => 'Europe'];
+    return $labels[mv_normalize_region($code)] ?? $code;
+}
+

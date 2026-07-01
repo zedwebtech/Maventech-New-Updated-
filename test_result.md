@@ -185,14 +185,30 @@ frontend:
         -comment: "✅ VERIFIED - URL migration complete and working correctly. Database checks: (1) 30 products have install_guide_url LIKE '/install-guide.php%' ✅. (2) 0 products have install_guide_url LIKE '%manuals.winandoffice.com%' ✅. (3) 7 antivirus products (6 Bitdefender + 1 McAfee) correctly have NULL install_guide_url/installer_url/activation_url ✅. Product page test (microsoft-office-2024-professional-plus-windows): Installation guide button (data-testid='install-guide-btn') now points to /install-guide.php?slug=microsoft-office-2024-professional-plus-windows (our own page) ✅, while Download installer + Activate buttons remain external (Office_2024_EN_64Bits.exe, setup.office.com) ✅. Order-success page test (MVT-DEMO-002 with microsoft-office-home-business-2024-pc): Installation guide button (data-testid='guide-installguide-btn') points to /install-guide.php?slug=microsoft-office-home-business-2024-pc ✅, Download installer → Office_2024_EN_standard_64Bits.exe ✅, Install & sign in → setup.office.com ✅."
 
 
+  - task: "Country-scoped license-key inventory (US/UK/CA/AU/EU): separate key pool per product per country + country-aware assignment"
+    implemented: true
+    working: true
+    file: "php-version/includes/regions.php, php-version/includes/email.php, php-version/admin.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "Feature: each product now has a SEPARATE license-key pool per country (US, UK, Canada=CA, Australia=AU, Europe=EU). (1) regions.php: added Australia (AUD/A$) + made AU & EU active; added mv_sales_regions()/mv_normalize_region()/mv_region_label() helpers + AUD FX rate. (2) email.php fulfill_order(): key assignment now filters `AND region = <order country>` so a paid order ONLY ever consumes a key from its own country's pool (US key never goes to UK/AU/CA/EU buyer); order.region is stamped from billing country. STRICT separation — if the country's pool is empty the order is left delivery_status='pending' (backorder), it never falls back to another country. (3) admin.php inventory modal (?tab=products&inv=SLUG): added a Country-pool selector (5 pills US/UK/CA/AU/EU with per-pool available counts) so admin adds/deletes keys for any country pool independently of the storefront region; add_keys/delete_key handlers use the posted key_region. VERIFIED by main via CLI script exercising real fulfill_order(): AU order→AU key, EU order→EU key, US order→US key, US pool consumed exactly 1 (AU/EU never touched US), CA order (no stock)→NO key + delivery_status='pending'. Admin flow verified via authenticated curl: modal renders all 5 pool pills; add_keys with key_region=AU/UK lands keys in the correct pool, US pool untouched. No storefront regression (products use region IN active-regions; US stays active)."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ COMPREHENSIVE VALIDATION COMPLETE - All 4 test items PASSED. (1) REGION CONFIG: Confirmed all 5 regions exist and active=1 via DB query: US(USD), UK(GBP), CA(CAD), AU(AUD), EU(EUR). (2) ADMIN KEY MANAGEMENT: Verified admin inventory page (admin.php?tab=products&inv=windows-11-pro&invregion=AU) contains all 5 country-pool pills (data-testid='inv-region-US/UK/CA/AU/EU'), label 'Country pool <strong>AU', hidden field name='key_region' value='AU', and button 'Add to AU Inventory'. Successfully added 2 keys to AU pool (QATEST-AU-0001, QATEST-AU-0002) and 1 key to UK pool (QATEST-UK-0001) via POST action=add_keys. DB verification: all 3 keys have correct region (AU/UK) and status='available'. US pool for windows-11-pro remained unchanged (6 available keys). (3) COUNTRY-SCOPED ASSIGNMENT: Created AU order (id=9, country='AU', status='paid') for windows-11-pro and triggered fulfillment via admin resend_email action. Verified: order received QATEST-AU-0001 (region='AU', status='sold', order_id=9), NO US key assigned (0 US keys with order_id=9), delivery_status='delivered'. Created CA order (id=10, country='CA', status='paid') for windows-11-pro when NO CA keys exist and triggered fulfillment. Verified: NO key assigned (0 keys with order_id=10), delivery_status='pending' (backorder), did NOT consume any US/AU/UK/EU key (strict separation maintained). (4) CLEANUP: Successfully deleted all QATEST-% license keys, test orders (9, 10), and order_items. DB verification: 0 remaining QATEST keys, 0 remaining QATEST orders. Database restored to original state. STRICT COUNTRY SEPARATION CONFIRMED: Orders only consume keys from their own country pool, no fallback to other countries when pool is empty."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 2
+  test_sequence: 3
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Country-scoped license-key inventory (US/UK/CA/AU/EU): separate key pool per product per country + country-aware assignment"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -397,3 +413,19 @@ agent_communication:
         open Word from Launchpad -> Get Started / Sign in to activate. 8 steps, proper Mac flowchart, uninstall-old-Office tip.
       - Verified: Mac guide renders 8 steps with 7 real macOS screenshots; hero shows Activate/Sign in + Back, NO one-click
         Download button (Mac downloads after sign-in). Screenshot confirms authentic macOS installer password + success screens.
+
+    -agent: "testing"
+    -message: |
+      ✅ COUNTRY-SCOPED LICENSE KEY INVENTORY - COMPREHENSIVE VALIDATION COMPLETE
+      
+      Validated the NEW country-scoped license-key inventory feature per the review request. All 4 test items PASSED:
+      
+      1) ✅ REGION CONFIG: All 5 regions (US, UK, CA, AU, EU) exist and active=1 in database
+      2) ✅ ADMIN KEY MANAGEMENT: Admin UI correctly shows all 5 country-pool pills, allows adding keys to specific country pools (tested AU and UK), US pool remains unchanged
+      3) ✅ COUNTRY-SCOPED ASSIGNMENT (CORE REQUIREMENT): 
+         - AU order (country='AU') received AU key (QATEST-AU-0001), NO US key assigned ✅
+         - CA order (country='CA') with NO CA keys available: NO key assigned, delivery_status='pending' (backorder), did NOT fallback to US/AU/UK/EU keys ✅
+         - STRICT SEPARATION CONFIRMED: Orders only consume keys from their own country pool
+      4) ✅ CLEANUP: All test data removed, database restored to original state
+      
+      Feature is working correctly as specified. No code modifications made (testing only).

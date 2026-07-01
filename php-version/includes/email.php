@@ -1618,7 +1618,18 @@ function fulfill_order(int $orderId, bool $forceAdminOverride = false): void {
     $tl['payment_completed'] = $tl['payment_completed'] ?? date('Y-m-d H:i:s');
 
     $assignments = [];
-    $keyStmt = $pdo->prepare('SELECT id, license_key FROM license_keys WHERE product_slug = ? AND status = "available" LIMIT 1');
+    // COUNTRY-SCOPED FULFILMENT: a paid order only ever consumes a license key
+    // from its OWN country's pool for each product. A US key is never handed to
+    // a UK / AU / CA / EU buyer (and vice-versa). The region is derived from the
+    // billing country captured at checkout.
+    $orderRegion = function_exists('mv_normalize_region')
+        ? mv_normalize_region($order['country'] ?? ($order['region'] ?? 'US'))
+        : strtoupper((string)($order['country'] ?? 'US'));
+    // Stamp the order with its resolved region so admin order views / filters
+    // and any later manual key top-ups target the correct country pool.
+    try { $pdo->prepare('UPDATE orders SET region = ? WHERE id = ?')->execute([$orderRegion, $orderId]); } catch (Throwable $e) {}
+
+    $keyStmt = $pdo->prepare('SELECT id, license_key FROM license_keys WHERE product_slug = ? AND status = "available" AND region = ? LIMIT 1');
     $assignedStmt = $pdo->prepare('SELECT id, license_key FROM license_keys WHERE product_slug = ? AND order_id = ? LIMIT 1');
     $assignStmt = $pdo->prepare('UPDATE license_keys SET status = "sold", order_id = ?, assigned_at = NOW() WHERE id = ?');
     $allDelivered = true; // false → at least one item has no key yet (backorder)
@@ -1645,7 +1656,7 @@ function fulfill_order(int $orderId, bool $forceAdminOverride = false): void {
         $assignedStmt->execute([$item['product_slug'], $orderId]);
         $keyRow = $assignedStmt->fetch();
         if (!$keyRow) {
-            $keyStmt->execute([$item['product_slug']]);
+            $keyStmt->execute([$item['product_slug'], $orderRegion]);
             $keyRow = $keyStmt->fetch();
             if ($keyRow) $assignStmt->execute([$orderId, $keyRow['id']]);
         }

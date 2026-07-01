@@ -1234,17 +1234,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } elseif ($action === 'add_keys') {
         $keys = array_filter(array_map('trim', explode("\n", $_POST['keys'] ?? '')));
+        // Which COUNTRY pool are we topping up? Explicit per-product selector
+        // (falls back to the admin's active region for legacy callers).
+        $keyRegion = function_exists('mv_normalize_region')
+            ? mv_normalize_region($_POST['key_region'] ?? $region_code)
+            : strtoupper(trim($_POST['key_region'] ?? $region_code));
         $stmt = $pdo->prepare('INSERT INTO license_keys (product_slug, license_key, region) VALUES (?,?,?)');
         $slugForKeys = $_POST['product_slug'] ?? '';
         // Snapshot stock BEFORE adding so we know if this restock crossed 0 → >0
         $stockBefore = 0;
         try {
             $sb = $pdo->prepare("SELECT COUNT(*) FROM license_keys WHERE product_slug=? AND status='available' AND region=?");
-            $sb->execute([$slugForKeys, $region_code]);
+            $sb->execute([$slugForKeys, $keyRegion]);
             $stockBefore = (int)$sb->fetchColumn();
         } catch (Throwable $e) {}
 
-        $n=0; foreach ($keys as $k) try { $stmt->execute([$slugForKeys, $k, $region_code]); $n++; } catch (Exception $e) {}
+        $n=0; foreach ($keys as $k) try { $stmt->execute([$slugForKeys, $k, $keyRegion]); $n++; } catch (Exception $e) {}
 
         // If this restock brought the product back from 0 → >0, queue "back in stock"
         // emails to every pending subscriber for this product+region.
@@ -1257,7 +1262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($prodRow) {
                     $subs = $pdo->prepare('SELECT id, email FROM stock_notifications
                                            WHERE product_slug=? AND region=? AND notified_at IS NULL');
-                    $subs->execute([$slugForKeys, $region_code]);
+                    $subs->execute([$slugForKeys, $keyRegion]);
                     $co = company_info();
                     $base = rtrim(site_url(), '/');
                     $prodUrl = $base . '/product.php?slug=' . urlencode($prodRow['slug']);
@@ -1332,14 +1337,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $rs = $_POST['return_slug'] ?? $slugForKeys;
-        $back = $rs ? 'admin.php?tab=products&inv='.urlencode($rs).'&invtab=available' : 'admin.php?tab=products';
-        $msg = $n.'+key(s)+added' . ($notified > 0 ? '+%E2%80%94+'.$notified.'+back-in-stock+email(s)+queued' : '');
+        $back = $rs ? 'admin.php?tab=products&inv='.urlencode($rs).'&invtab=available&invregion='.urlencode($keyRegion) : 'admin.php?tab=products';
+        $msg = $n.'+key(s)+added+to+'.urlencode($keyRegion).'+pool' . ($notified > 0 ? '+%E2%80%94+'.$notified.'+back-in-stock+email(s)+queued' : '');
         header('Location: '.$back.'&msg='.$msg); exit;
 
     } elseif ($action === 'delete_key') {
         $pdo->prepare('DELETE FROM license_keys WHERE id=? AND status="available"')->execute([(int)$_POST['key_id']]);
         $rs = $_POST['return_slug'] ?? '';
-        $back = $rs ? 'admin.php?tab=products&inv='.urlencode($rs).'&invtab=available' : 'admin.php?tab=products';
+        $ir = isset($_POST['key_region']) ? '&invregion='.urlencode((string)$_POST['key_region']) : '';
+        $back = $rs ? 'admin.php?tab=products&inv='.urlencode($rs).'&invtab=available'.$ir : 'admin.php?tab=products';
         header('Location: '.$back.'&msg=Key+removed'); exit;
 
     } elseif ($action === 'backfill_multiseat_keys') {
@@ -8674,16 +8680,29 @@ elseif ($tab === 'products'):
   }
   if ($invProd):
     $invTab = $_GET['invtab'] ?? 'available';
+    // Which COUNTRY key-pool is being managed for this product. Independent of
+    // the global storefront region so the admin can top up any country's pool
+    // without changing what shoppers see.
+    $invRegion = function_exists('mv_normalize_region')
+        ? mv_normalize_region($_GET['invregion'] ?? $region_code)
+        : strtoupper($_GET['invregion'] ?? $region_code);
     $availSt = $pdo->prepare("SELECT * FROM license_keys WHERE product_slug=? AND region=? AND status='available' ORDER BY created_at DESC LIMIT 300");
-    $availSt->execute([$invProd['slug'], $region_code]); $availKeys = $availSt->fetchAll();
+    $availSt->execute([$invProd['slug'], $invRegion]); $availKeys = $availSt->fetchAll();
     $soldSt = $pdo->prepare("SELECT lk.*, o.id AS o_id, o.order_number, o.email AS o_email,
                              CONCAT(COALESCE(o.first_name,''),' ',COALESCE(o.last_name,'')) AS o_name,
                              o.total AS o_total, o.payment_method AS o_pm, o.status AS o_status
                              FROM license_keys lk LEFT JOIN orders o ON o.id=lk.order_id
                              WHERE lk.product_slug=? AND lk.region=? AND lk.status='sold'
                              ORDER BY lk.assigned_at DESC LIMIT 300");
-    $soldSt->execute([$invProd['slug'], $region_code]); $soldKeys = $soldSt->fetchAll();
+    $soldSt->execute([$invProd['slug'], $invRegion]); $soldKeys = $soldSt->fetchAll();
     $cntAvail = count($availKeys); $cntSold = count($soldKeys);
+    // Per-country available-stock counts (for the selector badges).
+    $invRegionCounts = [];
+    try {
+        $rc = $pdo->prepare("SELECT region, COUNT(*) c FROM license_keys WHERE product_slug=? AND status='available' GROUP BY region");
+        $rc->execute([$invProd['slug']]);
+        foreach ($rc->fetchAll() as $rr) { $invRegionCounts[$rr['region']] = (int)$rr['c']; }
+    } catch (Throwable $e) {}
   ?>
   <div class="modal d-block" style="background:rgba(0,0,0,.55);" tabindex="-1" data-testid="inv-modal">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -8693,18 +8712,36 @@ elseif ($tab === 'products'):
             <?php if ($invProd['image']): ?><img src="<?= esc($invProd['image']) ?>" style="width:48px;height:48px;object-fit:contain;background:var(--bg);border-radius:8px;padding:4px;"><?php endif; ?>
             <div>
               <h5 class="modal-title mb-0"><i class="bi bi-key me-2 text-success"></i>Update Inventory</h5>
-              <small class="text-muted"><?= esc($invProd['name']) ?> · <code><?= esc($invProd['sku']) ?></code> · Region <strong><?= esc($region_code) ?></strong></small>
+              <small class="text-muted"><?= esc($invProd['name']) ?> · <code><?= esc($invProd['sku']) ?></code> · Country pool <strong><?= esc($invRegion) ?></strong> (<?= esc(mv_region_label($invRegion)) ?>)</small>
             </div>
           </div>
           <a href="?tab=products<?= $f['q']?'&q='.urlencode($f['q']):'' ?>" class="btn-close" data-testid="close-inv-modal"></a>
         </div>
         <div class="modal-body">
+          <!-- Country pool selector — each country keeps its OWN separate key
+               inventory (a US key never fulfils a UK/AU/CA/EU order). -->
+          <div class="mb-3">
+            <div class="small fw-semibold text-muted mb-1"><i class="bi bi-globe2 me-1"></i>License-key country pool</div>
+            <div class="d-flex flex-wrap gap-1" data-testid="inv-region-pills">
+              <?php foreach (mv_sales_regions() as $rcode):
+                $rcnt = (int)($invRegionCounts[$rcode] ?? 0);
+                $isActiveR = ($rcode === $invRegion);
+              ?>
+                <a href="?tab=products&inv=<?= urlencode($invProd['slug']) ?>&invtab=<?= esc($invTab) ?>&invregion=<?= esc($rcode) ?>"
+                   class="btn btn-sm rounded-pill <?= $isActiveR ? 'btn-primary' : 'btn-outline-secondary' ?>"
+                   data-testid="inv-region-<?= esc($rcode) ?>">
+                  <?= esc($rcode) ?> <span class="badge <?= $rcnt>0 ? 'text-bg-success' : 'text-bg-light text-dark' ?> ms-1"><?= $rcnt ?></span>
+                </a>
+              <?php endforeach; ?>
+            </div>
+          </div>
+
           <!-- Two-option toggle: Available / Sold -->
           <ul class="nav nav-pills mb-3" role="tablist">
-            <li class="nav-item"><a class="nav-link <?= $invTab==='available'?'active':'' ?>" href="?tab=products&inv=<?= urlencode($invProd['slug']) ?>&invtab=available" data-testid="inv-tab-available">
+            <li class="nav-item"><a class="nav-link <?= $invTab==='available'?'active':'' ?>" href="?tab=products&inv=<?= urlencode($invProd['slug']) ?>&invtab=available&invregion=<?= esc($invRegion) ?>" data-testid="inv-tab-available">
               <i class="bi bi-key text-success"></i> Available Keys <span class="badge bg-success ms-1"><?= $cntAvail ?></span>
             </a></li>
-            <li class="nav-item"><a class="nav-link <?= $invTab==='sold'?'active':'' ?>" href="?tab=products&inv=<?= urlencode($invProd['slug']) ?>&invtab=sold" data-testid="inv-tab-sold">
+            <li class="nav-item"><a class="nav-link <?= $invTab==='sold'?'active':'' ?>" href="?tab=products&inv=<?= urlencode($invProd['slug']) ?>&invtab=sold&invregion=<?= esc($invRegion) ?>" data-testid="inv-tab-sold">
               <i class="bi bi-cart-check text-primary"></i> Sold Keys <span class="badge bg-primary ms-1"><?= $cntSold ?></span>
             </a></li>
           </ul>
@@ -8714,13 +8751,14 @@ elseif ($tab === 'products'):
               <div class="col-lg-5">
                 <div class="card-e p-3" style="background:var(--bg);">
                   <h6 class="fw-bold mb-2"><i class="bi bi-plus-circle text-success me-1"></i>Add License Keys</h6>
-                  <p class="small text-muted mb-2">Paste one license key per line. Region: <strong><?= esc($region_code) ?></strong></p>
+                  <p class="small text-muted mb-2">Paste one license key per line. Country pool: <strong><?= esc($invRegion) ?></strong> · <?= esc(mv_region_label($invRegion)) ?></p>
                   <form method="post">
                     <input type="hidden" name="action" value="add_keys">
                     <input type="hidden" name="product_slug" value="<?= esc($invProd['slug']) ?>">
                     <input type="hidden" name="return_slug" value="<?= esc($invProd['slug']) ?>">
+                    <input type="hidden" name="key_region" value="<?= esc($invRegion) ?>">
                     <textarea name="keys" rows="8" required class="form-control font-monospace mb-2" placeholder="XXXX-XXXX-XXXX-XXXX&#10;YYYY-YYYY-YYYY-YYYY" data-testid="inv-add-keys-textarea"></textarea>
-                    <button class="btn btn-soft-blue w-100" data-testid="inv-add-keys-submit"><i class="bi bi-plus-circle me-1"></i>Add to Inventory</button>
+                    <button class="btn btn-soft-blue w-100" data-testid="inv-add-keys-submit"><i class="bi bi-plus-circle me-1"></i>Add to <?= esc($invRegion) ?> Inventory</button>
                   </form>
                 </div>
               </div>
@@ -8741,6 +8779,7 @@ elseif ($tab === 'products'):
                             <input type="hidden" name="action" value="delete_key">
                             <input type="hidden" name="key_id" value="<?= (int)$k['id'] ?>">
                             <input type="hidden" name="return_slug" value="<?= esc($invProd['slug']) ?>">
+                            <input type="hidden" name="key_region" value="<?= esc($invRegion) ?>">
                             <button class="btn btn-soft-red btn-sm py-0 px-2"><i class="bi bi-trash"></i></button>
                           </form></td>
                         </tr>
