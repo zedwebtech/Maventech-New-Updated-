@@ -1514,6 +1514,9 @@ footer p:has(> a[href^="tel:"]), footer p:has(> a[href^="mailto:"]) { margin-bot
    They are purely cosmetic, so we switch them off on small screens. ── */
 @media (max-width: 768px) {
   .logo-3d .brand-grad,
+  body .logo-3d .brand-grad,
+  [data-bs-theme="dark"] .logo-3d .brand-grad,
+  [data-bs-theme="dark"] .navbar .logo-3d .brand-grad,
   .logo-3d .brand-mark,
   .logo-3d > img:first-of-type,
   [class*="logo-3d"],

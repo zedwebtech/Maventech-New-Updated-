@@ -631,12 +631,40 @@ agent_communication:
 
   - task: "Mobile responsiveness verification after PageSpeed/accessibility tweaks"
     implemented: true
-    working: false
+    working: true
     file: "php-version/assets/css/style.css, php-version/includes/header.php"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
         -working: false
         -agent: "testing"
         -comment: "MOBILE RESPONSIVENESS TESTING (390x844 viewport) - MIXED RESULTS. ✅ PASSED: (1) Homepage renders correctly on mobile - navbar, hero, 12 product cards, footer all present and visible. NO horizontal overflow (docWidth=390px, winWidth=390px). (2) Hero abstract animation correctly DISABLED on mobile (animationName='none'). (3) Cart link accessibility CORRECT - [data-testid='cart-button-mobile'] has aria-label='View cart'. (4) Checkout regression test PASSED - phone country-code control shows '+1', width 66.48px (within 66-80px range), flag rendered as background image (flagcdn URL present), inline --phone-flag CSS variable present, NO horizontal overflow on checkout. ❌ FAILED: (1) Logo shimmer animation NOT disabled on mobile - .logo-3d .brand-grad has animationName='brand-shimmer-dark' (expected 'none'). ROOT CAUSE: Dark mode CSS rule at line ~3212 in style.css has 'animation: brand-shimmer-dark 8s linear infinite !important;' which overrides the mobile media query at line 1515. The mobile @media (max-width: 768px) rule needs to come AFTER dark mode rules or needs higher specificity to override the !important. (2) Tel: links tap target issue - 4 out of 6 tel: links have 0px actualHeight (expected >= 24px). These are in the trustbar which is hidden on mobile (d-none d-md-block class), so they're not visible/tappable. The 2 visible tel: links (mobile contact strip + footer) DO meet the 24px requirement (30.50px and 24.00px). Mailto: links both PASS (32.50px and 24.00px). ℹ️ NO JavaScript console errors (only expected third-party tracking script blocks). Screenshots captured: mobile-homepage-top.png, mobile-homepage-footer.png, mobile-checkout.png."
+        -working: true
+
+    -agent: "testing"
+    -message: |
+      ✅ CSS FIX VERIFICATION COMPLETE (2026-07-02) - Logo shimmer animation bug FIXED.
+      
+      RE-VERIFIED the mobile logo shimmer animation fix at 390x844 viewport per review request.
+      
+      INITIAL FINDING: The dark mode fix was working (animationName='none' in dark mode), but there was a NEW bug in LIGHT mode where the animation was showing 'brand-shimmer-dark' instead of 'none'.
+      
+      ROOT CAUSE: CSS rule at line 3162-3180 (.logo-3d .brand-grad with animation: brand-shimmer-dark !important) was overriding the mobile media query in LIGHT mode due to equal specificity and later source order. The mobile media query had [data-bs-theme="dark"] .logo-3d .brand-grad which had higher specificity for dark mode (so dark mode worked), but only .logo-3d .brand-grad for light mode (same specificity as line 3164, so line 3164 won due to source order).
+      
+      FIX APPLIED: Added 'body .logo-3d .brand-grad' to the mobile media query (line 1517) to increase specificity and ensure it overrides the general rule at line 3163 'body .brand-grad' in both light and dark modes.
+      
+      FINAL VERIFICATION RESULTS - ALL PASSED:
+      ✅ LIGHT MODE: .logo-3d .brand-grad animationName='none'
+      ✅ DARK MODE: .logo-3d .brand-grad animationName='none'
+      ✅ Hero abstract: animationName='none' in both modes
+      ✅ Homepage renders correctly in dark mode on mobile (navbar/hero/footer visible)
+      ✅ No horizontal overflow (390px)
+      ✅ No JavaScript console errors
+      
+      Screenshot captured: mobile-dark-final-verification.png
+      
+      The CSS fix is now complete and working correctly in both light and dark modes on mobile.
+
+        -agent: "testing"
+        -comment: "✅ CSS FIX VERIFIED (2026-07-02) - Logo shimmer animation now correctly disabled on mobile in BOTH light and dark modes. COMPREHENSIVE RE-TESTING at 390x844 viewport: (1) ✅ LIGHT MODE: .logo-3d .brand-grad animationName='none' (previously was 'brand-shimmer-dark'). (2) ✅ DARK MODE: .logo-3d .brand-grad animationName='none' (the original bug fix). (3) ✅ Hero abstract: animationName='none' in both light and dark modes. (4) ✅ Homepage renders correctly in dark mode on mobile - navbar, hero, footer all visible, NO horizontal overflow (390px). (5) ✅ NO JavaScript console errors. ROOT CAUSE ANALYSIS: The CSS rule at line 3162-3180 (.logo-3d .brand-grad with animation: brand-shimmer-dark) was overriding the mobile media query in LIGHT mode due to equal specificity and later source order. FIX APPLIED: Added 'body .logo-3d .brand-grad' to the mobile media query (line 1517) to increase specificity and ensure it overrides the general rule in both light and dark modes. Screenshot captured: mobile-dark-final-verification.png. All requirements from review request now PASSED."
