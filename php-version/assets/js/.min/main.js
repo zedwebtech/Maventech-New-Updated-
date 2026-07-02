@@ -282,9 +282,9 @@ applyCoupon(couponInput.value);
 }
 });
 function syncPhoneFlag(sel) {
-const flag = document.getElementById('phone-flag');
+const img = document.getElementById('phone-flag-img');
 const opt = sel.options[sel.selectedIndex];
-if (flag && opt) flag.textContent = opt.dataset.flag || '🇺🇸';
+if (img && opt) img.src = 'https://flagcdn.com/w40/' + (opt.dataset.iso || 'us') + '.png';
 }
 function detectCardBrand(digits) {
 if (digits.startsWith('4')) return 'visa';

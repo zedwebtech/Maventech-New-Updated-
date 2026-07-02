@@ -329,9 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ---------- Checkout payment method toggle ---------- */
 function syncPhoneFlag(sel) {
-  const flag = document.getElementById('phone-flag');
+  const img = document.getElementById('phone-flag-img');
   const opt = sel.options[sel.selectedIndex];
-  if (flag && opt) flag.textContent = opt.dataset.flag || '🇺🇸';
+  if (img && opt) img.src = 'https://flagcdn.com/w40/' + (opt.dataset.iso || 'us') + '.png';
 }
 
 /* Card field formatting: number groups of 4, MM/YY expiry, numeric CVV + live brand detect */

@@ -447,6 +447,9 @@ include __DIR__ . '/includes/header.php';
           <label class="form-label">Phone Number *</label>
           <?php
           $phoneFlags = ['+1' => '🇺🇸', '+44' => '🇬🇧', '+61' => '🇦🇺', '+49' => '🇩🇪', '+33' => '🇫🇷', '+34' => '🇪🇸', '+39' => '🇮🇹', '+31' => '🇳🇱', '+91' => '🇮🇳', '+971' => '🇦🇪', '+64' => '🇳🇿'];
+          // Dial-code -> ISO country for the flag image (real SVG/PNG flags, so
+          // it renders elegantly everywhere — emoji flags don't render on Windows).
+          $phoneIso = ['+1' => 'us', '+44' => 'gb', '+61' => 'au', '+49' => 'de', '+33' => 'fr', '+34' => 'es', '+39' => 'it', '+31' => 'nl', '+91' => 'in', '+971' => 'ae', '+64' => 'nz'];
           // Region the form should default to: a re-displayed form (validation
           // error) keeps the POSTed country; a fresh form follows the storefront
           // region derived from the active currency.
@@ -454,11 +457,15 @@ include __DIR__ . '/includes/header.php';
           if (!isset($REGION_FORMS[$formCC])) $formCC = 'US';
           $rf = $REGION_FORMS[$formCC];
           $selCode = $_POST['phone_code'] ?? $rf['dial'];
+          $selIso  = $phoneIso[$selCode] ?? 'us';
           ?>
           <div class="input-group phone-group">
+            <span class="input-group-text phone-flag" id="phone-flag" aria-hidden="true">
+              <img id="phone-flag-img" src="https://flagcdn.com/w40/<?= $selIso ?>.png" width="20" height="15" alt="" loading="lazy" decoding="async">
+            </span>
             <select name="phone_code" id="phone-code" class="form-select phone-code" onchange="syncPhoneFlag(this)" data-testid="phone-code-select" aria-label="Country dial code">
               <?php foreach ($phoneFlags as $code => $flag): ?>
-                <option value="<?= $code ?>" data-flag="<?= $flag ?>" <?= $selCode === $code ? 'selected' : '' ?>><?= $code ?></option>
+                <option value="<?= $code ?>" data-iso="<?= $phoneIso[$code] ?? 'us' ?>" <?= $selCode === $code ? 'selected' : '' ?>><?= $code ?></option>
               <?php endforeach; ?>
             </select>
             <input name="phone" required class="form-control" value="<?= esc($_POST['phone'] ?? '') ?>" data-testid="phone-number-input" placeholder="Phone number" inputmode="tel" autocomplete="tel-national">
@@ -622,19 +629,31 @@ include __DIR__ . '/includes/header.php';
 .checkout-hint .hint-btn.is-primary { background: #f59e0b; color:#fff; border-color:#f59e0b; }
 .checkout-hint .hint-btn.is-primary:hover { background:#d97706; border-color:#d97706; }
 
-/* ── Compact, elegant phone country-code prefix ─────────────────────────
-   No flag box (some devices render the flag emoji as "us" text) — just a
-   tiny caret-only +dial-code selector snug against the number field. */
+/* ── Compact, elegant phone country prefix (flag image + dial code) ─────
+   Real flag images (flagcdn) render everywhere; the two cells share a border
+   so the flag + code read as one snug pill next to the number field. */
 .phone-group { flex-wrap: nowrap; }
+.phone-group .phone-flag {
+  padding: 0 .1rem 0 .5rem;
+  background: #fff;
+  border-right: 0;
+  display: flex;
+  align-items: center;
+}
+.phone-group .phone-flag img {
+  width: 20px; height: 15px; display: block; border-radius: 2px; object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(15,23,42,.08);
+}
 .phone-group .phone-code {
   flex: 0 0 auto;
   width: auto;
-  min-width: 56px;
-  max-width: 66px;
+  min-width: 48px;
+  max-width: 58px;
   font-weight: 700;
-  padding: .42rem 1.05rem .42rem .5rem;   /* room only for the caret */
-  background-position: right .3rem center;
-  background-size: 11px 8px;
+  padding: .42rem .9rem .42rem .3rem;   /* caret room only */
+  background-position: right .25rem center;
+  background-size: 10px 8px;
+  border-left: 0;
   color: var(--uc-blue, #0891b2);
 }
 .phone-group .form-control { flex: 1 1 auto; min-width: 0; }
