@@ -668,3 +668,18 @@ agent_communication:
 
         -agent: "testing"
         -comment: "✅ CSS FIX VERIFIED (2026-07-02) - Logo shimmer animation now correctly disabled on mobile in BOTH light and dark modes. COMPREHENSIVE RE-TESTING at 390x844 viewport: (1) ✅ LIGHT MODE: .logo-3d .brand-grad animationName='none' (previously was 'brand-shimmer-dark'). (2) ✅ DARK MODE: .logo-3d .brand-grad animationName='none' (the original bug fix). (3) ✅ Hero abstract: animationName='none' in both light and dark modes. (4) ✅ Homepage renders correctly in dark mode on mobile - navbar, hero, footer all visible, NO horizontal overflow (390px). (5) ✅ NO JavaScript console errors. ROOT CAUSE ANALYSIS: The CSS rule at line 3162-3180 (.logo-3d .brand-grad with animation: brand-shimmer-dark) was overriding the mobile media query in LIGHT mode due to equal specificity and later source order. FIX APPLIED: Added 'body .logo-3d .brand-grad' to the mobile media query (line 1517) to increase specificity and ensure it overrides the general rule in both light and dark modes. Screenshot captured: mobile-dark-final-verification.png. All requirements from review request now PASSED."
+
+  - task: "PageSpeed mobile round 2: merchant iframe title, touch targets, disable heavy decorative animations on mobile"
+    implemented: true
+    working: true
+    file: "php-version/includes/footer.php, php-version/assets/css/style.css"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "From 2nd PageSpeed mobile PDF (Perf 86 / A11y 89 / BP 96). Fixes: (1) Google Customer Reviews badge iframe (#merchantwidgetiframe, injected by Google, no title) — set title='Google Customer Reviews' via polling after merchantwidget.start(). (2) Broadened tel:/mailto: touch-target CSS to ALL such anchors (inline-flex,min-height:24px) + footer link spacing. (3) @media(max-width:768px) disables the continuously-repainting DECORATIVE animations (brand-shimmer/brand-shimmer-dark logo sweep, hero-abstract sway, hero-ring orbit, floating cards/tiles/cubes, watermark) — cuts mobile main-thread Style&Layout + clears non-composited-animation / 'unsupported CSS property background-position-x/box-shadow' best-practice warnings. Kept core bootstrap/style.css synchronous (prior agent found deferring them caused large CLS). Left GTM/GA4/Clarity as-is (already deferred to first-interaction/idle)."
+        -working: true
+        -agent: "testing"
+        -comment: "auto_frontend_testing_agent verified at 390x844 mobile: homepage/hero/footer render, NO horizontal overflow, no console errors; .logo-3d .brand-grad animationName='none' in BOTH light AND dark mode (needed body/.dark specificity bumps to beat later !important shimmer rules); .hero-abstract animationName='none'; cart-button-mobile aria-label='View cart'; visible tel/mailto links >=24px; checkout phone control OK (66px, flag bg). All PASS."
