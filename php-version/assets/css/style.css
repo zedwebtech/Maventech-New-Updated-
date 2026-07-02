@@ -1469,8 +1469,8 @@ body.has-deal-bar #chat-panel { bottom: 72px; }
   background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.28); color: #fff;
   border-radius: 999px; padding: 1px 7px; margin-right: .15rem; }
 @keyframes phone-pulse {
-  0%, 100% { box-shadow: 0 8px 20px rgba(255, 120, 73, .35); }
-  50% { box-shadow: 0 8px 26px rgba(255, 120, 73, .6), 0 0 0 7px rgba(255, 120, 73, .12); }
+  0%, 100% { opacity: .55; transform: scale(1); }
+  50% { opacity: 0; transform: scale(1.14); }
 }
 @keyframes phone-ring {
   0%, 24%, 100% { transform: rotate(0); }
@@ -1490,10 +1490,20 @@ body.has-deal-bar #chat-panel { bottom: 72px; }
   animation: phone-ring 2.6s ease-in-out infinite;
   display: inline-block;
 }
-.phone-cta-mobile { font-size: .78rem; background: linear-gradient(135deg, #1565C0, #0D47A1); color: #fff;
-  border: none; box-shadow: 0 4px 12px rgba(255, 120, 73, .35); animation: phone-pulse 2.6s ease-in-out infinite; }
+.phone-cta-mobile { position: relative; font-size: .78rem; background: linear-gradient(135deg, #1565C0, #0D47A1); color: #fff;
+  border: none; box-shadow: 0 4px 12px rgba(255, 120, 73, .35); }
+.phone-cta-mobile::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 0 6px rgba(255, 120, 73, .28); animation: phone-pulse 2.6s ease-in-out infinite; will-change: transform, opacity; }
 .phone-cta-mobile:hover { color: #fff; }
-@media (prefers-reduced-motion: reduce) { .phone-cta, .phone-cta-icon, .trustbar-phone .bi, .phone-cta-mobile { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .phone-cta, .phone-cta-icon, .trustbar-phone .bi, .phone-cta-mobile::after { animation: none; } }
+
+/* Accessibility: give contact (tel/mailto) links a large-enough tap target
+   (PageSpeed "Touch targets do not have sufficient size or spacing"). */
+.topbar a[href^="tel:"], .topbar a[href^="mailto:"],
+.footer-dark a[href^="tel:"], .footer-dark a[href^="mailto:"],
+footer a[href^="tel:"], footer a[href^="mailto:"] {
+  display: inline-flex; align-items: center; min-height: 24px; padding: 2px 2px;
+}
 
 /* ---------- Product page: clean still image (replaces 360° viewer) ---------- */
 .pd-still-card { overflow: hidden; border-radius: 1rem; }

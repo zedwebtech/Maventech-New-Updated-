@@ -456,7 +456,6 @@ include __DIR__ . '/includes/header.php';
           $selCode = $_POST['phone_code'] ?? $rf['dial'];
           ?>
           <div class="input-group phone-group">
-            <span class="input-group-text phone-flag" id="phone-flag" data-testid="phone-flag"><?= $phoneFlags[$selCode] ?? '🇺🇸' ?></span>
             <select name="phone_code" id="phone-code" class="form-select phone-code" onchange="syncPhoneFlag(this)" data-testid="phone-code-select" aria-label="Country dial code">
               <?php foreach ($phoneFlags as $code => $flag): ?>
                 <option value="<?= $code ?>" data-flag="<?= $flag ?>" <?= $selCode === $code ? 'selected' : '' ?>><?= $code ?></option>
@@ -624,26 +623,18 @@ include __DIR__ . '/includes/header.php';
 .checkout-hint .hint-btn.is-primary:hover { background:#d97706; border-color:#d97706; }
 
 /* ── Compact, elegant phone country-code prefix ─────────────────────────
-   The flag + dial-code now form ONE snug pill that fits just the code
-   (e.g. 🇺🇸 +1) instead of a wide dropdown box. */
+   No flag box (some devices render the flag emoji as "us" text) — just a
+   tiny caret-only +dial-code selector snug against the number field. */
 .phone-group { flex-wrap: nowrap; }
-.phone-group .phone-flag {
-  padding: 0 .3rem 0 .55rem;
-  font-size: 1rem;
-  line-height: 1;
-  background: var(--bs-tertiary-bg);
-  border-right: 0;
-}
 .phone-group .phone-code {
   flex: 0 0 auto;
   width: auto;
-  min-width: 62px;
-  max-width: 74px;
+  min-width: 56px;
+  max-width: 66px;
   font-weight: 700;
-  padding: .42rem 1.35rem .42rem .3rem;   /* room only for the caret */
-  background-position: right .35rem center;
-  background-size: 12px 9px;
-  border-left: 0;
+  padding: .42rem 1.05rem .42rem .5rem;   /* room only for the caret */
+  background-position: right .3rem center;
+  background-size: 11px 8px;
   color: var(--uc-blue, #0891b2);
 }
 .phone-group .form-control { flex: 1 1 auto; min-width: 0; }

@@ -607,12 +607,16 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
    *  All four tags coexist without conflict — gtag uses dataLayer/gtag,
    *  Bing uses uetq, Clarity uses clarity.
    * ====================================================================== */
-  $tk_ga4       = trim((string)setting_get('ga4_measurement_id',        defined('GA4_MEASUREMENT_ID') ? GA4_MEASUREMENT_ID : ''));
-  $tk_gtag      = trim((string)setting_get('google_tag_id',             defined('GOOGLE_TAG_ID') ? GOOGLE_TAG_ID : ''));
-  $tk_gAds      = trim((string)setting_get('google_ads_tag_id',         defined('GOOGLE_ADS_TAG_ID') ? GOOGLE_ADS_TAG_ID : ''));
+  // Strip ALL whitespace from tracking IDs — a stray space (e.g. "G 9824…")
+  // produces a broken gtag.js URL that 404s (flagged by PageSpeed). Google
+  // tag IDs never contain spaces, so this is a safe defensive normalisation.
+  $__tkClean = fn($v) => preg_replace('/\s+/', '', trim((string)$v));
+  $tk_ga4       = $__tkClean(setting_get('ga4_measurement_id',        defined('GA4_MEASUREMENT_ID') ? GA4_MEASUREMENT_ID : ''));
+  $tk_gtag      = $__tkClean(setting_get('google_tag_id',             defined('GOOGLE_TAG_ID') ? GOOGLE_TAG_ID : ''));
+  $tk_gAds      = $__tkClean(setting_get('google_ads_tag_id',         defined('GOOGLE_ADS_TAG_ID') ? GOOGLE_ADS_TAG_ID : ''));
   $tk_gAdsLabel = trim((string)setting_get('google_ads_purchase_label', ''));
-  $tk_uet       = trim((string)setting_get('bing_uet_tag_id',           ''));
-  $tk_clarity   = trim((string)setting_get('clarity_project_id',        defined('CLARITY_PROJECT_ID') ? CLARITY_PROJECT_ID : ''));
+  $tk_uet       = $__tkClean(setting_get('bing_uet_tag_id',           ''));
+  $tk_clarity   = $__tkClean(setting_get('clarity_project_id',        defined('CLARITY_PROJECT_ID') ? CLARITY_PROJECT_ID : ''));
   ?>
 
   <?php if ($tk_gtag !== '' || $tk_ga4 !== '' || $tk_gAds !== ''):
@@ -806,8 +810,8 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
       </span>
     </a>
     <div class="d-flex align-items-center gap-2 d-lg-none ms-auto me-2">
-      <a href="cart.php" class="btn btn-sm btn-primary rounded-pill position-relative" data-testid="cart-button-mobile">
-        <i class="bi bi-cart3"></i>
+      <a href="cart.php" class="btn btn-sm btn-primary rounded-pill position-relative" data-testid="cart-button-mobile" aria-label="View cart" title="View cart">
+        <i class="bi bi-cart3" aria-hidden="true"></i>
         <span class="cart-count-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger <?= cart_count() === 0 ? 'd-none' : '' ?>" data-testid="cart-count-mobile"><?= cart_count() ?></span>
       </a>
     </div>
