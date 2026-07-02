@@ -899,6 +899,22 @@ function company_placeholders_apply(string $html, ?string $cc = null): string {
  * Safe whitespace/comment minifier — no rule changes, so zero CLS risk.
  * Falls back to the original path if the target dir isn't writable.
  */
+/**
+ * Normalise a third-party tracking id (GTM/GA4/gtag/Ads). Strips ALL
+ * whitespace, then validates against the expected pattern. If the stored
+ * admin setting is empty OR malformed (e.g. "G 9824E82NN1" with a stray
+ * space / missing hyphen), it falls back to the known-good compile-time
+ * default so a typo in the admin panel can never emit a broken tag URL
+ * (which was 404-ing on gtag.js). Valid custom values are always honoured.
+ */
+function mv_tracking_id(string $settingKey, string $default, string $pattern): string {
+    $clean = static fn($v) => preg_replace('/\s+/', '', trim((string)$v));
+    $val = $clean(setting_get($settingKey, $default));
+    if ($val !== '' && preg_match($pattern, $val)) return $val;
+    $def = $clean($default);
+    return ($def !== '' && preg_match($pattern, $def)) ? $def : '';
+}
+
 function min_css_url(string $srcFsPath, string $srcWebPath): string {
     if (!is_file($srcFsPath)) return $srcWebPath;
     $minFs  = preg_replace('/\.css$/', '.min.css', $srcFsPath);

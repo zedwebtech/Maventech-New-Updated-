@@ -135,7 +135,7 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
       window.__mvLoadTrackers = run;
     })();
   </script>
-  <?php $gtmId = trim((string)setting_get('gtm_container_id', defined('GTM_CONTAINER_ID') ? GTM_CONTAINER_ID : '')); ?>
+  <?php $gtmId = mv_tracking_id('gtm_container_id', defined('GTM_CONTAINER_ID') ? GTM_CONTAINER_ID : '', '/^GTM-[A-Z0-9]+$/i'); ?>
   <?php if ($gtmId !== ''): ?>
   <!-- Google Tag Manager (deferred until first interaction / idle) -->
   <script>window.__mvTrk.push(function(){
@@ -607,13 +607,13 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
    *  All four tags coexist without conflict — gtag uses dataLayer/gtag,
    *  Bing uses uetq, Clarity uses clarity.
    * ====================================================================== */
-  // Strip ALL whitespace from tracking IDs — a stray space (e.g. "G 9824…")
-  // produces a broken gtag.js URL that 404s (flagged by PageSpeed). Google
-  // tag IDs never contain spaces, so this is a safe defensive normalisation.
+  // Tracking IDs are validated + auto-healed: a malformed/typo'd admin value
+  // (e.g. "G 9824E82NN1") falls back to the correct compile-time default so it
+  // can never emit a broken gtag.js URL (which 404s). Valid values are honoured.
   $__tkClean = fn($v) => preg_replace('/\s+/', '', trim((string)$v));
-  $tk_ga4       = $__tkClean(setting_get('ga4_measurement_id',        defined('GA4_MEASUREMENT_ID') ? GA4_MEASUREMENT_ID : ''));
-  $tk_gtag      = $__tkClean(setting_get('google_tag_id',             defined('GOOGLE_TAG_ID') ? GOOGLE_TAG_ID : ''));
-  $tk_gAds      = $__tkClean(setting_get('google_ads_tag_id',         defined('GOOGLE_ADS_TAG_ID') ? GOOGLE_ADS_TAG_ID : ''));
+  $tk_ga4       = mv_tracking_id('ga4_measurement_id', defined('GA4_MEASUREMENT_ID') ? GA4_MEASUREMENT_ID : '', '/^G-[A-Z0-9]+$/i');
+  $tk_gtag      = mv_tracking_id('google_tag_id',      defined('GOOGLE_TAG_ID')      ? GOOGLE_TAG_ID      : '', '/^(GTM?|G|AW)-[A-Z0-9]+$/i');
+  $tk_gAds      = mv_tracking_id('google_ads_tag_id',  defined('GOOGLE_ADS_TAG_ID')  ? GOOGLE_ADS_TAG_ID  : '', '/^AW-[0-9]+$/i');
   $tk_gAdsLabel = trim((string)setting_get('google_ads_purchase_label', ''));
   $tk_uet       = $__tkClean(setting_get('bing_uet_tag_id',           ''));
   $tk_clarity   = $__tkClean(setting_get('clarity_project_id',        defined('CLARITY_PROJECT_ID') ? CLARITY_PROJECT_ID : ''));

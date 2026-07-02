@@ -574,3 +574,15 @@ agent_communication:
     -agent: "main"
     -message: |
       Follow-up done: (1) Phone country-code box made EVEN smaller — removed the flag box entirely (it rendered as "us" text on some devices) leaving a compact 62px "+1" selector. Frontend test confirms 62px width, no flag box, form works, no console errors. (2) Task 2 PageSpeed safe fixes applied (gtag whitespace sanitise → fixes 404 root cause, cart-link aria-label, tel/mailto touch targets, composited phone-pulse). Remaining PageSpeed items are deployed-site/third-party (documented) and require live-site admin action, not code.
+
+  - task: "Tracking IDs: validate + auto-heal (GTM/GA4/gtag/Ads) so a malformed admin value can't emit a broken gtag.js 404"
+    implemented: true
+    working: true
+    file: "php-version/includes/functions.php, php-version/includes/header.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "User supplied the correct tracking IDs (GTM-N6Q7FKS2, Google tag GT-TQV4X72G, GA4 G-9824E82NN1, Ads AW-18263028048, GA4 stream 15158795356 = informational, not used in tag code). These already match config.php compile-time defaults. Root cause of the live 404 (/gtag/js?id=G 9824E82NN1) = a malformed value with a stray space stored in the admin settings DB that overrode the correct default. Added mv_tracking_id($key,$default,$pattern) in functions.php: strips all whitespace, validates against the id's expected pattern, and FALLS BACK to the known-good compile-time default when the stored value is empty/malformed (valid custom values still honoured). Applied to gtmId + ga4 + gtag + ads in header.php. VERIFIED in preview: homepage renders gtag.js?id=GT-TQV4X72G, GTM-N6Q7FKS2, config G-9824E82NN1 + AW-18263028048 (no stray space). Injected the exact bad value 'G 9824E82NN1' into settings → output auto-healed to 'G-9824E82NN1' with 0 occurrences of the broken value → the gtag 404 is fixed by code alone once deployed."
