@@ -2278,6 +2278,38 @@ function generate_order_number(): string
 }
 
 /**
+ * Document numbering — every order has THREE distinct reference numbers:
+ *   • Order number   : the storefront reference (MV260701XXXXX) — used for tracking.
+ *   • Invoice number : a formal, sequential tax-invoice reference (INV-YYYY-000123).
+ *   • Receipt number : a payment-confirmation reference (RCP-YYMMDD-XXXXXXXX).
+ *
+ * They are deterministic (stable across regenerations) yet visually and
+ * structurally different from each other and from the order number, so the
+ * customer never sees "the same number with a different label".
+ */
+function mv_invoice_number(array $order): string
+{
+    $ts = strtotime((string)($order['created_at'] ?? 'now')) ?: time();
+    $id = (int)($order['id'] ?? 0);
+    // Sequential, accountant-friendly: INV-2026-000123
+    if ($id > 0) {
+        return 'INV-' . date('Y', $ts) . '-' . str_pad((string)$id, 6, '0', STR_PAD_LEFT);
+    }
+    // Fallback when no numeric id is available — derive from the order number.
+    $suffix = strtoupper(substr(bin2hex(sha1((string)($order['order_number'] ?? 'X'), true)), 0, 6));
+    return 'INV-' . date('Y', $ts) . '-' . $suffix;
+}
+
+function mv_receipt_number(array $order): string
+{
+    $ts   = strtotime((string)($order['paid_at'] ?? $order['created_at'] ?? 'now')) ?: time();
+    $seed = (string)($order['id'] ?? '') . '|' . (string)($order['order_number'] ?? '');
+    $h    = strtoupper(substr(bin2hex(sha1($seed, true)), 0, 8));
+    // RCP-260701-A1B2C3D4  — clearly different shape from the invoice number.
+    return 'RCP-' . date('ymd', $ts) . '-' . $h;
+}
+
+/**
  * Inventory helpers — count available license-keys for a product (within the
  * active region) so the public site can show real stock instead of relying on
  * the manual `products.stock` column.

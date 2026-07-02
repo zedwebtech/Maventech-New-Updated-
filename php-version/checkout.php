@@ -457,12 +457,12 @@ include __DIR__ . '/includes/header.php';
           ?>
           <div class="input-group phone-group">
             <span class="input-group-text phone-flag" id="phone-flag" data-testid="phone-flag"><?= $phoneFlags[$selCode] ?? '🇺🇸' ?></span>
-            <select name="phone_code" id="phone-code" class="form-select phone-code" style="max-width:90px;" onchange="syncPhoneFlag(this)" data-testid="phone-code-select">
+            <select name="phone_code" id="phone-code" class="form-select phone-code" onchange="syncPhoneFlag(this)" data-testid="phone-code-select" aria-label="Country dial code">
               <?php foreach ($phoneFlags as $code => $flag): ?>
                 <option value="<?= $code ?>" data-flag="<?= $flag ?>" <?= $selCode === $code ? 'selected' : '' ?>><?= $code ?></option>
               <?php endforeach; ?>
             </select>
-            <input name="phone" required class="form-control" value="<?= esc($_POST['phone'] ?? '') ?>" data-testid="phone-number-input">
+            <input name="phone" required class="form-control" value="<?= esc($_POST['phone'] ?? '') ?>" data-testid="phone-number-input" placeholder="Phone number" inputmode="tel" autocomplete="tel-national">
           </div>
         </div>
         <div class="col-md-6"><label class="form-label">First Name *</label><input name="first_name" required class="form-control" value="<?= esc($_POST['first_name'] ?? '') ?>"></div>
@@ -622,6 +622,63 @@ include __DIR__ . '/includes/header.php';
 .checkout-hint .hint-btn:hover { background: currentColor; color:#fff; }
 .checkout-hint .hint-btn.is-primary { background: #f59e0b; color:#fff; border-color:#f59e0b; }
 .checkout-hint .hint-btn.is-primary:hover { background:#d97706; border-color:#d97706; }
+
+/* ── Compact, elegant phone country-code prefix ─────────────────────────
+   The flag + dial-code now form ONE snug pill that fits just the code
+   (e.g. 🇺🇸 +1) instead of a wide dropdown box. */
+.phone-group { flex-wrap: nowrap; }
+.phone-group .phone-flag {
+  padding: 0 .3rem 0 .55rem;
+  font-size: 1rem;
+  line-height: 1;
+  background: var(--bs-tertiary-bg);
+  border-right: 0;
+}
+.phone-group .phone-code {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 62px;
+  max-width: 74px;
+  font-weight: 700;
+  padding: .42rem 1.35rem .42rem .3rem;   /* room only for the caret */
+  background-position: right .35rem center;
+  background-size: 12px 9px;
+  border-left: 0;
+  color: var(--uc-blue, #0891b2);
+}
+.phone-group .form-control { flex: 1 1 auto; min-width: 0; }
+.phone-group:focus-within { box-shadow: 0 0 0 .18rem rgba(6,182,212,.16); border-radius: .65rem; }
+
+/* ── Modern checkout polish (2025-style) ──────────────────────────────── */
+.co-banner { border-radius: 20px; }
+.co-banner .co-num {
+  background: linear-gradient(135deg,#0891b2,#06b6d4);
+  color:#fff; box-shadow: 0 6px 16px rgba(6,182,212,.32);
+}
+.co-banner .form-control, .co-banner .form-select {
+  border-radius: .7rem; padding: .55rem .8rem; font-size: .92rem;
+  border-color: var(--bs-border-color);
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.co-banner .form-control:focus, .co-banner .form-select:focus {
+  border-color: #06b6d4; box-shadow: 0 0 0 .2rem rgba(6,182,212,.15);
+}
+.co-banner .form-label {
+  font-size: .68rem; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--bs-secondary-color); margin-bottom: .3rem;
+}
+.co-banner .row.g-2 { --bs-gutter-y: .9rem; --bs-gutter-x: .9rem; }
+/* Payment method tiles — cleaner selectable cards */
+.pay-tile {
+  border: 1.5px solid var(--bs-border-color); border-radius: 14px;
+  cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.pay-tile:hover { border-color: rgba(6,182,212,.5); }
+.pay-tile.active {
+  border-color: #06b6d4; background: rgba(6,182,212,.05);
+  box-shadow: 0 0 0 3px rgba(6,182,212,.12);
+}
+.co-merge-divider { margin: 1.6rem 0; }
 </style>
 <script>
 /* Region-aware checkout address form. The PHP $REGION_FORMS config is the

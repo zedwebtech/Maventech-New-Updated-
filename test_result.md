@@ -488,3 +488,39 @@ agent_communication:
       4) ✅ CLEANUP: All test data removed, database restored to original state
       
       Feature is working correctly as specified. No code modifications made (testing only).
+
+#====================================================================================================
+# NEW WORK (continuation) — Checkout country-code box + Receipt/Invoice redesign
+#====================================================================================================
+
+  - task: "Checkout: shrink country-code box into a compact +dial-code prefix + modern checkout polish"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "User: the +1 country-code box on checkout was too big. Removed the fixed 90px width; the flag + dial-code now form ONE snug pill (min 62px / max 74px, caret-only right padding) via .phone-group CSS, so it fits just the code (e.g. flag +1). Also modernised the merged Details+Payment card: gradient step badge, rounded .7rem inputs with cyan focus ring, uppercase micro-labels, selectable payment tiles (.pay-tile active state), larger gutters. Verified via screenshot (rendered checkout with a seeded cart): phone prefix is compact, layout clean/modern."
+
+  - task: "Receipt vs Invoice PDFs — 3 distinct numbers + completely different formats"
+    implemented: true
+    working: true
+    file: "php-version/includes/pdf.php, php-version/includes/functions.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "User: receipt & invoice PDFs looked identical (same template, just a renamed title) and the invoice number equalled the order number. Added mv_invoice_number() (INV-YYYY-000123, sequential) + mv_receipt_number() (RCP-YYMMDD-XXXXXXXX) in functions.php so Order#, Invoice#, Receipt# are all DIFFERENT & stable. Rewrote generate_receipt_pdf() as a GREEN payment-confirmation doc (paid-in-full badge, big amount hero, payment-details card showing all 3 refs + method, light purchase summary, subtotal/discount/total) and generate_invoice_pdf() as an INDIGO formal TAX INVOICE (bordered meta box with Invoice#/Order#/dates/PAID status, From/Bill-To, dark-header ledger, totals with discount row, PAID/DUE watermark stamp, terms). Kept _pdf_shell intact (subscription certificate still uses it) and the $extraBodyHtml receipt param (subscriptions). Verified: both PDFs generate for demo order MVT-DEMO-002 (Order MVT-DEMO-002 / Invoice INV-2026-000002 / Receipt RCP-260612-...), render cleanly (AI structure analysis: green receipt vs indigo tax invoice, no overlap, watermark subtle). PDF filenames unchanged (Receipt-/Invoice-<order_number>.pdf) so admin/order-history/subscription download links still work."
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Continuation tasks 1 & 3 DONE + self-verified (env had no PHP/MySQL on this fresh pod — installed PHP 8.2 + MariaDB, seeded DB, store live on :3000):
+      1) Checkout country-code box shrunk to a compact flag + dial-code prefix; checkout card modernised. Verified via screenshot.
+      3) Receipt & Invoice PDFs now completely different designs with 3 distinct numbers (Order#, INV-…, RCP-…). Verified by generating both for MVT-DEMO-002 and AI-analysing the rendered PDFs.
+      PENDING task 2 (PageSpeed mobile fixes from the user's PDF) — awaiting go-ahead. Frontend testing not yet run (awaiting user permission).

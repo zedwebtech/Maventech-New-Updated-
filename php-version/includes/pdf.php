@@ -501,26 +501,80 @@ HTML;
 }
 
 /**
- * Generate a Receipt PDF (paid orders).  Returns the binary PDF string.
- * Throws on rendering failure.
+ * Active vibe-schedule promo banner (shared by Receipt + Invoice).
+ * Renders a thin coloured bar at the very top of the document when a
+ * promo schedule is live.  Returns '' when there is none.
+ */
+function _pdf_promo_bar_html(): string
+{
+    if (!function_exists('active_vibe_promo')) return '';
+    $promo = active_vibe_promo();
+    if (!$promo || trim((string)$promo['label']) === '') return '';
+    $promoLabel = htmlspecialchars((string)$promo['label'], ENT_QUOTES, 'UTF-8');
+    $promoLogo  = '';
+    $promoLogoFile = (string)($promo['logo_file'] ?? '');
+    if ($promoLogoFile !== '' && is_file($promoLogoFile) && !preg_match('/\.svg$/i', $promoLogoFile)) {
+        $promoLogo = '<img src="' . htmlspecialchars($promoLogoFile, ENT_QUOTES, 'UTF-8') . '" alt="" style="height:20px;width:auto;vertical-align:middle;background:#fff;border-radius:4px;padding:2px;margin-right:8px;">';
+    }
+    $promoCoupon = '';
+    $code = strtoupper(trim((string)($promo['coupon_code'] ?? '')));
+    $pct  = (int)($promo['coupon_percent'] ?? 0);
+    if ($code !== '' && $pct > 0) {
+        $promoCoupon = '<span style="display:inline-block;margin-left:12px;font-size:9.5pt;font-weight:600;color:#fcd34d;">Use <span style="background:#fbbf24;color:#0f172a;padding:1px 6px;border-radius:4px;">' . htmlspecialchars($code, ENT_QUOTES, 'UTF-8') . '</span> · ' . $pct . '% off</span>';
+    }
+    return '<div style="background:#0f172a;color:#fff;padding:8px 14px;border-radius:8px;text-align:center;font-weight:800;letter-spacing:.6px;font-size:10.5pt;margin:0 0 14px;text-transform:uppercase;border-left:3px solid #fbbf24;">'
+         . $promoLogo . $promoLabel . $promoCoupon . '</div>';
+}
+
+/**
+ * Resolve a human "payment method" label + processing gateway for an order.
+ * Returns [methodLabel, gatewayName].
+ */
+function _pdf_payment_method(array $order, ?array $payment = null): array
+{
+    $pmRaw   = strtolower(trim((string)($order['payment_method'] ?? 'card')));
+    $gateway = $pmRaw === 'paypal'
+        ? (setting_get('gw_paypal_provider', 'PayPal') ?: 'PayPal')
+        : (setting_get('gw_card_provider', 'Stripe') ?: 'Stripe');
+    if ($payment && !empty($payment['method'])) {
+        $label = (string)$payment['method'];
+    } elseif (!empty($order['card_brand'])) {
+        $label = (string)$order['card_brand'] . (!empty($order['card_last4']) ? ' ····' . $order['card_last4'] : '');
+    } elseif ($pmRaw === 'paypal') {
+        $label = 'PayPal';
+    } else {
+        $label = 'Card' . (!empty($order['card_last4']) ? ' ····' . $order['card_last4'] : '');
+    }
+    return [$label, $gateway];
+}
+
+/**
+ * Generate a Receipt PDF (paid orders) — a PAYMENT CONFIRMATION document,
+ * intentionally styled completely differently from the tax Invoice: an
+ * emerald "paid in full" hero, a payment-details card, and a light purchase
+ * summary.  Returns the binary PDF string.  Throws on rendering failure.
  */
 function generate_receipt_pdf(array $order, array $items, ?array $payment = null, string $extraBodyHtml = ''): string
 {
+    $e   = fn($s) => htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
     $co  = function_exists('company_info') ? company_info() : ['name' => 'Maventech'];
     $co['phone'] = function_exists('company_phone_for_country') ? company_phone_for_country($order['country'] ?? null) : ($co['phone'] ?? '');
     $cur = (string)($order['currency'] ?? 'USD');
-    $invoiceNo = (string)($order['order_number'] ?? '');
-    $receiptNo = strtoupper(substr(bin2hex(sha1((string)$order['id'] . '-' . $invoiceNo, true)), 0, 9));
-    // Insert a hyphen so it looks like "2797-4805"
-    $receiptNo = substr($receiptNo, 0, 4) . '-' . substr($receiptNo, 4, 4);
 
-    $datePaid = $order['paid_at'] ?? $order['created_at'] ?? date('Y-m-d H:i:s');
-    $datePaid = date('F j, Y', strtotime($datePaid));
+    $orderNo   = (string)($order['order_number'] ?? '');
+    $invoiceNo = function_exists('mv_invoice_number') ? mv_invoice_number($order) : $orderNo;
+    $receiptNo = function_exists('mv_receipt_number') ? mv_receipt_number($order) : $orderNo;
 
-    // Bill-to block — sanitised, multi-line.
+    $datePaidRaw = $order['paid_at'] ?? $order['created_at'] ?? date('Y-m-d H:i:s');
+    $datePaid    = date('F j, Y', strtotime($datePaidRaw));
+
+    $custName = trim((string)($order['first_name'] ?? '') . ' ' . (string)($order['last_name'] ?? ''));
+    $first    = trim((string)($order['first_name'] ?? ''));
+
+    // Bill-to lines.
     $billTo = array_filter([
-        trim((string)($order['first_name'] ?? '') . ' ' . (string)($order['last_name'] ?? '')),
-        (string)$order['email'],
+        $custName,
+        (string)($order['email'] ?? ''),
         trim(((string)($order['address']  ?? '')) . (empty($order['address2']) ? '' : ', ' . $order['address2'])),
         trim(((string)($order['city']     ?? '')) . ', ' . ((string)($order['state'] ?? '')) . ' ' . ((string)($order['zip'] ?? ''))),
         (string)($order['country'] ?? ''),
@@ -532,68 +586,132 @@ function generate_receipt_pdf(array $order, array $items, ?array $payment = null
             ? (string)statement_name_for((string)($order['payment_method'] ?? 'card'))
             : (string)($co['name'] ?? 'Maventech'));
 
-    // Items table rows.
-    $itemsHtml = '<table class="items"><thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead><tbody>';
+    [$payLabel, $gateway] = _pdf_payment_method($order, $payment);
+
+    // Light purchase summary (chip rows, NOT a formal ledger).
     $subtotal = 0.0;
+    $summaryRows = '';
     foreach ($items as $it) {
-        $qty   = (int)($it['quantity'] ?? $it['qty'] ?? 1);
-        $unit  = (float)($it['unit_price'] ?? $it['price'] ?? 0);
-        $amt   = $qty * $unit;
+        $qty  = (int)($it['quantity'] ?? $it['qty'] ?? 1);
+        $unit = (float)($it['unit_price'] ?? $it['price'] ?? 0);
+        $amt  = $qty * $unit;
         $subtotal += $amt;
-        $itemsHtml .= '<tr><td>' . htmlspecialchars((string)($it['name'] ?? $it['product_name'] ?? '—'), ENT_QUOTES, 'UTF-8')
-                   . '</td><td class="num">' . $qty
-                   . '</td><td class="num">' . _pdf_money($unit, $cur)
-                   . '</td><td class="num">' . _pdf_money($amt, $cur) . '</td></tr>';
+        $summaryRows .= '<tr>'
+            . '<td class="ps-name">' . $e($it['name'] ?? $it['product_name'] ?? '—')
+            . ' <span class="ps-qty">×' . $qty . '</span></td>'
+            . '<td class="ps-amt">' . _pdf_money($amt, $cur) . '</td>'
+            . '</tr>';
     }
-    $itemsHtml .= '</tbody></table>';
-
     $total = (float)($order['total'] ?? $subtotal);
-
-    $payRow = '';
-    $pmRawPdf = strtolower(trim((string)($order['payment_method'] ?? 'card')));
-    $gatewayPdf = $pmRawPdf === 'paypal'
-        ? (setting_get('gw_paypal_provider', 'PayPal') ?: 'PayPal')
-        : (setting_get('gw_card_provider', 'Stripe') ?: 'Stripe');
-    $gwEsc = htmlspecialchars($gatewayPdf, ENT_QUOTES, 'UTF-8');
-    if ($payment) {
-        $payMethod = htmlspecialchars((string)($payment['method'] ?? 'Card'), ENT_QUOTES, 'UTF-8') . ' · via ' . $gwEsc;
-        $payDate   = htmlspecialchars((string)($payment['date']   ?? $datePaid), ENT_QUOTES, 'UTF-8');
-        $payRow = "<tr><td>{$payMethod}</td><td>{$payDate}</td><td class=\"num\">" . _pdf_money($total, $cur) . "</td><td class=\"num\">{$receiptNo}</td></tr>";
-    } elseif (!empty($order['card_brand']) || !empty($order['payment_method'])) {
-        $brand = $order['card_brand'] ?: ucfirst((string)$order['payment_method']);
-        $tail  = !empty($order['card_last4']) ? ' - ' . $order['card_last4'] : '';
-        $payRow = "<tr><td>{$brand}{$tail} · via {$gwEsc}</td><td>{$datePaid}</td><td class=\"num\">" . _pdf_money($total, $cur) . "</td><td class=\"num\">{$receiptNo}</td></tr>";
+    $rcDiscount = max(0, $subtotal - $total);
+    $rcTotalsExtra = '';
+    if ($rcDiscount > 0.009) {
+        $rcTotalsExtra = '<tr class="ps-t-min"><td class="lbl2">Subtotal</td><td class="val2">' . _pdf_money($subtotal, $cur) . '</td></tr>'
+                       . '<tr class="ps-t-min"><td class="lbl2">Discount</td><td class="val2" style="color:#16a34a;">−' . _pdf_money($rcDiscount, $cur) . '</td></tr>';
     }
 
-    $bodyHtml = '<div class="amount-banner">
-                    <div class="amt">' . _pdf_money($total, $cur) . ' paid on ' . htmlspecialchars($datePaid, ENT_QUOTES, 'UTF-8') . '</div>
-                    <div class="sub">Thanks for your purchase — your license keys are delivered in the accompanying email.</div>
-                 </div>'
-              . $itemsHtml
-              . '<table class="totals">
-                    <tr><td class="label">Subtotal</td><td class="value">' . _pdf_money($subtotal, $cur) . '</td></tr>
-                    <tr class="total-row"><td class="label">Total</td><td class="value">' . _pdf_money($total, $cur) . '</td></tr>
-                    <tr class="amount-paid"><td class="label">Amount paid</td><td class="value">' . _pdf_money($total, $cur) . '</td></tr>
-                 </table>'
-              . '<div class="statement"><span class="lbl">Billing note:</span> this charge will appear as <strong class="hl">' . htmlspecialchars($stmtName, ENT_QUOTES, 'UTF-8') . '</strong> on your card statement.</div>'
-              . ($payRow ? '<div style="font-weight:700;color:#0f172a;margin:18px 0 6px;font-size:11pt;">Payment history</div>
-                            <table class="payhist"><thead><tr><th>Payment method</th><th>Date</th><th class="num">Amount paid</th><th class="num">Receipt number</th></tr></thead><tbody>' . $payRow . '</tbody></table>' : '')
-              . $extraBodyHtml;
+    $logoPath = _pdf_company_logo_path();
+    $logoTag  = ($logoPath && file_exists($logoPath))
+        ? '<img src="' . $logoPath . '" alt="' . $e($co['name'] ?? '') . '" style="height:40px;width:auto;">'
+        : '<div style="font-size:17px;font-weight:800;color:#059669;">' . $e($co['name'] ?? 'Maventech') . '</div>';
 
-    $html = _pdf_shell([
-        'co'              => $co,
-        'logo'            => _pdf_company_logo_path(),
-        'title'           => 'Receipt',
-        'invoice_number'  => $invoiceNo,
-        'receipt_number'  => $receiptNo,
-        'date_paid'       => $datePaid,
-        'bill_to'         => $billTo,
-        'brand_key'       => _pdf_brand_for_items($items),
-        'first_name'      => (string)($order['first_name'] ?? ''),
-        'stamp_text'      => 'PAID',
-        'stamp_color'     => '#047857', // emerald — universal "all good"
-        'qr_data_uri'     => _pdf_order_history_qr($order),
-    ], $bodyHtml);
+    $promoBar   = _pdf_promo_bar_html();
+    $scatter    = _pdf_brand_scatter_html(_pdf_brand_for_items($items));
+    $qr         = _pdf_order_history_qr($order);
+    $qrHtml     = $qr !== '' ? '<div class="rc-qr"><img src="' . $qr . '" alt="QR"><div class="rc-qr-lbl">Scan to view<br>your order online</div></div>' : '';
+
+    $brandName = $e($co['name'] ?? 'Maventech');
+    $brandAddr = nl2br($e($co['address'] ?? ''));
+    $brandEm   = $e($co['email'] ?? '');
+    $money     = fn($v) => _pdf_money($v, $cur);
+    $amtBig    = $money($total);
+    $billHtml  = implode('<br>', array_map($e, $billTo));
+
+    $html = <<<HTML
+<!doctype html><html><head><meta charset="utf-8"><style>
+  @page { margin: 44px 46px; }
+  body { font-family:'DejaVu Sans',Helvetica,Arial,sans-serif; font-size:10.5pt; color:#1f2937; }
+  .scatter-wrap { position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; }
+  .scatter-icon { position:absolute; opacity:0.09; }
+  .rc-top { width:100%; border-collapse:collapse; margin-bottom:16px; }
+  .rc-top td { vertical-align:top; }
+  .rc-top .rc-co { font-size:8.5pt; color:#64748b; line-height:1.5; margin-top:6px; }
+  .rc-tag { text-align:right; }
+  .rc-tag .lbl { font-size:8pt; letter-spacing:2px; font-weight:700; color:#059669; text-transform:uppercase; }
+  .rc-hero { background:#ecfdf5; border:1px solid #a7f3d0; border-radius:16px; padding:22px 24px; margin-bottom:20px; text-align:center; }
+  .rc-check { width:46px; height:46px; line-height:44px; border-radius:50%; background:#059669; color:#fff; font-size:24pt; font-weight:700; margin:0 auto 8px; }
+  .rc-badge { display:inline-block; background:#059669; color:#fff; font-size:8pt; font-weight:700; letter-spacing:1.6px; text-transform:uppercase; padding:4px 12px; border-radius:999px; }
+  .rc-amt { font-size:30pt; font-weight:800; color:#047857; margin:12px 0 2px; letter-spacing:.3px; }
+  .rc-amt-sub { font-size:10pt; color:#059669; }
+  .rc-card { border:1px solid #e2e8f0; border-radius:14px; padding:0; margin-bottom:18px; }
+  .rc-card table { width:100%; border-collapse:collapse; }
+  .rc-card td { padding:11px 16px; font-size:9.5pt; vertical-align:top; border-bottom:1px solid #eef2f7; }
+  .rc-card tr:last-child td { border-bottom:0; }
+  .rc-card .k { color:#64748b; width:38%; }
+  .rc-card .v { color:#0f172a; font-weight:700; text-align:right; }
+  .rc-card .v.mono { font-family:'DejaVu Sans Mono',monospace; letter-spacing:.3px; }
+  .sec-label { font-size:8pt; letter-spacing:1.4px; text-transform:uppercase; color:#94a3b8; font-weight:700; margin:0 0 8px; }
+  .ps { width:100%; border-collapse:collapse; margin-bottom:6px; }
+  .ps td { padding:9px 2px; font-size:9.5pt; border-bottom:1px dashed #e2e8f0; }
+  .ps .ps-name { color:#1f2937; }
+  .ps .ps-qty { color:#94a3b8; font-size:8.5pt; }
+  .ps .ps-amt { text-align:right; color:#0f172a; font-weight:700; white-space:nowrap; }
+  .ps-total { width:100%; border-collapse:collapse; }
+  .ps-total td { padding:8px 2px; font-size:12pt; font-weight:800; }
+  .ps-total .lbl { color:#065f46; }
+  .ps-total .val { text-align:right; color:#047857; }
+  .ps-total .ps-t-min td { padding:3px 2px; font-size:9.5pt; font-weight:600; }
+  .ps-total .ps-t-min .lbl2 { color:#64748b; }
+  .ps-total .ps-t-min .val2 { text-align:right; color:#334155; }
+  .rc-note { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:10px 14px; font-size:9pt; color:#166534; margin:16px 0; }
+  .rc-note .hl { background:#dcfce7; color:#14532d; font-weight:700; padding:1px 7px; border-radius:5px; }
+  .rc-thanks { font-size:11pt; color:#047857; font-weight:700; margin:16px 0 4px; }
+  .rc-cols { width:100%; border-collapse:collapse; }
+  .rc-cols td { vertical-align:top; width:50%; padding-right:14px; font-size:9pt; color:#334155; line-height:1.55; }
+  .rc-qr { text-align:right; }
+  .rc-qr img { width:74px; height:74px; border:1px solid #e2e8f0; border-radius:6px; padding:2px; background:#fff; }
+  .rc-qr-lbl { font-size:6.5pt; color:#64748b; margin-top:3px; line-height:1.25; }
+  .rc-footer { margin-top:16px; padding-top:10px; border-top:1px solid #e2e8f0; font-size:8pt; color:#94a3b8; line-height:1.6; }
+</style></head><body>
+  {$scatter}
+  {$promoBar}
+  <table class="rc-top"><tr>
+    <td>{$logoTag}<div class="rc-co"><strong style="color:#0f172a;">{$brandName}</strong><br>{$brandAddr}<br>{$brandEm}</div></td>
+    <td class="rc-tag"><div class="lbl">Payment Receipt</div></td>
+  </tr></table>
+
+  <div class="rc-hero">
+    <div class="rc-check">&#10003;</div>
+    <div class="rc-badge">Paid in full</div>
+    <div class="rc-amt">{$amtBig}</div>
+    <div class="rc-amt-sub">Paid on {$datePaid} · Thank you, {$first}!</div>
+  </div>
+
+  <div class="rc-card"><table>
+    <tr><td class="k">Receipt number</td><td class="v mono">{$receiptNo}</td></tr>
+    <tr><td class="k">Order number</td><td class="v mono">{$orderNo}</td></tr>
+    <tr><td class="k">Invoice reference</td><td class="v mono">{$invoiceNo}</td></tr>
+    <tr><td class="k">Payment method</td><td class="v">{$payLabel} · via {$gateway}</td></tr>
+    <tr><td class="k">Date paid</td><td class="v">{$datePaid}</td></tr>
+    <tr><td class="k">Amount paid</td><td class="v" style="color:#047857;">{$amtBig}</td></tr>
+  </table></div>
+
+  <div class="sec-label">What you paid for</div>
+  <table class="ps"><tbody>{$summaryRows}</tbody></table>
+  <table class="ps-total">{$rcTotalsExtra}<tr><td class="lbl">Total paid</td><td class="val">{$amtBig}</td></tr></table>
+
+  <div class="rc-note"><strong>Billing note:</strong> this charge appears as <span class="hl">{$stmtName}</span> on your card statement, processed securely via {$gateway}.</div>
+
+  <div class="rc-thanks">Thanks for your purchase!</div>
+  <table class="rc-cols"><tr>
+    <td><div class="sec-label">Billed to</div>{$billHtml}</td>
+    <td>{$qrHtml}</td>
+  </tr></table>
+
+  <div class="rc-footer">This receipt confirms payment has been received in full. A detailed tax invoice is attached separately. Questions? Reply to this email or contact {$brandEm}. — {$brandName}</div>
+  {$extraBodyHtml}
+</body></html>
+HTML;
 
     $dompdf = _pdf_dompdf();
     $dompdf->loadHtml($html, 'UTF-8');
@@ -603,26 +721,34 @@ function generate_receipt_pdf(array $order, array $items, ?array $payment = null
 }
 
 /**
- * Generate an Invoice PDF (issued at order time — works for both paid and
- * pending orders).  Returns the binary PDF string.
+ * Generate an Invoice PDF — a formal TAX INVOICE (issued at order time,
+ * works for both paid and pending orders).  Deliberately different from the
+ * Receipt: a document-style header, a bordered reference/meta box (Invoice #,
+ * Order #, dates, status), a From/Bill-To split, a full itemised ledger with
+ * a dark header, and terms.  Returns the binary PDF string.
  */
 function generate_invoice_pdf(array $order, array $items): string
 {
+    $e   = fn($s) => htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
     $co  = function_exists('company_info') ? company_info() : ['name' => 'Maventech'];
     $co['phone'] = function_exists('company_phone_for_country') ? company_phone_for_country($order['country'] ?? null) : ($co['phone'] ?? '');
     $cur = (string)($order['currency'] ?? 'USD');
-    $invoiceNo = (string)($order['order_number'] ?? '');
+
+    $orderNo   = (string)($order['order_number'] ?? '');
+    $invoiceNo = function_exists('mv_invoice_number') ? mv_invoice_number($order) : $orderNo;
 
     $dateIssued = date('F j, Y', strtotime((string)($order['created_at'] ?? 'now')));
-    $dateDue    = $dateIssued;  // For our digital goods, due-on-issue.
+    $dateDue    = $dateIssued;  // Digital goods — due on issue.
+    $isPaid     = (string)($order['status'] ?? '') === 'paid';
 
     $billTo = array_filter([
         trim((string)($order['first_name'] ?? '') . ' ' . (string)($order['last_name'] ?? '')),
-        (string)$order['email'],
+        (string)($order['email'] ?? ''),
         trim(((string)($order['address']  ?? '')) . (empty($order['address2']) ? '' : ', ' . $order['address2'])),
         trim(((string)($order['city']     ?? '')) . ', ' . ((string)($order['state'] ?? '')) . ' ' . ((string)($order['zip'] ?? ''))),
         (string)($order['country'] ?? ''),
     ], fn($l) => trim((string)$l) !== '');
+    $billHtml = implode('<br>', array_map($e, $billTo));
 
     $stmtName = !empty($order['card_statement_name'])
         ? (string)$order['card_statement_name']
@@ -630,53 +756,137 @@ function generate_invoice_pdf(array $order, array $items): string
             ? (string)statement_name_for((string)($order['payment_method'] ?? 'card'))
             : (string)($co['name'] ?? 'Maventech'));
 
-    $itemsHtml = '<table class="items"><thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead><tbody>';
+    $itemsHtml = '';
     $subtotal = 0.0;
     foreach ($items as $it) {
-        $qty   = (int)($it['quantity'] ?? $it['qty'] ?? 1);
-        $unit  = (float)($it['unit_price'] ?? $it['price'] ?? 0);
-        $amt   = $qty * $unit;
+        $qty  = (int)($it['quantity'] ?? $it['qty'] ?? 1);
+        $unit = (float)($it['unit_price'] ?? $it['price'] ?? 0);
+        $amt  = $qty * $unit;
         $subtotal += $amt;
-        $itemsHtml .= '<tr><td>' . htmlspecialchars((string)($it['name'] ?? $it['product_name'] ?? '—'), ENT_QUOTES, 'UTF-8')
+        $itemsHtml .= '<tr><td>' . $e($it['name'] ?? $it['product_name'] ?? '—')
                    . '</td><td class="num">' . $qty
                    . '</td><td class="num">' . _pdf_money($unit, $cur)
                    . '</td><td class="num">' . _pdf_money($amt, $cur) . '</td></tr>';
     }
-    $itemsHtml .= '</tbody></table>';
-
     $total = (float)($order['total'] ?? $subtotal);
-    $isPaid = (string)($order['status'] ?? '') === 'paid';
+    $discount = max(0, $subtotal - $total);
+    $discountRow = $discount > 0.009
+        ? '<tr><td class="label">Discount</td><td class="value" style="color:#16a34a;">−' . _pdf_money($discount, $cur) . '</td></tr>'
+        : '';
 
-    $bodyHtml = '<div class="amount-banner">
-                    <div class="amt">' . _pdf_money($total, $cur) . ' ' . htmlspecialchars($cur, ENT_QUOTES, 'UTF-8') . ($isPaid ? ' &mdash; paid' : ' due ' . htmlspecialchars($dateDue, ENT_QUOTES, 'UTF-8')) . '</div>
-                    <div class="sub">' . ($isPaid ? 'Already paid — keep this invoice for your records.' : 'Please complete payment to receive your license keys.') . '</div>
-                 </div>'
-              . $itemsHtml
-              . '<table class="totals">
-                    <tr><td class="label">Subtotal</td><td class="value">' . _pdf_money($subtotal, $cur) . '</td></tr>
-                    <tr class="total-row"><td class="label">Total</td><td class="value">' . _pdf_money($total, $cur) . '</td></tr>
-                    <tr class="' . ($isPaid ? 'amount-paid' : 'amount-due') . '">
-                        <td class="label">' . ($isPaid ? 'Amount paid' : 'Amount due') . '</td>
-                        <td class="value">' . _pdf_money($total, $cur) . ' ' . htmlspecialchars($cur, ENT_QUOTES, 'UTF-8') . '</td>
-                    </tr>
-                 </table>'
-              . '<div class="statement"><span class="lbl">Billing note:</span> this charge ' . ($isPaid ? 'appears' : 'will appear') . ' as <strong class="hl">' . htmlspecialchars($stmtName, ENT_QUOTES, 'UTF-8') . '</strong> on your card statement.</div>';
+    $logoPath = _pdf_company_logo_path();
+    $logoTag  = ($logoPath && file_exists($logoPath))
+        ? '<img src="' . $logoPath . '" alt="' . $e($co['name'] ?? '') . '" style="height:42px;width:auto;">'
+        : '<div style="font-size:17px;font-weight:800;color:#4f46e5;">' . $e($co['name'] ?? 'Maventech') . '</div>';
 
-    $html = _pdf_shell([
-        'co'              => $co,
-        'logo'            => _pdf_company_logo_path(),
-        'title'           => 'Invoice',
-        'invoice_number'  => $invoiceNo,
-        'date_issued'     => $dateIssued,
-        'date_due'        => $dateDue,
-        'bill_to'         => $billTo,
-        'brand_key'       => _pdf_brand_for_items($items),
-        'first_name'      => (string)($order['first_name'] ?? ''),
-        // Stamp reads "PAID" if the invoice is already settled, otherwise "DUE".
-        'stamp_text'      => $isPaid ? 'PAID' : 'DUE',
-        'stamp_color'     => $isPaid ? '#047857' : '#b91c1c', // emerald vs red
-        'qr_data_uri'     => _pdf_order_history_qr($order),
-    ], $bodyHtml);
+    $promoBar = _pdf_promo_bar_html();
+    $scatter  = _pdf_brand_scatter_html(_pdf_brand_for_items($items));
+    $qr       = _pdf_order_history_qr($order);
+    $qrHtml   = $qr !== '' ? '<div class="inv-qr"><img src="' . $qr . '" alt="QR"><div class="inv-qr-lbl">Scan to re-download<br>this invoice</div></div>' : '';
+
+    $brandName = $e($co['name'] ?? 'Maventech');
+    $brandAddr = nl2br($e($co['address'] ?? ''));
+    $brandEm   = $e($co['email'] ?? '');
+    $brandPh   = $e($co['phone'] ?? '');
+    $subTotalS = _pdf_money($subtotal, $cur);
+    $totalS    = _pdf_money($total, $cur);
+    $curE      = $e($cur);
+    $stmtE     = $e($stmtName);
+
+    $statusBadge = $isPaid
+        ? '<span style="background:#dcfce7;color:#166534;font-weight:800;font-size:8.5pt;padding:3px 12px;border-radius:999px;letter-spacing:1px;">PAID</span>'
+        : '<span style="background:#fee2e2;color:#991b1b;font-weight:800;font-size:8.5pt;padding:3px 12px;border-radius:999px;letter-spacing:1px;">DUE</span>';
+    $amountRow = $isPaid
+        ? '<tr class="amount-paid"><td class="label">Amount paid</td><td class="value">' . $totalS . ' ' . $curE . '</td></tr>'
+        : '<tr class="amount-due"><td class="label">Amount due</td><td class="value">' . $totalS . ' ' . $curE . '</td></tr>';
+    $stampText  = $isPaid ? 'PAID' : 'DUE';
+    $stampColor = $isPaid ? '#16a34a' : '#dc2626';
+    $termsLine  = $isPaid
+        ? 'This invoice has been settled in full — no payment is due. Keep it for your records. The charge appears as <strong>' . $stmtE . '</strong> on your statement.'
+        : 'Payment is due on receipt. Your license keys are delivered once payment is confirmed. The charge will appear as <strong>' . $stmtE . '</strong> on your statement.';
+
+    $html = <<<HTML
+<!doctype html><html><head><meta charset="utf-8"><style>
+  @page { margin: 52px 48px; }
+  body { font-family:'DejaVu Sans',Helvetica,Arial,sans-serif; font-size:10.5pt; color:#1f2937; }
+  .scatter-wrap { position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; }
+  .scatter-icon { position:absolute; opacity:0.08; }
+  .inv-stamp { position:absolute; top:470px; left:50%; margin-left:-140px; width:280px; text-align:center;
+      font-weight:900; font-size:46pt; letter-spacing:8px; padding:8px 14px; border:7px solid {$stampColor};
+      color:{$stampColor}; border-radius:14px; opacity:0.11; transform:rotate(-20deg); }
+  .inv-head { width:100%; border-collapse:collapse; margin-bottom:20px; }
+  .inv-head td { vertical-align:top; }
+  .inv-title { font-size:30pt; font-weight:800; color:#312e81; letter-spacing:1px; line-height:1; }
+  .inv-sub { font-size:9pt; letter-spacing:3px; color:#6366f1; font-weight:700; text-transform:uppercase; margin-top:4px; }
+  .inv-brand { text-align:right; }
+  .inv-brand .co { font-size:8.5pt; color:#64748b; line-height:1.5; margin-top:6px; }
+  .inv-meta { width:100%; border-collapse:collapse; border:1px solid #e0e7ff; border-radius:12px; margin-bottom:22px; background:#f5f3ff; }
+  .inv-meta td { padding:10px 16px; font-size:9pt; border-bottom:1px solid #e0e7ff; }
+  .inv-meta tr:last-child td { border-bottom:0; }
+  .inv-meta .k { color:#64748b; }
+  .inv-meta .v { text-align:right; color:#0f172a; font-weight:700; }
+  .inv-meta .v.mono { font-family:'DejaVu Sans Mono',monospace; }
+  .parties { width:100%; border-collapse:collapse; margin-bottom:22px; }
+  .parties td { vertical-align:top; width:50%; padding-right:16px; font-size:9pt; color:#334155; line-height:1.55; }
+  .parties .label { font-size:8pt; text-transform:uppercase; letter-spacing:1.2px; color:#94a3b8; font-weight:700; margin-bottom:5px; }
+  .parties .bold { color:#0f172a; font-weight:700; }
+  .parties .inv-qr { text-align:left; margin-top:4px; }
+  .parties .inv-qr img { width:70px; height:70px; border:1px solid #e2e8f0; border-radius:6px; padding:2px; background:#fff; }
+  .parties .inv-qr-lbl { font-size:6.5pt; color:#64748b; margin-top:3px; line-height:1.25; }
+  table.items { width:100%; border-collapse:collapse; margin-bottom:18px; }
+  table.items th, table.items td { padding:10px 6px; font-size:9.5pt; }
+  table.items thead th { background:#312e81; color:#fff; text-align:left; font-weight:700; font-size:8.5pt; text-transform:uppercase; letter-spacing:.6px; }
+  table.items thead th:first-child { border-top-left-radius:8px; }
+  table.items thead th:last-child { border-top-right-radius:8px; }
+  table.items td { border-bottom:1px solid #e2e8f0; }
+  table.items td.num, table.items th.num { text-align:right; }
+  .totals { width:52%; margin-left:48%; border-collapse:collapse; font-size:10pt; }
+  .totals td { padding:6px 6px; }
+  .totals td.label { color:#475569; }
+  .totals td.value { text-align:right; color:#0f172a; font-weight:600; }
+  .totals tr.total-row td { border-top:2px solid #312e81; padding-top:9px; font-size:12pt; font-weight:800; color:#312e81; }
+  .totals tr.amount-paid td { padding-top:8px; color:#047857; font-weight:800; }
+  .totals tr.amount-due td { padding-top:8px; color:#b91c1c; font-weight:800; }
+  .inv-terms { margin-top:22px; background:#eef2ff; border:1px solid #c7d2fe; border-radius:10px; padding:11px 15px; font-size:9pt; color:#3730a3; }
+  .inv-footer { margin-top:14px; padding-top:10px; border-top:1px solid #e2e8f0; font-size:8pt; color:#94a3b8; line-height:1.6; }
+</style></head><body>
+  {$scatter}
+  {$promoBar}
+  <div class="inv-stamp">{$stampText}</div>
+  <table class="inv-head"><tr>
+    <td><div class="inv-title">INVOICE</div><div class="inv-sub">Tax Invoice</div></td>
+    <td class="inv-brand">{$logoTag}<div class="co"><strong style="color:#0f172a;">{$brandName}</strong><br>{$brandAddr}<br>{$brandEm}<br>{$brandPh}</div></td>
+  </tr></table>
+
+  <table class="inv-meta">
+    <tr><td class="k">Invoice number</td><td class="v mono">{$invoiceNo}</td></tr>
+    <tr><td class="k">Order number</td><td class="v mono">{$orderNo}</td></tr>
+    <tr><td class="k">Date of issue</td><td class="v">{$dateIssued}</td></tr>
+    <tr><td class="k">Date due</td><td class="v">{$dateDue}</td></tr>
+    <tr><td class="k">Status</td><td class="v">{$statusBadge}</td></tr>
+  </table>
+
+  <table class="parties"><tr>
+    <td><div class="label">From</div><span class="bold">{$brandName}</span><br>{$brandAddr}<br>{$brandEm}</td>
+    <td><div class="label">Bill to</div>{$billHtml}{$qrHtml}</td>
+  </tr></table>
+
+  <table class="items">
+    <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
+    <tbody>{$itemsHtml}</tbody>
+  </table>
+
+  <table class="totals">
+    <tr><td class="label">Subtotal</td><td class="value">{$subTotalS}</td></tr>
+    {$discountRow}
+    <tr class="total-row"><td class="label">Total</td><td class="value">{$totalS} {$curE}</td></tr>
+    {$amountRow}
+  </table>
+
+  <div class="inv-terms"><strong>Terms:</strong> {$termsLine}</div>
+  <div class="inv-footer">This is a computer-generated tax invoice for order {$orderNo}. A separate payment receipt confirms funds received. Questions? Contact {$brandEm}. — {$brandName}</div>
+</body></html>
+HTML;
 
     $dompdf = _pdf_dompdf();
     $dompdf->loadHtml($html, 'UTF-8');
