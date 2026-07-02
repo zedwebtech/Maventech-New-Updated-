@@ -282,9 +282,8 @@ applyCoupon(couponInput.value);
 }
 });
 function syncPhoneFlag(sel) {
-const img = document.getElementById('phone-flag-img');
 const opt = sel.options[sel.selectedIndex];
-if (img && opt) img.src = 'https://flagcdn.com/w40/' + (opt.dataset.iso || 'us') + '.png';
+if (opt) sel.style.setProperty('--phone-flag', "url('https://flagcdn.com/w40/" + (opt.dataset.iso || 'us') + ".png')");
 }
 function detectCardBrand(digits) {
 if (digits.startsWith('4')) return 'visa';

@@ -460,10 +460,7 @@ include __DIR__ . '/includes/header.php';
           $selIso  = $phoneIso[$selCode] ?? 'us';
           ?>
           <div class="input-group phone-group">
-            <span class="input-group-text phone-flag" id="phone-flag" aria-hidden="true">
-              <img id="phone-flag-img" src="https://flagcdn.com/w40/<?= $selIso ?>.png" width="20" height="15" alt="" loading="lazy" decoding="async">
-            </span>
-            <select name="phone_code" id="phone-code" class="form-select phone-code" onchange="syncPhoneFlag(this)" data-testid="phone-code-select" aria-label="Country dial code">
+            <select name="phone_code" id="phone-code" class="form-select phone-code" style="--phone-flag:url('https://flagcdn.com/w40/<?= $selIso ?>.png')" onchange="syncPhoneFlag(this)" data-testid="phone-code-select" aria-label="Country dial code">
               <?php foreach ($phoneFlags as $code => $flag): ?>
                 <option value="<?= $code ?>" data-iso="<?= $phoneIso[$code] ?? 'us' ?>" <?= $selCode === $code ? 'selected' : '' ?>><?= $code ?></option>
               <?php endforeach; ?>
@@ -629,33 +626,28 @@ include __DIR__ . '/includes/header.php';
 .checkout-hint .hint-btn.is-primary { background: #f59e0b; color:#fff; border-color:#f59e0b; }
 .checkout-hint .hint-btn.is-primary:hover { background:#d97706; border-color:#d97706; }
 
-/* ── Compact, elegant phone country prefix (flag image + dial code) ─────
-   Real flag images (flagcdn) render everywhere; the two cells share a border
-   so the flag + code read as one snug pill next to the number field. */
+/* ── Compact, elegant phone country prefix ──────────────────────────────
+   The flag lives INSIDE the dial-code box (as a left background image), with
+   the caret on the right — one seamless small pill, no separate cell/divider.
+   Higher specificity (.co-banner …) so it beats the generic .form-select rule. */
 .phone-group { flex-wrap: nowrap; }
-.phone-group .phone-flag {
-  padding: 0 .1rem 0 .5rem;
-  background: #fff;
-  border-right: 0;
-  display: flex;
-  align-items: center;
-}
-.phone-group .phone-flag img {
-  width: 20px; height: 15px; display: block; border-radius: 2px; object-fit: cover;
-  box-shadow: 0 0 0 1px rgba(15,23,42,.08);
-}
+.co-banner .phone-group .phone-code,
 .phone-group .phone-code {
   flex: 0 0 auto;
   width: auto;
-  min-width: 48px;
-  max-width: 58px;
+  min-width: 66px;
+  max-width: 74px;
   font-weight: 700;
-  padding: .42rem .9rem .42rem .3rem;   /* caret room only */
-  background-position: right .25rem center;
-  background-size: 10px 8px;
-  border-left: 0;
   color: var(--uc-blue, #0891b2);
+  padding: .55rem .82rem .55rem 32px;   /* left room for flag, right for caret */
+  background-image:
+    var(--phone-flag, url("https://flagcdn.com/w40/us.png")),
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23334155' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat, no-repeat;
+  background-position: left .5rem center, right .28rem center;
+  background-size: 20px 15px, 9px 7px;
 }
+.co-banner .phone-group .phone-code { border-right: 0; }
 .phone-group .form-control { flex: 1 1 auto; min-width: 0; }
 .phone-group:focus-within { box-shadow: 0 0 0 .18rem rgba(6,182,212,.16); border-radius: .65rem; }
 
