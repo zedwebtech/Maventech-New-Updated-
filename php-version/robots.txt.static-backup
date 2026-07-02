@@ -133,5 +133,5 @@ User-agent: Andibot
 Allow: /
 
 # ----- Sitemaps -----
-Sitemap: https://robot-rules.preview.emergentagent.com/sitemap.xml
-Sitemap: https://robot-rules.preview.emergentagent.com/merchant-feed.xml
+Sitemap: https://mobile-speed-fix.preview.emergentagent.com/sitemap.xml
+Sitemap: https://mobile-speed-fix.preview.emergentagent.com/merchant-feed.xml
