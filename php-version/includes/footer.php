@@ -174,6 +174,13 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
       merchant_id: <?= (int)$gcrMid ?>,
       position: "<?= esc($gcrPos) ?>"
     });
+    // Accessibility: the badge iframe Google injects has no title attribute
+    // (PageSpeed: "<iframe> elements do not have a title"). Set it once it appears.
+    var _mwT = setInterval(function () {
+      var f = document.getElementById('merchantwidgetiframe');
+      if (f) { f.setAttribute('title', 'Google Customer Reviews'); clearInterval(_mwT); }
+    }, 400);
+    setTimeout(function () { clearInterval(_mwT); }, 12000);
   });
 </script>
 <!-- end Google Customer Reviews badge -->

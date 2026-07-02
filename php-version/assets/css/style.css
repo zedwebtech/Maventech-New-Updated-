@@ -1499,10 +1499,30 @@ body.has-deal-bar #chat-panel { bottom: 72px; }
 
 /* Accessibility: give contact (tel/mailto) links a large-enough tap target
    (PageSpeed "Touch targets do not have sufficient size or spacing"). */
-.topbar a[href^="tel:"], .topbar a[href^="mailto:"],
-.footer-dark a[href^="tel:"], .footer-dark a[href^="mailto:"],
-footer a[href^="tel:"], footer a[href^="mailto:"] {
-  display: inline-flex; align-items: center; min-height: 24px; padding: 2px 2px;
+a[href^="tel:"], a[href^="mailto:"] {
+  display: inline-flex; align-items: center; min-height: 24px;
+}
+/* A little more breathing room between the stacked footer contact links. */
+.footer-dark p:has(> a[href^="tel:"]), .footer-dark p:has(> a[href^="mailto:"]),
+footer p:has(> a[href^="tel:"]), footer p:has(> a[href^="mailto:"]) { margin-bottom: .5rem; }
+
+/* ── Mobile performance: pause the continuously-running DECORATIVE animations
+   that repaint every frame (background-position "shimmer/sheen" sweeps, orbit
+   rings, floating cards, sway). On the mobile PageSpeed run these add
+   main-thread Style & Layout work and trigger "non-composited animation" /
+   "unsupported CSS property (box-shadow/background-position-x)" warnings.
+   They are purely cosmetic, so we switch them off on small screens. ── */
+@media (max-width: 768px) {
+  .logo-3d .brand-grad,
+  .logo-3d .brand-mark,
+  .logo-3d > img:first-of-type,
+  [class*="logo-3d"],
+  .navbar .logo-3d::before,
+  .hero-abstract, .hero-ring, .hero-brand-watermark,
+  .hero-delivery-pill, .hero-rating-chip,
+  .gc-code, .gc-key, .hero-tile, .hero-abstract .cube {
+    animation: none !important;
+  }
 }
 
 /* ---------- Product page: clean still image (replaces 360° viewer) ---------- */

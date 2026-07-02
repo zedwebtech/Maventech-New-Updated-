@@ -577,6 +577,30 @@ agent_communication:
     -agent: "main"
     -message: |
       Follow-up done: (1) Phone country-code box made EVEN smaller — removed the flag box entirely (it rendered as "us" text on some devices) leaving a compact 62px "+1" selector. Frontend test confirms 62px width, no flag box, form works, no console errors. (2) Task 2 PageSpeed safe fixes applied (gtag whitespace sanitise → fixes 404 root cause, cart-link aria-label, tel/mailto touch targets, composited phone-pulse). Remaining PageSpeed items are deployed-site/third-party (documented) and require live-site admin action, not code.
+    -agent: "testing"
+    -message: |
+      MOBILE RESPONSIVENESS VERIFICATION COMPLETE (2026-07-02). Tested at 390x844 viewport per review request.
+      
+      ✅ PASSED (4/5 major checks):
+      1. Homepage mobile rendering - All elements visible, no horizontal overflow
+      2. Hero abstract animation - Correctly disabled on mobile
+      3. Cart link accessibility - aria-label='View cart' present
+      4. Checkout mobile regression - Phone control working correctly (flag as background, 66.48px width, no overflow)
+      
+      ❌ CRITICAL ISSUE (1/5):
+      Logo shimmer animation NOT disabled on mobile - animationName='brand-shimmer-dark' instead of 'none'
+      
+      ROOT CAUSE: CSS specificity conflict in /app/php-version/assets/css/style.css
+      - Line 1515: @media (max-width: 768px) sets animation: none !important for .logo-3d .brand-grad
+      - Line ~3212: Dark mode rule sets animation: brand-shimmer-dark 8s linear infinite !important
+      - Dark mode rule comes AFTER mobile media query, so it wins despite both having !important
+      
+      FIX NEEDED: Move the mobile media query AFTER all dark mode rules (after line 3220), OR increase specificity by adding [data-bs-theme="dark"] to the mobile media query selector.
+      
+      ⚠️ MINOR ISSUE (tel: links):
+      4 out of 6 tel: links have 0px height - these are in the trustbar (hidden on mobile with d-none d-md-block). The 2 VISIBLE tel: links (mobile contact strip + footer) DO meet the 24px requirement. This is not a functional issue since hidden elements don't need tap targets.
+      
+      NO JavaScript console errors detected (only expected third-party tracking blocks).
 
   - task: "Tracking IDs: validate + auto-heal (GTM/GA4/gtag/Ads) so a malformed admin value can't emit a broken gtag.js 404"
     implemented: true
@@ -604,3 +628,15 @@ agent_communication:
         -working: true
         -agent: "testing"
         -comment: "auto_frontend_testing_agent VERIFIED all 8 points PASS: phone-code select present showing +1; NO phone-flag/phone-flag-img elements; inline --phone-flag var + computed background-image includes flagcdn flag + caret; width 74px (compact); changing to +44 updates bg us.png->gb.png with data-iso us->gb and NO console errors; phone input sits beside, flex:1, nowrap, no overflow. Screenshots confirm flag sits inside box left of +1, no divider/cut-off."
+
+  - task: "Mobile responsiveness verification after PageSpeed/accessibility tweaks"
+    implemented: true
+    working: false
+    file: "php-version/assets/css/style.css, php-version/includes/header.php"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: false
+        -agent: "testing"
+        -comment: "MOBILE RESPONSIVENESS TESTING (390x844 viewport) - MIXED RESULTS. ✅ PASSED: (1) Homepage renders correctly on mobile - navbar, hero, 12 product cards, footer all present and visible. NO horizontal overflow (docWidth=390px, winWidth=390px). (2) Hero abstract animation correctly DISABLED on mobile (animationName='none'). (3) Cart link accessibility CORRECT - [data-testid='cart-button-mobile'] has aria-label='View cart'. (4) Checkout regression test PASSED - phone country-code control shows '+1', width 66.48px (within 66-80px range), flag rendered as background image (flagcdn URL present), inline --phone-flag CSS variable present, NO horizontal overflow on checkout. ❌ FAILED: (1) Logo shimmer animation NOT disabled on mobile - .logo-3d .brand-grad has animationName='brand-shimmer-dark' (expected 'none'). ROOT CAUSE: Dark mode CSS rule at line ~3212 in style.css has 'animation: brand-shimmer-dark 8s linear infinite !important;' which overrides the mobile media query at line 1515. The mobile @media (max-width: 768px) rule needs to come AFTER dark mode rules or needs higher specificity to override the !important. (2) Tel: links tap target issue - 4 out of 6 tel: links have 0px actualHeight (expected >= 24px). These are in the trustbar which is hidden on mobile (d-none d-md-block class), so they're not visible/tappable. The 2 visible tel: links (mobile contact strip + footer) DO meet the 24px requirement (30.50px and 24.00px). Mailto: links both PASS (32.50px and 24.00px). ℹ️ NO JavaScript console errors (only expected third-party tracking script blocks). Screenshots captured: mobile-homepage-top.png, mobile-homepage-footer.png, mobile-checkout.png."
