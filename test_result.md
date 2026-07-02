@@ -589,3 +589,18 @@ agent_communication:
         -working: true
         -agent: "main"
         -comment: "User supplied the correct tracking IDs (GTM-N6Q7FKS2, Google tag GT-TQV4X72G, GA4 G-9824E82NN1, Ads AW-18263028048, GA4 stream 15158795356 = informational, not used in tag code). These already match config.php compile-time defaults. Root cause of the live 404 (/gtag/js?id=G 9824E82NN1) = a malformed value with a stray space stored in the admin settings DB that overrode the correct default. Added mv_tracking_id($key,$default,$pattern) in functions.php: strips all whitespace, validates against the id's expected pattern, and FALLS BACK to the known-good compile-time default when the stored value is empty/malformed (valid custom values still honoured). Applied to gtmId + ga4 + gtag + ads in header.php. VERIFIED in preview: homepage renders gtag.js?id=GT-TQV4X72G, GTM-N6Q7FKS2, config G-9824E82NN1 + AW-18263028048 (no stray space). Injected the exact bad value 'G 9824E82NN1' into settings → output auto-healed to 'G-9824E82NN1' with 0 occurrences of the broken value → the gtag 404 is fixed by code alone once deployed."
+
+  - task: "Checkout phone country-code: flag now INSIDE the box (bg image) + smaller pill (bug fix)"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php, php-version/assets/js/main.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "User reported the flag looked cramped/cut-off in its own bordered cell beside +1. FIX: removed the separate flag <span>/<img>; flag now renders as a LEFT background-image inside the dial-code <select> (two-layer background: flag left + caret right), passed via --phone-flag CSS var (inline style, updated by syncPhoneFlag() on change). Higher-specificity selector (.co-banner .phone-group .phone-code) beats generic .form-select. Box shrunk (min 66 / max 74px). No separate cell/divider."
+        -working: true
+        -agent: "testing"
+        -comment: "auto_frontend_testing_agent VERIFIED all 8 points PASS: phone-code select present showing +1; NO phone-flag/phone-flag-img elements; inline --phone-flag var + computed background-image includes flagcdn flag + caret; width 74px (compact); changing to +44 updates bg us.png->gb.png with data-iso us->gb and NO console errors; phone input sits beside, flex:1, nowrap, no overflow. Screenshots confirm flag sits inside box left of +1, no divider/cut-off."
