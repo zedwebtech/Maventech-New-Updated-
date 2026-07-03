@@ -857,3 +857,18 @@ agent_communication:
         -working: true
         -agent: "testing"
         -comment: "auto_frontend_testing_agent PASS: US=$209.99; select Canada -> /ca/checkout.php?cur=CAD, country=CA + CA$287.69; select UK -> /uk/checkout.php?cur=GBP, country=UK + £165.89; back to US -> $209.99. Country and currency always in sync; mismatch impossible; no console errors."
+
+  - task: "Admin login at /admin.php + user.php alias + real BOUNCED status in Email Activity (IMAP bounce sync)"
+    implemented: true
+    working: true
+    file: "admin.php, includes/functions.php, user.php, includes/mailer.php, cron.php, ajax/sync-bounces.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "(1) Admin login now lives at /admin.php: when not an authenticated admin/staff, admin.php renders login.php inline (URL stays /admin.php) instead of bouncing to login.php; require_admin() also redirects to admin.php. The user 'couldn't log in' because the default password is Admin@UC2026! (config.php ADMIN_PASSWORD), not what they were trying. (2) Created /user.php simple alias -> account.php (customer account/login). (3) Email Activity 'always delivered' bug: the admin display was already accurate (sent->SENT, bounced->red BOUNCED) but nothing DETECTED async bounces. Added email_sync_bounces() in mailer.php — connects via IMAP to the mailbox (imap_* settings, falls back to SMTP creds), finds MAILER-DAEMON/Undelivered/DSN messages, extracts the failed recipient + reason (Diagnostic-Code / 5.x.x), and flips the matching email_outbox row to status='bounced' + last_error. Wired into cron.php (auto) + ajax/sync-bounces.php (manual admin trigger, require_admin_json). Installed php-imap; degrades gracefully with a clear message if IMAP ext/mailbox not available."
+        -working: true
+        -agent: "testing"
+        -comment: "auto_frontend_testing_agent PASS: /admin.php shows login form inline (URL stays /admin.php); login with admin@maventechsoftware.com / Admin@UC2026! succeeds -> dashboard (Orders/Products/Emails/Sales/Settings). Email Activity: seeded bounce.demo@gmail.com shows BOUNCED (red) with '550-5.7.26 ... SPF/DKIM' reason; sent.demo@example.com shows SENT; Failed filter isolates the bounced one. /user.php renders 'My Account' page HTTP 200. No console errors. sync-bounces endpoint returns 403 for unauth (require_admin_json OK)."
