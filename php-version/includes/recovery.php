@@ -175,6 +175,93 @@ function mv_mark_payment_succeeded(int $orderId, string $transactionId = ''): vo
 // EMAIL: customer "payment failed" — clean, single CTA (Retry Payment Now)
 // ============================================================================
 
+/**
+ * Map a gateway decline code / message into a customer-actionable advice
+ * block used both in the failure email AND the on-page checkout banner so
+ * the two surfaces stay in sync.  Returns:
+ *   [
+ *     'title' => 'Call your bank to authorize this payment',
+ *     'body'  => 'Long-form explanation …',
+ *     'tone'  => 'warning' | 'primary',
+ *   ]
+ * NB: We NEVER echo the raw gateway string here — it's already shown as
+ * a monospace "reason" row above the tip.  This helper turns technical
+ * codes into plain-English next-steps.
+ */
+function mv_payment_failed_action_advice(string $code, string $msg): array
+{
+    $code = strtolower(trim($code));
+    $lm   = strtolower($msg);
+
+    // Bank-declined family → tell them to authorize with their bank
+    $bankDeclines = ['do_not_honor', 'card_declined', 'generic_decline',
+                     'call_issuer', 'issuer_not_available', 'try_again_later',
+                     'processing_error', 'fraudulent', 'security_violation',
+                     'stop_payment_order', 'transaction_not_allowed',
+                     'restricted_card', 'service_not_allowed'];
+    if (in_array($code, $bankDeclines, true)
+        || stripos($lm, 'do not honor') !== false
+        || stripos($lm, 'declined') !== false
+        || stripos($lm, 'call your bank') !== false
+        || stripos($lm, 'contact your bank') !== false) {
+        return [
+            'title' => 'Please contact your bank to authorize this payment',
+            'body'  => 'Your bank declined the transaction — usually because they don\'t recognize an online software purchase from a new merchant. '
+                     . 'Call the phone number on the back of your card (or open your banking app) and either (a) authorize the transaction with '
+                     . (function_exists('setting_get') ? htmlspecialchars((string)setting_get('company_name', 'Maventech')) : 'Maventech')
+                     . ', or (b) approve any pending fraud-alert. Then return to this page and click Retry — the very same card will usually work on the second attempt.',
+            'tone'  => 'warning',
+        ];
+    }
+
+    // 3-D Secure / authentication → user needs to finish the challenge
+    if (in_array($code, ['authentication_required', 'authentication_failed'], true)
+        || stripos($lm, '3d secure') !== false
+        || stripos($lm, '3-d secure') !== false
+        || stripos($lm, 'authentication') !== false) {
+        return [
+            'title' => 'Your bank needs to verify this payment (3-D Secure)',
+            'body'  => 'Your bank asked to confirm this purchase — most likely a one-time code sent to your phone, or an approval prompt in your banking app. '
+                     . 'Click Retry below, complete the verification when your bank shows the popup, and the payment will go through.',
+            'tone'  => 'primary',
+        ];
+    }
+
+    // Insufficient funds → change card
+    if ($code === 'insufficient_funds' || stripos($lm, 'insufficient funds') !== false) {
+        return [
+            'title' => 'Insufficient funds on the card',
+            'body'  => 'The card was declined because there aren\'t enough available funds. Please try again with a different card, or top up your account first — no charge was made and your cart is preserved.',
+            'tone'  => 'warning',
+        ];
+    }
+
+    // Bad card details → user typo
+    if (in_array($code, ['incorrect_number', 'incorrect_cvc', 'cvc_check_failed', 'invalid_expiry_month', 'invalid_expiry_year', 'expired_card', 'invalid_card'], true)) {
+        return [
+            'title' => 'Please double-check your card details',
+            'body'  => 'The card number, expiry or CVV/CVC didn\'t match what your bank has on file. Click Retry and re-enter them carefully — or try a different card.',
+            'tone'  => 'warning',
+        ];
+    }
+
+    // Lost / stolen → hard block, tell them to use another card
+    if (in_array($code, ['lost_card', 'stolen_card'], true)) {
+        return [
+            'title' => 'This card has been reported lost or stolen',
+            'body'  => 'For your safety your bank has blocked this card. Please use a different card to complete the purchase.',
+            'tone'  => 'warning',
+        ];
+    }
+
+    // PayPal / other → generic bank message
+    return [
+        'title' => 'Please try again or contact your bank',
+        'body'  => 'The payment couldn\'t be completed on the first attempt. Please retry below — either with the same card (after checking with your bank for any pending fraud alert) or with a different card. No charge was made.',
+        'tone'  => 'warning',
+    ];
+}
+
 function mv_send_payment_failed_email(array $order, string $code, string $msg): void
 {
     $to = trim((string)($order['email'] ?? ''));
@@ -208,6 +295,19 @@ function mv_send_payment_failed_email(array $order, string $code, string $msg): 
 
     $subject = "We couldn't process your payment — Order {$orderNum}";
     $safeMsg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
+
+    // ---- Decode the decline into a friendly action-message the customer can
+    //      actually act on ("call your bank / authorize this payment") rather
+    //      than the raw gateway string.  Keeps parity with the on-page banner
+    //      shown in checkout.php.
+    $bankAction = mv_payment_failed_action_advice($code, $msg);
+    $bankTitle  = htmlspecialchars($bankAction['title'], ENT_QUOTES, 'UTF-8');
+    $bankBody   = htmlspecialchars($bankAction['body'],  ENT_QUOTES, 'UTF-8');
+    $bankColor  = $bankAction['tone'] === 'primary' ? '#1d4ed8' : '#9a3412';
+    $bankBg     = $bankAction['tone'] === 'primary' ? '#eff6ff' : '#fff7ed';
+    $bankBorder = $bankAction['tone'] === 'primary' ? '#bfdbfe' : '#fed7aa';
+    $bankIcon   = $bankAction['tone'] === 'primary' ? '🏦' : '💳';
+
     $html = <<<HTML
 <!doctype html><html><body style="margin:0;padding:0;background:#f5f7fa;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#0f172a;">
 <div style="max-width:560px;margin:0 auto;padding:32px 20px;">
@@ -218,14 +318,24 @@ function mv_send_payment_failed_email(array $order, string $code, string $msg): 
     </div>
     <div style="padding:26px 28px 6px;font-size:14px;line-height:1.6;color:#334155;">
       <p style="margin:0 0 14px 0;">Your bank returned the following reason for order <strong>{$orderNum}</strong>:</p>
-      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;color:#9a3412;font-size:13.5px;margin:0 0 20px 0;">{$safeMsg}</div>
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;color:#9a3412;font-size:13.5px;margin:0 0 18px 0;font-family:'SF Mono',Menlo,monospace;">{$safeMsg}</div>
+
+      <!-- Bank-action tip box — tells the customer EXACTLY what to do next
+           (call their bank / authorise the transaction in the mobile app) -->
+      <div style="background:{$bankBg};border:1px solid {$bankBorder};border-radius:10px;padding:14px 16px;margin:0 0 20px 0;">
+        <div style="font-weight:700;color:{$bankColor};font-size:14px;margin-bottom:4px;">
+          {$bankIcon} {$bankTitle}
+        </div>
+        <div style="font-size:13.5px;color:#334155;line-height:1.55;">{$bankBody}</div>
+      </div>
+
       <p style="margin:0 0 6px 0;color:#64748b;font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;">Your order</p>
       <table style="width:100%;border-collapse:collapse;margin:0 0 18px 0;">
         {$rowsHtml}
         <tr><td style="padding:14px 0 0;border-top:1px solid #e2e8f0;font-size:15px;font-weight:700;color:#0f172a;">Total due</td>
         <td style="padding:14px 0 0;border-top:1px solid #e2e8f0;font-size:15px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;">{$currency} {$total}</td></tr>
       </table>
-      <p style="margin:0 0 6px 0;font-size:13.5px;color:#334155;">No charge was made. Your cart is safe — click below to retry with the same or a different card.</p>
+      <p style="margin:0 0 6px 0;font-size:13.5px;color:#334155;"><strong>No charge was made.</strong> Your cart is safe — click below to retry with the same or a different card.</p>
     </div>
     <div style="padding:8px 28px 28px;text-align:center;">
       <a href="{$retry}" style="display:inline-block;background:#0B5CFF;color:#fff;text-decoration:none;padding:14px 30px;border-radius:10px;font-weight:700;font-size:15px;">Retry Payment Now →</a>

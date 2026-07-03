@@ -553,7 +553,17 @@ include __DIR__ . '/includes/header.php';
   <?php if ($errors): ?>
     <div class="alert alert-danger"><ul class="mb-0"><?php foreach ($errors as $e): ?><li><?= esc($e) ?></li><?php endforeach; ?></ul></div>
   <?php endif; ?>
-  <?php if ($__declineBanner !== ''): ?>
+  <?php if ($__declineBanner !== ''):
+      // Resolve the same bank-action advice we email to the customer so both
+      // surfaces are word-for-word aligned.
+      $__advice = function_exists('mv_payment_failed_action_advice')
+          ? mv_payment_failed_action_advice((string)($__declineOrder['payment_error_code'] ?? ''), $__declineBanner)
+          : ['title'=>'Please contact your bank to authorize this payment','body'=>'Please try again below.','tone'=>'warning'];
+      $__aTone   = $__advice['tone'] === 'primary' ? '#1d4ed8' : '#9a3412';
+      $__aBg     = $__advice['tone'] === 'primary' ? '#eff6ff' : '#fff7ed';
+      $__aBorder = $__advice['tone'] === 'primary' ? '#bfdbfe' : '#fed7aa';
+      $__aIcon   = $__advice['tone'] === 'primary' ? '🏦' : '💳';
+  ?>
     <div class="alert co-decline-banner" role="alert" data-testid="checkout-decline-banner"
          style="background:linear-gradient(90deg,#fef2f2,#fee2e2);border:1px solid #fca5a5;color:#7f1d1d;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 2px 6px rgba(220,38,38,.08);">
       <div style="display:flex;align-items:flex-start;gap:12px;">
@@ -561,10 +571,19 @@ include __DIR__ . '/includes/header.php';
         <div style="flex:1;">
           <div style="font-weight:700;font-size:14.5px;margin-bottom:3px;">Your payment couldn't be completed</div>
           <div style="font-size:13.5px;line-height:1.5;color:#991b1b;" data-testid="checkout-decline-reason"><?= esc($__declineBanner) ?></div>
-          <div style="font-size:12.5px;color:#7f1d1d;opacity:.85;margin-top:6px;">
-            Your cart is preserved — please try again below with the same or a different card. No charge was made.
-          </div>
         </div>
+      </div>
+      <div data-testid="checkout-decline-action"
+           style="margin:12px 0 2px 0;background:<?= $__aBg ?>;border:1px solid <?= $__aBorder ?>;border-radius:10px;padding:12px 14px;">
+        <div style="font-weight:700;color:<?= $__aTone ?>;font-size:13.5px;margin-bottom:2px;">
+          <?= $__aIcon ?> <?= esc($__advice['title']) ?>
+        </div>
+        <div style="font-size:13px;line-height:1.55;color:#334155;">
+          <?= esc($__advice['body']) ?>
+        </div>
+      </div>
+      <div style="font-size:12.5px;color:#7f1d1d;opacity:.85;margin-top:8px;">
+        Your cart is preserved — <strong>no charge was made</strong>. Please try again below.
       </div>
     </div>
   <?php endif; ?>
