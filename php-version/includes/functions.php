@@ -886,7 +886,11 @@ function mv_placeholderize_legacy_page_phones(): void {
     if ($done) return;
     $done = true;
     try {
-        if (setting_get('pages_phone_placeholderized', '') === '1') return;
+        // NB: setting flag intentionally removed — start.sh re-seeds database.sql
+        // on a fresh pod which re-populates the legacy hardcoded number, so a
+        // one-shot flag would leave the pages permanently stale. This UPDATE
+        // only touches rows whose content still contains "888-632-9902"; on a
+        // clean table it's a fast no-op (LIKE %…% over 15 short rows).
         db()->exec(
             "UPDATE pages SET content = " .
             "REPLACE(REPLACE(REPLACE(content," .
@@ -895,7 +899,6 @@ function mv_placeholderize_legacy_page_phones(): void {
             "'1-888-632-9902','{{support_phone}}') " .
             "WHERE content LIKE '%888-632-9902%'"
         );
-        setting_set('pages_phone_placeholderized', '1');
     } catch (Throwable $e) { /* silent — non-critical */ }
 }
 
