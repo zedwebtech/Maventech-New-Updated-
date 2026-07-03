@@ -733,3 +733,18 @@ agent_communication:
       The bug fix is working correctly. In LIVE mode with no configured gateway, the system properly prevents fake purchases and shows a clear error message to the user.
       
       Screenshot: checkout-final.png shows the error message clearly visible at the top of the checkout page.
+
+  - task: "Payment gateway test-vs-live behavior + remove naggy Google review popup + diagnose post-purchase email"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php, php-version/order-success.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "ISSUE 2 (gateway test vs live): checkout.php DEMO block previously marked ANY order paid + fulfilled when no gateway key existed — including LIVE mode (faking real charges). Fixed: if activeMode==='live' && !stripe_enabled() -> show error 'Payment gateway not configured. Live card/PayPal payments are currently unavailable — no charge was made...' and DO NOT mark paid/fulfil. If test mode -> keep simulating a dummy transaction (transaction_logs status='test' + fulfill + redirect to success). ISSUE 3 (naggy Google review popup): order-success.php auto-rendered the Google Customer Reviews opt-in survey (apis.google.com platform.js + gapi.surveyoptin.render) on EVERY paid order. Gated behind new setting gcr_optin_popup (default '0'=OFF) so it no longer pops up; the inline review card remains and its 'Post my review on Google' button still only appears AFTER the customer submits a 4-5 star review. ISSUE 1 (email not received): ROOT-CAUSED via repro — fulfill_order correctly QUEUES both the customer delivery email (template order_delivery) and company copy, but smtp_config() is {enabled:false} so rows stay status='queued' ('Pending delivery — configure SMTP') and never dispatch. This is a MAIL-SERVER CONFIG gap, not a code bug — needs SMTP credentials (or Resend/SendGrid) configured. Asked user for SMTP creds."
+        -working: true
+        -agent: "testing"
+        -comment: "auto_frontend_testing_agent verified: (A) TEST mode + no gateway -> checkout SIMULATES success, lands on order-success.php?order=..., TEST MODE badge shown. (B) order-success has NO 'surveyoptin' / no 'apis.google.com/js/platform.js?onload=renderOptIn'; inline review card [data-testid=success-review-card] present with 5 stars; #srGoogleShareWrap hidden (display:none) on load; no console errors. (C) LIVE mode + no gateway -> shows exact error 'Payment gateway not configured. Live card/PayPal payments are currently unavailable — no charge was made...', stays on /checkout.php, NO redirect to success, no fake purchase. All PASS."
