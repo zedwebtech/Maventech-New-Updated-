@@ -395,7 +395,7 @@ agent_communication:
     -agent: "main"
     -message: |
       COMPREHENSIVE UI TESTING REQUEST — Test the installation guide feature end-to-end via browser automation.
-      Focus ONLY on the new installation guide feature. Test at https://mobile-speed-fix.preview.emergentagent.com
+      Focus ONLY on the new installation guide feature. Test at https://demo-view-31.preview.emergentagent.com
       
       PART 1-4: Test native guide pages, product page block, order history page, and admin filter.
 
