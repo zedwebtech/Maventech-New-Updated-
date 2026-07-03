@@ -322,24 +322,33 @@ HTML;
             }
         }
         if ($errors === [] && !stripe_enabled()) {
-            // DEMO MODE (no Stripe key for the active gateway mode): mark paid + fulfill immediately
-            $pdo->prepare('UPDATE orders SET status = "paid" WHERE id = ?')->execute([$orderId]);
-            // Log a "test charge" row in transaction_logs so the admin's
-            // Recent Transaction Logs table reflects the dry-run.
-            try {
-                $pdo->prepare('INSERT INTO transaction_logs (order_id, gateway, transaction_id, amount, currency, status) VALUES (?,?,?,?,?,?)')
-                    ->execute([
-                        $orderId,
-                        $method === 'paypal' ? 'paypal' : 'card',
-                        'TEST_' . strtoupper(bin2hex(random_bytes(6))),
-                        $total,
-                        current_currency()['code'],
-                        $activeMode === 'test' ? 'test' : 'paid',
-                    ]);
-            } catch (Throwable $e) { /* logging is best-effort */ }
-            fulfill_order($orderId);
-            header('Location: order-success.php?order=' . urlencode($orderNumber));
-            exit;
+            if ($activeMode === 'live') {
+                // LIVE mode but NO real payment gateway configured for the
+                // active method. We must NEVER fake a successful charge on a
+                // live store — show a clear "not configured" error and stop.
+                $errors[] = 'Payment gateway not configured. Live card/PayPal payments are currently unavailable — no charge was made. Please contact us to complete your order. (An administrator must configure a live payment gateway under Admin → API / Payment Gateway.)';
+            } else {
+                // TEST / sandbox mode (no live gateway needed): simulate a
+                // successful dummy transaction so the operator can preview the
+                // full post-purchase flow end-to-end.
+                $pdo->prepare('UPDATE orders SET status = "paid" WHERE id = ?')->execute([$orderId]);
+                // Log a "test charge" row in transaction_logs so the admin's
+                // Recent Transaction Logs table reflects the dry-run.
+                try {
+                    $pdo->prepare('INSERT INTO transaction_logs (order_id, gateway, transaction_id, amount, currency, status) VALUES (?,?,?,?,?,?)')
+                        ->execute([
+                            $orderId,
+                            $method === 'paypal' ? 'paypal' : 'card',
+                            'TEST_' . strtoupper(bin2hex(random_bytes(6))),
+                            $total,
+                            current_currency()['code'],
+                            'test',
+                        ]);
+                } catch (Throwable $e) { /* logging is best-effort */ }
+                fulfill_order($orderId);
+                header('Location: order-success.php?order=' . urlencode($orderNumber));
+                exit;
+            }
         }
     }
 }

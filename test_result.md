@@ -683,3 +683,15 @@ agent_communication:
         -working: true
         -agent: "testing"
         -comment: "auto_frontend_testing_agent verified at 390x844 mobile: homepage/hero/footer render, NO horizontal overflow, no console errors; .logo-3d .brand-grad animationName='none' in BOTH light AND dark mode (needed body/.dark specificity bumps to beat later !important shimmer rules); .hero-abstract animationName='none'; cart-button-mobile aria-label='View cart'; visible tel/mailto links >=24px; checkout phone control OK (66px, flag bg). All PASS."
+
+  - task: "TEST MODE checkout simulation + Google review popup removal (issues 2 & 3)"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php, php-version/order-success.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "testing"
+        -comment: "NEW BUG FIX VALIDATION (2026-07-03). Tested two specific bug fixes per review request: (1) ISSUE 2 - TEST MODE CHECKOUT SIMULATION: Verified that when gw_mode='test' (no real payment gateway configured), the checkout flow successfully simulates a paid order. Added product to cart via fetch (microsoft-office-2024-professional-plus-windows), filled all required checkout fields (email: tester@example.com, phone, name, address, city: San Francisco, state: CA, ZIP: 94107, country: US, payment method: Card, card details with future expiry 12/28). Confirmed TEST MODE banner visible on checkout page. Submitted order and successfully landed on order-success.php?order=MV26070341A74 with order confirmation message 'Thanks for purchasing with us, John!' and order number displayed. ✅ PASS - Test mode correctly simulates successful purchase without real payment processing. (2) ISSUE 3 - GOOGLE REVIEW POPUP REMOVAL: Verified that the Google Customer Reviews opt-in survey popup is NO LONGER auto-loaded on order-success page. Checked page source: 'surveyoptin' NOT present ✅, 'apis.google.com/js/platform.js?onload=renderOptIn' NOT present ✅. Confirmed inline review card IS present with data-testid='success-review-card' ✅, all 5 star buttons present (success-review-star-1 through star-5) ✅. Verified Google share button (#srGoogleShareWrap with data-testid='success-review-google-share') is HIDDEN initially (display:none, is_visible()=false) ✅ - only shown AFTER customer submits a 4-5 star review. No JavaScript console errors detected ✅. ROOT CAUSE: The Google opt-in popup was naggy (appeared on EVERY paid order). Fix: Added setting 'gcr_optin_popup' defaulting to '0' (OFF) in order-success.php line 433, so the opt-in survey is disabled by default. The on-page review card (lines 609-821) now offers a clean 'Post my review on Google' button that only appears AFTER the customer chooses to leave a review (lines 782-794). Both bug fixes working correctly as specified."

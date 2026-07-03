@@ -425,7 +425,13 @@ if (!$isDemo && $order && $order['status'] === 'paid') {
  *  Spec: https://support.google.com/merchants/answer/7106244
  * ========================================================================== */
 $gmcId = trim((string)setting_get('google_merchant_id', defined('GOOGLE_MERCHANT_ID') ? GOOGLE_MERCHANT_ID : ''));
-if ($isPaid && $gmcId !== '' && !empty($order['email'])):
+// The auto opt-in survey popped up on EVERY paid order asking the customer to
+// leave Google feedback — customers found it naggy. It is now OFF by default;
+// the on-page review card below already offers a clean "share on Google" option
+// only AFTER the customer chooses to leave a review. Re-enable via Admin setting
+// 'gcr_optin_popup' = '1' if the Google Customer Reviews badge programme is wanted.
+$gcrOptInEnabled = setting_get('gcr_optin_popup', '0') === '1';
+if ($gcrOptInEnabled && $isPaid && $gmcId !== '' && !empty($order['email'])):
     // Estimated delivery date — for digital downloads this is "today"; Google
     // still requires the field as YYYY-MM-DD.
     $estDelivery = date('Y-m-d');
