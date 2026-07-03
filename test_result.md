@@ -748,3 +748,63 @@ agent_communication:
         -working: true
         -agent: "testing"
         -comment: "auto_frontend_testing_agent verified: (A) TEST mode + no gateway -> checkout SIMULATES success, lands on order-success.php?order=..., TEST MODE badge shown. (B) order-success has NO 'surveyoptin' / no 'apis.google.com/js/platform.js?onload=renderOptIn'; inline review card [data-testid=success-review-card] present with 5 stars; #srGoogleShareWrap hidden (display:none) on load; no console errors. (C) LIVE mode + no gateway -> shows exact error 'Payment gateway not configured. Live card/PayPal payments are currently unavailable — no charge was made...', stays on /checkout.php, NO redirect to success, no fake purchase. All PASS."
+
+
+  - task: "Checkout country/currency mismatch bug fix - country dropdown reload with correct region + currency"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "BUG FIX: On checkout page, the selected COUNTRY and charged CURRENCY could mismatch (e.g., country 'United States' shown while totals were in CA$). The fix: changing the checkout Country dropdown ([data-testid='country-select']) now reloads the checkout under that country's region + currency via mvSwitchCheckoutCountry() function (line 705). When user selects a country (US/CA/UK/AU/EU), the page reloads to the correct regional URL (e.g., /ca/checkout.php?cur=CAD for Canada, /uk/checkout.php?cur=GBP for UK) so the selected country ALWAYS matches the currency shown in the order summary."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ COMPREHENSIVE VALIDATION COMPLETE (2026-07-03) - All 4 checks PASSED. Tested the checkout country/currency bug fix via browser automation at http://localhost:3000. SETUP: Added microsoft-office-2024-professional-plus-windows to cart via AJAX fetch, navigated to /checkout.php. CHECK 1 (Initial US with USD): ✅ PASS - Country dropdown shows 'United States' (value=US), order total shows $209.99 (USD currency, no CA$/£/€). CHECK 2 (Switch to Canada): ✅ PASS - Selected 'Canada' from dropdown, page reloaded to /ca/checkout.php?cur=CAD, country dropdown now shows 'Canada' (value=CA), order total shows CA$287.69 (CAD currency). CHECK 3 (Switch to UK): ✅ PASS - Selected 'United Kingdom' from dropdown, page reloaded to /uk/checkout.php?cur=GBP, country dropdown shows 'United Kingdom' (value=UK), order total shows £165.89 (GBP currency). CHECK 4 (No mismatch state): ✅ PASS - Switched back to 'United States', page reloaded to /checkout.php?cur=USD, country shows US, total shows $209.99 (USD). NO MISMATCH DETECTED: It is impossible to have country 'United States' while total is in CA$/£/€ after selecting a country. The selected country ALWAYS matches the currency shown. NO CONSOLE ERRORS: No relevant JavaScript console errors detected (only expected third-party CSP warnings). Screenshots captured: checkout-us-initial.png (US/$209.99), checkout-canada.png (CA/CA$287.69), checkout-uk.png (UK/£165.89). BUG FIX WORKING CORRECTLY: Changing the country dropdown reloads the page with correct region + currency, ensuring country and currency are always in sync."
+
+agent_communication:
+    -agent: "testing"
+    -message: |
+      ✅ CHECKOUT COUNTRY/CURRENCY BUG FIX VALIDATION COMPLETE (2026-07-03)
+      
+      Tested the checkout country/currency mismatch bug fix per the review request. Store is in TEST mode at http://localhost:3000.
+      
+      TEST RESULTS: ✅ ALL 4 CHECKS PASSED
+      
+      1. ✅ INITIAL STATE (US with USD):
+         - Country dropdown: "United States" (value=US)
+         - Order total: $209.99 (USD currency)
+         - No CA$/£/€ detected
+      
+      2. ✅ SWITCH TO CANADA:
+         - Selected "Canada" from dropdown
+         - Page reloaded to: /ca/checkout.php?cur=CAD
+         - Country dropdown: "Canada" (value=CA)
+         - Order total: CA$287.69 (CAD currency)
+         - Country and currency MATCH ✅
+      
+      3. ✅ SWITCH TO UNITED KINGDOM:
+         - Selected "United Kingdom" from dropdown
+         - Page reloaded to: /uk/checkout.php?cur=GBP
+         - Country dropdown: "United Kingdom" (value=UK)
+         - Order total: £165.89 (GBP currency)
+         - Country and currency MATCH ✅
+      
+      4. ✅ NO MISMATCH STATE:
+         - Switched back to "United States"
+         - Page reloaded to: /checkout.php?cur=USD
+         - Country: US, Total: $209.99 (USD)
+         - Confirmed: It is IMPOSSIBLE to have country "United States" while total is in CA$/£/€
+      
+      CONSOLE ERRORS: ✅ No relevant JavaScript console errors (only expected third-party CSP warnings)
+      
+      SCREENSHOTS CAPTURED:
+      - checkout-us-initial.png: US country with $209.99 (USD)
+      - checkout-canada.png: Canada country with CA$287.69 (CAD)
+      - checkout-uk.png: UK country with £165.89 (GBP)
+      
+      CONCLUSION:
+      🎉 The bug fix is working correctly! The selected country ALWAYS matches the currency shown. Changing the country dropdown reloads the page with the correct region URL and currency parameter, ensuring perfect synchronization between country selection and displayed currency.

@@ -485,7 +485,7 @@ include __DIR__ . '/includes/header.php';
         <div class="col-md-4"><label class="form-label">Address Line 2</label><input name="address2" class="form-control" value="<?= esc($_POST['address2'] ?? '') ?>"></div>
         <div class="col-md-3 col-6">
           <label class="form-label">Country *</label>
-          <select name="country" id="co-country" class="form-select" onchange="mvApplyCheckoutRegion(this.value)" data-testid="country-select">
+          <select name="country" id="co-country" class="form-select" onchange="mvSwitchCheckoutCountry(this.value)" data-testid="country-select">
             <?php foreach (['US' => 'United States', 'CA' => 'Canada', 'UK' => 'United Kingdom', 'AU' => 'Australia', 'EU' => 'Europe (Other)'] as $c => $n): ?>
               <option value="<?= $c ?>" <?= $formCC === $c ? 'selected' : '' ?>><?= $n ?></option>
             <?php endforeach; ?>
@@ -697,10 +697,21 @@ include __DIR__ . '/includes/header.php';
    select instantly reshapes the State/Province/County field, its label, the
    Postal/ZIP label + placeholder and the phone dial code — without a reload. */
 window.MV_REGION_FORMS = <?= json_encode($REGION_FORMS) ?>;
+/* Changing the checkout Country must switch the storefront CURRENCY too, so the
+   country selected always matches the currency being charged (e.g. selecting
+   Canada shows CA$ prices — never US country with CA$ totals). We reload the
+   checkout under that country's region prefix + ?cur= so every price recomputes
+   in the matching currency. The cart (session) is preserved across the reload. */
+function mvSwitchCheckoutCountry(cc) {
+  cc = (cc || 'US').toUpperCase();
+  var CUR = { US: 'USD', CA: 'CAD', UK: 'GBP', AU: 'AUD', EU: 'EUR' };
+  var cur = CUR[cc] || 'USD';
+  var prefix = (cc === 'US') ? '' : '/' + cc.toLowerCase();
+  window.location.href = prefix + '/checkout.php?cur=' + cur;
+}
 function mvApplyCheckoutRegion(cc) {
   var rf = window.MV_REGION_FORMS[cc] || window.MV_REGION_FORMS['US'];
   if (!rf) return;
-  // --- Region (state/province/county) field: rebuild as <select> or <input> ---
   var wrap = document.getElementById('co-region-wrap');
   if (wrap) {
     var prev = '';
