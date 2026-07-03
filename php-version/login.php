@@ -2,7 +2,9 @@
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/regions.php';
 ensure_admin();
-$pageTitle = 'Admin Login | ' . SITE_BRAND;
+$loginContext = $loginContext ?? 'admin';   // 'admin' (default) or 'user'
+$loginHeading = $loginContext === 'user' ? 'User login' : 'Admin login';
+$pageTitle = $loginHeading . ' | ' . SITE_BRAND;
 $pageDescription = 'Sign in to your Maventech Software account to view orders, license keys, downloads and order history. Secure customer & admin login.';
 // Default to EMPTY so a normal login uses the role-aware landing
 // (admin → dashboard, staff → first allowed panel, customer → account).
@@ -13,9 +15,19 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-    $_SESSION['login_attempts'] = ($_SESSION['login_attempts'] ?? 0);
-    if ($_SESSION['login_attempts'] >= 8) {
-        $error = 'Too many failed attempts. Please try again later.';
+    // Time-boxed throttle: up to 10 tries per 15-min window, then a lock that
+    // AUTO-EXPIRES (so a correct password is never blocked permanently — the
+    // old counter had no reset and locked the session forever).
+    $LOCK_MAX = 10; $LOCK_WINDOW = 900; $now = time();
+    // Reset the counter once the rolling window has elapsed.
+    if (($_SESSION['login_attempts_since'] ?? 0) < ($now - $LOCK_WINDOW)) {
+        $_SESSION['login_attempts'] = 0;
+        $_SESSION['login_attempts_since'] = $now;
+    }
+    $_SESSION['login_attempts'] = (int)($_SESSION['login_attempts'] ?? 0);
+    if (($_SESSION['login_lock_until'] ?? 0) > $now) {
+        $wait = (int)ceil((($_SESSION['login_lock_until']) - $now) / 60);
+        $error = 'Too many failed attempts. Please try again in about ' . max(1, $wait) . ' minute' . ($wait > 1 ? 's' : '') . '.';
     } else {
         // Match by email (customers + super admin) OR username (staff).
         $stmt = db()->prepare('SELECT * FROM users WHERE email = ? OR username = ? LIMIT 1');
@@ -24,11 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($user && password_verify($password, $user['password_hash'])) {
             // Block deactivated staff accounts.
             if (in_array(($user['role'] ?? ''), ['staff'], true) && (int)($user['active'] ?? 1) === 0) {
-                $_SESSION['login_attempts']++;
                 $error = 'This account has been deactivated. Please contact your administrator.';
             } else {
                 $_SESSION['user_id'] = $user['id'];
-                unset($_SESSION['login_attempts']);
+                unset($_SESSION['login_attempts'], $_SESSION['login_attempts_since'], $_SESSION['login_lock_until']);
                 // Super admin → dashboard; staff → their first allowed panel;
                 // customers → account page.
                 if (($user['role'] ?? '') === 'admin') {
@@ -44,6 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } else {
             $_SESSION['login_attempts']++;
+            if ($_SESSION['login_attempts'] >= $LOCK_MAX) {
+                $_SESSION['login_lock_until'] = $now + $LOCK_WINDOW;
+            }
             $error = 'Invalid username/email or password.';
         }
     }
@@ -381,7 +395,7 @@ $brandLogo = $co['logo']  ?? '';
       <?php endif; ?>
     </div>
 
-    <h1 class="ml-title" data-testid="admin-login-title">Admin login</h1>
+    <h1 class="ml-title" data-testid="admin-login-title"><?= esc($loginHeading) ?></h1>
 
     <?php if ($error): ?>
       <div class="ml-error" data-testid="login-error">
