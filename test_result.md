@@ -808,3 +808,18 @@ agent_communication:
       
       CONCLUSION:
       🎉 The bug fix is working correctly! The selected country ALWAYS matches the currency shown. Changing the country dropdown reloads the page with the correct region URL and currency parameter, ensuring perfect synchronization between country selection and displayed currency.
+
+  - task: "Checkout country selection must switch currency (no US-country-with-CAD-price mismatch)"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "User screenshot: /ca/ checkout showed country 'United States' while totals were CA$. Current code already defaults the country to the active region (verified /ca/ shows Canada+CA$), but changing the Country dropdown did NOT switch currency (only address fields), so mismatch was still possible. Fix: country <select> onchange now calls mvSwitchCheckoutCountry(cc) which reloads checkout under that country's region prefix + ?cur=<CUR> (US->USD, CA->CAD, UK->GBP, AU->AUD, EU->EUR), so the selected country ALWAYS matches the charged currency. Cart/session preserved across reload."
+        -working: true
+        -agent: "testing"
+        -comment: "auto_frontend_testing_agent PASS: US=$209.99; select Canada -> /ca/checkout.php?cur=CAD, country=CA + CA$287.69; select UK -> /uk/checkout.php?cur=GBP, country=UK + £165.89; back to US -> $209.99. Country and currency always in sync; mismatch impossible; no console errors."
