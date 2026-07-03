@@ -695,3 +695,41 @@ agent_communication:
         -working: "NA"
         -agent: "testing"
         -comment: "NEW BUG FIX VALIDATION (2026-07-03). Tested two specific bug fixes per review request: (1) ISSUE 2 - TEST MODE CHECKOUT SIMULATION: Verified that when gw_mode='test' (no real payment gateway configured), the checkout flow successfully simulates a paid order. Added product to cart via fetch (microsoft-office-2024-professional-plus-windows), filled all required checkout fields (email: tester@example.com, phone, name, address, city: San Francisco, state: CA, ZIP: 94107, country: US, payment method: Card, card details with future expiry 12/28). Confirmed TEST MODE banner visible on checkout page. Submitted order and successfully landed on order-success.php?order=MV26070341A74 with order confirmation message 'Thanks for purchasing with us, John!' and order number displayed. ✅ PASS - Test mode correctly simulates successful purchase without real payment processing. (2) ISSUE 3 - GOOGLE REVIEW POPUP REMOVAL: Verified that the Google Customer Reviews opt-in survey popup is NO LONGER auto-loaded on order-success page. Checked page source: 'surveyoptin' NOT present ✅, 'apis.google.com/js/platform.js?onload=renderOptIn' NOT present ✅. Confirmed inline review card IS present with data-testid='success-review-card' ✅, all 5 star buttons present (success-review-star-1 through star-5) ✅. Verified Google share button (#srGoogleShareWrap with data-testid='success-review-google-share') is HIDDEN initially (display:none, is_visible()=false) ✅ - only shown AFTER customer submits a 4-5 star review. No JavaScript console errors detected ✅. ROOT CAUSE: The Google opt-in popup was naggy (appeared on EVERY paid order). Fix: Added setting 'gcr_optin_popup' defaulting to '0' (OFF) in order-success.php line 433, so the opt-in survey is disabled by default. The on-page review card (lines 609-821) now offers a clean 'Post my review on Google' button that only appears AFTER the customer chooses to leave a review (lines 782-794). Both bug fixes working correctly as specified."
+
+  - task: "LIVE mode payment gateway validation - prevent fake purchase when no gateway configured"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "testing"
+        -comment: "NEW BUG FIX VALIDATION (2026-07-03). Tested payment bug fix per review request: Store is in LIVE payment mode (gw_mode='live') but NO live payment gateway is configured (gw_card_secret_key is empty). GOAL: Checkout must NOT fake/simulate a successful purchase — it must show an error and NOT reach order-success page. TEST STEPS: (1) Added microsoft-office-2024-professional-plus-windows to cart via fetch API. (2) Navigated to /checkout.php. (3) Filled ALL required fields: email (testuser@example.com), phone (4155551234), first/last name (John Doe), address (123 Main St), city (San Francisco), state (CA), ZIP (94102), country (US). (4) Filled card details to pass client-side validation: card number (4242424242424242), expiry (12/28), CVV (123). (5) Selected Card payment method. (6) Clicked 'Pay Securely' submit button. RESULTS: ✅ PASS - All requirements met: (1) Final URL remained /checkout.php (did NOT redirect to order-success.php). (2) Error message displayed: 'Payment gateway not configured. Live card/PayPal payments are currently unavailable — no charge was made. Please contact us to complete your order. (An administrator must configure a live payment gateway under Admin → API / Payment Gateway.)' (3) Error is visible in viewport (pink alert box at top of page, tag: LI, display: list-item, top position: 156px). (4) No fake/simulated purchase was made. (5) No console errors detected. Screenshot captured showing error message clearly visible. The bug fix is working correctly - in LIVE mode with no configured gateway, checkout shows a clear error and does NOT simulate a successful purchase."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED (2026-07-03) - Payment gateway validation working correctly. Confirmed that when gw_mode='live' and no live payment gateway is configured, the checkout process correctly: (1) Displays error message 'Payment gateway not configured' with full explanation. (2) Remains on checkout.php without redirecting to order-success.php. (3) Does NOT create a fake/simulated successful purchase. (4) Error message is visible and user-friendly. This is the correct behavior for LIVE mode with no gateway - it prevents fake charges and clearly informs the user to contact support."
+
+agent_communication:
+    -agent: "testing"
+    -message: |
+      ✅ PAYMENT BUG FIX VALIDATION COMPLETE (2026-07-03)
+      
+      Tested the payment bug fix as requested: LIVE mode with NO payment gateway configured.
+      
+      TEST SCENARIO:
+      - Store in LIVE payment mode (gw_mode='live')
+      - NO live payment gateway configured (gw_card_secret_key empty)
+      - Full checkout flow with valid data
+      
+      RESULTS: ✅ ALL PASS
+      1. ✅ Error message displayed: "Payment gateway not configured. Live card/PayPal payments are currently unavailable — no charge was made. Please contact us to complete your order."
+      2. ✅ Remained on /checkout.php (did NOT redirect to order-success.php)
+      3. ✅ No fake/simulated purchase was made
+      4. ✅ Error is visible in viewport (pink alert box at top)
+      5. ✅ No console errors
+      
+      The bug fix is working correctly. In LIVE mode with no configured gateway, the system properly prevents fake purchases and shows a clear error message to the user.
+      
+      Screenshot: checkout-final.png shows the error message clearly visible at the top of the checkout page.
