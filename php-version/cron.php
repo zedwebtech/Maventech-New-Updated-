@@ -13,6 +13,7 @@ require_once __DIR__ . '/includes/mailer.php';
 require_once __DIR__ . '/includes/seo-bot.php';
 require_once __DIR__ . '/includes/ai-citation-tracker.php';
 require_once __DIR__ . '/includes/dmca-watchdog.php';
+require_once __DIR__ . '/includes/recovery.php';
 
 // Generate a cron token once (so the admin can copy it from the SMTP page).
 $token = setting_get('cron_token', '');
@@ -120,4 +121,18 @@ try {
     }
 } catch (Throwable $e) {
     echo "[" . date('c') . "] bounce-sync: ERROR " . $e->getMessage() . "\n";
+}
+
+// Abandoned-cart recovery sweep — fires the Paddle-style "Looks like you
+// left something behind!" email once per order when the customer clicked
+// Pay but never completed a successful payment, and 30+ minutes have
+// elapsed since the last activity.  Single-shot per order (guarded by
+// orders.recovery_email_sent).  Never releases license keys.
+try {
+    $sweepBatch = max(1, min(200, (int)($_GET['recovery_batch'] ?? 50)));
+    $sweepMin   = max(1, (int)($_GET['recovery_min_minutes'] ?? 30));
+    $sweep = mv_abandoned_cart_sweep($sweepBatch, $sweepMin);
+    echo "[" . date('c') . "] abandoned-cart-sweep: scanned={$sweep['scanned']} sent={$sweep['sent']} errors={$sweep['errors']}\n";
+} catch (Throwable $e) {
+    echo "[" . date('c') . "] abandoned-cart-sweep: ERROR " . $e->getMessage() . "\n";
 }

@@ -3,7 +3,129 @@ require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/email.php';
 require_once __DIR__ . '/includes/mailer.php';
 require_once __DIR__ . '/includes/stripe.php';
+require_once __DIR__ . '/includes/recovery.php';
+require_once __DIR__ . '/includes/gateways/factory.php';
 $pageTitle = 'Secure Checkout | ' . SITE_BRAND;
+
+// ---------------------------------------------------------------------------
+// RESUME LINK: /checkout.php?resume=<order_number>&sig=<hmac>
+// Restores cart + captured contact from a prior order row (never creates a
+// new order — spec: retry re-uses the same order). Refuses when the order
+// was admin-cancelled or has already been paid.
+// ---------------------------------------------------------------------------
+$__resumeOrder    = null;  // used later to render "resumed" banner + reuse this row on submit
+$__resumeError    = '';
+if (!empty($_GET['resume']) && !empty($_GET['sig'])) {
+    $resumeNum = trim((string)$_GET['resume']);
+    $resumeSig = trim((string)$_GET['sig']);
+    if (mv_verify_resume_signature($resumeNum, $resumeSig)) {
+        try {
+            $__pdo = db();
+            $__q = $__pdo->prepare('SELECT * FROM orders WHERE order_number = ? LIMIT 1');
+            $__q->execute([$resumeNum]);
+            $__row = $__q->fetch();
+            if ($__row) {
+                if ((int)($__row['admin_cancelled'] ?? 0) === 1) {
+                    $__resumeError = 'This order has been cancelled by the store. Please start a new checkout or contact support.';
+                } elseif (($__row['status'] ?? '') === 'paid') {
+                    // Already paid — redirect straight to the success page.
+                    header('Location: order-success.php?order=' . urlencode($resumeNum));
+                    exit;
+                } else {
+                    // Rehydrate the session cart from stored order_items so the
+                    // customer never has to re-add products after a decline.
+                    $__ai = $__pdo->prepare('SELECT product_slug, qty FROM order_items WHERE order_id = ?');
+                    $__ai->execute([(int)$__row['id']]);
+                    $__cart = [];
+                    foreach (($__ai->fetchAll() ?: []) as $__it) {
+                        // Skip synthetic ProAssist / subscription lines.
+                        $sl = (string)$__it['product_slug'];
+                        if (str_starts_with($sl, 'proassist-') || str_starts_with($sl, 'sub-')) continue;
+                        $__cart[$sl] = ($__cart[$sl] ?? 0) + (int)$__it['qty'];
+                    }
+                    if ($__cart) $_SESSION['cart'] = $__cart;
+                    // Touch activity so the abandoned sweep resets.
+                    try { $__pdo->prepare('UPDATE orders SET last_activity_at = NOW() WHERE id = ?')->execute([(int)$__row['id']]); }
+                    catch (Throwable $e) { /* best-effort */ }
+                    $__resumeOrder = $__row;
+                    $_SESSION['mv_resume_order_id'] = (int)$__row['id'];
+                }
+            } else {
+                $__resumeError = 'We couldn\'t find that checkout. Please add your items again.';
+            }
+        } catch (Throwable $e) {
+            $__resumeError = 'We couldn\'t reload your checkout. Please try again.';
+        }
+    } else {
+        $__resumeError = 'That retry link is not valid. Please add your items again or contact support.';
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CANCEL RETURN from Stripe hosted checkout:
+//   /checkout.php?cancel=1&session_id={CHECKOUT_SESSION_ID}
+// Look up the real last_payment_error via Stripe API, tag the order,
+// rehydrate cart, fire failed-payment emails, then render inline banner.
+// ---------------------------------------------------------------------------
+$__declineBanner = '';   // rendered near the top of the form
+$__declineOrder  = null;
+if (!empty($_GET['cancel']) && !empty($_GET['session_id'])) {
+    $__sid = trim((string)$_GET['session_id']);
+    try {
+        $__pdo = db();
+        // Find the pending order by stripe_session_id.
+        $__q = $__pdo->prepare('SELECT * FROM orders WHERE stripe_session_id = ? LIMIT 1');
+        $__q->execute([$__sid]);
+        $__row = $__q->fetch();
+        if ($__row && ($__row['status'] ?? '') !== 'paid') {
+            $__gw = mv_gateway('stripe');
+            $__verify = $__gw ? $__gw->verifyPayment($__sid) : ['status'=>'unknown','error_code'=>'','error_message'=>'Payment was not completed.','transaction_id'=>''];
+            // Even if Stripe still reports 'pending' on cancel_url (session
+            // may not have expired yet), we treat this as a failure event
+            // so the customer gets an email + banner.
+            $__code = (string)$__verify['error_code'];
+            $__msg  = (string)$__verify['error_message'];
+            // Sanitise raw API / configuration errors that shouldn't be
+            // shown to the customer (leaks internal state). Only pass
+            // through recognised payment-decline codes; otherwise use the
+            // friendly generic message.
+            $__isSafeMsg = ($__code !== '' && $__code !== 'unknown');
+            if (!$__isSafeMsg
+                || stripos($__msg, 'not configured') !== false
+                || stripos($__msg, 'api key') !== false
+                || stripos($__msg, 'stripe error') !== false) {
+                $__msg = 'Payment was cancelled or your card was declined. Please try again with the same or a different card.';
+                if ($__code === '') $__code = 'checkout_cancelled';
+            }
+            if ($__msg === '') $__msg = 'Payment was cancelled or your card was declined. Please try again.';
+            mv_mark_payment_failed($__row, [
+                'code'           => $__code !== '' ? $__code : 'checkout_cancelled',
+                'message'        => $__msg,
+                'transaction_id' => (string)$__verify['transaction_id'],
+            ]);
+            // Rehydrate cart from order_items so the customer doesn't lose their selection.
+            $__ai = $__pdo->prepare('SELECT product_slug, qty FROM order_items WHERE order_id = ?');
+            $__ai->execute([(int)$__row['id']]);
+            $__cart = [];
+            foreach (($__ai->fetchAll() ?: []) as $__it) {
+                $sl = (string)$__it['product_slug'];
+                if (str_starts_with($sl, 'proassist-') || str_starts_with($sl, 'sub-')) continue;
+                $__cart[$sl] = ($__cart[$sl] ?? 0) + (int)$__it['qty'];
+            }
+            if ($__cart) $_SESSION['cart'] = $__cart;
+            $__declineOrder  = $__row;
+            $_SESSION['mv_resume_order_id'] = (int)$__row['id'];
+            $__declineBanner = $__msg;
+        } elseif ($__row && ($__row['status'] ?? '') === 'paid') {
+            // Race: webhook already marked paid — send them to success page.
+            header('Location: order-success.php?order=' . urlencode((string)$__row['order_number']));
+            exit;
+        }
+    } catch (Throwable $e) {
+        @error_log('[checkout cancel handler] ' . $e->getMessage());
+        $__declineBanner = 'Your payment could not be completed. Please try again.';
+    }
+}
 
 /* Region-aware checkout address formats. The visible address form (country
    default, phone dial code, state/province/county label + options, postal
@@ -63,6 +185,12 @@ if ($isSub) {
     if (!empty($_SESSION['sub_plan'])) unset($_SESSION['sub_plan']);
     $items = cart_items();
     if (!$items) {
+        // If the customer just clicked an invalid / cancelled resume link,
+        // send them to the cart with a flash message instead of silently
+        // dropping the error.
+        if ($__resumeError !== '') {
+            $_SESSION['flash_error'] = $__resumeError;
+        }
         header('Location: cart.php');
         exit;
     }
@@ -153,18 +281,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         $pdo = db();
-        $orderNumber = generate_order_number();
         $user = current_user();
         $phoneFull = trim(($_POST['phone_code'] ?? '+1') . ' ' . trim($_POST['phone']));
         $activeMode = stripe_active_mode(); // 'test' or 'live' — captured at order creation
-        $stmt = $pdo->prepare('INSERT INTO orders (order_number, email, first_name, last_name, phone, company_name, address, address2, country, city, state, zip, payment_method, currency, subtotal, total, pro_assist, user_id, gw_mode) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-        $stmt->execute([
-            $orderNumber, trim($_POST['email']), trim($_POST['first_name']), trim($_POST['last_name']),
-            $phoneFull, '', trim($_POST['address']), trim($_POST['address2'] ?? ''),
-            substr(trim($_POST['country'] ?? 'US'), 0, 5), trim($_POST['city']), trim($_POST['state']), trim($_POST['zip']),
-            $method, current_currency()['code'], $subtotal, $total, $proAssist ? 1 : 0, $user['id'] ?? null, $activeMode,
-        ]);
-        $orderId = (int)$pdo->lastInsertId();
+
+        // RESUME PATH: if the customer arrived via a valid resume link OR
+        // came back from Stripe's cancel_url, we already have an orders row.
+        // Never create a duplicate — reuse it and just refresh the fields.
+        $__resumeId = (int)($_SESSION['mv_resume_order_id'] ?? 0);
+        $__reuseOrder = null;
+        if ($__resumeId > 0) {
+            try {
+                $__q = $pdo->prepare('SELECT * FROM orders WHERE id = ? LIMIT 1');
+                $__q->execute([$__resumeId]);
+                $__row = $__q->fetch();
+                if ($__row && ($__row['status'] ?? '') !== 'paid' && (int)($__row['admin_cancelled'] ?? 0) === 0) {
+                    $__reuseOrder = $__row;
+                }
+            } catch (Throwable $e) { /* fall through */ }
+        }
+
+        if ($__reuseOrder) {
+            $orderId     = (int)$__reuseOrder['id'];
+            $orderNumber = (string)$__reuseOrder['order_number'];
+            // Refresh contact / address fields from the current POST so a
+            // customer who retries with a fixed address doesn't get the stale
+            // one on Stripe or in the delivery email.
+            $pdo->prepare('UPDATE orders SET
+                email = ?, first_name = ?, last_name = ?, phone = ?,
+                address = ?, address2 = ?, country = ?, city = ?, state = ?, zip = ?,
+                payment_method = ?, last_activity_at = NOW()
+                WHERE id = ?')
+                ->execute([
+                    trim($_POST['email']), trim($_POST['first_name']), trim($_POST['last_name']),
+                    $phoneFull, trim($_POST['address']), trim($_POST['address2'] ?? ''),
+                    substr(trim($_POST['country'] ?? 'US'), 0, 5), trim($_POST['city']),
+                    trim($_POST['state']), trim($_POST['zip']), $method,
+                    $orderId,
+                ]);
+        } else {
+            $orderNumber = generate_order_number();
+            $stmt = $pdo->prepare('INSERT INTO orders (order_number, email, first_name, last_name, phone, company_name, address, address2, country, city, state, zip, payment_method, currency, subtotal, total, pro_assist, user_id, gw_mode, payment_status, last_activity_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())');
+            $stmt->execute([
+                $orderNumber, trim($_POST['email']), trim($_POST['first_name']), trim($_POST['last_name']),
+                $phoneFull, '', trim($_POST['address']), trim($_POST['address2'] ?? ''),
+                substr(trim($_POST['country'] ?? 'US'), 0, 5), trim($_POST['city']), trim($_POST['state']), trim($_POST['zip']),
+                $method, current_currency()['code'], $subtotal, $total, $proAssist ? 1 : 0, $user['id'] ?? null, $activeMode, 'pending',
+            ]);
+            $orderId = (int)$pdo->lastInsertId();
+        }
+        // Persist a retry_token on first creation so admin views + emails
+        // reference a stable value.  We reuse the HMAC (over order_number)
+        // so no separate secret / column-lookup is needed at verify time.
+        try { $pdo->prepare('UPDATE orders SET retry_token = ? WHERE id = ? AND (retry_token IS NULL OR retry_token = "")')
+                ->execute([substr(mv_sign_order_number($orderNumber), 0, 40), $orderId]); }
+        catch (Throwable $e) { /* best-effort */ }
         // Mark this order as a subscription purchase so fulfilment runs the
         // subscription path (record + customer ID + certificate) instead of
         // the license-key delivery flow.
@@ -181,8 +352,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ->execute([$clientIp, json_encode(['user_agent' => $ua, 'placed_at' => date('c')]), active_region_code(), $orderId]);
         } catch (Throwable $e) { /* metadata is best-effort */ }
         $itemStmt = $pdo->prepare('INSERT INTO order_items (order_id, product_slug, name, price, qty) VALUES (?,?,?,?,?)');
-        foreach ($items as $i) {
-            $itemStmt->execute([$orderId, $i['slug'], $i['name'], $i['price'], $i['qty']]);
+        // For resumed orders we already have order_items; only insert on fresh orders.
+        if (!$__reuseOrder) {
+            foreach ($items as $i) {
+                $itemStmt->execute([$orderId, $i['slug'], $i['name'], $i['price'], $i['qty']]);
+            }
         }
 
         // Notification: new order placed → bubbles up to admin's PWA bell.
@@ -312,8 +486,10 @@ HTML;
                     $orderStmt = $pdo->prepare('SELECT * FROM orders WHERE id = ?');
                     $orderStmt->execute([$orderId]);
                     $orderRow = $orderStmt->fetch();
-                    $session = stripe_create_session($orderRow, $baseUrl);
-                    $pdo->prepare('UPDATE orders SET stripe_session_id = ? WHERE id = ?')->execute([$session['id'], $orderId]);
+                    $session = stripe_create_session_with_recovery($orderRow, $baseUrl);
+                    $pdo->prepare('UPDATE orders SET stripe_session_id = ?, payment_status = COALESCE(NULLIF(payment_status, ""), "pending"), last_activity_at = NOW() WHERE id = ?')
+                        ->execute([$session['id'], $orderId]);
+                    unset($_SESSION['mv_resume_order_id']);
                     header('Location: ' . $session['url']);
                     exit;
                 } catch (RuntimeException $e) {
@@ -331,7 +507,7 @@ HTML;
                 // TEST / sandbox mode (no live gateway needed): simulate a
                 // successful dummy transaction so the operator can preview the
                 // full post-purchase flow end-to-end.
-                $pdo->prepare('UPDATE orders SET status = "paid" WHERE id = ?')->execute([$orderId]);
+                $pdo->prepare('UPDATE orders SET status = "paid", payment_status = "succeeded", last_activity_at = NOW() WHERE id = ?')->execute([$orderId]);
                 // Log a "test charge" row in transaction_logs so the admin's
                 // Recent Transaction Logs table reflects the dry-run.
                 try {
@@ -376,6 +552,30 @@ include __DIR__ . '/includes/header.php';
 
   <?php if ($errors): ?>
     <div class="alert alert-danger"><ul class="mb-0"><?php foreach ($errors as $e): ?><li><?= esc($e) ?></li><?php endforeach; ?></ul></div>
+  <?php endif; ?>
+  <?php if ($__declineBanner !== ''): ?>
+    <div class="alert co-decline-banner" role="alert" data-testid="checkout-decline-banner"
+         style="background:linear-gradient(90deg,#fef2f2,#fee2e2);border:1px solid #fca5a5;color:#7f1d1d;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 2px 6px rgba(220,38,38,.08);">
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="font-size:22px;line-height:1;">⚠️</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;margin-bottom:3px;">Your payment couldn't be completed</div>
+          <div style="font-size:13.5px;line-height:1.5;color:#991b1b;" data-testid="checkout-decline-reason"><?= esc($__declineBanner) ?></div>
+          <div style="font-size:12.5px;color:#7f1d1d;opacity:.85;margin-top:6px;">
+            Your cart is preserved — please try again below with the same or a different card. No charge was made.
+          </div>
+        </div>
+      </div>
+    </div>
+  <?php endif; ?>
+  <?php if ($__resumeOrder && $__declineBanner === ''): ?>
+    <div class="alert" role="status" data-testid="checkout-resume-banner"
+         style="background:linear-gradient(90deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;color:#1e3a8a;border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+      <strong>Picking up where you left off.</strong> Order #<?= esc((string)$__resumeOrder['order_number']) ?> is ready to complete.
+    </div>
+  <?php endif; ?>
+  <?php if ($__resumeError !== ''): ?>
+    <div class="alert alert-warning" role="alert" data-testid="checkout-resume-error"><?= esc($__resumeError) ?></div>
   <?php endif; ?>
 
   <?php if (setting_get('gw_mode', 'test') !== 'live'): ?>

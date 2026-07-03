@@ -14,6 +14,14 @@ include __DIR__ . '/includes/header.php';
 <?= render_page_head('Shopping Cart', $items ? cart_count() . ' item(s) in your cart — keys delivered by email within minutes' : '', ['Cart' => null]) ?>
 <div class="container py-4 py-lg-5">
 
+  <?php if (!empty($_SESSION['flash_error'])): ?>
+    <div class="alert alert-warning" data-testid="cart-flash-error"
+         style="border-radius:12px;background:linear-gradient(90deg,#fff7ed,#fef3c7);border:1px solid #fed7aa;color:#7c2d12;">
+      <?= esc((string)$_SESSION['flash_error']) ?>
+    </div>
+    <?php unset($_SESSION['flash_error']); ?>
+  <?php endif; ?>
+
   <?= render_vibe_promo_banner('cart') ?>
 
   <?php if (!$items): ?>

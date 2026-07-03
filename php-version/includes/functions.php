@@ -502,6 +502,30 @@ function ensure_db_schema(): void
             "ALTER TABLE orders ADD COLUMN transaction_id VARCHAR(120) DEFAULT NULL",
             "ALTER TABLE orders ADD COLUMN user_id INT DEFAULT NULL",
             "ALTER TABLE orders ADD COLUMN pro_assist TINYINT(1) NOT NULL DEFAULT 0",
+            // ---------------------------------------------------------------
+            // Checkout Payment & License Delivery Hardening patch.
+            // Granular payment_status tracks the real gateway outcome
+            // (pending / succeeded / failed / abandoned) independently of
+            // the coarse orders.status column. Combined with payment_attempts
+            // + retry_token + admin_cancelled they power:
+            //   · decline banner (checkout.php ?cancel=1)
+            //   · failed-payment email
+            //   · abandoned-cart recovery email (cron sweep)
+            //   · admin "cancel & invalidate retry link" action
+            //   · retry link (/checkout.php?resume=<order#>&sig=<hmac>)
+            // See docs at top of includes/recovery.php.
+            // ---------------------------------------------------------------
+            "ALTER TABLE orders ADD COLUMN payment_status VARCHAR(24) DEFAULT NULL",
+            "ALTER TABLE orders ADD COLUMN payment_error_code VARCHAR(80) DEFAULT NULL",
+            "ALTER TABLE orders ADD COLUMN payment_error_message VARCHAR(500) DEFAULT NULL",
+            "ALTER TABLE orders ADD COLUMN payment_attempts INT NOT NULL DEFAULT 0",
+            "ALTER TABLE orders ADD COLUMN last_activity_at DATETIME NULL DEFAULT NULL",
+            "ALTER TABLE orders ADD COLUMN recovery_email_sent TINYINT(1) NOT NULL DEFAULT 0",
+            "ALTER TABLE orders ADD COLUMN admin_cancelled TINYINT(1) NOT NULL DEFAULT 0",
+            "ALTER TABLE orders ADD COLUMN retry_token CHAR(40) DEFAULT NULL",
+            "ALTER TABLE orders ADD KEY idx_payment_status (payment_status)",
+            "ALTER TABLE orders ADD KEY idx_recovery_sweep (recovery_email_sent, last_activity_at)",
+            "ALTER TABLE orders ADD KEY idx_retry_token (retry_token)",
             // blog_posts — AI Auto-Blogger columns.  These are added in
             // seo-bot.php's own bootstrap, but seo-bot.php is only loaded
             // when publishing runs.  Public pages (brand.php, blog.php)

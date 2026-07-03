@@ -1593,6 +1593,19 @@ function fulfill_order(int $orderId, bool $forceAdminOverride = false): void {
         $order['status'] = 'paid';
     }
 
+    // Defence-in-depth: even when status='paid' we require the granular
+    // payment_status='succeeded' set by the webhook / return handler.
+    // The only exceptions are (a) an admin forcing manual delivery, and
+    // (b) legacy rows created before the payment_status column existed
+    // (NULL — grandfathered through).  This prevents an accidental
+    // `UPDATE orders SET status='paid'` in the admin UI from releasing
+    // keys without a gateway-confirmed payment.
+    $ps = (string)($order['payment_status'] ?? '');
+    if ($ps !== '' && $ps !== 'succeeded' && !$forceAdminOverride) {
+        error_log("fulfill_order: refusing to consume stock for order #{$orderId} — payment_status='{$ps}' (not verified by gateway).");
+        return;
+    }
+
     // Persist card statement name based on payment method
     if (empty($order['card_statement_name'])) {
         $stmtName = statement_name_for($order['payment_method']);

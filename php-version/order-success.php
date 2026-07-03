@@ -99,6 +99,8 @@ if ($order && $sessionId && stripe_enabled() && $order['status'] !== 'paid') {
             $cd = stripe_extract_card_details($session);
             $upd = db()->prepare("UPDATE orders SET
                 status='paid',
+                payment_status='succeeded',
+                last_activity_at=NOW(),
                 card_brand=?,    card_last4=?,    card_exp=?,
                 card_funding=?,  card_country=?,  card_type=?,
                 risk_score=?,    risk_level=?,

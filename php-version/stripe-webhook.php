@@ -24,6 +24,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/email.php';
 require_once __DIR__ . '/includes/stripe.php';
+require_once __DIR__ . '/includes/recovery.php';
 
 // Reject non-POST so accidental browser visits don't get a 500.
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
@@ -214,6 +215,8 @@ function sw_handle_checkout_completed(array $session): void
     if (!empty($extra)) {
         $pdo->prepare('UPDATE orders SET
             status            = "paid",
+            payment_status    = "succeeded",
+            last_activity_at  = NOW(),
             card_brand        = ?,
             card_last4        = ?,
             card_exp          = ?,
@@ -241,7 +244,7 @@ function sw_handle_checkout_completed(array $session): void
                 $orderId,
             ]);
     } else {
-        $pdo->prepare('UPDATE orders SET status = "paid" WHERE id = ?')->execute([$orderId]);
+        $pdo->prepare('UPDATE orders SET status = "paid", payment_status = "succeeded", last_activity_at = NOW() WHERE id = ?')->execute([$orderId]);
     }
 
     // Append the transaction log row (one per successful charge).
@@ -287,34 +290,53 @@ function sw_handle_pi_succeeded(array $pi): void
     $order = $stmt->fetch();
     if (!$order) return;
     if (($order['status'] ?? '') === 'paid') return;
-    $pdo->prepare('UPDATE orders SET status = "paid", payment_intent_id = ? WHERE id = ?')
+    $pdo->prepare('UPDATE orders SET status = "paid", payment_status = "succeeded", last_activity_at = NOW(), payment_intent_id = ? WHERE id = ?')
         ->execute([$piId, (int)$order['id']]);
     fulfill_order((int)$order['id']);
 }
 
 /**
- * `payment_intent.payment_failed` — surface the failure in the bell + tag
- * the order so the customer can be retried via the resend-link flow.
+ * `payment_intent.payment_failed` — record the decline via the recovery
+ * module so payment_status + payment_error_code/message + payment_attempts
+ * all move in lock-step, and the customer + admin receive their emails.
+ * Never touches license_keys.
  */
 function sw_handle_pi_failed(array $pi): void
 {
     $piId = (string)($pi['id'] ?? '');
     if ($piId === '') return;
     $pdo = db();
-    $stmt = $pdo->prepare('SELECT * FROM orders WHERE payment_intent_id = ? OR stripe_session_id IN (SELECT id FROM (SELECT ? AS id) t) LIMIT 1');
-    $stmt->execute([$piId, $piId]);
+    // Match by payment_intent_id OR stripe_session_id (Stripe includes both on the PI).
+    $stmt = $pdo->prepare('SELECT * FROM orders WHERE payment_intent_id = ? LIMIT 1');
+    $stmt->execute([$piId]);
     $order = $stmt->fetch();
+    if (!$order) {
+        // Fallback: look up via metadata.order_number if Stripe echoed it.
+        $on = (string)($pi['metadata']['order_number'] ?? '');
+        if ($on !== '') {
+            $stmt = $pdo->prepare('SELECT * FROM orders WHERE order_number = ? LIMIT 1');
+            $stmt->execute([$on]);
+            $order = $stmt->fetch();
+        }
+    }
     if (!$order) return;
-    $reason = (string)($pi['last_payment_error']['message'] ?? ($pi['last_payment_error']['code'] ?? 'declined'));
-    $pdo->prepare('UPDATE orders SET status = "cancelled", payment_intent_id = ? WHERE id = ?')
-        ->execute([$piId, (int)$order['id']]);
-    if (function_exists('admin_notify')) {
-        admin_notify(
-            'order',
-            'Payment failed — ' . ($order['order_number'] ?? ('#' . (int)$order['id'])),
-            'Stripe declined the charge: ' . $reason,
-            '/admin.php?tab=orders&q=' . urlencode((string)$order['order_number'])
-        );
+    // Persist the PI id so a subsequent retry links back to the same row.
+    try { $pdo->prepare('UPDATE orders SET payment_intent_id = ? WHERE id = ?')->execute([$piId, (int)$order['id']]); }
+    catch (Throwable $e) { /* best-effort */ }
+
+    $lpe = is_array($pi['last_payment_error'] ?? null) ? $pi['last_payment_error'] : [];
+    $code = (string)($lpe['code'] ?? ($lpe['decline_code'] ?? ($lpe['type'] ?? 'declined')));
+    $msg  = (string)($lpe['message'] ?? '');
+    if ($msg === '' && function_exists('mv_humanize_stripe_error')) {
+        $msg = mv_humanize_stripe_error($code);
+    }
+
+    if (function_exists('mv_mark_payment_failed')) {
+        mv_mark_payment_failed($order, [
+            'code'           => $code,
+            'message'        => $msg,
+            'transaction_id' => $piId,
+        ]);
     }
 }
 

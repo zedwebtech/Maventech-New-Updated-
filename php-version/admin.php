@@ -955,6 +955,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($_POST['status']==='paid') fulfill_order((int)$_POST['order_id']);
         header('Location: admin.php?tab=orders&msg=Order+updated'); exit;
 
+    } elseif ($action === 'admin_cancel_order') {
+        // Cancel-and-invalidate action from the Checkout Hardening patch.
+        // Flips admin_cancelled=1 + status='cancelled' so the retry link and
+        // abandoned-cart recovery email both refuse.  Never touches
+        // license_keys (fulfil already refused because status wasn't 'paid').
+        $__oid = (int)($_POST['order_id'] ?? 0);
+        if ($__oid > 0) {
+            $pdo->prepare('UPDATE orders SET admin_cancelled=1, status="cancelled", payment_status=COALESCE(NULLIF(payment_status,"succeeded"),"cancelled") WHERE id=?')
+                ->execute([$__oid]);
+            try {
+                admin_notify(
+                    'order',
+                    'Order cancelled by admin — #' . $__oid,
+                    'Retry link invalidated. No key was released.',
+                    '/admin.php?tab=orders&q=' . urlencode((string)($_POST['order_number'] ?? ''))
+                );
+            } catch (Throwable $e) { /* best-effort */ }
+        }
+        header('Location: admin.php?tab=orders&msg=Order+cancelled+%E2%80%93+retry+link+invalidated'); exit;
+
     } elseif ($action === 'resend_email') {
         // Admin "Resend product email" — bypass the status check so the email
         // can be re-fired for legitimate edge cases (bank transfer, manual

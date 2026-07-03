@@ -23,6 +23,19 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
         if ($_POST['status']==='paid') fulfill_order($id);
         header('Location: order-view.php?id='.$id.'&msg=Status+updated'); exit;
     }
+    if (($_POST['action'] ?? '')==='admin_cancel_order') {
+        // Cancel + invalidate the retry link (Checkout Hardening patch).
+        $pdo->prepare('UPDATE orders SET admin_cancelled=1, status="cancelled", payment_status=COALESCE(NULLIF(payment_status,"succeeded"),"cancelled") WHERE id=?')->execute([$id]);
+        try {
+            if (function_exists('admin_notify')) {
+                admin_notify('order',
+                    'Order cancelled by admin — ' . (string)$o['order_number'],
+                    'Retry link invalidated. No key was released.',
+                    '/order-view.php?id=' . $id);
+            }
+        } catch (Throwable $e) { /* best-effort */ }
+        header('Location: order-view.php?id='.$id.'&msg=Order+cancelled+%E2%80%93+retry+link+invalidated'); exit;
+    }
     if (($_POST['action'] ?? '')==='deliver_keys') {
         // Admin manually enters / updates the license key for a (backordered)
         // order, optionally changes the customer email, then re-sends the real
@@ -99,8 +112,66 @@ include __DIR__ . '/includes/admin-shell.php';
         <?php endforeach; ?>
       </select>
     </form>
+    <?php if (($o['status'] ?? '') !== 'paid' && (int)($o['admin_cancelled'] ?? 0) !== 1): ?>
+      <form method="post" class="d-inline" onsubmit="return confirm('Cancel this order and invalidate its retry link? The customer will no longer be able to complete this checkout.');">
+        <input type="hidden" name="action" value="admin_cancel_order">
+        <button class="btn btn-outline-danger btn-sm" data-testid="admin-cancel-order-btn" title="Cancel &amp; invalidate retry link">
+          <i class="bi bi-x-octagon me-1"></i> Cancel &amp; invalidate
+        </button>
+      </form>
+    <?php endif; ?>
   </div>
 </div>
+
+<?php
+// ---------------------------------------------------------------------------
+// Payment status panel — surfaces the granular gateway state introduced by
+// the Checkout Payment & License Delivery Hardening patch: attempts,
+// gateway code + human message, admin_cancelled flag, retry link.
+// ---------------------------------------------------------------------------
+$ps       = (string)($o['payment_status'] ?? '');
+$psAttempt = (int)($o['payment_attempts'] ?? 0);
+$psCode   = (string)($o['payment_error_code'] ?? '');
+$psMsg    = (string)($o['payment_error_message'] ?? '');
+$adminCancelled = (int)($o['admin_cancelled'] ?? 0) === 1;
+$recoverySent = (int)($o['recovery_email_sent'] ?? 0) === 1;
+if ($ps !== '' || $psAttempt > 0 || $adminCancelled || $recoverySent):
+  require_once __DIR__ . '/includes/recovery.php';
+  $retryLink = mv_build_resume_link($o);
+  $psColor = ['succeeded'=>['#065f46','#d1fae5'],'failed'=>['#7f1d1d','#fee2e2'],'pending'=>['#78350f','#fef3c7'],'abandoned'=>['#78350f','#fef3c7'],'cancelled'=>['#334155','#e2e8f0']][$ps] ?? ['#334155','#e2e8f0'];
+?>
+<div class="card mb-3" data-testid="admin-payment-status-panel" style="border-radius:12px;border:1px solid #e2e8f0;">
+  <div class="card-body">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+      <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#64748b;font-weight:700;">Payment status</span>
+      <?php if ($ps !== ''): ?>
+        <span class="badge" style="background:<?= $psColor[1] ?>;color:<?= $psColor[0] ?>;font-weight:700;font-size:12px;padding:5px 10px;border-radius:8px;" data-testid="payment-status-badge"><?= strtoupper(esc($ps)) ?></span>
+      <?php endif; ?>
+      <?php if ($psAttempt > 0): ?>
+        <span class="text-muted small">Attempts: <strong data-testid="payment-attempts"><?= $psAttempt ?></strong></span>
+      <?php endif; ?>
+      <?php if ($adminCancelled): ?>
+        <span class="badge" style="background:#fee2e2;color:#7f1d1d;font-weight:700;font-size:12px;padding:5px 10px;border-radius:8px;" data-testid="admin-cancelled-badge">RETRY LINK INVALIDATED</span>
+      <?php endif; ?>
+      <?php if ($recoverySent): ?>
+        <span class="badge" style="background:#dbeafe;color:#1e3a8a;font-weight:700;font-size:12px;padding:5px 10px;border-radius:8px;">Recovery email sent</span>
+      <?php endif; ?>
+    </div>
+    <?php if ($psMsg !== ''): ?>
+      <div class="mb-2" style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;color:#7f1d1d;font-size:13px;line-height:1.5;">
+        <strong>Last decline:</strong> <span data-testid="payment-error-message"><?= esc($psMsg) ?></span>
+        <?php if ($psCode !== ''): ?><span class="text-muted"> · <code><?= esc($psCode) ?></code></span><?php endif; ?>
+      </div>
+    <?php endif; ?>
+    <?php if (!$adminCancelled && ($o['status'] ?? '') !== 'paid'): ?>
+      <div class="small text-muted">
+        Retry link (never expires — cancel to invalidate):
+        <a href="<?= esc($retryLink) ?>" target="_blank" rel="noopener" data-testid="admin-retry-link" style="word-break:break-all;"><?= esc($retryLink) ?></a>
+      </div>
+    <?php endif; ?>
+  </div>
+</div>
+<?php endif; ?>
 
 <?php if (!empty($_GET['msg'])): ?><div class="alert alert-success py-2 small"><?= esc($_GET['msg']) ?></div><?php endif; ?>
 
