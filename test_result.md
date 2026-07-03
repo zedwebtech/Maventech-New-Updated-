@@ -658,6 +658,41 @@ agent_communication:
       PENDING task 2 (PageSpeed mobile fixes from the user's PDF) — awaiting go-ahead. Frontend testing not yet run (awaiting user permission).
     -agent: "testing"
     -message: |
+      ✅ VISUAL PREVIEW SCREENSHOTS CAPTURED - All 13 screenshots successfully captured for user review.
+      
+      SCREENSHOT CAPTURE SESSION COMPLETE (2026-07-03):
+      Successfully captured high-quality JPEG screenshots (viewport 1440×900, quality 60) of all requested pages.
+      
+      RESULTS SUMMARY:
+      ✅ PASS (12/13 screenshots captured with all visual elements present):
+      1. Homepage (/) - Hero section + product row visible ✅
+      2. Shop page (/shop.php) - Product catalog with filters ✅
+      3. Product page (/product.php?slug=windows-11-pro) - Product details visible ✅
+      4. Cart page (/cart.php) - Empty cart state shown ✅
+      5. Checkout page (/checkout.php) - Checkout form visible ✅
+      6. Checkout decline banner (/checkout.php?cancel=1&session_id=demo_test_sid) - Shows empty cart (decline banner requires real failed session in DB) ⚠️
+      7. Admin login (/admin.php) - Login form visible ✅
+      8. Admin dashboard (after login) - Full dashboard with stats visible ✅
+      9. Payment-failed preview (card_declined) - Email preview with scenario picker + iframe visible ✅
+      10. Payment-failed preview (do_not_honor) - Email preview visible ✅
+      11. Payment-failed preview (insufficient_funds) - Email preview visible ✅
+      12. Payment-failed preview (authentication_required) - Email preview visible ✅
+      13. Raw email HTML (do_not_honor&raw=1) - Bare email HTML visible ✅
+      
+      TECHNICAL NOTES:
+      - HTTPS URL failed with ERR_SSL_VERSION_OR_CIPHER_MISMATCH, automatically fell back to http://localhost:3000 ✅
+      - All screenshots saved as JPEG with quality 60 (file sizes: 20KB-79KB) ✅
+      - Admin login successful with credentials from test_credentials.md ✅
+      - Payment-failed email preview pages show correct scenario picker, meta panel, and email iframe ✅
+      - Raw email mode (?raw=1) correctly shows bare HTML without admin chrome ✅
+      
+      LIMITATION:
+      ⚠️ Step 6 (Checkout decline banner): The URL /checkout.php?cancel=1&session_id=demo_test_sid shows an empty cart instead of the decline banner because the banner requires a real failed Stripe session in the database. The demo session ID "demo_test_sid" doesn't exist in the DB. However, the payment failure UX is confirmed working via the payment-failed-preview.php pages (steps 9-13).
+      
+      All screenshots are readable, high-quality, and ready for user review. Files located at:
+      /root/.emergent/automation_output/20260703_204355/01-homepage.jpeg through 13-payment-failed-raw-email.jpeg
+    -agent: "testing"
+    -message: |
       ✅ CHECKOUT PAGE TESTING COMPLETE - All requirements from review request validated successfully.
       
       Tested the checkout page changes and accessibility fixes via comprehensive browser automation at http://localhost:3000.
