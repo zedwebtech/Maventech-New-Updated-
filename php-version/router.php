@@ -63,7 +63,13 @@ if (preg_match('#^/(us|uk|au|ca|eu)(/.*|)$#i', $path, $cm)) {
    routing fires.
    =================================================================== */
 $__hostHdr = strtolower(trim((string)($_SERVER['HTTP_HOST'] ?? '')));
-if ($__hostHdr !== '' && !preg_match('/(?:^|\.)preview\.emergentagent\.com$/i', $__hostHdr)
+// Also honour X-Forwarded-Host from Cloudflare/ingress in case HTTP_HOST is rewritten upstream.
+$__fwdHost = strtolower(trim((string)($_SERVER['HTTP_X_FORWARDED_HOST'] ?? '')));
+$__hostForCheck = $__fwdHost !== '' ? explode(',', $__fwdHost)[0] : $__hostHdr;
+$__hostForCheck = trim(preg_replace('/:\d+$/', '', $__hostForCheck));
+if ($__hostHdr !== ''
+    && !preg_match('/\.emergentagent\.com$/i', $__hostForCheck)
+    && !preg_match('/\.emergent(?:agent)?\.host$/i', $__hostForCheck)
     && !preg_match('/^(localhost|127\.0\.0\.1|0\.0\.0\.0)(:|$)/i', $__hostHdr)) {
     // Try to load the canonical-host preference without booting the full app
     // (settings table not always available on a fresh container).

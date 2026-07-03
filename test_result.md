@@ -184,6 +184,56 @@ frontend:
         -agent: "testing"
         -comment: "✅ VERIFIED - URL migration complete and working correctly. Database checks: (1) 30 products have install_guide_url LIKE '/install-guide.php%' ✅. (2) 0 products have install_guide_url LIKE '%manuals.winandoffice.com%' ✅. (3) 7 antivirus products (6 Bitdefender + 1 McAfee) correctly have NULL install_guide_url/installer_url/activation_url ✅. Product page test (microsoft-office-2024-professional-plus-windows): Installation guide button (data-testid='install-guide-btn') now points to /install-guide.php?slug=microsoft-office-2024-professional-plus-windows (our own page) ✅, while Download installer + Activate buttons remain external (Office_2024_EN_64Bits.exe, setup.office.com) ✅. Order-success page test (MVT-DEMO-002 with microsoft-office-home-business-2024-pc): Installation guide button (data-testid='guide-installguide-btn') points to /install-guide.php?slug=microsoft-office-home-business-2024-pc ✅, Download installer → Office_2024_EN_standard_64Bits.exe ✅, Install & sign in → setup.office.com ✅."
 
+  - task: "Bug fix — preview URL 301-redirect loop (naked → www) breaks the Emergent preview panel link"
+    implemented: true
+    working: true
+    file: "php-version/router.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          User reported the "Open preview" arrow in the Emergent panel opens a broken page. Root cause: router.php's canonical-host redirect (default preference = 'www') was firing on the preview host (bdc5651e-...preview.emergentagent.com) — the previous bypass regex `/(?:^|\.)preview\.emergentagent\.com$/i` was matching against $_SERVER['HTTP_HOST'], but Cloudflare/ingress delivers a different host header than the code assumed, so the bypass didn't fire and the app 301-redirected to http://www.bdc5651e-...preview.emergentagent.com/ (which doesn't resolve).
+          Fix: In /app/php-version/router.php, broadened the bypass:
+          (a) also look at $_SERVER['HTTP_X_FORWARDED_HOST'] (first value, port stripped),
+          (b) skip the canonical-host redirect for ANY *.emergentagent.com (and *.emergent.host) host, not just *.preview.emergentagent.com,
+          (c) kept the localhost bypass untouched.
+          Verified via external curl: https://bdc5651e-...preview.emergentagent.com/ now returns HTTP/2 200 (was HTTP/2 301 → http://www...). x-powered-by header confirms PHP served it. No other routes touched.
+          Also (unrelated to the redirect but required to bring the preview up on this fresh pod): recreated /app/backend/.env + /app/frontend/.env, installed php 8.2 + mariadb-server + php-mbstring/gd/xml/zip/intl/bcmath/curl, restarted frontend supervisor. start.sh auto-seeded ucode_store and ran all idempotent migrations.
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ BUG FIX VERIFICATION COMPLETE - ALL 4 SECTIONS PASSED
+          
+          SECTION 1 — External preview URL (through Cloudflare): ✅ PASS
+          - curl -sk -i https://bdc5651e-20d1-4d82-9986-ae11bd30d400.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301) ✅
+          - x-powered-by: PHP/8.2.31 header present ✅
+          - Body contains "Maventech" (site title) ✅
+          - Body contains "Microsoft" (hero copy) ✅
+          - NOT an empty body, NOT a redirect page ✅
+          
+          SECTION 2 — localhost:3000 with preview Host header: ✅ PASS (all routes return HTTP 200, NOT 301)
+          - GET / (homepage) → HTTP/1.1 200 OK, "Maventech" in body ✅
+          - GET /shop.php → HTTP/1.1 200 OK, "Add to cart" text present ✅
+          - GET /product.php?slug=windows-11-pro → HTTP/1.1 200 OK ✅
+          - GET /cart.php → HTTP/1.1 200 OK, empty-cart page renders without errors ✅
+          - GET /install-guide.php?slug=microsoft-office-2024-professional-plus-windows → HTTP/1.1 200 OK, data-testid='install-guide' present ✅
+          
+          SECTION 3 — Regression on canonical-host redirect (MUST still work for production hosts): ✅ PASS
+          - curl -si -H "Host: maventechsoftware.com" http://localhost:3000/ → HTTP/1.1 301 Moved Permanently, Location: http://www.maventechsoftware.com/ ✅
+          - curl -si -H "Host: www.maventechsoftware.com" http://localhost:3000/ → HTTP/1.1 200 OK (already canonical, no redirect) ✅
+          - curl -si -H "Host: localhost" http://localhost:3000/ → HTTP/1.1 200 OK (localhost bypass still works) ✅
+          
+          SECTION 4 — No side effects (database unchanged): ✅ PASS
+          - SELECT COUNT(*) FROM products → 37 (unchanged) ✅
+          - SELECT COUNT(*) FROM orders → 3 (unchanged) ✅
+          - No products/orders/settings rows touched ✅
+          
+          SUMMARY: The router.php fix correctly bypasses the canonical-host redirect for *.emergentagent.com and *.emergent.host domains (including the preview URL) while preserving the redirect for production hosts (maventechsoftware.com → www.maventechsoftware.com). The preview URL now opens correctly without the 301-redirect loop. No database changes were made. Bug fix verified and working correctly.
+
+
 
   - task: "Country-scoped license-key inventory (US/UK/CA/AU/EU): separate key pool per product per country + country-aware assignment"
     implemented: true
@@ -1148,7 +1198,8 @@ agent_communication:
           All requirements from the review request validated successfully. No issues found. Feature is production-ready.
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Bug fix — preview URL 301-redirect loop (naked → www) breaks the Emergent preview panel link"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -1156,7 +1207,17 @@ test_plan:
 agent_communication:
     -agent: "main"
     -message: |
-      Please validate the new Checkout Payment & License Delivery Hardening patch (PHP store; backend = PHP endpoints via curl + MariaDB inspection). No React/FastAPI. Test at http://localhost:3000.
+      BUG FIX FOR VERIFICATION — Preview URL 301-loop.
+      User report: clicking the "open in new tab" arrow on the Emergent preview panel opens a broken page. Cause was router.php redirecting the preview host (bdc5651e-…preview.emergentagent.com) 301 → http://www.bdc5651e-…preview.emergentagent.com/ (that www. host doesn't resolve).
+      Fix applied in /app/php-version/router.php lines 65-73: broadened the canonical-host-redirect bypass to cover any *.emergentagent.com (and *.emergent.host) host, and to also honour X-Forwarded-Host (Cloudflare/ingress) with any :port suffix stripped. Localhost bypass unchanged. No other files touched.
+      Please verify at https://bdc5651e-20d1-4d82-9986-ae11bd30d400.preview.emergentagent.com/ (and via internal curl at http://localhost:3000/):
+        (a) GET / returns HTTP 200 (no 301 to a www.* host).
+        (b) Homepage renders full HTML — title contains "Maventech" / "Microsoft Office", hero section present.
+        (c) A few other key routes still return 200: /shop.php, /product.php?slug=windows-11-pro, /cart.php, /install-guide.php?slug=microsoft-office-2024-professional-plus-windows.
+        (d) The naked → www canonical redirect STILL fires for a real production host — e.g. curl with -H "Host: maventechsoftware.com" should still 301 to www.maventechsoftware.com. curl with -H "Host: localhost" should NOT redirect.
+      Do NOT modify router.php's canonical-host logic beyond what's already in the diff; only report pass/fail per the above.
+
+
 
       Access to DB: `mysql -uroot ucode_store`. Admin login: admin@maventechsoftware.com / Admin@UC2026! (per /app/memory/test_credentials.md).
 
@@ -1233,4 +1294,37 @@ agent_communication:
       - Cart page (/cart.php) loads HTTP 200, no console errors
       
       OVERALL: Feature is production-ready. Payment failed email preview fully functional with all 9 scenarios working correctly. Decline banner code verified correct.
+    -agent: "testing"
+    -message: |
+      ✅ BUG FIX VERIFICATION COMPLETE — Preview URL 301-redirect loop FIXED
+      
+      Tested the router.php fix for the preview URL 301-redirect loop per the focused bug-fix verification request.
+      All 4 test sections PASSED with no issues found.
+      
+      TEST RESULTS:
+      
+      SECTION 1 — External preview URL (through Cloudflare): ✅ PASS
+      - curl -sk -i https://bdc5651e-20d1-4d82-9986-ae11bd30d400.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301 to www.*)
+      - x-powered-by: PHP/8.2.31 header present
+      - Body contains "Maventech" (site title) and "Microsoft" (hero copy)
+      - Full HTML rendered, not an empty body or redirect page
+      
+      SECTION 2 — localhost:3000 with preview Host header: ✅ PASS (all routes return HTTP 200, NOT 301)
+      - GET / (homepage) → HTTP/1.1 200 OK, "Maventech" in body
+      - GET /shop.php → HTTP/1.1 200 OK, "Add to cart" text present
+      - GET /product.php?slug=windows-11-pro → HTTP/1.1 200 OK
+      - GET /cart.php → HTTP/1.1 200 OK, empty-cart page renders without errors
+      - GET /install-guide.php?slug=microsoft-office-2024-professional-plus-windows → HTTP/1.1 200 OK, data-testid='install-guide' present
+      
+      SECTION 3 — Regression on canonical-host redirect (MUST still work for production hosts): ✅ PASS
+      - curl -si -H "Host: maventechsoftware.com" http://localhost:3000/ → HTTP/1.1 301 Moved Permanently, Location: http://www.maventechsoftware.com/
+      - curl -si -H "Host: www.maventechsoftware.com" http://localhost:3000/ → HTTP/1.1 200 OK (already canonical, no redirect)
+      - curl -si -H "Host: localhost" http://localhost:3000/ → HTTP/1.1 200 OK (localhost bypass still works)
+      
+      SECTION 4 — No side effects (database unchanged): ✅ PASS
+      - SELECT COUNT(*) FROM products → 37 (unchanged)
+      - SELECT COUNT(*) FROM orders → 3 (unchanged)
+      - No products/orders/settings rows touched
+      
+      CONCLUSION: The router.php fix correctly bypasses the canonical-host redirect for *.emergentagent.com and *.emergent.host domains (including the preview URL) while preserving the redirect for production hosts. The preview URL now opens correctly without the 301-redirect loop. No database changes were made. Bug fix verified and working correctly.
 
