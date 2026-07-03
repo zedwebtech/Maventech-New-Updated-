@@ -538,3 +538,84 @@ function email_address_deliverable(string $address): array {
     return $cache[$domain] = $result;
 }
 
+
+/**
+ * Bounce reconciliation — reads the mailbox (IMAP) for delivery-failure
+ * notifications (from MAILER-DAEMON / "Undelivered Mail Returned to Sender")
+ * and flips the matching Email Activity row from "sent" to "BOUNCED" with the
+ * failure reason. This is what makes the admin show the REAL delivery status
+ * instead of leaving genuinely-bounced mail marked as sent/delivered.
+ *
+ * Uses dedicated imap_* settings, falling back to the SMTP host/credentials.
+ * Returns ['ok'=>bool,'checked'=>int,'bounced'=>int,'error'=>string].
+ */
+function email_sync_bounces(int $maxScan = 80): array
+{
+    $out = ['ok' => false, 'checked' => 0, 'bounced' => 0, 'error' => ''];
+    if (!function_exists('imap_open')) {
+        $out['error'] = 'PHP IMAP extension is not enabled on this server — ask your host to enable php-imap so bounce status can be read from the mailbox.';
+        return $out;
+    }
+    $cfg  = smtp_config();
+    $host = trim((string)setting_get('imap_host', $cfg['host']));
+    $port = (int)setting_get('imap_port', '993') ?: 993;
+    $user = trim((string)setting_get('imap_username', $cfg['username']));
+    $rawP = (string)setting_get('imap_password_b64', '');
+    $pass = $rawP !== '' ? (base64_decode($rawP, true) ?: '') : (string)$cfg['password'];
+    $enc  = setting_get('imap_encryption', 'ssl'); // ssl | tls | none
+    if ($host === '' || $user === '' || $pass === '') {
+        $out['error'] = 'IMAP mailbox not configured (needs host, username & password). Set it under Admin → SMTP / Mail Server (bounce inbox).';
+        return $out;
+    }
+    $flags = '/imap';
+    $flags .= $enc === 'ssl' ? '/ssl' : ($enc === 'tls' ? '/tls' : '/notls');
+    if (empty($cfg['verify_peer'])) $flags .= '/novalidate-cert';
+    $mailbox = '{' . $host . ':' . $port . $flags . '}INBOX';
+
+    $imap = @imap_open($mailbox, $user, $pass, 0, 1);
+    if (!$imap) {
+        $out['error'] = 'Could not connect to the IMAP mailbox: ' . (imap_last_error() ?: 'unknown error');
+        return $out;
+    }
+    try {
+        $ids = @imap_search($imap, 'UNSEEN FROM "MAILER-DAEMON"') ?: [];
+        $ids = array_merge($ids, @imap_search($imap, 'UNSEEN SUBJECT "Undelivered"') ?: []);
+        $ids = array_merge($ids, @imap_search($imap, 'UNSEEN SUBJECT "Delivery Status"') ?: []);
+        $ids = array_slice(array_values(array_unique($ids)), 0, $maxScan);
+        $pdo = db();
+        foreach ($ids as $num) {
+            $out['checked']++;
+            $body = (string)@imap_body($imap, $num);
+            $rcpt = '';
+            if (preg_match('/Final-Recipient:\s*[^;]*;\s*([^\s<>]+@[^\s<>]+)/i', $body, $m)) {
+                $rcpt = strtolower(trim($m[1], " \t<>."));
+            } elseif (preg_match('/(?:Original-Recipient|X-Failed-Recipients):\s*(?:[^;]*;\s*)?([^\s<>,]+@[^\s<>,]+)/i', $body, $m)) {
+                $rcpt = strtolower(trim($m[1], " \t<>."));
+            } elseif (preg_match('/(?:to|for)\s+<?([^\s<>]+@[^\s<>]+)>?/i', $body, $m)) {
+                $rcpt = strtolower(trim($m[1], " \t<>."));
+            }
+            $reason = '';
+            if (preg_match('/Diagnostic-Code:\s*[^;\r\n]*;?\s*([^\r\n]+)/i', $body, $m)) $reason = trim($m[1]);
+            elseif (preg_match('/\b(5\.\d\.\d+[^\r\n]*)/', $body, $m)) $reason = trim($m[1]);
+            else $reason = 'Message bounced — delivery failed.';
+            $reason = mb_substr($reason, 0, 300);
+
+            if ($rcpt !== '' && filter_var($rcpt, FILTER_VALIDATE_EMAIL)) {
+                $upd = $pdo->prepare(
+                    "UPDATE email_outbox SET status='bounced', last_error=? " .
+                    "WHERE recipient=? AND status IN ('sent','queued','delivered') " .
+                    "ORDER BY id DESC LIMIT 1"
+                );
+                $upd->execute([$reason, $rcpt]);
+                if ($upd->rowCount() > 0) $out['bounced']++;
+            }
+            @imap_setflag_full($imap, (string)$num, "\\Seen");
+        }
+        $out['ok'] = true;
+    } catch (Throwable $e) {
+        $out['error'] = 'Bounce sync error: ' . $e->getMessage();
+    } finally {
+        @imap_close($imap);
+    }
+    return $out;
+}

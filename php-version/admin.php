@@ -4,7 +4,16 @@ require_once __DIR__ . '/includes/email.php';
 require_once __DIR__ . '/includes/regions.php';
 require_once __DIR__ . '/includes/mailer.php';
 ensure_admin();
-$admin = require_admin();
+// The admin panel login now lives at this same simple URL: /admin.php
+// If the visitor is NOT an authenticated admin/staff, render the login screen
+// right here (instead of bouncing to a separate login.php URL). login.php
+// handles the POST and, on success, redirects back to admin.php (now logged in).
+$__admU = current_user();
+if (!($__admU && in_array(($__admU['role'] ?? ''), ['admin', 'staff'], true) && (int)($__admU['active'] ?? 1) === 1)) {
+    require __DIR__ . '/login.php';
+    exit;
+}
+$admin = $__admU;
 $pdo = db();
 // Drain the email queue on every admin page load (no cron required for low-volume sites)
 try { smtp_process_queue(3); } catch (Throwable $e) { /* never block the UI */ }

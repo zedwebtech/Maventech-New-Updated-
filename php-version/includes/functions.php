@@ -1102,7 +1102,7 @@ function require_admin(): array
             // Deactivated staff — drop the session so they can't keep poking.
             unset($_SESSION['user_id']);
         }
-        header('Location: login.php?next=admin.php');
+        header('Location: admin.php');
         exit;
     }
     return $user;

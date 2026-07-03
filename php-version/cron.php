@@ -107,3 +107,17 @@ try {
 } catch (Throwable $e) {
     echo "[" . date('c') . "] trends-article: ERROR " . $e->getMessage() . "\n";
 }
+
+// Bounce reconciliation — read the mailbox for delivery failures and flip the
+// matching Email Activity rows to BOUNCED so the admin shows the real status.
+try {
+    require_once __DIR__ . '/includes/mailer.php';
+    $bnc = email_sync_bounces();
+    if (!empty($bnc['ok'])) {
+        echo "[" . date('c') . "] bounce-sync: checked={$bnc['checked']} bounced={$bnc['bounced']}\n";
+    } else {
+        echo "[" . date('c') . "] bounce-sync: skipped — " . ($bnc['error'] ?? '?') . "\n";
+    }
+} catch (Throwable $e) {
+    echo "[" . date('c') . "] bounce-sync: ERROR " . $e->getMessage() . "\n";
+}
