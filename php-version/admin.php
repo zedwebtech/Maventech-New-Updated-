@@ -5337,8 +5337,8 @@ elseif ($tab === 'ai-blogger'):
     $seoPint    = setting_get('pinterest_site_verification_token', defined('PINTEREST_SITE_VERIFICATION') ? PINTEREST_SITE_VERIFICATION : '');
     $seoGmc     = setting_get('google_merchant_id', '');
     $seoDomain  = setting_get('site_domain_url', rtrim(site_url(), '/'));
-    $seoCanonHost = strtolower((string)setting_get('seo_canonical_host_pref', 'naked'));
-    if (!in_array($seoCanonHost, ['naked', 'www'], true)) $seoCanonHost = 'naked';
+    $seoCanonHost = strtolower((string)setting_get('seo_canonical_host_pref', 'www'));
+    if (!in_array($seoCanonHost, ['naked', 'www'], true)) $seoCanonHost = 'www';
     $seoTwitter = (string)setting_get('twitter_site_handle', '');
     $seoFbApp   = (string)setting_get('facebook_app_id', '');
     // Count how many are configured

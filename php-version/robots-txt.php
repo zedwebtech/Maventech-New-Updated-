@@ -47,6 +47,16 @@ $disallowedPaths = [
     '/order-history.php', '/email-view.php', '/email-api.php',
     '/ajax/', '/uploads/', '/cron.php', '/setup-check.php',
     '/*?session_id=', '/*?order=',
+    // ---- Legacy WordPress paths (Search Console cleanup) ---------------
+    // These URLs never existed on the Maventech PHP store — they're leftover
+    // from a previous WordPress deployment.  Explicit Disallow entries make
+    // Google drop them from the index faster, in tandem with the 301/410
+    // rules in .htaccess + router.php.
+    '/wp-admin/', '/wp-content/', '/wp-includes/',
+    '/wp-login.php', '/wp-cron.php', '/xmlrpc.php',
+    '/cgi-bin/',
+    '/feed/', '/comments/feed/', '/*/feed/',
+    '/*?add-to-cart=',
 ];
 ?># <?= defined('SITE_BRAND') ? SITE_BRAND : 'Maventech' ?> — robots.txt
 # Dynamically generated from <?= $base ?> at <?= date('c') ?>.

@@ -206,6 +206,70 @@ metadata:
   test_sequence: 3
   run_ui: false
 
+  - task: "SEO: fix Google Search Console errors — legacy WP URL 301/410 + canonical host www + WP query-param strip"
+    implemented: true
+    working: true
+    file: "php-version/router.php, php-version/.htaccess, php-version/legacy-redirect.php, php-version/robots-txt.php, php-version/admin.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: |
+          User reported dozens of Search Console errors on the LIVE domain
+          maventechsoftware.com — grouped into 6 categories. Fixed all in code
+          so they clear on the next Google recrawl after deploy:
+          (a) "Duplicate, Google chose different canonical than user" for
+              https://www.maventechsoftware.com/ — flipped canonical host
+              preference from naked → www (router.php default + .htaccess
+              default + admin.php UI default) so naked → 301 → www.
+          (b) 404 on legacy WordPress URLs — added
+              /app/php-version/legacy-redirect.php which does a smart product
+              slug DB lookup with loose matching (strips microsoft-/wp region
+              tokens/count suffixes), then either 301s to /product.php?slug=…
+              or falls back to /shop.php?q=…. Wired into router.php + .htaccess
+              for /product/<slug>/, /products/<slug>/, /shop/<slug>/,
+              /item/<slug>/ AND static 301s for /microsoft-office-2019/,
+              /office-2019-for-mac/, /office-2021-for-mac/, /office-2024-for-mac/,
+              /microsoft-windows, /microsoft/, /bitdefender/, /mcafee/,
+              /refund-policy/ → /page.php?slug=returns-refunds,
+              /privacy-policy/, /terms/, /cookie-policy/, /disclaimer/,
+              /f-secure/, /avast/, /norton/, /kaspersky/ → /shop.php?q=antivirus,
+              /home → /, /index.php → /.
+          (c) 410 GONE for permanently-removed WordPress paths — /wp-content/*,
+              /wp-admin/*, /wp-includes/*, /wp-login.php, /wp-cron.php,
+              /xmlrpc.php, /cgi-bin/*, /feed/, /comments/feed/, /<slug>/feed/,
+              /*/trackback/. Google drops 410 URLs faster than 404s.
+          (d) "Blocked by robots.txt" on /?add-to-cart=N and duplicates on
+              /?MA, /?NA, /?SA, /?NA&add-to-cart=… — added 301 rules that
+              strip these WordPress cart / tracking query params on the
+              homepage so hundreds of variants collapse to a single canonical.
+          (e) Extended robots.txt with explicit Disallow entries for
+              /wp-admin/, /wp-content/, /wp-includes/, /wp-login.php,
+              /wp-cron.php, /xmlrpc.php, /cgi-bin/, /feed/, /comments/feed/,
+              /*/feed/, /*?add-to-cart= so Search Console reports "blocked
+              by robots.txt" (informational) rather than "not found".
+          (f) Kept the merchant XML feeds working — /feed/google-products.xml,
+              /feed/bing-shopping.xml, /sitemap.xml still return 200 (regex
+              excludes them from the /feed/ 410 rule).
+          VERIFIED via curl at http://localhost:3000:
+          - 410: /wp-content/foo.jpg, /wp-admin/, /wp-login.php, /xmlrpc.php,
+                 /cgi-bin/, /feed/, /comments/feed/, /anything/feed/  → all 410
+          - 301: /product/microsoft-windows-11-home/ → /product.php?slug=windows-11-home
+                 /products/microsoft-visio-2021-professional-windows-pc/ → /product.php?slug=microsoft-visio-2021-professional-windows-pc
+                 /microsoft-office-2019/ → /hub/office-2019-pc
+                 /office-2024-for-mac/ → /hub/office-2024-mac
+                 /refund-policy/ → /page.php?slug=returns-refunds
+                 /home, /index.php, /?add-to-cart=1909, /?MA, /?NA → /
+          - Host redirect: Host maventechsoftware.com → 301 → www.maventechsoftware.com; www → 200
+          - Sanity 200: /, /sitemap.xml, /feed/google-products.xml,
+                        /feed/bing-shopping.xml, /robots.txt, /llms.txt,
+                        /press-kit, /product.php?slug=windows-11-home, /hub/windows
+          NOTE: takes effect the moment the code is deployed to the live
+          domain. Google typically clears the Search Console errors within
+          2-4 weeks after next recrawl.
+
   - task: "UI fixes: (a) policy pages phone consistency, (b) admin per-country stock breakdown on product cards, (c) merged checkout Details+Payment into one card"
     implemented: true
     working: true
@@ -395,7 +459,7 @@ agent_communication:
     -agent: "main"
     -message: |
       COMPREHENSIVE UI TESTING REQUEST — Test the installation guide feature end-to-end via browser automation.
-      Focus ONLY on the new installation guide feature. Test at https://demo-view-31.preview.emergentagent.com
+      Focus ONLY on the new installation guide feature. Test at https://seo-fix-preview-5.preview.emergentagent.com
       
       PART 1-4: Test native guide pages, product page block, order history page, and admin filter.
 

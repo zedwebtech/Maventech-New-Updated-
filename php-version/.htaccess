@@ -36,6 +36,82 @@ RewriteRule ^agents\.json$        agents-json.php   [L]
 RewriteRule ^robots\.txt$         robots-txt.php    [L]
 RewriteRule ^ai\.txt$             ai-txt.php        [L]
 
+# ============================================================================
+# SEO — Google Search Console legacy-URL clean-up (2026-07)
+# Fixes reported issues:
+#   • "Duplicate, Google chose different canonical than user"  → canonical → www
+#   • "Not found (404)"                                        → 301 old WP URLs
+#   • "Blocked due to access forbidden (403)" on /cgi-bin/     → 410 Gone
+#   • "Blocked by robots.txt" on ?add-to-cart=…                → 301 clean URL
+#   • "Alternate page with proper canonical tag" on /?MA /?NA  → 301 strip params
+# These rules mirror the ones in router.php so the dev preview + Apache
+# production behave identically.
+# ============================================================================
+
+# ---- (a) 410 GONE for permanently-removed WordPress paths.  A 410 tells
+#       Google to REMOVE the URL from the index far faster than a 404. ----
+RewriteRule ^wp-content(/.*)?$      /legacy-redirect.php?type=gone  [L,R=410,QSA]
+RewriteRule ^wp-admin(/.*)?$        /legacy-redirect.php?type=gone  [L,R=410,QSA]
+RewriteRule ^wp-includes(/.*)?$     /legacy-redirect.php?type=gone  [L,R=410,QSA]
+RewriteRule ^wp-login\.php$         /legacy-redirect.php?type=gone  [L,R=410,QSA]
+RewriteRule ^wp-cron\.php$          /legacy-redirect.php?type=gone  [L,R=410,QSA]
+RewriteRule ^xmlrpc\.php$           /legacy-redirect.php?type=gone  [L,R=410,QSA]
+RewriteRule ^cgi-bin(/.*)?$         /legacy-redirect.php?type=gone  [L,R=410,QSA]
+RewriteRule ^feed/?$                /legacy-redirect.php?type=gone  [L,R=410,QSA]
+RewriteRule ^comments/feed/?$       /legacy-redirect.php?type=gone  [L,R=410,QSA]
+# Match /<any-slug>/feed/  BUT keep the merchant XML feeds working
+RewriteCond %{REQUEST_URI} !^/feed/(google-products|bing-shopping)\.xml$
+RewriteCond %{REQUEST_URI} !^/feeds/
+RewriteRule ^[^/]+/feed/?$          /legacy-redirect.php?type=gone  [L,R=410,QSA]
+RewriteRule .*/trackback/?$         /legacy-redirect.php?type=gone  [L,R=410,QSA]
+
+# ---- (b) 301 known legacy WordPress permalinks to the new location. ----
+RewriteRule ^home/?$                    /                                        [R=301,L]
+RewriteRule ^index\.php/?$              /                                        [R=301,L,QSA]
+RewriteRule ^microsoft-office-?2019/?$  /hub/office-2019-pc                      [R=301,L]
+RewriteRule ^microsoft-office-?2021/?$  /hub/office-2021-pc                      [R=301,L]
+RewriteRule ^microsoft-office-?2024/?$  /hub/office-2024-pc                      [R=301,L]
+RewriteRule ^office-2019-for-mac/?$     /hub/office-2019-mac                     [R=301,L]
+RewriteRule ^office-2021-for-mac/?$     /hub/office-2021-mac                     [R=301,L]
+RewriteRule ^office-2024-for-mac/?$     /hub/office-2024-mac                     [R=301,L]
+RewriteRule ^microsoft-office/?$        /hub/microsoft-office                    [R=301,L]
+RewriteRule ^microsoft-windows/?$       /hub/windows                             [R=301,L]
+RewriteRule ^microsoft/?$               /brand.php?slug=microsoft                [R=301,L]
+RewriteRule ^bitdefender/?$             /brand.php?slug=bitdefender              [R=301,L]
+RewriteRule ^mcafee/?$                  /brand.php?slug=mcafee                   [R=301,L]
+RewriteRule ^refund-policy/?$           /page.php?slug=returns-refunds           [R=301,L]
+RewriteRule ^privacy-policy/?$          /page.php?slug=privacy-policy            [R=301,L]
+RewriteRule ^terms(-of-service)?/?$     /page.php?slug=terms-of-service          [R=301,L]
+RewriteRule ^cookie-policy/?$           /page.php?slug=cookie-policy             [R=301,L]
+RewriteRule ^disclaimer/?$              /page.php?slug=disclaimer                [R=301,L]
+# Brands we don't sell → bounce to the antivirus search
+RewriteRule ^f-?secure/?$               /shop.php?q=antivirus                    [R=301,L,NC]
+RewriteRule ^avast/?$                   /shop.php?q=antivirus                    [R=301,L,NC]
+RewriteRule ^norton/?$                  /shop.php?q=antivirus                    [R=301,L,NC]
+RewriteRule ^kaspersky/?$               /shop.php?q=antivirus                    [R=301,L,NC]
+
+# ---- (c) 301 WordPress /product/<slug>/ and /products/<slug>/ URLs to
+#       our canonical /product.php page.  legacy-redirect.php does a smart
+#       DB slug-lookup and falls back to /shop.php?q=… when the exact
+#       product no longer exists. ----
+RewriteRule ^(?:product|products|shop|item)/([a-z0-9\-]+)/?$    /legacy-redirect.php?type=product&slug=$1   [R=301,L]
+RewriteRule ^(?:product-category|product_cat|category)/([a-z0-9\-]+)/?$  /legacy-redirect.php?type=category&slug=$1  [R=301,L]
+
+# ---- (d) Strip WooCommerce/WordPress query params on the homepage so the
+#       hundreds of "Alternate page with proper canonical tag" variants
+#       (?add-to-cart=NNN, ?MA, ?NA, ?SA, ?NA&add-to-cart=…) all consolidate
+#       into a single 301 → the canonical "/" URL. ----
+RewriteCond %{QUERY_STRING} (^|&)add-to-cart=[0-9]+
+RewriteRule ^$  /?  [R=301,L]
+# Bare WP tracking tokens (?MA, ?NA, ?SA) with no value
+RewriteCond %{QUERY_STRING} ^(MA|NA|SA|MD)$  [NC]
+RewriteRule ^$  /?  [R=301,L]
+
+# ============================================================================
+# END SEO legacy-URL clean-up
+# ============================================================================
+
+
 # ---- Google Merchant + Bing Shopping feed aliases — mirror router.php so all
 #      the well-known feed URLs that the Live SEO Health Check links to
 #      resolve on Apache too (cPanel / shared hosting).  Without these the
@@ -105,18 +181,23 @@ RewriteRule ^([a-zA-Z0-9_\-/]+?)/?$ $1.php [L,QSA]
 #      site when both http(s)://example.com and http(s)://www.example.com
 #      serve the same content without redirecting, because inbound links
 #      get split across hosts.  Set ENV `SEO_CANONICAL_HOST` to either
-#      'naked' (default) or 'www' to flip the preference site-wide.
+#      'naked' or 'www' to flip the preference site-wide.
+#
+#      DEFAULT = 'www' because Google Search Console has already chosen
+#      https://www.maventechsoftware.com/ as the canonical for the site
+#      (see the "Duplicate, Google chose different canonical than user"
+#      report). Redirecting naked → www keeps the choice consistent.
 #      ---------------------------------------------------------------- */
 SetEnvIfNoCase Host ^www\. IS_WWW=1
-# Default: redirect www → naked
-RewriteCond %{ENV:SEO_CANONICAL_HOST} !=www
-RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
-# Opposite: redirect naked → www when SEO_CANONICAL_HOST=www
-RewriteCond %{ENV:SEO_CANONICAL_HOST} =www
+# Default: redirect naked → www
+RewriteCond %{ENV:SEO_CANONICAL_HOST} !=naked
 RewriteCond %{HTTP_HOST} !^www\. [NC]
 RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+)(:|$) [NC]
 RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Opposite: redirect www → naked when SEO_CANONICAL_HOST=naked
+RewriteCond %{ENV:SEO_CANONICAL_HOST} =naked
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 
 # ---- Disable PHP / shell execution inside uploads/ ----
 # Enforced by uploads/.htaccess (FilesMatch deny + RemoveHandler). A <Directory>

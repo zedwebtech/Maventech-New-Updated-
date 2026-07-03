@@ -67,13 +67,18 @@ if ($__hostHdr !== '' && !preg_match('/(?:^|\.)preview\.emergentagent\.com$/i', 
     && !preg_match('/^(localhost|127\.0\.0\.1|0\.0\.0\.0)(:|$)/i', $__hostHdr)) {
     // Try to load the canonical-host preference without booting the full app
     // (settings table not always available on a fresh container).
-    $__pref = 'naked';
+    // Default = 'www' because Google Search Console has already chosen
+    // https://www.maventechsoftware.com/ as the canonical for the site
+    // (see the "Duplicate, Google chose different canonical than user"
+    // report). Redirecting naked → www keeps the choice consistent and
+    // stops the duplicate-content warning.
+    $__pref = 'www';
     try {
         require_once __DIR__ . '/config.php';
         require_once __DIR__ . '/includes/db.php';
         if (function_exists('setting_get')) {
-            $__pref = strtolower((string)setting_get('seo_canonical_host_pref', 'naked'));
-            if (!in_array($__pref, ['naked', 'www'], true)) $__pref = 'naked';
+            $__pref = strtolower((string)setting_get('seo_canonical_host_pref', 'www'));
+            if (!in_array($__pref, ['naked', 'www'], true)) $__pref = 'www';
         }
     } catch (Throwable $e) { /* fall through to default */ }
 
@@ -193,6 +198,137 @@ if (preg_match('#/\.[^/]+#', $path)) {
     http_response_code(404);
     return true;
 }
+
+/* ==========================================================================
+ *  SEO — LEGACY WORDPRESS URL CLEAN-UP (route ANY old WP path to a 301 or 410
+ *  so Google Search Console's "Not found (404)" + "Duplicate, Google chose
+ *  different canonical" + "Blocked due to access forbidden" errors clear).
+ *
+ *  Kept together in one block so it's easy to audit / extend.  Mirrored in
+ *  .htaccess so production Apache gets the exact same behaviour.
+ *  ==========================================================================
+ */
+
+// --- 1) 410 GONE for permanently-removed WordPress paths -------------------
+// (Google drops a 410 URL from the index faster than a soft-404. These
+//  paths NEVER existed on Maventech — they're leftovers from the previous
+//  WordPress deployment.  Serving 410 is the correct HTTP signal.)
+$__gone_regex = '#^/('
+    . 'wp-content(/.*)?'         // wp-content assets never migrated
+    . '|wp-admin(/.*)?'
+    . '|wp-includes(/.*)?'
+    . '|wp-login\.php'
+    . '|wp-cron\.php'
+    . '|xmlrpc\.php'
+    . '|cgi-bin(/.*)?'           // never used by our stack
+    . '|feed/?'                  // WordPress RSS feeds (bare /feed/ — merchant XML feeds have file suffix so they don't match)
+    . '|comments/feed/?'
+    . '|[^/]+/feed/?'            // any-slug feed pages e.g. /product-name/feed/
+    . '|.*/trackback/?'
+    . ')$#i';
+if (preg_match($__gone_regex, $path)) {
+    $_GET['type'] = 'gone';
+    require __DIR__ . '/legacy-redirect.php';
+    return true;
+}
+
+// --- 2) 301 KNOWN LEGACY PATHS to their new Maventech home -----------------
+$__legacy_301 = [
+    // Legacy vanity / duplicate homepage aliases
+    '#^/home/?$#i'                                            => ['type' => 'home'],
+    '#^/index\.php/?$#i'                                       => ['type' => 'home'],
+    // Old WordPress permalinks that mapped to hub / category pages
+    '#^/microsoft-office-?2019/?$#i'                           => ['type' => 'hub',      'slug' => 'office-2019-pc'],
+    '#^/microsoft-office-?2021/?$#i'                           => ['type' => 'hub',      'slug' => 'office-2021-pc'],
+    '#^/microsoft-office-?2024/?$#i'                           => ['type' => 'hub',      'slug' => 'office-2024-pc'],
+    '#^/office-2019-for-mac/?$#i'                              => ['type' => 'hub',      'slug' => 'office-2019-mac'],
+    '#^/office-2021-for-mac/?$#i'                              => ['type' => 'hub',      'slug' => 'office-2021-mac'],
+    '#^/office-2024-for-mac/?$#i'                              => ['type' => 'hub',      'slug' => 'office-2024-mac'],
+    '#^/microsoft-office/?$#i'                                 => ['type' => 'hub',      'slug' => 'microsoft-office'],
+    '#^/microsoft-windows/?$#i'                                => ['type' => 'hub',      'slug' => 'windows'],
+    '#^/microsoft/?$#i'                                        => ['type' => 'brand',    'slug' => 'microsoft'],
+    '#^/bitdefender/?$#i'                                      => ['type' => 'brand',    'slug' => 'bitdefender'],
+    '#^/mcafee/?$#i'                                           => ['type' => 'brand',    'slug' => 'mcafee'],
+    // Old policy-page slugs from WordPress
+    '#^/refund-policy/?$#i'                                    => ['type' => 'page',     'slug' => 'returns-refunds'],
+    '#^/privacy-policy/?$#i'                                   => ['type' => 'page',     'slug' => 'privacy-policy'],
+    '#^/terms(-of-service)?/?$#i'                              => ['type' => 'page',     'slug' => 'terms-of-service'],
+    '#^/cookie-policy/?$#i'                                    => ['type' => 'page',     'slug' => 'cookie-policy'],
+    '#^/disclaimer/?$#i'                                       => ['type' => 'page',     'slug' => 'disclaimer'],
+    // Brands we don't actually sell — bounce to search rather than 404
+    '#^/f-?secure/?$#i'                                        => ['type' => 'search',   'slug' => 'antivirus'],
+    '#^/avast/?$#i'                                            => ['type' => 'search',   'slug' => 'antivirus'],
+    '#^/norton/?$#i'                                           => ['type' => 'search',   'slug' => 'antivirus'],
+    '#^/kaspersky/?$#i'                                        => ['type' => 'search',   'slug' => 'antivirus'],
+];
+foreach ($__legacy_301 as $__rx => $__args) {
+    if (preg_match($__rx, $path)) {
+        $_GET = array_merge($_GET, $__args);
+        require __DIR__ . '/legacy-redirect.php';
+        return true;
+    }
+}
+
+// --- 3) 301 legacy WOOCOMMERCE product URLs to our canonical product page --
+// WordPress used /product/<slug>/ and /products/<slug>/. Both are still in
+// Google's index from the old site. Hand them to legacy-redirect.php which
+// does a smart DB slug lookup and 301s to the real product (or /shop.php).
+if (preg_match('#^/(?:product|products|shop|item)/([a-z0-9\-]+)/?$#i', $path, $__pm)) {
+    $_GET['type'] = 'product';
+    $_GET['slug'] = $__pm[1];
+    require __DIR__ . '/legacy-redirect.php';
+    return true;
+}
+// WooCommerce category / product tag / shop archive
+if (preg_match('#^/(?:product-category|product_cat|category)/([a-z0-9\-]+)/?$#i', $path, $__pm)) {
+    $_GET['type'] = 'category';
+    $_GET['slug'] = $__pm[1];
+    require __DIR__ . '/legacy-redirect.php';
+    return true;
+}
+
+// --- 4) STRIP WooCommerce/WordPress QUERY-PARAM TAILS on the homepage ------
+// Google indexed hundreds of variants like /?add-to-cart=1909, /?NA, /?MA,
+// /?SA, /?NA&add-to-cart=1957.  Emit a 301 to the clean URL to consolidate
+// PageRank on the canonical URL.
+if ($path === '/' || $path === '/index.php') {
+    $__qs = (string)($_SERVER['QUERY_STRING'] ?? '');
+    if ($__qs !== '') {
+        // Parse the query into parts.
+        parse_str($__qs, $__q);
+        // Detect the WordPress cart param (?add-to-cart=NNN) — always drop.
+        $__hasAddToCart = isset($__q['add-to-cart']);
+        // Detect the empty-value WP tracking tokens (?MA, ?NA, ?SA) — always drop.
+        $__hasEmptyTokens = false;
+        foreach ($__q as $__k => $__v) {
+            if ($__v === '' && preg_match('/^(MA|NA|SA|MD|CA|AU)$/i', $__k)) {
+                $__hasEmptyTokens = true;
+                unset($__q[$__k]);
+            }
+        }
+        if ($__hasAddToCart) {
+            unset($__q['add-to-cart']);
+        }
+        if ($__hasAddToCart || $__hasEmptyTokens) {
+            // If /index.php, always redirect to /. Also drop the WP-only params.
+            $__target = '/' . (!empty($__q) ? '?' . http_build_query($__q) : '');
+            header('Location: ' . $__target, true, 301);
+            return true;
+        }
+        // /index.php with any (or no) query → 301 to / preserving the rest.
+        if ($path === '/index.php') {
+            $__target = '/' . ($__qs !== '' ? '?' . $__qs : '');
+            header('Location: ' . $__target, true, 301);
+            return true;
+        }
+    } elseif ($path === '/index.php') {
+        header('Location: /', true, 301);
+        return true;
+    }
+}
+
+/* End of SEO legacy clean-up block. */
+
 
 if ($path === '/sitemap.xml') {
     require __DIR__ . '/sitemap-xml.php';
