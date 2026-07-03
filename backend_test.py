@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 import sys
 
-BASE_URL = "https://seo-fix-preview-5.preview.emergentagent.com"
+BASE_URL = "https://project-view-22.preview.emergentagent.com"
 
 def test_product_page_install_block(slug, expected_buttons):
     """
