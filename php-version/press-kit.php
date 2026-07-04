@@ -121,10 +121,11 @@ include __DIR__ . '/includes/header.php';
     <p class="text-secondary">Drop into "About <?= esc($brand) ?>" sections in articles or press releases.</p>
     <div class="card">
       <div class="card-body">
-<pre class="mb-0" style="white-space:pre-wrap;font-family:inherit;font-size:.92rem;line-height:1.55;" data-testid="boilerplate-text"><?= esc($brand) ?> is an authorized digital reseller of genuine Microsoft, Bitdefender, Norton, McAfee, Adobe and Autodesk license keys.
+<pre class="mb-0" style="white-space:pre-wrap;font-family:inherit;font-size:.92rem;line-height:1.55;" data-testid="boilerplate-text"><?= esc($brand) ?> is an independent digital retailer of genuine Microsoft, Bitdefender, Norton, McAfee, Adobe and Autodesk license keys.
 Every key is delivered to the customer's inbox within 15-30 minutes of purchase, activates online and is a one-time
 purchase — no recurring subscription.  Built for small businesses, IT teams and home users in the US, UK, Canada
-and Australia, <?= esc($brand) ?> backs every order with 24/7 support and a 30-day money-back guarantee.</pre>
+and Australia, <?= esc($brand) ?> backs every order with 24/7 support and a 30-day money-back guarantee.  <?= esc($brand) ?>
+is not affiliated with, endorsed by or sponsored by Microsoft Corporation; all trademarks belong to their respective owners.</pre>
       </div>
     </div>
   </section>
@@ -133,7 +134,7 @@ and Australia, <?= esc($brand) ?> backs every order with 24/7 support and a 30-d
   <section class="mb-5" id="assets" data-testid="press-assets">
     <h2 class="h4 fw-bold mb-2">Brand assets</h2>
     <ul class="list-unstyled">
-      <li class="mb-2"><a href="<?= esc($siteUrl) ?>/assets/images/badges/microsoft-verified.svg" download data-testid="asset-logo"><i class="bi bi-download me-1"></i> Microsoft Verified badge (SVG)</a></li>
+      <li class="mb-2"><a href="<?= esc($siteUrl) ?>/assets/images/badges/microsoft-verified.svg" download data-testid="asset-logo"><i class="bi bi-download me-1"></i> 100% Authentic Guarantee badge (SVG)</a></li>
       <li class="mb-2"><a href="<?= esc($siteUrl) ?>/sitemap.xml" data-testid="asset-sitemap"><i class="bi bi-list-ul me-1"></i> Full sitemap.xml</a></li>
       <li class="mb-2"><a href="<?= esc($siteUrl) ?>/llms.txt" data-testid="asset-llms"><i class="bi bi-robot me-1"></i> /llms.txt — AI discovery manifest</a></li>
       <li class="mb-2"><a href="<?= esc($siteUrl) ?>/agents.json" data-testid="asset-agents"><i class="bi bi-cpu me-1"></i> /agents.json — AI agent manifest</a></li>

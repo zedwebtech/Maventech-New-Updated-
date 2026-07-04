@@ -129,12 +129,20 @@ function normalize_company_logo(string $v): string {
 }
 
 function company_info(): array {
+    // Trading brand (visible in nav/logo/header) vs. legal entity (footer
+    // copyright, printable Receipt/Invoice PDFs, court-of-law-safe blocks)
+    // are separate concerns.  `legal_name` defaults to `company_name` + " LLC"
+    // when unset, so existing installs continue to render sensibly without
+    // requiring the admin to touch the field.
+    $trading      = setting_get('company_name', defined('SITE_BRAND') ? SITE_BRAND : '');
+    $legalDefault = $trading !== '' ? ($trading . ' LLC') : '';
     return [
-        'name'      => setting_get('company_name',    defined('SITE_BRAND') ? SITE_BRAND : ''),
-        'email'     => setting_get('company_email',   defined('SITE_EMAIL') ? SITE_EMAIL : ''),
-        'phone'     => setting_get('company_phone',   defined('SITE_PHONE') ? SITE_PHONE : ''),
-        'address'   => setting_get('company_address', ''),
-        'logo'      => normalize_company_logo(setting_get('company_logo', '')),
+        'name'       => $trading,
+        'legal_name' => setting_get('company_legal_name', $legalDefault),
+        'email'      => setting_get('company_email',   defined('SITE_EMAIL') ? SITE_EMAIL : ''),
+        'phone'      => setting_get('company_phone',   defined('SITE_PHONE') ? SITE_PHONE : ''),
+        'address'    => setting_get('company_address', ''),
+        'logo'       => normalize_company_logo(setting_get('company_logo', '')),
         // Prefix for generated subscription customer IDs (e.g. MVN → MVNUS00001).
         'id_prefix' => strtoupper(preg_replace('/[^A-Za-z0-9]/', '', setting_get('company_id_prefix', 'MVN')) ?: 'MVN'),
         // Social profile URLs — pulled by header.php into the Organization

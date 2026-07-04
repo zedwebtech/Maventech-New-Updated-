@@ -268,7 +268,7 @@ echo "  <channel>\n";
 echo "    <title>" . feed_xml_esc($feedTitle) . "</title>\n";
 echo "    <link>" . feed_xml_esc($site) . "</link>\n";
 echo "    <atom:link href=\"" . feed_xml_esc($linkRss) . "\" rel=\"self\" type=\"application/rss+xml\"/>\n";
-echo "    <description>Genuine digital license keys delivered instantly by email — Microsoft Office, Windows, Bitdefender, Norton, McAfee, Adobe and more. " . feed_xml_esc($brand) . " is an authorised reseller.</description>\n";
+echo "    <description>Genuine digital license keys delivered instantly by email — Microsoft Office, Windows, Bitdefender, Norton, McAfee, Adobe and more. " . feed_xml_esc($brand) . " is an independent software key provider (not affiliated with Microsoft Corporation).</description>\n";
 echo "    <language>en-US</language>\n";
 echo "    <lastBuildDate>" . feed_xml_esc($updated) . "</lastBuildDate>\n";
 

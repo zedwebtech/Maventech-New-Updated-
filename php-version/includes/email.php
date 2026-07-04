@@ -149,7 +149,7 @@ function default_review_template(): string {
       <div style="display:inline-block;background:rgba(255,255,255,.18);border-radius:14px;padding:8px 14px;font-weight:800;font-size:22px;letter-spacing:.3px;">
         <span style="display:inline-block;width:30px;height:30px;background:#fff;color:#2563eb;border-radius:8px;text-align:center;line-height:30px;font-weight:900;margin-right:8px;vertical-align:-8px;">M</span>{{company_name}}
       </div>
-      <div style="font-size:11px;letter-spacing:1.8px;font-weight:600;margin-top:8px;opacity:.95;">AUTHORIZED MICROSOFT RESELLER</div>
+      <div style="font-size:11px;letter-spacing:1.8px;font-weight:600;margin-top:8px;opacity:.95;">GENUINE LICENSES · INDEPENDENT PROVIDER</div>
     </div>
 
     <div style="padding:32px;">
@@ -202,7 +202,7 @@ function default_lead_followup_template(): string {
         <div style="font-size:20px;font-weight:800;color:#0f172a;letter-spacing:.3px;">
           <span style="display:inline-block;width:28px;height:28px;background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;border-radius:7px;text-align:center;line-height:28px;font-weight:900;margin-right:8px;vertical-align:-6px;">M</span>{{company_name}}
         </div>
-        <div style="font-size:10px;color:#94a3b8;letter-spacing:1.8px;font-weight:600;margin-top:2px;">AUTHORIZED MICROSOFT RESELLER</div>
+        <div style="font-size:10px;color:#94a3b8;letter-spacing:1.8px;font-weight:600;margin-top:2px;">GENUINE LICENSES · INDEPENDENT PROVIDER</div>
       </div>
       <span style="font-size:11px;color:#2563eb;font-weight:700;background:#dbeafe;padding:6px 12px;border-radius:999px;">&#128075; CHECKING IN</span>
     </div>
@@ -273,7 +273,7 @@ function default_order_pending_template(): string {
         <div style="font-size:20px;font-weight:800;color:#0f172a;">
           <span style="display:inline-block;width:28px;height:28px;background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;border-radius:7px;text-align:center;line-height:28px;font-weight:900;margin-right:8px;vertical-align:-6px;">M</span>{{company_name}}
         </div>
-        <div style="font-size:10px;color:#94a3b8;letter-spacing:1.8px;font-weight:600;margin-top:2px;">AUTHORIZED MICROSOFT RESELLER</div>
+        <div style="font-size:10px;color:#94a3b8;letter-spacing:1.8px;font-weight:600;margin-top:2px;">GENUINE LICENSES · INDEPENDENT PROVIDER</div>
       </div>
       <span style="font-size:11px;color:#92400e;font-weight:700;background:#fef3c7;padding:6px 12px;border-radius:999px;">&#9203; PAYMENT PENDING</span>
     </div>
@@ -360,7 +360,7 @@ function default_refund_template(): string {
         <div style="font-size:20px;font-weight:800;color:#0f172a;">
           <span style="display:inline-block;width:28px;height:28px;background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;border-radius:7px;text-align:center;line-height:28px;font-weight:900;margin-right:8px;vertical-align:-6px;">M</span>{{company_name}}
         </div>
-        <div style="font-size:10px;color:#94a3b8;letter-spacing:1.8px;font-weight:600;margin-top:2px;">AUTHORIZED MICROSOFT RESELLER</div>
+        <div style="font-size:10px;color:#94a3b8;letter-spacing:1.8px;font-weight:600;margin-top:2px;">GENUINE LICENSES · INDEPENDENT PROVIDER</div>
       </div>
       <span style="font-size:11px;color:#7e22ce;font-weight:700;background:#f3e8ff;padding:6px 12px;border-radius:999px;">&#128179; REFUND INITIATED</span>
     </div>
@@ -743,7 +743,7 @@ function default_email_template(): string {
       <img src="{{site_url}}/assets/images/brand/email-logo.gif" alt="{{company_name}}" width="56" height="56" style="display:block;border-radius:14px;background:transparent;">
       <div>
         <div style="font-size:20px;font-weight:800;color:#0f172a;letter-spacing:.3px;">{{company_name}}</div>
-        <div style="font-size:10px;color:#94a3b8;letter-spacing:1.8px;font-weight:600;">AUTHORIZED MICROSOFT RESELLER</div>
+        <div style="font-size:10px;color:#94a3b8;letter-spacing:1.8px;font-weight:600;">GENUINE LICENSES · INDEPENDENT PROVIDER</div>
       </div>
     </div>
     <span style="font-size:11px;color:#10b981;font-weight:700;background:#d1fae5;padding:6px 12px;border-radius:999px;">&#10003; ORDER CONFIRMED</span>

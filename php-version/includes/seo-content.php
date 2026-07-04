@@ -51,7 +51,7 @@ function product_long_tail_keywords(array $p): string
         'where to buy ' . $name,
         'best price for ' . $name,
         'is ' . $name . ' a one time purchase',
-        $brand . ' authorized reseller',
+        $brand . ' independent software reseller',
         $brand . ' genuine software',
     ];
     if ($year !== '') {
@@ -804,7 +804,7 @@ function product_ai_summary_jsonld(array $p): array
     $headline = $name . ': lifetime ' . $brand . ' licence for ' . $platform;
     $body  = $name . ' is a one-time purchase, perpetual licence sold by ' . SITE_BRAND . ' for ' . $price . '. ';
     $body .= 'The licence is genuine, activates directly inside the official ' . $brand . ' software on ' . $platform . ', and remains valid for the life of the device — there is no monthly subscription and no automatic re-billing. ';
-    $body .= 'Ideal for shoppers searching for "buy ' . strtolower($name) . ' lifetime", "' . strtolower($name) . ' product key", "' . strtolower($name) . ' one-time purchase no subscription" or "' . $brand . ' authorised reseller". ';
+    $body .= 'Ideal for shoppers searching for "buy ' . strtolower($name) . ' lifetime", "' . strtolower($name) . ' product key", "' . strtolower($name) . ' one-time purchase no subscription" or "' . $brand . ' independent reseller". ';
     $body .= "\n\n";
     $body .= 'After checkout the activation key arrives by email within 15-30 minutes, alongside the official ' . $brand . ' download link and step-by-step activation instructions. ';
     $body .= 'Activation completes in under five minutes; help is available six days a week via live chat, email and phone. ';
@@ -987,7 +987,7 @@ function category_long_tail_keywords(string $title, string $platform = ''): stri
         $title . ' discount',
         $title . ' ' . $year,
         $title . ' for sale',
-        $title . ' authorized reseller',
+        $title . ' independent software reseller',
         'cheap ' . $title . ' license',
         'how to activate ' . $title,
     ];
@@ -1158,7 +1158,7 @@ function marquee_page_keywords(string $kind = 'index'): string
     $kw[] = 'instant delivery software keys';
     $kw[] = 'no subscription software license';
     $kw[] = 'lifetime activation Microsoft software';
-    $kw[] = 'authorized Microsoft software reseller';
+    $kw[] = 'independent Microsoft software reseller';
     $kw[] = 'software product key email delivery';
 
     // Top categories (alive in DB) — surface the slugs as natural-form

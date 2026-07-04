@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 $pageTitle = 'About ' . SITE_BRAND . ' | Genuine Software Licenses';
-$pageDescription = SITE_BRAND . ' resells genuine Microsoft Office, Windows and antivirus keys at up to 81% off — authorised reseller with 30-day money-back guarantee.';
+$pageDescription = SITE_BRAND . ' resells genuine Microsoft Office, Windows and antivirus keys at up to 81% off — independent software key provider with 30-day money-back guarantee.';
 
 /* AboutPage schema — gives AI search engines and Google a clear,
    citation-friendly snapshot of who we are, what we sell, and why
@@ -26,7 +26,7 @@ $jsonLdAboutPage = [
         'slogan'     => 'Genuine software, instant delivery, dedicated support.',
         'description'=> SITE_BRAND . ' has shipped genuine Microsoft, Adobe and antivirus licence keys since 2018. Every key is verified pre-dispatch and backed by a 30-day money-back guarantee.',
         'knowsAbout' => ['Microsoft Office', 'Microsoft 365', 'Windows 11', 'Windows 10', 'Bitdefender', 'McAfee', 'Adobe', 'software licensing', 'digital downloads', 'SaaS subscriptions'],
-        'award'   => ['Authorised Microsoft reseller', '30-day money-back guarantee since 2018'],
+        'award'   => ['Independent software key provider', '30-day money-back guarantee since 2018'],
     ],
     // E-E-A-T signals: explicit datePublished + dateModified on the
     // AboutPage so Google's quality raters can verify the page is
@@ -43,8 +43,8 @@ $aboutFaqLd = [
     '@type'    => 'FAQPage',
     '@id'      => site_url() . '/about-us.php#faq',
     'mainEntity' => [
-        ['@type' => 'Question', 'name' => 'Is ' . SITE_BRAND . ' an authorized Microsoft reseller?',
-         'acceptedAnswer' => ['@type' => 'Answer', 'text' => SITE_BRAND . ' is an independent authorised reseller of genuine software licence keys. We are not affiliated with, endorsed by, or sponsored by Microsoft Corporation. All licences are sourced through authorised distribution channels and verified before delivery.']],
+        ['@type' => 'Question', 'name' => 'Is ' . SITE_BRAND . ' affiliated with Microsoft?',
+         'acceptedAnswer' => ['@type' => 'Answer', 'text' => SITE_BRAND . ' is an independent provider of genuine software licence keys. We are not affiliated with, endorsed by, or sponsored by Microsoft Corporation. All licences are sourced from authorized software clearing houses and verified before delivery.']],
         ['@type' => 'Question', 'name' => 'How are licence keys delivered?',
          'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Every licence key is sent by email within 15–30 minutes of payment confirmation. The email includes the activation key, an official download link to the vendor (Microsoft, Bitdefender, Norton, etc.) and a step-by-step installation guide.']],
         ['@type' => 'Question', 'name' => 'What is your refund policy?',
@@ -63,7 +63,7 @@ $stats = [
     ['icon' => 'bi-star-fill', 'color' => 'info', 'value' => '4.9/5', 'label' => 'Customer Rating'],
 ];
 $checklist = [
-    ['bi-award-fill', 'Authorized Microsoft software reseller'],
+    ['bi-award-fill', 'Independent Provider of Genuine Software Keys'],
     ['bi-lightning-charge-fill', 'Instant digital delivery within minutes'],
     ['bi-tools', 'Free professional installation support'],
     ['bi-headset', 'Customer service Mon–Sat, 9 AM–6 PM EST'],
@@ -71,7 +71,7 @@ $checklist = [
 ];
 $features = [
     ['bi-lightning-charge-fill', 'warning', 'Instant Delivery', 'Your authentic license key lands in your inbox within 15–30 minutes of purchase — no waiting, no shipping.'],
-    ['bi-patch-check-fill', 'success', 'Genuine Products', 'Every license is sourced through authorized Microsoft distribution channels and verified before delivery.'],
+    ['bi-patch-check-fill', 'success', 'Genuine Products', 'Every license is sourced from authorized software clearing houses and verified before delivery.'],
     ['bi-infinity', 'primary', 'Perpetual License', 'One payment, yours forever. No recurring fees, no subscriptions — the software belongs to you for life.'],
     ['bi-headset', 'info', 'Expert Support', 'Professional technical guidance for installation, activation, and any question along the way.'],
     ['bi-lock-fill', 'primary', 'Secure Checkout', 'Shop confidently over SSL-encrypted, PCI-compliant payment processing with trusted providers.'],

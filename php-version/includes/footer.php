@@ -36,8 +36,8 @@
               $bnHead  = implode(' ', $bnParts);
             ?>
             <span class="brand-text d-block lh-1 text-white"><?= esc($bnHead) ?><?php if ($bnHead !== ''): ?> <?php endif; ?><span class="brand-grad"><?= esc($bnLast) ?></span></span>
-            <?php if (setting_get('show_authorized_reseller_badge', '1') === '1'): ?>
-            <small class="brand-tag" data-testid="brand-tag-authorized-reseller-footer">AUTHORIZED RESELLER</small>
+            <?php if (setting_get('show_authorized_reseller_badge', '0') === '1'): ?>
+            <small class="brand-tag" data-testid="brand-tag-authorized-reseller-footer">GENUINE LICENSES</small>
             <?php endif; ?>
           </span>
         </div>
@@ -154,7 +154,7 @@
         <a href="<?= $lh ?>"><?= $ll ?></a><?= $idx < count($legal) - 1 ? '<span aria-hidden="true" style="color:#94a3b8;">|</span>' : '' ?>
       <?php endforeach; ?>
     </div>
-    <div class="text-center small">© <?= date('Y') ?> <?= esc($brandName) ?>. All rights reserved.</div>
+    <div class="text-center small">© <?= date('Y') ?> <?= esc($brandLegalName) ?>. All rights reserved.</div>
   </div>
 </footer>
 

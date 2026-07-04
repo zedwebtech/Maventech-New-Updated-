@@ -18,6 +18,10 @@ require_once __DIR__ . '/seo-bot.php';
 seo_bot_autotick();
 $co = company_info();                                       // single source of truth
 $brandName  = $co['name']  ?: (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
+// Legal entity name (from EIN / articles-of-organization).  Used ONLY in the
+// footer copyright line, printable Receipt/Invoice PDFs, and any
+// court-of-law-safe block.  Falls back to "$brandName LLC" when not set.
+$brandLegalName = $co['legal_name'] ?: ($brandName !== '' ? ($brandName . ' LLC') : 'Maventech LLC');
 $brandEmail = $co['email'] ?: (defined('SITE_EMAIL') ? SITE_EMAIL : '');
 $brandPhone = company_phone_for_country() ?: (defined('SITE_PHONE') ? SITE_PHONE : '');
 $brandLogo  = $co['logo']  ?: '';
@@ -415,7 +419,7 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
                 'addressCountry'  => $addr['addressCountry'] ?: null,
             ]) : null,
             'slogan'=> 'Genuine software licences. Instant digital delivery.',
-            'description' => 'Authorised reseller of genuine software licence keys (Microsoft, Bitdefender, Norton, McAfee, Adobe, Autodesk and more) with instant digital delivery to ' . implode(', ', array_column($areaServed, 'name')) . '.',
+            'description' => 'Independent provider of genuine software licence keys (Microsoft, Bitdefender, Norton, McAfee, Adobe, Autodesk and more) with instant digital delivery to ' . implode(', ', array_column($areaServed, 'name')) . '. Not affiliated with Microsoft Corporation.',
             'brand' => ['@id' => site_url() . '/#brand'],
             // sameAs — Google Ads / Bing Ads trust auditors expect this
             // array to be present and non-empty on the Organization entity.
@@ -804,8 +808,8 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
           $bnHead  = implode(' ', $bnParts);
         ?>
         <span class="brand-text d-block lh-1"><?= esc($bnHead) ?><?php if ($bnHead !== ''): ?> <?php endif; ?><span class="brand-grad"><?= esc($bnLast) ?></span></span>
-        <?php if (setting_get('show_authorized_reseller_badge', '1') === '1'): ?>
-        <small class="brand-tag" data-testid="brand-tag-authorized-reseller">AUTHORIZED RESELLER</small>
+        <?php if (setting_get('show_authorized_reseller_badge', '0') === '1'): ?>
+        <small class="brand-tag" data-testid="brand-tag-authorized-reseller">GENUINE LICENSES</small>
         <?php endif; ?>
       </span>
     </a>

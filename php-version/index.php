@@ -139,7 +139,7 @@ include __DIR__ . '/includes/header.php';
   <div class="container d-flex justify-content-center gap-4 flex-wrap small trust-strip-row">
     <span class="trust-strip-item"><i class="bi bi-shield-check"></i>SSL Secured</span>
     <span class="trust-strip-item"><i class="bi bi-check2-circle"></i>30-Day Guarantee</span>
-    <span class="trust-strip-item"><i class="bi bi-patch-check"></i>Microsoft Verified</span>
+    <span class="trust-strip-item"><i class="bi bi-patch-check"></i>100% Authentic Product Guarantee</span>
   </div>
 </div>
 
@@ -197,7 +197,7 @@ include __DIR__ . '/includes/header.php';
     <div class="row g-3 text-center" data-testid="trust-badges-row">
       <?php
       $tb = [
-        ['bi-patch-check-fill', 'Genuine Licenses', 'Microsoft Verified'],
+        ['bi-patch-check-fill', 'Genuine Licenses', '100% Authentic Guarantee'],
         ['bi-lightning-charge-fill', 'Instant Delivery', '15-30 Minutes'],
         ['bi-infinity', 'Perpetual License', 'No Subscriptions'],
         ['bi-headset', 'Free Support', SITE_HOURS],
@@ -489,7 +489,7 @@ include __DIR__ . '/includes/header.php';
       <?php
       $why = [
         ['bi-lightning-charge-fill', 'Instant Delivery', 'Receive your authentic license key via email within 15-30 minutes of purchase.'],
-        ['bi-patch-check-fill', 'Genuine Products', 'All licenses are authentic and sourced from authorized Microsoft distributors.'],
+        ['bi-patch-check-fill', 'Genuine Products', 'All licenses are authentic and sourced from authorized software clearing houses.'],
         ['bi-infinity', 'Perpetual License', 'No recurring fees or subscriptions. One-time purchase — yours to use for as long as you own your device.'],
         ['bi-headset', 'Expert Support', 'Professional technical support for installation, activation, and any questions.'],
         ['bi-shield-lock-fill', 'Secure Checkout', 'Shop with confidence using our SSL-encrypted payment processing.'],
@@ -521,7 +521,7 @@ include __DIR__ . '/includes/header.php';
         <div class="row g-2 small mt-2">
           <?php
           $partnerPoints = [
-            'Authorized Microsoft software reseller', 'Trusted by businesses, schools and freelancers worldwide',
+            'Independent Provider of Genuine Software Keys', 'Trusted by businesses, schools and freelancers worldwide',
             'Instant digital delivery within minutes', 'Free professional installation support',
             'Customer service ' . SITE_HOURS, '30-day money-back guarantee',
           ];

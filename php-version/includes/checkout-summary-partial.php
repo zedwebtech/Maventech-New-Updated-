@@ -20,8 +20,8 @@ if (!isset($items)) { return; }
     <?= render_logo(36) ?>
     <span class="text-start">
       <span class="brand-text d-block lh-1"><span class="brand-grad">Maventech</span></span>
-      <?php if (setting_get('show_authorized_reseller_badge', '1') === '1'): ?>
-      <small class="brand-tag" data-testid="brand-tag-authorized-reseller-checkout">AUTHORIZED RESELLER</small>
+      <?php if (setting_get('show_authorized_reseller_badge', '0') === '1'): ?>
+      <small class="brand-tag" data-testid="brand-tag-authorized-reseller-checkout">GENUINE LICENSES</small>
       <?php endif; ?>
     </span>
   </a>

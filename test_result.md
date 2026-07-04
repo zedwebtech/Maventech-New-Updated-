@@ -450,6 +450,75 @@ frontend:
 
           Bug fix is production-ready and safe to deploy. No code modifications made during testing (verification only).
 
+  - task: "Compliance edits — remove wording that implies an official Microsoft partnership (Authorized Reseller, Microsoft Verified) and add the legal LLC entity name to the footer copyright per the EIN document"
+    implemented: true
+    working: "NA"
+    file: "php-version/includes/header.php, php-version/includes/footer.php, php-version/includes/settings.php, php-version/includes/email.php, php-version/includes/checkout-summary-partial.php, php-version/includes/seo-content.php, php-version/about-us.php, php-version/index.php, php-version/press-kit.php, php-version/merchant-feed.php, php-version/admin.php, php-version/database.sql"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          USER DIRECTIVE (with EIN PDF attached — verified entity "MAVENTECH LLC" at "135 CAROLINA ST G2, VALLEJO, CA 94590"): to comply with Microsoft Ads / Google Ads brand-compliance auditors, the website must NOT imply an official partnership with Microsoft. Specifically:
+             · Remove "Authorized Microsoft software reseller" and "Microsoft Verified" wording site-wide.
+             · Replace with "Independent Provider of Genuine Software Keys" / "100% Authentic Product Guarantee" / "Sourced from authorized software clearing houses" / "Genuine Perpetual Licenses".
+             · Footer copyright must read "© YYYY Maventech LLC. All rights reserved." (LLC suffix from the EIN, not just "Maventech").
+             · Contact page address must display the EIN address exactly.
+
+          IMPLEMENTATION — 12 files touched. Summary of the edit set:
+
+          1) NEW settings field `company_legal_name` — a separate legal-entity field distinct from the trading `company_name`. Falls back to `company_name + " LLC"` when unset.
+             · php-version/includes/settings.php: added `legal_name` to company_info() return array.
+             · php-version/includes/header.php: `$brandLegalName = $co['legal_name'] ?: …` exposed alongside `$brandName`.
+             · php-version/includes/footer.php: footer copyright now uses `$brandLegalName` — output "© 2026 Maventech LLC. All rights reserved."
+             · php-version/admin.php: added "Legal Entity Name" input to Company Info form (with EIN placeholder + fallback preview); save_company_info handler persists `company_legal_name`; added label 'Legal entity name' to the admin token audit table.
+
+          2) Header/footer/checkout brand-tag badge relabelled: "AUTHORIZED RESELLER" → "GENUINE LICENSES" AND default flipped from '1' (show) → '0' (hide). Admin UI text updated: "Show 'Authorized Reseller' badge site-wide" → "Show 'Genuine Licenses' badge site-wide" with a Microsoft-brand-compliance warning explaining the default-OFF choice.
+             · php-version/includes/header.php:811 · footer.php:39 · checkout-summary-partial.php:23-25
+             · admin.php:6736-6748 (label + description + default '0')
+             · admin.php:1094 (setting_set falls through to '0' when unchecked)
+
+          3) EMAIL banner "AUTHORIZED MICROSOFT RESELLER" (5 occurrences in includes/email.php lines 152/205/276/363/746) → "GENUINE LICENSES · INDEPENDENT PROVIDER". Applied via `sed -i` — verified 0 remaining occurrences of the old text, 5 new.
+
+          4) Public copy scrubbed of Microsoft-partnership claims:
+             · index.php:142 trust-strip "Microsoft Verified" → "100% Authentic Product Guarantee"
+             · index.php:200 trust-badges-row "Microsoft Verified" → "100% Authentic Guarantee"
+             · index.php:492 why-choose grid "sourced from authorized Microsoft distributors" → "sourced from authorized software clearing houses"
+             · index.php:524 partner points "Authorized Microsoft software reseller" → "Independent Provider of Genuine Software Keys"
+             · about-us.php:4 page description "authorised reseller" → "independent software key provider"
+             · about-us.php:29 award JSON-LD "Authorised Microsoft reseller" → "Independent software key provider"
+             · about-us.php:46-47 FAQ question rewritten: "Is Maventech an authorized Microsoft reseller?" → "Is Maventech affiliated with Microsoft?" with a compliant answer citing "authorized software clearing houses".
+             · about-us.php:66 checklist "Authorized Microsoft software reseller" → "Independent Provider of Genuine Software Keys"
+             · about-us.php:74 features "authorized Microsoft distribution channels" → "authorized software clearing houses"
+             · press-kit.php:124 boilerplate "authorized digital reseller" → "independent digital retailer of genuine Microsoft, Bitdefender, …" with added trademark disclaimer "Maventech is not affiliated with, endorsed by or sponsored by Microsoft Corporation; all trademarks belong to their respective owners."
+             · press-kit.php:136 "Microsoft Verified badge (SVG)" download label → "100% Authentic Guarantee badge (SVG)"
+             · includes/header.php:422 Organization JSON-LD description "Authorised reseller…" → "Independent provider… Not affiliated with Microsoft Corporation."
+             · merchant-feed.php:271 RSS feed <description>"authorised reseller" → "independent software key provider (not affiliated with Microsoft Corporation)"
+             · includes/seo-content.php: keyword arrays "$brand . ' authorized reseller'" → "…' independent software reseller'" (2 places); "$title . ' authorized reseller'" → "…' independent software reseller'"; hardcoded "authorized Microsoft software reseller" keyword → "independent Microsoft software reseller"; product-page SEO body "$brand . ' authorised reseller'" search-term → "$brand . ' independent reseller'"
+             · database.sql:867 FAQ seed row "genuine and sourced directly from authorized Microsoft distributors" → "genuine and sourced from authorized software clearing houses"; also UPDATE'd the live faqs row id=1 in the current DB.
+
+          5) DB WRITES (for the customer's current install — they will already have the new schema from the code changes above but the DB rows had legacy values):
+             · UPDATE settings v='Maventech LLC' WHERE k='company_legal_name'  (INSERT IGNORE if row missing)
+             · UPDATE settings v='0'             WHERE k='show_authorized_reseller_badge'
+             · UPDATE settings v='135 Carolina St G2, Vallejo, CA 94590, USA' WHERE k='company_address'
+             · UPDATE faqs SET answer=… WHERE id=1 (as above)
+
+          After-fix verification via curl on 6 key pages (/, /about-us.php, /contact.php, /shop.php, /press-kit.php, /product.php?slug=microsoft-office-2024-professional-plus-windows):
+             - grep -c "Microsoft Verified" on each of the 6 pages: ALL 0 ✅
+             - grep -ciE "Authoriz(ed|ed) Microsoft" on each of the 6 pages: ALL 0 ✅
+             - Trust-strip line 3 renders "100% Authentic Product Guarantee" ✅
+             - Header logo shows only "MAVENTECH" — no badge visible (default-off) ✅
+             - Footer copyright renders literally as "© 2026 Maventech LLC. All rights reserved." ✅
+             - Trademark disclaimer in footer: "is independent of and not affiliated with Microsoft Corporation." ✅
+             - Contact page displays "135 Carolina St G2, Vallejo, CA 94590, USA" (matches EIN) ✅
+             - Press-kit boilerplate now says "independent digital retailer" and includes trademark disclaimer ✅
+             - Merchant feed <description> now says "independent software key provider (not affiliated with Microsoft Corporation)" ✅
+             - Visual QA (Playwright screenshot at 1920×800): homepage header shows MAVENTECH with no badge; trust strip shows correct 3 items; hero and layout intact ✅
+
+          NEEDS_RETESTING: verify site-wide compliance edits with the following acceptance criteria — (a) NO occurrence of the strings "Authorized Microsoft software reseller", "authorised Microsoft reseller", "Microsoft Verified" on any of these public URLs: /, /about-us.php, /contact.php, /shop.php, /press-kit.php, /merchant-feed.xml, /product.php?slug=microsoft-office-2024-professional-plus-windows, /category.php?slug=office-2024-mac, /request-quote.php, /blog.php, /returns.php, /warranty.php, /faq.php. (b) Footer copyright line on EVERY public page renders exactly as "© 2026 Maventech LLC. All rights reserved." (test the regex `© 20[0-9]{2} Maventech LLC\. All rights reserved\.`). (c) Contact page address block visible to a normal user reads "135 Carolina St G2, Vallejo, CA 94590" (case-insensitive, spacing lenient). (d) The brand-tag badge (data-testid="brand-tag-authorized-reseller" / -footer / -checkout) does NOT render on any public URL (0 matches). (e) Admin login → Settings → Company Info page shows the NEW "Legal Entity Name" input, with placeholder "e.g. Maventech LLC" and current value "Maventech LLC". Also shows the "Show 'Genuine Licenses' badge site-wide" toggle in the OFF position by default. Turning it ON and saving must (i) persist to settings.show_authorized_reseller_badge = '1', (ii) render the "GENUINE LICENSES" tag on the next page load (not "AUTHORIZED RESELLER"). (f) Merchant feed at /merchant-feed.xml still validates as XML (xmllint --noout), and the <description> tag reads "independent software key provider (not affiliated with Microsoft Corporation)". (g) All 6 core pages render HTTP 200 (no regression). (h) DB row settings.company_legal_name = 'Maventech LLC', settings.company_address = '135 Carolina St G2, Vallejo, CA 94590, USA', settings.show_authorized_reseller_badge = '0'. (i) One-time direct end-to-end: send a test transactional email via php -r invoking send_email() and grep the HTML body for "GENUINE LICENSES · INDEPENDENT PROVIDER" (present) and "AUTHORIZED MICROSOFT RESELLER" (absent).
+
   - task: "Bug fix — Google Merchant Center rejects every product with 3 feed-schema errors (Invalid free_shipping_threshold format, Invalid google_product_category, Missing sub-attribute [country] in return_policy)"
     implemented: true
     working: true

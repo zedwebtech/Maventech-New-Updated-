@@ -864,7 +864,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `faqs` WRITE;
 /*!40000 ALTER TABLE `faqs` DISABLE KEYS */;
-INSERT IGNORE INTO `faqs` (`id`, `question`, `answer`) VALUES (1,'Are these genuine Microsoft Office licenses?','Yes, all our licenses are genuine and sourced directly from authorized Microsoft distributors. Every license key is verified for authenticity before delivery.');
+INSERT IGNORE INTO `faqs` (`id`, `question`, `answer`) VALUES (1,'Are these genuine Microsoft Office licenses?','Yes, all our licenses are genuine and sourced from authorized software clearing houses. Every license key is verified for authenticity before delivery.');
 INSERT IGNORE INTO `faqs` (`id`, `question`, `answer`) VALUES (2,'What is a perpetual license?','A perpetual license means you own the software forever with a one-time purchase. There are no recurring subscription fees, and you can use the software for as long as you want.');
 INSERT IGNORE INTO `faqs` (`id`, `question`, `answer`) VALUES (3,'How quickly will I receive my license key?','License keys are delivered via email within 15-30 minutes of successful payment confirmation. You will receive download instructions along with your activation key.');
 INSERT IGNORE INTO `faqs` (`id`, `question`, `answer`) VALUES (4,'Can I install this on multiple computers?','Each license is valid for one device. If you need licenses for multiple computers, please contact our sales team for volume discounts.');

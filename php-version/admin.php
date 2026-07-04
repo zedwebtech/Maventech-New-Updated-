@@ -1078,9 +1078,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: admin.php?tab=company&msg=Schedule+removed'); exit;
     } elseif ($action === 'save_company_info') {
         // Single source of truth for company branding shown across all transactional emails.
-        setting_set('company_name',    trim($_POST['company_name']    ?? ''));
-        setting_set('company_email',   trim($_POST['company_email']   ?? ''));
-        setting_set('company_phone',   trim($_POST['company_phone']   ?? ''));
+        setting_set('company_name',        trim($_POST['company_name']        ?? ''));
+        // Legal-entity name (from EIN / articles-of-org).  Displayed only in
+        // the footer copyright line, printable PDFs and court-of-law-safe
+        // blocks.  Falls back to `company_name` + " LLC" when unset.
+        setting_set('company_legal_name',  trim($_POST['company_legal_name']  ?? ''));
+        setting_set('company_email',       trim($_POST['company_email']       ?? ''));
+        setting_set('company_phone',       trim($_POST['company_phone']       ?? ''));
         // Country-specific toll-free overrides (blank = use US default).
         foreach (['ca','uk','au','eu'] as $__cc) {
             setting_set('company_phone_' . $__cc, trim($_POST['company_phone_' . $__cc] ?? ''));
@@ -6684,8 +6688,13 @@ elseif ($tab === 'company'):
       <input type="hidden" name="company_logo" id="ciLogoUrl" value="<?= esc($co['logo']) ?>" data-testid="ci-logo-url">
       <div class="row g-3">
         <div class="col-md-6">
-          <label class="form-label small fw-semibold"><i class="bi bi-building me-1"></i>Company Name</label>
+          <label class="form-label small fw-semibold"><i class="bi bi-building me-1"></i>Trading Name <span class="text-muted fw-normal">(shown in nav, logo, headings)</span></label>
           <input class="form-control" name="company_name" value="<?= esc($co['name']) ?>" required data-testid="ci-name-input">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold"><i class="bi bi-shield-check me-1"></i>Legal Entity Name <span class="text-muted fw-normal">(from EIN / articles-of-org — used only in footer copyright, PDFs)</span></label>
+          <input class="form-control" name="company_legal_name" value="<?= esc($co['legal_name'] ?? '') ?>" placeholder="e.g. Maventech LLC" data-testid="ci-legal-name-input">
+          <div class="form-text small">Blank = auto-fills to "<span data-testid="ci-legal-name-fallback"><?= esc(($co['name'] ?? '') !== '' ? ($co['name'] . ' LLC') : 'Maventech LLC') ?></span>".</div>
         </div>
         <div class="col-md-6">
           <label class="form-label small fw-semibold"><i class="bi bi-envelope me-1"></i>Email Address</label>
@@ -6729,13 +6738,13 @@ elseif ($tab === 'company'):
           <div class="form-text small">New subscriber IDs use this + country code + number (e.g. <code><?= esc($co['id_prefix'] ?? 'MVN') ?>US00001</code>). Existing IDs are unchanged.</div>
         </div>
         <div class="col-12">
-          <?php $showAR = (setting_get('show_authorized_reseller_badge', '1') === '1'); ?>
+          <?php $showAR = (setting_get('show_authorized_reseller_badge', '0') === '1'); ?>
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 p-3" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
             <div class="flex-grow-1">
               <label class="form-check-label fw-semibold mb-1" for="ciShowARToggle" style="cursor:pointer;">
-                <i class="bi bi-patch-check-fill me-1 text-primary"></i>Show "Authorized Reseller" badge site-wide
+                <i class="bi bi-patch-check-fill me-1 text-primary"></i>Show "Genuine Licenses" badge site-wide
               </label>
-              <div class="text-secondary small">When enabled, the <strong>AUTHORIZED RESELLER</strong> tag appears next to your logo in the header, footer and checkout — alongside the Microsoft Verified Partner badge. Turn off if your OEM agreement is pending and you'd like to hide the claim across every page in one click.</div>
+              <div class="text-secondary small">When enabled, the <strong>GENUINE LICENSES</strong> tag appears next to your logo in the header, footer and checkout. <strong>Default is OFF</strong> — Microsoft brand-compliance requires independent resellers to avoid any wording that implies an official partnership (e.g. "Authorized Reseller", "Microsoft Verified"). Only enable this if you have written authorisation to use the badge.</div>
             </div>
             <div class="form-check form-switch mb-0" style="min-width:60px;">
               <input class="form-check-input" type="checkbox" role="switch" id="ciShowARToggle"
@@ -11138,9 +11147,10 @@ elseif ($tab === 'templates'):
           'installation_guide' => 'Installation guide steps',
           'review_url'      => 'Star-rating review link',
           'statement_name'  => 'Statement/merchant name',
-          'company_name'    => 'Company name',
-          'company_logo'    => 'Company logo image',
-          'company_address' => 'Company address',
+          'company_name'       => 'Trading name',
+          'company_legal_name' => 'Legal entity name',
+          'company_logo'       => 'Company logo image',
+          'company_address'    => 'Company address',
           'support_email'   => 'Support email',
           'support_phone'   => 'Support phone',
           'year'            => 'Current year',
