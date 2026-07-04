@@ -51,8 +51,20 @@ function regions_bootstrap(): void {
             ('AU', 'Australia',      'AUD', 'A$', 0.1000, 1),
             ('EU', 'Europe',         'EUR', '€',  0.2000, 1)");
         // Australia + Europe are live sales segments for this store, so make
-        // sure they're active (older seeds shipped EU inactive).
-        $pdo->exec("UPDATE regions SET active = 1 WHERE code IN ('AU','EU') AND active = 0");
+        // sure they're active on legacy installs (older seeds shipped EU
+        // inactive). This is a ONE-TIME migration — after it runs once we
+        // set `regions_au_eu_activated_v1=1` in settings so subsequent runs
+        // skip it. Without this guard the migration would keep re-activating
+        // AU/EU on every page load and override an admin who deliberately
+        // deactivated a region from Admin → Regions.
+        try {
+            if (function_exists('setting_get') && function_exists('setting_set')) {
+                if ((string)setting_get('regions_au_eu_activated_v1', '') !== '1') {
+                    $pdo->exec("UPDATE regions SET active = 1 WHERE code IN ('AU','EU') AND active = 0");
+                    setting_set('regions_au_eu_activated_v1', '1');
+                }
+            }
+        } catch (Throwable $e) { /* setting helpers not yet loaded — safe to skip */ }
 
         // products / orders / license_keys / customer_reviews need a `region` column.
         // Detect via INFORMATION_SCHEMA so this works on MySQL 5.6 / 5.7 / 8 / MariaDB.
