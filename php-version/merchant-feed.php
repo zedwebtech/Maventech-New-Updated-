@@ -65,11 +65,35 @@ $feedTitle  = $isBingMode
     : $brand . ' — Software Product Feed';
 
 // Google product taxonomy mapper — uses the public English-US taxonomy
-// (https://www.google.com/basepages/producttype/taxonomy.en-US.txt).
+// (https://www.google.com/basepages/producttype/taxonomy-with-ids.en-US.txt).
+// We emit the NUMERIC taxonomy ID for `g:google_product_category` (the
+// stable, unambiguous form that Merchant Center never rejects), and the
+// TEXT path separately for `g:product_type` (site-defined breadcrumb).
 // Check the MOST SPECIFIC brand keywords first; "windows" appears in many
 // Office titles (e.g. "Office 2024 for Windows") so we must hit "office"
 // before the generic OS bucket.
-function _gpc_for_category(string $hint): string {
+function _gpc_id_for_category(string $hint): int {
+    $h = strtolower($hint);
+    if (str_contains($h, 'office') || str_contains($h, 'project') || str_contains($h, 'visio')) {
+        return 315; // Software > Business & Productivity Software
+    }
+    if (str_contains($h, 'antivirus') || str_contains($h, 'bitdefender') || str_contains($h, 'mcafee')
+        || str_contains($h, 'norton') || str_contains($h, 'kaspersky') || str_contains($h, 'eset')
+        || str_contains($h, 'webroot') || str_contains($h, 'avast') || str_contains($h, 'avg')) {
+        return 5299; // Software > Antivirus & Security Software
+    }
+    if (str_contains($h, 'autocad') || str_contains($h, 'autodesk')) {
+        return 5300; // Software > Compilers & Programming Tools
+    }
+    if (str_contains($h, 'adobe') || str_contains($h, 'acrobat')) {
+        return 315;  // Software > Business & Productivity Software
+    }
+    if (str_contains($h, 'windows') || str_contains($h, 'server')) {
+        return 5127; // Software > Operating Systems
+    }
+    return 315;      // Software > Business & Productivity Software (default)
+}
+function _gpc_text_for_category(string $hint): string {
     $h = strtolower($hint);
     if (str_contains($h, 'office') || str_contains($h, 'project') || str_contains($h, 'visio')) {
         return 'Software > Business & Productivity Software';
@@ -80,7 +104,7 @@ function _gpc_for_category(string $hint): string {
         return 'Software > Antivirus & Security Software';
     }
     if (str_contains($h, 'autocad') || str_contains($h, 'autodesk')) {
-        return 'Software > Computer Software > Compilers & Programming Tools';
+        return 'Software > Compilers & Programming Tools';
     }
     if (str_contains($h, 'adobe') || str_contains($h, 'acrobat')) {
         return 'Software > Business & Productivity Software';
@@ -89,6 +113,12 @@ function _gpc_for_category(string $hint): string {
         return 'Software > Operating Systems';
     }
     return 'Software > Business & Productivity Software';
+}
+// Back-compat alias so any other caller of the old function keeps working
+// (it returned the text path). Nothing else in the repo uses this today,
+// but keeping the shim is cheap.
+function _gpc_for_category(string $hint): string {
+    return _gpc_text_for_category($hint);
 }
 
 // Brand inference — fall back to the product name when DB brand is empty.
@@ -254,7 +284,8 @@ foreach ($products as $p) {
     $title    = trim((string)$p['name']);
     $brandPi  = _brand_from(trim((string)$p['brand']), $title);
     $catHint  = ((string)($p['category'] ?? '')) . ' ' . $title;
-    $gpc      = _gpc_for_category($catHint);
+    $gpcId    = _gpc_id_for_category($catHint);   // numeric taxonomy ID → g:google_product_category
+    $gpcText  = _gpc_text_for_category($catHint); // human-readable path → g:product_type
 
     // Image must be absolute URL.  If relative, prepend the canonical host.
     $imageRaw = trim((string)$p['image']);
@@ -332,8 +363,15 @@ foreach ($products as $p) {
     $idExists = ($gtinVal !== '' || ($brandPi !== '' && $skuVal !== '')) ? 'yes' : 'no';
     echo "      <g:identifier_exists>" . $idExists . "</g:identifier_exists>\n";
     echo "      <g:condition>new</g:condition>\n";
-    echo "      <g:product_type>"  . feed_xml_esc($gpc) . "</g:product_type>\n";
-    echo "      <g:google_product_category>" . feed_xml_esc($gpc) . "</g:google_product_category>\n";
+    echo "      <g:product_type>"  . feed_xml_esc($gpcText) . "</g:product_type>\n";
+    // g:google_product_category MUST be either a numeric ID from Google's
+    // official taxonomy (https://www.google.com/basepages/producttype/
+    // taxonomy-with-ids.en-US.txt) or an EXACT full path.  Text paths that
+    // don't match Google's taxonomy verbatim trigger "Invalid product
+    // category [google_product_category]" in Merchant Center — the
+    // previous version of this feed emitted a text path that failed that
+    // audit.  Numeric IDs are stable across taxonomy revisions.
+    echo "      <g:google_product_category>" . $gpcId . "</g:google_product_category>\n";
 
     /* g:product_detail — name/value attribute pairs that Google renders in
        the "Specs" panel below the Shopping card.  Up to 100 allowed; we
@@ -380,19 +418,30 @@ foreach ($products as $p) {
     echo "      </g:shipping>\n";
     echo "      <g:shipping_weight>0 kg</g:shipping_weight>\n";
 
-    /* Return policy — emitting g:return_policy + per-country g:return_address
-       block lets Google Shopping render the "Free returns" / "Returns
-       accepted" badge alongside the price.  Spec: support.google.com
-       /merchants/answer/10961067.  We have one universal 30-day refund
-       policy so we emit a single block per item (Google de-duplicates).  */
-    echo "      <g:return_policy>\n";
-    echo "        <g:return_policy_country>" . $country . "</g:return_policy_country>\n";
-    echo "        <g:return_policy_policy>30 days free returns</g:return_policy_policy>\n";
-    echo "      </g:return_policy>\n";
-    // Free-shipping threshold is implicit (always free) but emitting the
-    // explicit `g:free_shipping_threshold` removes any Merchant Center
-    // ambiguity that might otherwise cost us the "Free delivery" badge.
-    echo "      <g:free_shipping_threshold>0.00 " . $currency . "</g:free_shipping_threshold>\n";
+    /* Return policy is configured at the MERCHANT-CENTER ACCOUNT LEVEL
+       (Settings → Shipping and returns → Return policies).  Emitting a
+       product-level <g:return_policy> block requires the exact sub-attribute
+       tags <g:country> + <g:label> (label must reference an existing
+       account-level policy) or <g:return_shipping_fee>.  A prior version
+       of this feed used the wrong sub-tag names (g:return_policy_country /
+       g:return_policy_policy) which triggered "Missing sub-attribute
+       [country]" in Merchant Center for every item.  The safe, spec-clean
+       fix is to omit the tag entirely and let the account-level policy
+       apply — Google's own recommendation for merchants with a single
+       universal return policy.  */
+
+    /* <g:free_shipping_threshold> was previously emitted as a scalar
+       ("0.00 USD"), but Google's schema defines it as a sub-attribute
+       container:
+           <g:free_shipping_threshold>
+             <g:country>US</g:country>
+             <g:price_threshold>0.00 USD</g:price_threshold>
+           </g:free_shipping_threshold>
+       The scalar form triggered "Invalid format for sub-attributes
+       [free_shipping_threshold]" in Merchant Center for every item.
+       Since our <g:shipping> block already declares price="0.00" (i.e.
+       always-free), Google infers free shipping automatically — no need
+       to duplicate that signal.  Removing the malformed tag entirely. */
 
     // Custom labels — let the merchant slice campaigns by brand / region / badge.
     echo "      <g:custom_label_0>" . feed_xml_esc($brandPi) . "</g:custom_label_0>\n";

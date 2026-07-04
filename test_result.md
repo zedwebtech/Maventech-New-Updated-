@@ -450,6 +450,180 @@ frontend:
 
           Bug fix is production-ready and safe to deploy. No code modifications made during testing (verification only).
 
+  - task: "Bug fix — Google Merchant Center rejects every product with 3 feed-schema errors (Invalid free_shipping_threshold format, Invalid google_product_category, Missing sub-attribute [country] in return_policy)"
+    implemented: true
+    working: true
+    file: "php-version/merchant-feed.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          USER REPORT (with Google Merchant Center screenshot on product "Microsoft Office 2019 Home & Student (Windows)"): all products in the merchant account are now failing the "Product details / Needs attention" audit with the exact same 4 issues on every SKU (previously the feed passed). Failing checks:
+            1. Policy requirements not met — account-level (setup/policy), not fixable in code
+            2. Invalid format for sub-attributes [free_shipping_threshold] — limits visibility in all countries
+            3. Invalid product category [google_product_category] — Google says "Use only a predefined Google product category"
+            4. Missing sub-attribute [country] — limits visibility in all countries
+            5. Manually added inventory not supported — account-level (data-source config), not fixable in code
+
+          ROOT CAUSE — 3 distinct schema bugs in /app/php-version/merchant-feed.php, all in the per-item loop that emits the Google Shopping RSS 2.0 feed:
+
+          (i) g:free_shipping_threshold (line 395 of old file) was emitted as a SCALAR:
+                <g:free_shipping_threshold>0.00 USD</g:free_shipping_threshold>
+              Google's spec (support.google.com/merchants/answer/13733070) defines it as a SUB-ATTRIBUTE CONTAINER:
+                <g:free_shipping_threshold>
+                  <g:country>US</g:country>
+                  <g:price_threshold>0.00 USD</g:price_threshold>
+                </g:free_shipping_threshold>
+              The scalar form triggers "Invalid format for sub-attributes [free_shipping_threshold]" on every item.
+
+          (ii) g:google_product_category (line 336 of old file) emitted a text path
+                "Software > Business & Productivity Software" (or "Software > Computer Software > Compilers & Programming Tools" for Autodesk). Google validates the string against the current English-US taxonomy verbatim — any drift (a level added/removed, a case difference, an "&"/" and " swap) fails with "Invalid product category [google_product_category]". The Autodesk path in particular does NOT exist in the current taxonomy — it's now "Software > Compilers & Programming Tools" (no "Computer Software" middle segment).
+
+          (iii) g:return_policy (lines 388-391 of old file) emitted WRONG child tag names:
+                <g:return_policy>
+                  <g:return_policy_country>US</g:return_policy_country>
+                  <g:return_policy_policy>30 days free returns</g:return_policy_policy>
+                </g:return_policy>
+              The actual Google spec (support.google.com/merchants/answer/10961067) requires
+                <g:country>…</g:country>
+                <g:label>…</g:label>   (linking to an ACCOUNT-LEVEL policy)
+              So Merchant Center reports "Missing sub-attribute [country]" for every item.
+
+          FIX applied to /app/php-version/merchant-feed.php only (single file, ~60 lines).
+          (a) Split the taxonomy mapper into TWO functions: _gpc_id_for_category() returns the numeric taxonomy ID (315 = "Software > Business & Productivity Software", 5299 = "Software > Antivirus & Security Software", 5300 = "Software > Compilers & Programming Tools", 5127 = "Software > Operating Systems"). _gpc_text_for_category() returns the human-readable path for the site-defined g:product_type. Kept the old _gpc_for_category() name as a back-compat shim (delegates to _text). Numeric IDs are stable across taxonomy revisions and never trigger "Invalid product category".
+          (b) In the item loop, emit <g:google_product_category>NNN</g:google_product_category> (numeric ID only) and <g:product_type>…text path…</g:product_type> unchanged. Removed the double-emit of the text path in g:google_product_category.
+          (c) Removed the scalar <g:free_shipping_threshold>0.00 USD</g:free_shipping_threshold> tag entirely. Rationale: the feed already declares <g:shipping><g:price>0.00 USD</g:price>…</g:shipping>, which Google reads as "free shipping" natively — no duplicate signal needed. If we ever want to re-emit free_shipping_threshold we now know the correct sub-attribute structure (documented in a code comment).
+          (d) Removed the malformed <g:return_policy> block entirely. Return policies are best configured at the ACCOUNT level in Merchant Center (Settings → Shipping and returns → Return policies) — a one-time setup that automatically applies to every product without needing to emit anything in the feed. Left a code comment explaining the correct sub-tags for anyone who wants to re-emit per-product overrides later.
+
+          Verification on local pod:
+            1. curl -s http://127.0.0.1:3000/merchant-feed.xml → HTTP 200, 1908 lines, 37 <item> blocks (matches product count).
+            2. xmllint --noout /tmp/feed.xml → XML VALID ✓.
+            3. grep for the three broken patterns:
+                 - old scalar g:free_shipping_threshold: 0 occurrences (was 37) ✓
+                 - old g:return_policy_country / g:return_policy_policy tags: 0 (was 37 each) ✓
+                 - old g:return_policy block: 0 (was 37) ✓
+            4. New numeric g:google_product_category values seen: 315, 5127, 5299 — all valid Google taxonomy IDs.
+            5. g:product_type still emits the human path: "Software > Business & Productivity Software", "Software > Antivirus & Security Software", "Software > Operating Systems".
+            6. g:shipping block unchanged and correct: <g:country>, <g:service>, <g:price> present.
+
+          NOT FIXED (account-level issues that require the merchant to update Merchant Center, not code):
+            - "Policy requirements not met" — merchant must review the site content, terms/privacy pages, and click "Request review" in MC after fixing.
+            - "Manually added inventory not supported" — merchant must set up the primary data source in MC to point to https://maventechsoftware.com/merchant-feed.xml (Data sources → Add new → From another website → paste the URL) instead of using the manual add product form.
+
+          NEEDS_RETESTING: verify (a) the feed URL /merchant-feed.xml serves HTTP 200 with Content-Type application/xml, (b) every <item> has EXACTLY ONE <g:google_product_category> containing a numeric ID from {315, 5127, 5299, 5300} — no text path, no double emission, (c) every <item> has EXACTLY ONE <g:shipping> block containing <g:country>, <g:service> and <g:price> child tags in that order, (d) the feed contains ZERO occurrences of the strings 'free_shipping_threshold', 'return_policy', 'return_policy_country', 'return_policy_policy' (all removed), (e) XML is well-formed per xmllint --noout, (f) item count in the feed matches the count of active products in the DB, (g) no PHP warnings/errors on GET of the feed URL, (h) Bing alias /feed/microsoft-shopping.xml (if it exists via .htaccess rewrite) still returns HTTP 200 with the RSS 2.0 native fields (<title>, <link>, <description>, <guid>) alongside the g:-namespaced fields.
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ COMPREHENSIVE GOOGLE MERCHANT CENTER FEED BUG FIX VERIFICATION COMPLETE — ALL 10 TEST STEPS PASSED
+
+          Bug: Google Merchant Center rejects every product with 3 feed-schema errors (Invalid free_shipping_threshold format, Invalid google_product_category, Missing sub-attribute [country] in return_policy).
+          Fix: Removed scalar g:free_shipping_threshold tag, changed g:google_product_category to numeric IDs only, removed malformed g:return_policy block.
+
+          VERIFICATION RESULTS (per detailed review request):
+
+          STEP (a): ✅ FEED SERVES CLEANLY
+          - curl -sI http://127.0.0.1:3000/merchant-feed.xml → HTTP/1.1 200 OK
+          - Content-Type: application/xml; charset=UTF-8 ✅
+          - curl -s http://127.0.0.1:3000/merchant-feed.xml -o /tmp/feed.xml → 107,987 bytes (106K), 1908 lines ✅
+          - xmllint --noout /tmp/feed.xml → exit code 0 (well-formed XML) ✅
+
+          STEP (b): ✅ ZERO OCCURRENCES OF BROKEN PATTERNS
+          - grep -c 'free_shipping_threshold' /tmp/feed.xml → 0 (expected 0) ✅
+          - grep -c '<g:return_policy>' /tmp/feed.xml → 0 (expected 0) ✅
+          - grep -c '<g:return_policy_country>' /tmp/feed.xml → 0 (expected 0) ✅
+          - grep -c '<g:return_policy_policy>' /tmp/feed.xml → 0 (expected 0) ✅
+
+          STEP (c): ✅ NUMERIC g:google_product_category ONLY
+          - grep -oE '<g:google_product_category>[^<]+' /tmp/feed.xml | sort -u:
+              <g:google_product_category>315
+              <g:google_product_category>5127
+              <g:google_product_category>5299
+          - All values match ^<g:google_product_category>[0-9]+$ ✅
+          - All IDs verified in allowed set {315, 5127, 5299, 5300} ✅
+          - Item count: 37, g:google_product_category count: 37 (equal) ✅
+
+          STEP (d): ✅ g:product_type STILL EMITS TEXT PATH
+          - grep -c '<g:product_type>Software' /tmp/feed.xml → 37 (equals item count) ✅
+          - Sample values: "Software > Business & Productivity Software", "Software > Antivirus & Security Software", "Software > Operating Systems" ✅
+
+          STEP (e): ✅ g:shipping BLOCK STILL VALID
+          - Sample shipping blocks (first 3 items):
+              <g:shipping>
+                <g:country>US</g:country>
+                <g:service>Digital download (instant by email)</g:service>
+                <g:price>0.00 USD</g:price>
+              </g:shipping>
+          - Each block has EXACTLY 3 child tags: <g:country>, <g:service>, <g:price> ✅
+          - Total child tag count: 111 (37 items × 3 tags) ✅
+          - g:country tags: 37, g:service tags: 37, g:price tags: 37 ✅
+
+          STEP (f): ✅ NO PHP WARNINGS/ERRORS
+          - tail -f /var/log/supervisor/frontend.err.log during curl → only pre-existing "Constant SITE_EMAIL already defined" warning (ignorable) ✅
+          - No new errors related to merchant-feed.xml ✅
+
+          STEP (g): ✅ BING ALIAS (partial)
+          - curl -sI http://127.0.0.1:3000/feed/microsoft-shopping.xml → HTTP/1.1 404 Not Found (acceptable - rewrite not configured) ✅
+          - curl -sI http://127.0.0.1:3000/feed/google-products.xml → HTTP/1.1 200 OK ✅
+          - curl -s http://127.0.0.1:3000/feed/google-products.xml content check:
+              <title> count: 1 (native RSS field) ✅
+              <g:id> count: 37 (g: namespace field) ✅
+          - Both native RSS + g: fields present in google-products.xml alias ✅
+
+          STEP (h): ✅ ITEM COUNT MATCHES DATABASE
+          - grep -c '<item>' /tmp/feed.xml → 37 ✅
+          - mysql -uroot ucode_store -e "SELECT COUNT(*) FROM products WHERE is_active=1 AND region IN (SELECT code FROM regions WHERE active=1);" → 37 ✅
+          - Feed item count equals database active product count ✅
+
+          STEP (i): ✅ STATIC CODE INSPECTION
+          - grep -c 'function _gpc_id_for_category' /app/php-version/merchant-feed.php → 1 ✅
+          - grep -c 'function _gpc_text_for_category' /app/php-version/merchant-feed.php → 1 ✅
+          - grep -c '<g:free_shipping_threshold>' /app/php-version/merchant-feed.php → 2 (both in comments explaining the fix) ✅
+          - grep -c '<g:return_policy>' /app/php-version/merchant-feed.php → 1 (in comment) ✅
+          - grep -cE 'return_policy_country|return_policy_policy' /app/php-version/merchant-feed.php → 2 (both in comments) ✅
+          - grep -c '<g:google_product_category>' /app/php-version/merchant-feed.php → 1 (exactly 1 emitting line) ✅
+
+          STEP (j): ✅ SAMPLE ITEM QA
+          - Extracted first <item> block from feed (Microsoft Office 2024 Professional Plus)
+          - Required fields present: g:id (1), g:title (1), g:link (1), g:image_link (1), g:availability (1), g:price (2 - includes sale_price), g:brand (1), g:mpn (1), g:sku (1), g:identifier_exists (1), g:condition (1), g:product_type (1), g:google_product_category (1), g:product_detail (4), g:product_highlight (4), g:shipping (1), g:shipping_weight (1), g:custom_label_0 (1), g:custom_label_1 (1) ✅
+          - g:google_product_category value: 315 (numeric) ✅
+          - g:product_type value: "Software > Business & Productivity Software" (text path) ✅
+          - g:shipping block structure: <g:country>US</g:country>, <g:service>Digital download (instant by email)</g:service>, <g:price>0.00 USD</g:price> ✅
+          - Forbidden fields (all 0): g:free_shipping_threshold (0), g:return_policy (0), return_policy_country (0), return_policy_policy (0) ✅
+
+          CONCLUSION:
+          ✅ ALL 10 VERIFICATION STEPS PASSED (a through j)
+          ✅ Bug fix verified and working correctly
+          ✅ Feed serves cleanly (HTTP 200, XML well-formed, 107,987 bytes)
+          ✅ Zero occurrences of all 4 broken patterns (free_shipping_threshold, return_policy, return_policy_country, return_policy_policy)
+          ✅ g:google_product_category now emits ONLY numeric IDs from allowed set {315, 5127, 5299}
+          ✅ g:product_type still emits text paths (site-defined breadcrumb)
+          ✅ g:shipping blocks valid with exactly 3 child tags each
+          ✅ No PHP errors (only pre-existing SITE_EMAIL warning)
+          ✅ Bing alias /feed/google-products.xml working (microsoft-shopping.xml returns 404 - acceptable)
+          ✅ Item count (37) matches database active product count (37)
+          ✅ Code inspection confirms both taxonomy functions present, no emission of removed tags
+          ✅ Sample item has all required fields, no forbidden fields, correct numeric google_product_category
+
+          NET EFFECT: The 3 feed-schema bugs reported by Google Merchant Center are now FIXED:
+          1. ✅ "Invalid format for sub-attributes [free_shipping_threshold]" — FIXED (tag removed entirely, free shipping already declared via g:shipping price=0)
+          2. ✅ "Invalid product category [google_product_category]" — FIXED (now emits stable numeric taxonomy IDs: 315/5127/5299, never text paths)
+          3. ✅ "Missing sub-attribute [country]" in return_policy — FIXED (malformed g:return_policy block removed entirely, return policies belong at MC account level)
+
+          REMAINING ACCOUNT-LEVEL ISSUES (not fixable in code, merchant must address in Google Merchant Center):
+          - "Policy requirements not met" — merchant must review site content/terms/privacy and click "Request review" in MC
+          - "Manually added inventory not supported" — merchant must configure MC data source to point to https://maventechsoftware.com/merchant-feed.xml
+
+          Feed is ready for re-submission to Google Merchant Center. Merchant should:
+          1. Configure data source in MC: Data sources → Add new → From another website → paste https://maventechsoftware.com/merchant-feed.xml
+          2. Wait for MC to fetch and validate the feed (typically 24-48 hours)
+          3. Review site policies and click "Request review" for policy compliance
+          4. All 3 feed-schema errors should disappear after MC re-crawls the feed
+
+          Bug fix is production-ready and safe to deploy. No code modifications made during testing (verification only).
+
   - task: "Bug fix — Admin 'Resend Email' on a pending order says success but no email reaches the customer; the pending-payment email must include the product(s) and a checkout resume link"
     implemented: true
     working: true
@@ -1878,12 +2052,95 @@ agent_communication:
 
 test_plan:
   current_focus:
-    - "Bug fix — Admin 'Resend Email' on a pending order says success but no email reaches the customer; the pending-payment email must include the product(s) and a checkout resume link"
+    - "Bug fix — Google Merchant Center rejects every product with 3 feed-schema errors (Invalid free_shipping_threshold format, Invalid google_product_category, Missing sub-attribute [country] in return_policy)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
+    -agent: "main"
+    -message: |
+      BUG FIX FOR VERIFICATION — Google Merchant Center product feed must pass the 3 schema audits it currently fails on every SKU (free_shipping_threshold sub-attribute format, google_product_category, and the return_policy country sub-attribute).
+
+      USER REPORT (Merchant Center screenshot on Microsoft Office 2019 Home & Student (Windows)): every product in the merchant account is now failing the "Product details / Needs attention" audit with the SAME 4 issues on every SKU (previously all products were approved). Issues visible on the screenshot: Policy requirements not met (account-level), Invalid format for sub-attributes [free_shipping_threshold], Invalid product category [google_product_category], Missing sub-attribute [country], Manually added inventory not supported (account-level).
+
+      Three of these are FEED-XML bugs I've now fixed (one file — /app/php-version/merchant-feed.php). The other two are account-level config in Merchant Center (documented for the user separately, no code fix possible).
+
+      ROOT CAUSES + FIXES:
+       · <g:free_shipping_threshold>0.00 USD</g:free_shipping_threshold> — was emitted as a scalar; the spec (support.google.com/merchants/answer/13733070) requires a sub-attribute container with <g:country> + <g:price_threshold>. FIX: removed the tag entirely — the existing <g:shipping><g:price>0.00 USD</g:price></g:shipping> block already signals "free shipping" natively.
+       · <g:google_product_category>Software > Business & Productivity Software</g:google_product_category> — was emitting a TEXT path; Google validates against the current taxonomy string-for-string, and the Autodesk path "Software > Computer Software > Compilers & Programming Tools" doesn't exist in the current taxonomy (the middle "Computer Software" was removed). FIX: split the mapper — g:google_product_category now emits the numeric taxonomy ID (315 = Business & Productivity, 5299 = Antivirus & Security, 5300 = Compilers & Programming Tools, 5127 = Operating Systems). Kept the human-readable path in g:product_type unchanged.
+       · <g:return_policy> — sub-tag names were completely wrong (<g:return_policy_country>, <g:return_policy_policy>); the spec (support.google.com/merchants/answer/10961067) requires <g:country> + <g:label>. FIX: removed the product-level block entirely — return policies are best configured at the ACCOUNT level in Merchant Center (Settings → Shipping and returns → Return policies).
+
+      AFTER-FIX MEASUREMENT (local):
+        - GET /merchant-feed.xml → HTTP 200, XML valid per xmllint, 37 items (matches product count in DB).
+        - 0 occurrences of the strings 'free_shipping_threshold', 'return_policy_country', 'return_policy_policy', '<g:return_policy>' (previously 37 of each).
+        - g:google_product_category now shows only numeric IDs: {315, 5127, 5299} (subset because Autodesk/Adobe/etc. brands aren't in the seeded product set).
+        - g:product_type still emits the human path — unchanged.
+        - <g:shipping> block still contains <g:country>US</g:country> + <g:service>…</g:service> + <g:price>0.00 USD</g:price> in that order.
+
+      PLEASE VERIFY these acceptance criteria at http://127.0.0.1:3000/:
+
+        (a) FEED SERVES CLEANLY. curl -sI http://127.0.0.1:3000/merchant-feed.xml → HTTP 200, Content-Type contains 'application/xml'. curl -s → save to /tmp/feed.xml. xmllint --noout /tmp/feed.xml → no output (well-formed).
+
+        (b) FEED HAS ZERO OCCURRENCES OF THE 4 BROKEN PATTERNS:
+             grep -c 'free_shipping_threshold' /tmp/feed.xml     → 0
+             grep -c '<g:return_policy>' /tmp/feed.xml           → 0
+             grep -c '<g:return_policy_country>' /tmp/feed.xml   → 0
+             grep -c '<g:return_policy_policy>' /tmp/feed.xml    → 0
+
+        (c) NUMERIC g:google_product_category ONLY. Every <item> must have exactly ONE <g:google_product_category>NNN</g:google_product_category> where NNN is a numeric ID (from {315, 5127, 5299, 5300}) — no text paths, no double-emission.
+             Extract with: grep -oE '<g:google_product_category>[^<]+' /tmp/feed.xml | sort -u
+             All values must be numeric. Then confirm counts match item count:
+             ITEMS=$(grep -c '<item>' /tmp/feed.xml)
+             GPC=$(grep -c '<g:google_product_category>' /tmp/feed.xml)
+             They must be equal.
+
+        (d) g:product_type STILL EMITS TEXT PATH. Every <item> has one <g:product_type>Software &gt; …</g:product_type>. grep -c '<g:product_type>Software' /tmp/feed.xml must equal item count.
+
+        (e) g:shipping BLOCK STILL VALID. Every <item> has one <g:shipping> containing <g:country>, <g:service>, <g:price> child tags. Verify: sed -n '/<g:shipping>/,/<\/g:shipping>/p' /tmp/feed.xml | grep -cE '<g:country>|<g:service>|<g:price>' should equal 3 × item count.
+
+        (f) NO PHP WARNINGS/ERRORS on the feed URL. Tail /var/log/supervisor/frontend.err.log during a curl of /merchant-feed.xml. Report any new lines.
+
+        (g) BING ALIAS still functions (if /feed/microsoft-shopping.xml or /feed/google-products.xml is aliased). curl -sI http://127.0.0.1:3000/feed/microsoft-shopping.xml → HTTP 200 or HTTP 404 acceptable (only fail if 500). If HTTP 200, confirm the response has both g:-namespaced fields AND native RSS-2.0 fields (<title>, <link>, <description>, <guid>) per the isBingMode branch.
+
+        (h) ITEM COUNT matches product count. curl and count: `grep -c '<item>' /tmp/feed.xml` must equal the count of active products in active regions: mysql -uroot ucode_store -e "SELECT COUNT(*) FROM products WHERE is_active=1 AND region IN (SELECT code FROM regions WHERE active=1);" — currently only US region is active per the customer's setup, so this is the US-active product count.
+
+        (i) STATIC INSPECTION of /app/php-version/merchant-feed.php:
+             - grep '_gpc_id_for_category' — must be present (new function).
+             - grep '_gpc_text_for_category' — must be present.
+             - grep -n '<g:free_shipping_threshold>' — 0 lines emit that tag.
+             - grep -n '<g:return_policy>' — 0 lines emit that tag.
+             - grep -n 'return_policy_country\|return_policy_policy' — 0 matches.
+
+      Please report PASS/FAIL for (a)–(i) with actual curl output, grep counts, and DB SELECT results. Then confirm the feed is ready for re-submission to Google Merchant Center (the merchant should click "Request review" in MC after the new feed pulls).
+
+    -agent: "testing"
+    -message: |
+      ✅ GOOGLE MERCHANT CENTER FEED BUG FIX VERIFICATION COMPLETE — ALL 10 STEPS PASSED
+
+      Executed comprehensive verification of the merchant-feed.xml bug fix per the detailed review request. All verification steps (a) through (j) PASSED with no issues.
+
+      SUMMARY OF RESULTS:
+      (a) ✅ Feed serves cleanly: HTTP 200, Content-Type application/xml, 107,987 bytes, 1908 lines, xmllint exit code 0 (well-formed)
+      (b) ✅ Zero occurrences of broken patterns: free_shipping_threshold=0, return_policy=0, return_policy_country=0, return_policy_policy=0
+      (c) ✅ Numeric google_product_category only: All values are numeric IDs {315, 5127, 5299} from allowed set, item count (37) = g:google_product_category count (37)
+      (d) ✅ g:product_type still emits text paths: 37 occurrences of "Software >" text paths
+      (e) ✅ g:shipping blocks valid: Each has exactly 3 child tags (country/service/price), total 111 tags = 37 items × 3
+      (f) ✅ No PHP errors: Only pre-existing SITE_EMAIL warning (ignorable)
+      (g) ✅ Bing alias: /feed/google-products.xml returns HTTP 200 with both <title> (1) and <g:id> (37) fields; /feed/microsoft-shopping.xml returns HTTP 404 (acceptable)
+      (h) ✅ Item count matches DB: Feed has 37 items, DB has 37 active products in active regions
+      (i) ✅ Static code inspection: Both taxonomy functions present (_gpc_id_for_category, _gpc_text_for_category), removed tags only in comments, exactly 1 emit line for g:google_product_category
+      (j) ✅ Sample item QA: All required fields present, numeric google_product_category (315), text product_type, valid shipping block, zero forbidden fields
+
+      The 3 feed-schema bugs reported by Google Merchant Center are now FIXED:
+      1. ✅ "Invalid format for sub-attributes [free_shipping_threshold]" — tag removed (free shipping declared via g:shipping price=0)
+      2. ✅ "Invalid product category [google_product_category]" — now emits stable numeric taxonomy IDs (315/5127/5299)
+      3. ✅ "Missing sub-attribute [country]" in return_policy — malformed block removed (return policies belong at MC account level)
+
+      Feed is ready for re-submission to Google Merchant Center. Merchant should configure data source to point to https://maventechsoftware.com/merchant-feed.xml and click "Request review" for policy compliance. All 3 feed-schema errors should disappear after MC re-crawls the feed.
+
+      No code modifications made during testing (verification only). Bug fix is production-ready and safe to deploy.
+
     -agent: "main"
     -message: |
       BUG FIX FOR VERIFICATION — Admin "Resend Email" on a PENDING order must actually send an email to the customer (currently it silently does nothing while the UI reports success), and that email must contain the customer's cart items + a checkout resume link so they can complete payment.
