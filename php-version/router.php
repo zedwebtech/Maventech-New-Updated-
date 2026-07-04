@@ -73,18 +73,17 @@ if ($__hostHdr !== ''
     && !preg_match('/^(localhost|127\.0\.0\.1|0\.0\.0\.0)(:|$)/i', $__hostHdr)) {
     // Try to load the canonical-host preference without booting the full app
     // (settings table not always available on a fresh container).
-    // Default = 'www' because Google Search Console has already chosen
-    // https://www.maventechsoftware.com/ as the canonical for the site
-    // (see the "Duplicate, Google chose different canonical than user"
-    // report). Redirecting naked → www keeps the choice consistent and
-    // stops the duplicate-content warning.
-    $__pref = 'www';
+    // Default = 'naked' — most shared-hosting SSL certificates only cover
+    // the naked host; redirecting naked → www on a naked-only cert triggers
+    // NET::ERR_CERT_COMMON_NAME_INVALID. Admin can flip to 'www' from the
+    // SEO settings once a wildcard/SAN cert is installed for the www host.
+    $__pref = 'naked';
     try {
         require_once __DIR__ . '/config.php';
         require_once __DIR__ . '/includes/db.php';
         if (function_exists('setting_get')) {
-            $__pref = strtolower((string)setting_get('seo_canonical_host_pref', 'www'));
-            if (!in_array($__pref, ['naked', 'www'], true)) $__pref = 'www';
+            $__pref = strtolower((string)setting_get('seo_canonical_host_pref', 'naked'));
+            if (!in_array($__pref, ['naked', 'www'], true)) $__pref = 'naked';
         }
     } catch (Throwable $e) { /* fall through to default */ }
 
@@ -93,7 +92,15 @@ if ($__hostHdr !== ''
     if ($__isWww !== $__wantWww) {
         $__targetHost = $__wantWww ? ('www.' . preg_replace('/^www\./', '', $__hostHdr))
                                    : preg_replace('/^www\./', '', $__hostHdr);
-        $__scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        // Preserve the incoming scheme; never force HTTPS from a plain-HTTP
+        // request (a missing/mismatched cert on the target host would produce
+        // ERR_CERT_* in the browser). Cloudflare/ingress sets X-Forwarded-Proto.
+        $__fwdProto = strtolower(trim((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')));
+        if ($__fwdProto === 'https' || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')) {
+            $__scheme = 'https';
+        } else {
+            $__scheme = 'http';
+        }
         header('Location: ' . $__scheme . '://' . $__targetHost . ($_SERVER['REQUEST_URI'] ?? '/'), true, 301);
         return true;
     }

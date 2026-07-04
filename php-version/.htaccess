@@ -183,21 +183,33 @@ RewriteRule ^([a-zA-Z0-9_\-/]+?)/?$ $1.php [L,QSA]
 #      get split across hosts.  Set ENV `SEO_CANONICAL_HOST` to either
 #      'naked' or 'www' to flip the preference site-wide.
 #
-#      DEFAULT = 'www' because Google Search Console has already chosen
-#      https://www.maventechsoftware.com/ as the canonical for the site
-#      (see the "Duplicate, Google chose different canonical than user"
-#      report). Redirecting naked → www keeps the choice consistent.
+#      DEFAULT = 'naked' — most shared-hosting SSL certificates (Let's
+#      Encrypt / cPanel AutoSSL) are issued only for the naked host
+#      unless a separate cert (or SAN) is added for the "www." subdomain.
+#      Redirecting naked → www on a naked-only cert triggers
+#      NET::ERR_CERT_COMMON_NAME_INVALID in the browser. Keeping the
+#      default at 'naked' matches the most common cert setup and can be
+#      flipped to 'www' with `SetEnv SEO_CANONICAL_HOST www` in .htaccess
+#      or the host's control panel once a wildcard/SAN cert is in place.
 #      ---------------------------------------------------------------- */
 SetEnvIfNoCase Host ^www\. IS_WWW=1
-# Default: redirect naked → www
-RewriteCond %{ENV:SEO_CANONICAL_HOST} !=naked
+# Default: redirect www → naked (only when the current request is already HTTPS
+# — never redirect into HTTPS if the client is on plain HTTP, otherwise a
+# missing/mismatched cert on the target host produces ERR_CERT_* in the browser).
+RewriteCond %{ENV:SEO_CANONICAL_HOST} !=www
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteCond %{HTTPS} =on [OR]
+RewriteCond %{HTTP:X-Forwarded-Proto} =https
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+# Opposite: redirect naked → www when the admin explicitly opts in via
+# SEO_CANONICAL_HOST=www (only makes sense when the SSL cert covers the
+# "www." subdomain — otherwise leave the default).
+RewriteCond %{ENV:SEO_CANONICAL_HOST} =www
 RewriteCond %{HTTP_HOST} !^www\. [NC]
 RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+)(:|$) [NC]
+RewriteCond %{HTTPS} =on [OR]
+RewriteCond %{HTTP:X-Forwarded-Proto} =https
 RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-# Opposite: redirect www → naked when SEO_CANONICAL_HOST=naked
-RewriteCond %{ENV:SEO_CANONICAL_HOST} =naked
-RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 
 # ---- Disable PHP / shell execution inside uploads/ ----
 # Enforced by uploads/.htaccess (FilesMatch deny + RemoveHandler). A <Directory>
