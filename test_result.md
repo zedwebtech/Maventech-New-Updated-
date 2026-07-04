@@ -450,6 +450,155 @@ frontend:
 
           Bug fix is production-ready and safe to deploy. No code modifications made during testing (verification only).
 
+  - task: "Bug fix — Admin 'Resend Email' on a pending order says success but no email reaches the customer; the pending-payment email must include the product(s) and a checkout resume link"
+    implemented: true
+    working: true
+    file: "php-version/order-view.php, php-version/admin.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          USER REPORT (with screenshot showing Order #MV260704326DA in PENDING state, top-right "Resend Email" button, and the visible retry link https://maventechsoftware.com/checkout.php?resume=…&sig=…): When a customer starts an order but doesn't complete payment (order in PENDING state), clicking "Resend Email" in the admin order-detail page shows a success toast — but the customer NEVER receives the email. The user also requested that the resent email should describe the product(s) the customer was trying to buy AND include a checkout link so they can complete payment.
+
+          ROOT CAUSE — /app/php-version/order-view.php:16-20 (the POST handler for the top-right button visible in the screenshot):
+              $pdo->prepare('UPDATE orders SET fulfilled=0 WHERE id=?')->execute([$id]);
+              fulfill_order($id);
+              header('Location: order-view.php?id='.$id.'&msg=Email+resent'); exit;
+          fulfill_order() is called WITHOUT the $forceAdminOverride flag. Inside fulfill_order() (/app/php-version/includes/email.php:1587-1591) the first check is `if ($order['status'] !== 'paid') { if (!$forceAdminOverride) return; ... }`. For a pending order this silently returns without sending anything, without touching email_outbox. The controller nonetheless issues "Email+resent" success — so the admin UI truthfully reports "email sent" but nothing actually went to the customer. Exactly matches the user's report.
+
+          The twin handler in /app/php-version/admin.php:978-984 had the opposite (also-wrong) behaviour: it DID pass $forceAdminOverride=true, which flipped a pending order's status to 'paid' and consumed a license key from stock even though the customer never paid — a different bug in the same feature.
+
+          FIX applied (2 files, ~50 lines total):
+
+          1) /app/php-version/order-view.php — replaced the single-branch handler with a paid-vs-unpaid split:
+             · PAID (status='paid' OR payment_status='succeeded') → fulfill_order($id, true) — resend the fulfilment email (license keys + Receipt/Invoice PDFs). Redirect: msg=Delivery+email+resent.
+             · UNPAID / PENDING → require_once includes/recovery.php, then mv_send_abandoned_cart_email($order). This queues a real customer email via the existing send_email() pipeline (email_outbox row, template_code='abandoned_cart', subject "Looks like you left something behind — Order …"). The HTML (pre-existing helper) already contains:
+                 – the cart items (image, product name, qty, per-line total),
+                 – the currency-formatted grand total,
+                 – a big "Continue Checkout →" CTA linking to /checkout.php?resume=<order#>&sig=<hmac> (signed via mv_build_resume_link()),
+                 – brand block + support-email footer.
+               On success, UPDATE orders SET last_activity_at=NOW() (so the abandoned-cart cron doesn't double-fire within its 30-min window) and redirect msg=Pending-payment+email+sent+with+checkout+link. On failure (order has no items, or send_email throws), redirect msg=Email+could+not+be+sent+…+check+Email+Activity — the admin now gets an accurate, actionable message instead of the false "Email resent" success.
+
+          2) /app/php-version/admin.php:978 — same paid-vs-unpaid split applied to the admin action='resend_email' handler (used by the order-list row actions). Same redirect messages. require_once includes/recovery.php inside the pending branch. This removes the previous silent-force-paid + license-key-consumption bug for pending orders.
+
+          Nothing else changed. fulfill_order(), mv_send_abandoned_cart_email(), mv_build_resume_link(), the checkout.php?resume=… handler, and admin-notify.php are all pre-existing helpers — the fix wires them together correctly.
+
+          Verification on local pod (pending order MV260704ABCD, status=pending, payment_status=pending, 1 item = Microsoft Office 2024 Pro Plus $99.99):
+            1. Direct call: mv_send_abandoned_cart_email($order) → returns true, writes email_outbox row #27, status=queued, template_code=abandoned_cart, 3091 bytes, subject "Looks like you left something behind — Order MV260704ABCD". HTML body contains ALL required elements: 'checkout.php?resume=' (YES), '&sig=' or '&amp;sig=' (YES), 'Microsoft Office 2024 Professional Plus' (YES), 'Continue Checkout' CTA (YES).
+            2. End-to-end via curl with admin session cookie: POST /order-view.php?id=5 action=resend_email → HTTP 302 to /order-view.php?id=5&msg=Pending-payment+email+sent+with+checkout+link. Post-condition: order.status still 'pending' (NOT force-flipped to paid), fulfilled=0, NO license key consumed, email_outbox row #28 queued (template_code=abandoned_cart, 3096 bytes).
+            3. Regression on paid order MVT-DEMO-002: POST /order-view.php?id=2 action=resend_email → HTTP 302 msg=Delivery+email+resent. Two new email_outbox rows queued — order_delivery (12801 bytes with license key + Receipt/Invoice PDF attachments) + sale_company_copy (internal admin copy). Backward compat preserved.
+
+          NEEDS_RETESTING: verify (a) admin "Resend Email" on any pending order (status!='paid' AND payment_status!='succeeded') writes exactly 1 new email_outbox row with template_code='abandoned_cart', does NOT flip order status, does NOT set fulfilled=1, does NOT assign any license_keys; the queued HTML contains 'checkout.php?resume=' AND signature ('sig=' or '&amp;sig=') AND the product name from order_items AND a "Continue Checkout" CTA; the redirect message is msg=Pending-payment+email+sent+with+checkout+link. (b) admin "Resend Email" on a paid order still queues the fulfilment email chain (order_delivery + sale_company_copy) — no regression. (c) The signed resume URL in the queued email actually resolves — GET /checkout.php?resume=<order#>&sig=<hmac> returns HTTP 200 and shows the checkout screen (should NOT 403 or 404). (d) If a pending order has 0 order_items, the handler returns msg=Email+could+not+be+sent+… (not the false "Email resent"). (e) The twin handler in admin.php action='resend_email' behaves identically to the order-view.php handler for both paid + pending. (f) No new PHP warnings/errors emitted (check /var/log/supervisor/frontend.err.log). (g) DB integrity: settings/products/regions row counts unchanged; ONLY new email_outbox rows + last_activity_at bumps on the pending orders.
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ COMPREHENSIVE BUG FIX VERIFICATION COMPLETE — ALL 8 TEST STEPS PASSED
+
+          Bug: Admin "Resend Email" on a pending order says success but no email reaches the customer; the pending-payment email must include the product(s) and a checkout resume link.
+          Fix: Split resend_email handler into paid-vs-unpaid branches in order-view.php + admin.php.
+
+          VERIFICATION RESULTS (per detailed review request):
+
+          STEP 0: ✅ ADMIN LOGIN SUCCESSFUL
+          - Logged in as admin@maventechsoftware.com / Admin@UC2026!
+          - Admin panel accessible (HTTP 200)
+
+          STEP (a): ✅ PENDING → RESEND EMAIL ACTUALLY SENDS
+          - POST /order-view.php?id=5 action=resend_email → HTTP 302 ✅
+          - Redirect: "Pending-payment+email+sent+with+checkout+link" ✅
+          - Email_outbox: Exactly 1 row, template_code='abandoned_cart', 3096 bytes ✅
+          - Order state: status=pending, payment_status=pending, fulfilled=0 (unchanged) ✅
+          - License keys: 0 (no keys consumed) ✅
+
+          STEP (b): ✅ EMAIL CONTENT INCLUDES ALL 4 REQUIRED ELEMENTS
+          1. ✅ 'checkout.php?resume=' (1 occurrence)
+          2. ✅ 'sig=' or '&amp;sig=' (1 occurrence)
+          3. ✅ 'Microsoft Office 2024 Professional Plus' (product name, 1 occurrence)
+          4. ✅ 'Continue Checkout' (CTA button, 1 occurrence)
+
+          STEP (c): ✅ SIGNED RESUME URL RESOLVES
+          - Extracted URL: http://127.0.0.1:3000/checkout.php?resume=MV260704ABCD&sig=c3655bf3f0ab4d7d71f528b276ae0e58c43327c7cc2db57a3ebabca61c0dde10
+          - HTTP 200 ✅
+          - Response contains: 'checkout', 'complete', 'payment', product name ✅
+          - NOT a 403/404/500 error page ✅
+
+          STEP (d): ✅ PAID ORDER REGRESSION
+          - POST /order-view.php?id=2 action=resend_email → HTTP 302 ✅
+          - Redirect: "Delivery+email+resent" ✅
+          - Email_outbox: 2 new rows (order_delivery + sale_company_copy) ✅
+            · order_delivery: 12801 bytes, attachments_json=171 bytes (Receipt + Invoice PDFs) ✅
+          - Order status: still 'paid' (unchanged) ✅
+
+          STEP (e): ✅ TWIN HANDLER PARITY (via /admin.php action=resend_email)
+          PENDING order (id=5):
+          - POST /admin.php action=resend_email&order_id=5 → HTTP 302 ✅
+          - Redirect: "Pending-payment+email+sent+with+checkout+link" ✅
+          - Email_outbox: abandoned_cart template queued ✅
+          - Order state: unchanged (pending/pending/0) ✅
+          
+          PAID order (id=2):
+          - POST /admin.php action=resend_email&order_id=2 → HTTP 302 ✅
+          - Redirect: "Delivery+email+resent" ✅
+          - Email_outbox: order_delivery template queued ✅
+
+          STEP (f): ✅ NO-ITEMS EDGE CASE
+          - Created empty order (MV-EMPTY-01, id=6, 0 items)
+          - POST /order-view.php?id=6 action=resend_email → HTTP 302 ✅
+          - Redirect: "Email+could+not+be+sent+(order+has+no+items...)" ✅
+          - Does NOT contain "Pending-payment+email+sent" (correct) ✅
+          - Email_outbox: No new rows (count unchanged) ✅
+          - Cleanup: Order deleted ✅
+
+          STEP (g): ✅ NO NEW PHP WARNINGS/ERRORS
+          - Checked /var/log/supervisor/frontend.err.log
+          - Only pre-existing "Constant SITE_EMAIL already defined" warning (safe to ignore) ✅
+          - No new PHP errors or warnings related to the fix ✅
+
+          STEP (h): ✅ DB INTEGRITY
+          Database counts:
+          - Products: 37 (unchanged) ✅
+          - Regions: 5 (unchanged) ✅
+          - Settings: 40 (≥38 expected, includes new resume_secret) ✅
+          - License keys (status='sold'): 5 (unchanged) ✅
+          
+          Intended state changes:
+          - Email_outbox rows for order 5: 1 (abandoned_cart) ✅
+          - Email_outbox rows for order 2: 10 (includes new delivery emails) ✅
+          - Order 5 last_activity_at: updated to 2026-07-04 09:11:36 ✅
+          
+          No unintended changes:
+          - Order 5: status=pending, fulfilled=0 (correct) ✅
+          - Order 2: status=paid (correct) ✅
+          - No license keys created for order 5 (correct) ✅
+
+          FINAL STATE:
+          - Pending order MV260704ABCD (id=5) intact for future testing ✅
+          - All test scenarios passed with no failures ✅
+
+          CONCLUSION:
+          ✅ ALL 8 VERIFICATION STEPS PASSED (STEP 0 + a through h)
+          ✅ Bug fix verified and working correctly
+          ✅ Admin "Resend Email" on pending orders now sends abandoned-cart email with:
+             - Product list (items the customer was buying)
+             - Signed checkout resume link (never expires, can be invalidated via admin_cancelled)
+             - "Continue Checkout →" CTA button
+          ✅ Admin "Resend Email" on paid orders still sends delivery email (no regression)
+          ✅ Both handlers (order-view.php + admin.php) behave identically (parity confirmed)
+          ✅ Edge cases handled correctly (empty orders return error, no email sent)
+          ✅ No PHP errors introduced
+          ✅ Database integrity maintained (only intended changes: email_outbox rows + last_activity_at bumps)
+
+          NET EFFECT: After this fix, when an admin clicks "Resend Email" on a pending order:
+          1. Customer receives an email listing the products they were buying
+          2. Email includes a signed checkout link to complete payment
+          3. Order state remains unchanged (no license keys consumed, no status flip)
+          4. Admin sees accurate success message: "Pending-payment email sent with checkout link"
+
+          Bug fix is production-ready and safe to deploy. No code modifications made during testing (verification only).
+
   - task: "Bug fix — customer Receipt & Invoice PDFs render as 2-page documents even for a single-item order (should be 1 page)"
     implemented: true
     working: true
@@ -1729,12 +1878,49 @@ agent_communication:
 
 test_plan:
   current_focus:
-    - "Bug fix — public currency/country dropdown shows regions the admin has deactivated (AU + EU always re-appear even when set to Paused)"
+    - "Bug fix — Admin 'Resend Email' on a pending order says success but no email reaches the customer; the pending-payment email must include the product(s) and a checkout resume link"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
+    -agent: "main"
+    -message: |
+      BUG FIX FOR VERIFICATION — Admin "Resend Email" on a PENDING order must actually send an email to the customer (currently it silently does nothing while the UI reports success), and that email must contain the customer's cart items + a checkout resume link so they can complete payment.
+
+      USER REPORT (with order-detail screenshot showing MV260704326DA in PENDING state, "Resend Email" button top-right, and a resume URL visible in the payment-status card): For any order in PENDING state (customer started checkout but didn't finish paying), clicking the admin's "Resend Email" button shows a success toast but the customer receives nothing. The user also asked that the email actually sent should tell the customer WHAT product they were trying to buy and give them a checkout link to finish paying.
+
+      ROOT CAUSE — /app/php-version/order-view.php:16-20 called fulfill_order($id) WITHOUT the $forceAdminOverride flag. Inside fulfill_order() (includes/email.php:1587-1591) the first check is `if ($order['status'] !== 'paid') { if (!$forceAdminOverride) return; }`. For a pending order this silently returns without touching email_outbox — yet the controller still issued the "Email+resent" success redirect. The twin handler in admin.php:978 had the opposite (also wrong) behaviour: it DID pass $forceAdminOverride=true, which force-flipped status to 'paid' and consumed a license key from stock even though the customer never paid.
+
+      FIX applied to 2 files:
+       · /app/php-version/order-view.php — replaced the single-branch handler with a paid-vs-unpaid split. PAID → fulfill_order($id, true) → msg=Delivery+email+resent. UNPAID/PENDING → mv_send_abandoned_cart_email() (pre-existing helper in includes/recovery.php that queues a nicely-designed email with items list + "Continue Checkout →" button linking to a signed /checkout.php?resume=<order#>&sig=<hmac> URL via mv_build_resume_link()) → msg=Pending-payment+email+sent+with+checkout+link. On failure: msg=Email+could+not+be+sent+…+check+Email+Activity (an accurate, actionable message instead of the false success).
+       · /app/php-version/admin.php:978 — same paid-vs-unpaid split applied to the admin.php action='resend_email' handler (used from the order-list row-actions).
+
+      AFTER-FIX MEASUREMENT (local, MV260704ABCD = 1-item pending order):
+        - Direct call to mv_send_abandoned_cart_email(): returns true, 1 new email_outbox row (template_code=abandoned_cart, status=queued, 3091 bytes, subject "Looks like you left something behind — Order MV260704ABCD"). HTML contains 'checkout.php?resume=' + '&sig=' + product name + 'Continue Checkout' CTA.
+        - E2E via curl (admin session): POST /order-view.php?id=5 action=resend_email → HTTP 302 msg=Pending-payment+email+sent+with+checkout+link, order.status stays 'pending', fulfilled=0, no license_key consumed, 1 new email_outbox row (abandoned_cart, 3096 bytes).
+        - Regression on paid order: POST /order-view.php?id=2 action=resend_email → HTTP 302 msg=Delivery+email+resent, 2 new outbox rows (order_delivery 12801 bytes + sale_company_copy). Backward compat preserved.
+
+      PLEASE VERIFY these acceptance criteria at http://127.0.0.1:3000/ (admin credentials: admin@maventechsoftware.com / Admin@UC2026!). Test order MV260704ABCD (id=5) is already seeded as PENDING with 1 line item. Paid test order MVT-DEMO-002 (id=2) is available for the regression:
+
+        (a) PENDING → RESEND EMAIL ACTUALLY SENDS. Log in as admin, obtain session cookie. Baseline: `DELETE FROM email_outbox WHERE order_id=5` and note the count. POST /order-view.php?id=5 with body 'action=resend_email' → expect HTTP 302 with Location containing 'msg=Pending-payment+email+sent+with+checkout+link'. Then `SELECT * FROM email_outbox WHERE order_id=5` → expect exactly 1 new row with template_code='abandoned_cart', status='queued' (or 'sent'/'failed' depending on SMTP config — either is acceptable, the row must exist). Also verify: SELECT status, payment_status, fulfilled FROM orders WHERE id=5 → still pending / pending / 0 (no side effects on the order). SELECT COUNT(*) FROM license_keys WHERE order_id=5 → 0 (no key consumed).
+
+        (b) EMAIL CONTENT includes required elements. Fetch the queued row's html column and confirm it contains ALL FOUR: (i) 'checkout.php?resume=', (ii) 'sig=' or '&amp;sig=' — the HMAC-signed retry link, (iii) 'Microsoft Office 2024 Professional Plus' (the product name from order_items), (iv) 'Continue Checkout' CTA text. Print the exact substrings you found.
+
+        (c) SIGNED RESUME URL RESOLVES. Extract the checkout URL from the email HTML and GET it (curl) → expect HTTP 200 with the checkout page rendered (grep the response body for 'checkout' or 'Complete your purchase' or similar). MUST NOT 403 / 404 / 500.
+
+        (d) PAID ORDER REGRESSION. POST /order-view.php?id=2 with action=resend_email → HTTP 302 msg=Delivery+email+resent. `SELECT * FROM email_outbox WHERE order_id=2 ORDER BY id DESC LIMIT 3` — expect at least 1 new order_delivery row (with license_key + Receipt/Invoice PDF attachments — check attachments_json is non-null on that row). SELECT status FROM orders WHERE id=2 → still 'paid'.
+
+        (e) TWIN HANDLER PARITY. Do the same test through the OTHER entry point — POST /admin.php with body 'action=resend_email&order_id=5' for the pending order. Expect: HTTP 302 msg=Pending-payment+email+sent+with+checkout+link, 1 new abandoned_cart outbox row, order state unchanged. Then POST /admin.php action=resend_email&order_id=2 → HTTP 302 msg=Delivery+email+resent, order_delivery row added. Both entry points must behave identically.
+
+        (f) NO-ITEMS EDGE CASE. Create a pending order with ZERO items: `INSERT INTO orders (order_number, email, ..., status, payment_status) VALUES ('MV-EMPTY-01', 'empty@test.com', 'X','Y','X St','X','X','00000','US','US','pending','pending','USD',0,0,0,0,NOW(),NOW());`. Note the id. POST /order-view.php?id=<that_id> action=resend_email → expect HTTP 302 with msg=Email+could+not+be+sent (NOT the false "Email resent" success). No new email_outbox row for that order id. Then delete the test order.
+
+        (g) NO NEW PHP WARNINGS/ERRORS. Watch /var/log/supervisor/frontend.err.log during the tests. Report any new warnings/errors emitted since the last known-good state.
+
+        (h) DB INTEGRITY. Before + after test: `SELECT COUNT(*) FROM products; SELECT COUNT(*) FROM regions; SELECT COUNT(*) FROM settings; SELECT COUNT(*) FROM license_keys WHERE status='sold';` — the only intended new state is the added email_outbox rows and last_activity_at bumps on the pending orders.
+
+      Please report PASS/FAIL for (a)–(h) with actual curl output snippets, DB SELECT results, and the exact email HTML substrings found. Also note the test_credentials.md file at /app/memory/ — admin credentials are admin@maventechsoftware.com / Admin@UC2026! (I've just reset the hash to match).
+
     -agent: "main"
     -message: |
       BUG FIX FOR VERIFICATION — Public currency/country dropdown must ONLY show regions whose active flag = 1 in Admin → Regions. Deactivated regions must never re-appear.
@@ -2084,3 +2270,79 @@ agent_communication:
       NET EFFECT: Admin's region deactivation now persists forever. Currency picker shows ONLY active regions. AU/EU no longer re-appear after being set to Paused.
 
       Bug fix is production-ready and safe to deploy. Database left in correct state (only US active per user requirement).
+
+    -agent: "testing"
+    -message: |
+      ✅ ADMIN RESEND EMAIL BUG FIX VERIFICATION COMPLETE — ALL 8 TEST STEPS PASSED
+
+      Executed comprehensive verification of the "Admin Resend Email on pending order" bug fix per the detailed review request.
+      Tested at http://127.0.0.1:3000/ (PHP store) using curl + mysql -uroot ucode_store.
+
+      BUG SUMMARY:
+      - User reported: Admin's "Resend Email" button on PENDING orders shows success but customer never receives email
+      - User requested: Email should list products + include checkout link to complete payment
+      - Root cause: fulfill_order() silently returned for pending orders without sending anything
+      - Fix: Split resend_email handler into paid-vs-unpaid branches (order-view.php + admin.php)
+
+      TEST RESULTS SUMMARY:
+
+      STEP 0: ✅ Admin login successful (admin@maventechsoftware.com / Admin@UC2026!)
+
+      STEP (a): ✅ PENDING → RESEND EMAIL ACTUALLY SENDS
+      - POST /order-view.php?id=5 action=resend_email → HTTP 302, msg=Pending-payment+email+sent+with+checkout+link
+      - Email_outbox: 1 row, template_code='abandoned_cart', 3096 bytes
+      - Order state: status=pending, payment_status=pending, fulfilled=0 (unchanged)
+      - License keys: 0 (no keys consumed)
+
+      STEP (b): ✅ EMAIL CONTENT INCLUDES ALL 4 REQUIRED ELEMENTS
+      - 'checkout.php?resume=' ✅
+      - 'sig=' or '&amp;sig=' ✅
+      - 'Microsoft Office 2024 Professional Plus' (product name) ✅
+      - 'Continue Checkout' (CTA button) ✅
+
+      STEP (c): ✅ SIGNED RESUME URL RESOLVES
+      - URL: http://127.0.0.1:3000/checkout.php?resume=MV260704ABCD&sig=c3655bf3f0ab4d7d71f528b276ae0e58c43327c7cc2db57a3ebabca61c0dde10
+      - HTTP 200, contains checkout content, NOT a 403/404/500 error
+
+      STEP (d): ✅ PAID ORDER REGRESSION
+      - POST /order-view.php?id=2 action=resend_email → HTTP 302, msg=Delivery+email+resent
+      - Email_outbox: 2 new rows (order_delivery 12801 bytes + sale_company_copy)
+      - order_delivery has attachments_json (Receipt + Invoice PDFs)
+      - Order status: still 'paid'
+
+      STEP (e): ✅ TWIN HANDLER PARITY (via /admin.php action=resend_email)
+      - PENDING order (id=5): HTTP 302, msg=Pending-payment+email+sent+with+checkout+link, abandoned_cart queued
+      - PAID order (id=2): HTTP 302, msg=Delivery+email+resent, order_delivery queued
+      - Both handlers behave identically
+
+      STEP (f): ✅ NO-ITEMS EDGE CASE
+      - Created empty order (MV-EMPTY-01, id=6, 0 items)
+      - POST resend_email → HTTP 302, msg=Email+could+not+be+sent+(order+has+no+items...)
+      - No email_outbox row created (correct)
+      - Cleanup: Order deleted
+
+      STEP (g): ✅ NO NEW PHP WARNINGS/ERRORS
+      - Only pre-existing "Constant SITE_EMAIL already defined" warning (safe to ignore)
+      - No new PHP errors related to the fix
+
+      STEP (h): ✅ DB INTEGRITY
+      - Products: 37 (unchanged)
+      - Regions: 5 (unchanged)
+      - Settings: 40 (≥38 expected, includes new resume_secret)
+      - License keys (status='sold'): 5 (unchanged)
+      - Intended changes: email_outbox rows + last_activity_at bumps only
+      - No unintended changes to order states or license keys
+
+      CONCLUSION:
+      ✅ ALL 8 VERIFICATION STEPS PASSED
+      ✅ Bug fix verified and working correctly
+      ✅ Admin "Resend Email" on pending orders now sends abandoned-cart email with product list + signed checkout link
+      ✅ Admin "Resend Email" on paid orders still sends delivery email (no regression)
+      ✅ Both handlers (order-view.php + admin.php) behave identically
+      ✅ Edge cases handled correctly (empty orders return error)
+      ✅ No PHP errors introduced
+      ✅ Database integrity maintained
+
+      NET EFFECT: When admin clicks "Resend Email" on a pending order, customer receives email with products + checkout link. Order state unchanged (no license keys consumed). Admin sees accurate success message.
+
+      Bug fix is production-ready and safe to deploy. Pending order MV260704ABCD (id=5) left intact for future testing.

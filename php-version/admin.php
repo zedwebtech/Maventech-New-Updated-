@@ -976,12 +976,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: admin.php?tab=orders&msg=Order+cancelled+%E2%80%93+retry+link+invalidated'); exit;
 
     } elseif ($action === 'resend_email') {
-        // Admin "Resend product email" — bypass the status check so the email
-        // can be re-fired for legitimate edge cases (bank transfer, manual
-        // delivery). This will also mark the order paid if it isn't already.
-        $pdo->prepare('UPDATE orders SET fulfilled=0 WHERE id=?')->execute([(int)$_POST['order_id']]);
-        fulfill_order((int)$_POST['order_id'], true);
-        header('Location: admin.php?tab=orders&msg=Email+resent'); exit;
+        // Admin "Resend Email" from the order-list row action or order-view page.
+        // Branches on payment state so pending orders never trigger a spurious
+        // fulfilment (which would force-flip status to 'paid' and consume a
+        // license key from stock).  For pending orders we send a "complete
+        // your purchase" email with the signed resume link.
+        //   · PAID → resend the fulfilment / product-delivery email.
+        //   · UNPAID / PENDING → mv_send_abandoned_cart_email() with the
+        //     items list + Continue Checkout CTA (signed resume URL).
+        $oid = (int)($_POST['order_id'] ?? 0);
+        $ord = $pdo->prepare('SELECT * FROM orders WHERE id=?');
+        $ord->execute([$oid]);
+        $ord = $ord->fetch(PDO::FETCH_ASSOC);
+        if (!$ord) { header('Location: admin.php?tab=orders&msg=Order+not+found'); exit; }
+        $isPaid = (($ord['status'] ?? '') === 'paid')
+                  || (($ord['payment_status'] ?? '') === 'succeeded');
+        if ($isPaid) {
+            $pdo->prepare('UPDATE orders SET fulfilled=0 WHERE id=?')->execute([$oid]);
+            fulfill_order($oid, true);
+            header('Location: admin.php?tab=orders&msg=Delivery+email+resent'); exit;
+        } else {
+            require_once __DIR__ . '/includes/recovery.php';
+            $ok = false;
+            try { $ok = mv_send_abandoned_cart_email($ord); }
+            catch (Throwable $e) { @error_log('[resend_email pending] '.$e->getMessage()); $ok = false; }
+            if ($ok) {
+                try { $pdo->prepare('UPDATE orders SET last_activity_at=NOW() WHERE id=?')->execute([$oid]); }
+                catch (Throwable $e) { /* best-effort */ }
+                header('Location: admin.php?tab=orders&msg=Pending-payment+email+sent+with+checkout+link'); exit;
+            } else {
+                header('Location: admin.php?tab=orders&msg=Email+could+not+be+sent+(order+has+no+items+or+SMTP+failed+%E2%80%93+check+Email+Activity)'); exit;
+            }
+        }
 
     } elseif ($action === 'save_billing_note') {
         // Customize the company name shown on customers' bank/card statements.

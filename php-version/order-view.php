@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/email.php';
+require_once __DIR__ . '/includes/recovery.php';
 require_once __DIR__ . '/includes/regions.php';
 ensure_admin();
 $admin = require_admin();
@@ -14,9 +15,43 @@ if (!$o) { http_response_code(404); die('Order not found'); }
 // Resend or status update
 if ($_SERVER['REQUEST_METHOD']==='POST') {
     if (($_POST['action'] ?? '')==='resend_email') {
-        $pdo->prepare('UPDATE orders SET fulfilled=0 WHERE id=?')->execute([$id]);
-        fulfill_order($id);
-        header('Location: order-view.php?id='.$id.'&msg=Email+resent'); exit;
+        // Branch on payment state:
+        //  · PAID orders → resend the fulfilment email (product delivery / license
+        //    keys, receipt + invoice PDFs) via fulfill_order().
+        //  · UNPAID / PENDING orders → send a "complete your purchase" email
+        //    that lists the cart items and includes a signed resume link
+        //    (mv_build_resume_link) so the customer can finish paying.
+        //    Previously this button called fulfill_order() WITHOUT the admin
+        //    override, so fulfill_order() bailed silently at the status guard
+        //    and NOTHING was sent to the customer, even though the admin UI
+        //    reported "Email resent". This is the bug the customer reported.
+        $isPaid = (($o['status'] ?? '') === 'paid')
+                  || (($o['payment_status'] ?? '') === 'succeeded');
+        if ($isPaid) {
+            $pdo->prepare('UPDATE orders SET fulfilled=0 WHERE id=?')->execute([$id]);
+            fulfill_order($id, true);
+            $msg = 'Delivery+email+resent';
+        } else {
+            // Refresh the row so mv_send_abandoned_cart_email() sees any
+            // recent edits (email address, currency, etc.).
+            $fresh = $pdo->prepare('SELECT * FROM orders WHERE id=?');
+            $fresh->execute([$id]);
+            $freshOrder = $fresh->fetch(PDO::FETCH_ASSOC) ?: $o;
+            $ok = false;
+            try { $ok = mv_send_abandoned_cart_email($freshOrder); }
+            catch (Throwable $e) { @error_log('[resend_email pending] '.$e->getMessage()); $ok = false; }
+            if ($ok) {
+                // Stamp last_activity_at so the abandoned-cart cron doesn't
+                // fire a duplicate email for a few more minutes. Do NOT set
+                // recovery_email_sent — admin may want to nudge again later.
+                try { $pdo->prepare('UPDATE orders SET last_activity_at=NOW() WHERE id=?')->execute([$id]); }
+                catch (Throwable $e) { /* best-effort */ }
+                $msg = 'Pending-payment+email+sent+with+checkout+link';
+            } else {
+                $msg = 'Email+could+not+be+sent+(order+has+no+items+or+SMTP+failed+%E2%80%93+check+Email+Activity)';
+            }
+        }
+        header('Location: order-view.php?id='.$id.'&msg='.$msg); exit;
     }
     if (($_POST['action'] ?? '')==='update_status') {
         $pdo->prepare('UPDATE orders SET status=? WHERE id=?')->execute([$_POST['status'], $id]);
