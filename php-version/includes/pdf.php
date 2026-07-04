@@ -629,49 +629,48 @@ function generate_receipt_pdf(array $order, array $items, ?array $payment = null
 
     $html = <<<HTML
 <!doctype html><html><head><meta charset="utf-8"><style>
-  @page { margin: 44px 46px; }
-  body { font-family:'DejaVu Sans',Helvetica,Arial,sans-serif; font-size:10.5pt; color:#1f2937; }
+  @page { margin: 28px 40px; size: letter portrait; }
+  body { font-family:'DejaVu Sans',Helvetica,Arial,sans-serif; font-size:10pt; color:#1f2937; }
   .scatter-wrap { position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; }
   .scatter-icon { position:absolute; opacity:0.09; }
-  .rc-top { width:100%; border-collapse:collapse; margin-bottom:16px; }
+  .rc-top { width:100%; border-collapse:collapse; margin-bottom:10px; }
   .rc-top td { vertical-align:top; }
-  .rc-top .rc-co { font-size:8.5pt; color:#64748b; line-height:1.5; margin-top:6px; }
+  .rc-top .rc-co { font-size:8pt; color:#64748b; line-height:1.45; margin-top:4px; }
   .rc-tag { text-align:right; }
   .rc-tag .lbl { font-size:8pt; letter-spacing:2px; font-weight:700; color:#059669; text-transform:uppercase; }
-  .rc-hero { background:#ecfdf5; border:1px solid #a7f3d0; border-radius:16px; padding:22px 24px; margin-bottom:20px; text-align:center; }
-  .rc-check { width:46px; height:46px; line-height:44px; border-radius:50%; background:#059669; color:#fff; font-size:24pt; font-weight:700; margin:0 auto 8px; }
-  .rc-badge { display:inline-block; background:#059669; color:#fff; font-size:8pt; font-weight:700; letter-spacing:1.6px; text-transform:uppercase; padding:4px 12px; border-radius:999px; }
-  .rc-amt { font-size:30pt; font-weight:800; color:#047857; margin:12px 0 2px; letter-spacing:.3px; }
-  .rc-amt-sub { font-size:10pt; color:#059669; }
-  .rc-card { border:1px solid #e2e8f0; border-radius:14px; padding:0; margin-bottom:18px; }
+  .rc-hero { background:#ecfdf5; border:1px solid #a7f3d0; border-radius:14px; padding:12px 20px; margin-bottom:10px; text-align:center; }
+  .rc-check { width:36px; height:36px; line-height:34px; border-radius:50%; background:#059669; color:#fff; font-size:18pt; font-weight:700; margin:0 auto 4px; }
+  .rc-badge { display:inline-block; background:#059669; color:#fff; font-size:7.5pt; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; padding:3px 10px; border-radius:999px; }
+  .rc-amt { font-size:22pt; font-weight:800; color:#047857; margin:6px 0 2px; letter-spacing:.3px; }
+  .rc-amt-sub { font-size:9pt; color:#059669; }
+  .rc-card { border:1px solid #e2e8f0; border-radius:12px; padding:0; margin-bottom:10px; }
   .rc-card table { width:100%; border-collapse:collapse; }
-  .rc-card td { padding:11px 16px; font-size:9.5pt; vertical-align:top; border-bottom:1px solid #eef2f7; }
+  .rc-card td { padding:6px 14px; font-size:9pt; vertical-align:top; border-bottom:1px solid #eef2f7; }
   .rc-card tr:last-child td { border-bottom:0; }
   .rc-card .k { color:#64748b; width:38%; }
   .rc-card .v { color:#0f172a; font-weight:700; text-align:right; }
   .rc-card .v.mono { font-family:'DejaVu Sans Mono',monospace; letter-spacing:.3px; }
-  .sec-label { font-size:8pt; letter-spacing:1.4px; text-transform:uppercase; color:#94a3b8; font-weight:700; margin:0 0 8px; }
-  .ps { width:100%; border-collapse:collapse; margin-bottom:6px; }
-  .ps td { padding:9px 2px; font-size:9.5pt; border-bottom:1px dashed #e2e8f0; }
+  .sec-label { font-size:7.5pt; letter-spacing:1.4px; text-transform:uppercase; color:#94a3b8; font-weight:700; margin:0 0 4px; }
+  .ps { width:100%; border-collapse:collapse; margin-bottom:4px; }
+  .ps td { padding:5px 2px; font-size:9pt; border-bottom:1px dashed #e2e8f0; }
   .ps .ps-name { color:#1f2937; }
-  .ps .ps-qty { color:#94a3b8; font-size:8.5pt; }
+  .ps .ps-qty { color:#94a3b8; font-size:8pt; }
   .ps .ps-amt { text-align:right; color:#0f172a; font-weight:700; white-space:nowrap; }
   .ps-total { width:100%; border-collapse:collapse; }
-  .ps-total td { padding:8px 2px; font-size:12pt; font-weight:800; }
+  .ps-total td { padding:5px 2px; font-size:11pt; font-weight:800; }
   .ps-total .lbl { color:#065f46; }
   .ps-total .val { text-align:right; color:#047857; }
-  .ps-total .ps-t-min td { padding:3px 2px; font-size:9.5pt; font-weight:600; }
+  .ps-total .ps-t-min td { padding:2px 2px; font-size:9pt; font-weight:600; }
   .ps-total .ps-t-min .lbl2 { color:#64748b; }
   .ps-total .ps-t-min .val2 { text-align:right; color:#334155; }
-  .rc-note { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:10px 14px; font-size:9pt; color:#166534; margin:16px 0; }
-  .rc-note .hl { background:#dcfce7; color:#14532d; font-weight:700; padding:1px 7px; border-radius:5px; }
-  .rc-thanks { font-size:11pt; color:#047857; font-weight:700; margin:16px 0 4px; }
-  .rc-cols { width:100%; border-collapse:collapse; }
-  .rc-cols td { vertical-align:top; width:50%; padding-right:14px; font-size:9pt; color:#334155; line-height:1.55; }
+  .rc-note { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:6px 12px; font-size:8.5pt; color:#166534; margin:8px 0; }
+  .rc-note .hl { background:#dcfce7; color:#14532d; font-weight:700; padding:1px 6px; border-radius:4px; }
+  .rc-cols { width:100%; border-collapse:collapse; margin-top:6px; }
+  .rc-cols td { vertical-align:top; width:50%; padding-right:12px; font-size:8.5pt; color:#334155; line-height:1.4; }
   .rc-qr { text-align:right; }
-  .rc-qr img { width:74px; height:74px; border:1px solid #e2e8f0; border-radius:6px; padding:2px; background:#fff; }
-  .rc-qr-lbl { font-size:6.5pt; color:#64748b; margin-top:3px; line-height:1.25; }
-  .rc-footer { margin-top:16px; padding-top:10px; border-top:1px solid #e2e8f0; font-size:8pt; color:#94a3b8; line-height:1.6; }
+  .rc-qr img { width:58px; height:58px; border:1px solid #e2e8f0; border-radius:6px; padding:2px; background:#fff; }
+  .rc-qr-lbl { font-size:6pt; color:#64748b; margin-top:2px; line-height:1.2; }
+  .rc-footer { margin-top:8px; padding-top:6px; border-top:1px solid #e2e8f0; font-size:7.5pt; color:#94a3b8; line-height:1.5; }
 </style></head><body>
   {$scatter}
   {$promoBar}
@@ -702,7 +701,6 @@ function generate_receipt_pdf(array $order, array $items, ?array $payment = null
 
   <div class="rc-note"><strong>Billing note:</strong> this charge appears as <span class="hl">{$stmtName}</span> on your card statement, processed securely via {$gateway}.</div>
 
-  <div class="rc-thanks">Thanks for your purchase!</div>
   <table class="rc-cols"><tr>
     <td><div class="sec-label">Billed to</div>{$billHtml}</td>
     <td>{$qrHtml}</td>
@@ -807,48 +805,48 @@ function generate_invoice_pdf(array $order, array $items): string
 
     $html = <<<HTML
 <!doctype html><html><head><meta charset="utf-8"><style>
-  @page { margin: 52px 48px; }
-  body { font-family:'DejaVu Sans',Helvetica,Arial,sans-serif; font-size:10.5pt; color:#1f2937; }
+  @page { margin: 28px 40px; size: letter portrait; }
+  body { font-family:'DejaVu Sans',Helvetica,Arial,sans-serif; font-size:10pt; color:#1f2937; }
   .scatter-wrap { position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; }
   .scatter-icon { position:absolute; opacity:0.08; }
-  .inv-stamp { position:absolute; top:470px; left:50%; margin-left:-140px; width:280px; text-align:center;
-      font-weight:900; font-size:46pt; letter-spacing:8px; padding:8px 14px; border:7px solid {$stampColor};
-      color:{$stampColor}; border-radius:14px; opacity:0.11; transform:rotate(-20deg); }
-  .inv-head { width:100%; border-collapse:collapse; margin-bottom:20px; }
+  .inv-stamp { position:absolute; top:400px; left:50%; margin-left:-120px; width:240px; text-align:center;
+      font-weight:900; font-size:38pt; letter-spacing:7px; padding:6px 12px; border:6px solid {$stampColor};
+      color:{$stampColor}; border-radius:12px; opacity:0.11; transform:rotate(-20deg); }
+  .inv-head { width:100%; border-collapse:collapse; margin-bottom:12px; }
   .inv-head td { vertical-align:top; }
-  .inv-title { font-size:30pt; font-weight:800; color:#312e81; letter-spacing:1px; line-height:1; }
-  .inv-sub { font-size:9pt; letter-spacing:3px; color:#6366f1; font-weight:700; text-transform:uppercase; margin-top:4px; }
+  .inv-title { font-size:22pt; font-weight:800; color:#312e81; letter-spacing:1px; line-height:1; }
+  .inv-sub { font-size:8pt; letter-spacing:2.5px; color:#6366f1; font-weight:700; text-transform:uppercase; margin-top:2px; }
   .inv-brand { text-align:right; }
-  .inv-brand .co { font-size:8.5pt; color:#64748b; line-height:1.5; margin-top:6px; }
-  .inv-meta { width:100%; border-collapse:collapse; border:1px solid #e0e7ff; border-radius:12px; margin-bottom:22px; background:#f5f3ff; }
-  .inv-meta td { padding:10px 16px; font-size:9pt; border-bottom:1px solid #e0e7ff; }
+  .inv-brand .co { font-size:8pt; color:#64748b; line-height:1.45; margin-top:4px; }
+  .inv-meta { width:100%; border-collapse:collapse; border:1px solid #e0e7ff; border-radius:10px; margin-bottom:12px; background:#f5f3ff; }
+  .inv-meta td { padding:5px 14px; font-size:8.5pt; border-bottom:1px solid #e0e7ff; }
   .inv-meta tr:last-child td { border-bottom:0; }
   .inv-meta .k { color:#64748b; }
   .inv-meta .v { text-align:right; color:#0f172a; font-weight:700; }
   .inv-meta .v.mono { font-family:'DejaVu Sans Mono',monospace; }
-  .parties { width:100%; border-collapse:collapse; margin-bottom:22px; }
-  .parties td { vertical-align:top; width:50%; padding-right:16px; font-size:9pt; color:#334155; line-height:1.55; }
-  .parties .label { font-size:8pt; text-transform:uppercase; letter-spacing:1.2px; color:#94a3b8; font-weight:700; margin-bottom:5px; }
+  .parties { width:100%; border-collapse:collapse; margin-bottom:12px; }
+  .parties td { vertical-align:top; width:50%; padding-right:14px; font-size:8.5pt; color:#334155; line-height:1.4; }
+  .parties .label { font-size:7.5pt; text-transform:uppercase; letter-spacing:1.2px; color:#94a3b8; font-weight:700; margin-bottom:3px; }
   .parties .bold { color:#0f172a; font-weight:700; }
   .parties .inv-qr { text-align:left; margin-top:4px; }
-  .parties .inv-qr img { width:70px; height:70px; border:1px solid #e2e8f0; border-radius:6px; padding:2px; background:#fff; }
-  .parties .inv-qr-lbl { font-size:6.5pt; color:#64748b; margin-top:3px; line-height:1.25; }
-  table.items { width:100%; border-collapse:collapse; margin-bottom:18px; }
-  table.items th, table.items td { padding:10px 6px; font-size:9.5pt; }
-  table.items thead th { background:#312e81; color:#fff; text-align:left; font-weight:700; font-size:8.5pt; text-transform:uppercase; letter-spacing:.6px; }
-  table.items thead th:first-child { border-top-left-radius:8px; }
-  table.items thead th:last-child { border-top-right-radius:8px; }
+  .parties .inv-qr img { width:55px; height:55px; border:1px solid #e2e8f0; border-radius:6px; padding:2px; background:#fff; }
+  .parties .inv-qr-lbl { font-size:6pt; color:#64748b; margin-top:2px; line-height:1.2; }
+  table.items { width:100%; border-collapse:collapse; margin-bottom:10px; }
+  table.items th, table.items td { padding:6px 6px; font-size:9pt; }
+  table.items thead th { background:#312e81; color:#fff; text-align:left; font-weight:700; font-size:8pt; text-transform:uppercase; letter-spacing:.5px; }
+  table.items thead th:first-child { border-top-left-radius:6px; }
+  table.items thead th:last-child { border-top-right-radius:6px; }
   table.items td { border-bottom:1px solid #e2e8f0; }
   table.items td.num, table.items th.num { text-align:right; }
-  .totals { width:52%; margin-left:48%; border-collapse:collapse; font-size:10pt; }
-  .totals td { padding:6px 6px; }
+  .totals { width:52%; margin-left:48%; border-collapse:collapse; font-size:9.5pt; }
+  .totals td { padding:4px 6px; }
   .totals td.label { color:#475569; }
   .totals td.value { text-align:right; color:#0f172a; font-weight:600; }
-  .totals tr.total-row td { border-top:2px solid #312e81; padding-top:9px; font-size:12pt; font-weight:800; color:#312e81; }
-  .totals tr.amount-paid td { padding-top:8px; color:#047857; font-weight:800; }
-  .totals tr.amount-due td { padding-top:8px; color:#b91c1c; font-weight:800; }
-  .inv-terms { margin-top:22px; background:#eef2ff; border:1px solid #c7d2fe; border-radius:10px; padding:11px 15px; font-size:9pt; color:#3730a3; }
-  .inv-footer { margin-top:14px; padding-top:10px; border-top:1px solid #e2e8f0; font-size:8pt; color:#94a3b8; line-height:1.6; }
+  .totals tr.total-row td { border-top:2px solid #312e81; padding-top:6px; font-size:11pt; font-weight:800; color:#312e81; }
+  .totals tr.amount-paid td { padding-top:5px; color:#047857; font-weight:800; }
+  .totals tr.amount-due td { padding-top:5px; color:#b91c1c; font-weight:800; }
+  .inv-terms { margin-top:10px; background:#eef2ff; border:1px solid #c7d2fe; border-radius:8px; padding:7px 12px; font-size:8.5pt; color:#3730a3; }
+  .inv-footer { margin-top:8px; padding-top:6px; border-top:1px solid #e2e8f0; font-size:7.5pt; color:#94a3b8; line-height:1.5; }
 </style></head><body>
   {$scatter}
   {$promoBar}
