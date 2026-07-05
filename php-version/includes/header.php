@@ -691,7 +691,7 @@ height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Ma
 
 <!-- Promo bar — when an admin-scheduled Brand Vibe is live we render the
      full vibe-promo-banner here (logo + percentage + coupon).  The
-     fallback static MAVEN20 strip was retired in Feb 2026 because the
+     fallback static MAVEN10 strip was retired in Feb 2026 because the
      top deal-bar (further below) now carries the default promo — having
      both was redundant and made the page header feel cluttered. -->
 <?php
@@ -704,8 +704,9 @@ endif;
 // promo strip can display them. When a vibe-promo schedule is live, the
 // scheduled label/code wins; otherwise the static defaults below.
 $_vibePromo    = function_exists('active_vibe_promo') ? active_vibe_promo() : null;
+$_promoBarOn   = (setting_get('promo_bar_enabled', '0') === '1');
 $_dealHeadline = 'Save up to 10%';
-$_dealCode     = 'MAVEN20';
+$_dealCode     = 'MAVEN10';
 if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupon_percent'] > 0) {
     $_pct       = (int)$_vibePromo['coupon_percent'];
     $_labelTxt  = trim((string)($_vibePromo['label'] ?? ''));
@@ -721,19 +722,21 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
     <div class="d-flex gap-3 align-items-center flex-wrap">
       <span><i class="bi bi-patch-check-fill text-success me-1"></i>Genuine Microsoft Products</span>
       <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant Digital Delivery</span>
-      <!-- Inline promo strip: configurable headline + copy-able code chip + Shop Now. -->
+      <!-- Inline promo strip: admin-toggleable (Company Info → Show promo bar). -->
+      <?php if ($_promoBarOn): ?>
       <span class="trustbar-deal d-inline-flex align-items-center gap-2" data-testid="trustbar-deal">
         <span class="trustbar-deal-text"><i class="bi bi-tag-fill me-1"></i><?= esc($_dealHeadline ?? 'Save up to 10%') ?></span>
         <button type="button"
                 class="trustbar-deal-code"
-                data-code="<?= esc($_dealCode ?? 'MAVEN20') ?>"
+                data-code="<?= esc($_dealCode ?? 'MAVEN10') ?>"
                 data-testid="trustbar-deal-code"
                 title="Click to copy"
                 onclick="(function(b){var c=b.getAttribute('data-code');if(!c)return;function done(){var o=b.dataset.orig||b.innerHTML;b.dataset.orig=b.dataset.orig||b.innerHTML;b.innerHTML='<i class=\'bi bi-check2\'></i> Copied';b.classList.add('is-copied');setTimeout(function(){b.innerHTML=o;b.classList.remove('is-copied');},1500);}if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(c).then(done,done);}else{var t=document.createElement('textarea');t.value=c;document.body.appendChild(t);t.select();try{document.execCommand('copy');}catch(_){}t.remove();done();}})(this)">
-          <span><?= esc($_dealCode ?? 'MAVEN20') ?></span><i class="bi bi-clipboard"></i>
+          <span><?= esc($_dealCode ?? 'MAVEN10') ?></span><i class="bi bi-clipboard"></i>
         </button>
         <a href="shop.php" class="trustbar-deal-shop" data-testid="trustbar-deal-shop">Shop Now <i class="bi bi-chevron-right"></i></a>
       </span>
+      <?php endif; ?>
     </div>
     <div class="d-flex gap-3 align-items-center">
       <!-- Trust + age + phone — wrapped in dedicated classes so the dark-mode

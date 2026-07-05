@@ -2153,7 +2153,7 @@ function mv_absolute_url(?string $url): string
 /* ---------------- Coupons: code => percent off ---------------- */
 function coupons(): array
 {
-    $base = ['MAVEN20' => 20, 'BIT20' => 20, 'MATRIX20' => 20, 'ZED20' => 20, 'FIVE20' => 20, 'UCODE90' => 20, 'WELCOME10' => 10, 'SAVE15' => 15, 'OFFICE25' => 25];
+    $base = ['MAVEN10' => 10, 'BIT20' => 20, 'MATRIX20' => 20, 'ZED20' => 20, 'FIVE20' => 20, 'UCODE90' => 20, 'WELCOME10' => 10, 'SAVE15' => 15, 'OFFICE25' => 25];
     // Any active vibe-schedule with a coupon_code + coupon_percent auto-
     // registers it so it works when buyers COPY+PASTE the code at checkout
     // (the banner does NOT auto-apply the code — it just announces it with

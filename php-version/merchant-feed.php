@@ -395,12 +395,11 @@ foreach ($products as $p) {
     }
 
     /* g:promotion_id — links this item to a promo entry in the Merchant
-       Center promo feed (admin uploads a one-line promo file later).
-       Emitted only when the product is on sale.  All currently-discounted
-       SKUs share the same coupon code MAVEN20 so they collapse to one
-       promo entry that needs to be created once in MC.  */
-    if ($hasSale) {
-        echo "      <g:promotion_id>MAVEN20</g:promotion_id>\n";
+       Center promo feed. Emitted only when the admin has the site-wide
+       promo bar switched ON (Company Info → Show promo bar) so the feed
+       never advertises a coupon the storefront isn't showing.  */
+    if (setting_get('promo_bar_enabled', '0') === '1') {
+        echo "      <g:promotion_id>MAVEN10</g:promotion_id>\n";
     }
 
     // g:product_highlight — up to 4 bullets rendered under the title in
