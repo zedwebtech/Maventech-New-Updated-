@@ -63,7 +63,6 @@ include __DIR__ . '/includes/header.php';
                 <?php } ?>
                 <?php if ($hasDisc): ?>
                   <div class="small mt-1" data-testid="cart-discount-<?= esc($i['slug']) ?>">
-                    <span class="badge text-bg-danger me-1">-<?= $pct ?>%</span>
                     <span class="text-secondary text-decoration-line-through me-1"><?= format_price((float)$i['original_price']) ?></span>
                     <span class="text-success fw-semibold"><i class="bi bi-piggy-bank me-1"></i>You save <?= format_price(($i['original_price'] - $i['price']) * $i['qty']) ?></span>
                   </div>

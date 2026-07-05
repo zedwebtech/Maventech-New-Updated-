@@ -327,11 +327,9 @@ include __DIR__ . '/includes/header.php';
       <a href="shop.php" class="text-decoration-none fw-semibold">View All <i class="bi bi-arrow-right"></i></a>
     </div>
     <div class="scroll-strip d-flex gap-3 overflow-auto pb-3" data-testid="picked-for-you">
-      <?php foreach ($pickedForYou as $p):
-        $sPct = ($p['original_price'] && $p['original_price'] > $p['price'])
-            ? round((1 - $p['price'] / $p['original_price']) * 100) : 0; ?>
+      <?php foreach ($pickedForYou as $p): ?>
         <div class="card product-card tilt-3d strip-card flex-shrink-0 position-relative" data-testid="strip-card-<?= esc($p['slug']) ?>">
-          <?php if ($sPct): ?><span class="badge text-bg-danger position-absolute top-0 end-0 m-2" style="z-index:2;">-<?= $sPct ?>%</span><?php endif; ?>
+          <?php /* Discount % badge removed at user request. */ ?>
           <a href="product.php?slug=<?= esc($p['slug']) ?>" class="d-block">
             <div class="strip-img">
               <img src="<?= esc($p['image']) ?>" alt="<?= esc(product_img_alt($p)) ?>" title="<?= esc($p['name']) ?>" loading="lazy" decoding="async" width="200" height="200">

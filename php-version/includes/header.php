@@ -967,12 +967,9 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
 <!-- Top promo strip moved INLINE into the trustbar above (next to
      "Instant Digital Delivery") — no separate floating bar anymore. -->
 
-<!-- Compliance: independent-reseller disclosure strip (site-wide, directly
-     below the primary navigation). Plain, crawlable text. -->
-<div class="reseller-notice-bar" data-testid="reseller-notice-bar" role="note">
-  <div class="container">
-    <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i><span><?= esc($brandName) ?> is an independent reseller of genuine software licenses and is not affiliated with Microsoft Corporation.</span>
-  </div>
-</div>
+<!-- Independent-reseller disclosure below the nav removed at user request —
+     the top-of-page trust-topbar ("Independent Distributor of Surplus
+     Volume Licenses.") already carries the compliance signal, and the
+     product/home pages have their own inline disclaimers. -->
 <?php endif; ?>
 <main id="main-content" role="main">

@@ -513,15 +513,14 @@ include __DIR__ . '/includes/header.php';
         <button class="btn btn-orange-outline btn-lg rounded-pill px-4 fw-bold buy-now-btn" data-slug="<?= esc($product['slug']) ?>" data-testid="pd-buy-now"><i class="bi bi-lightning-charge-fill me-1"></i>Buy Now</button>
       </div>
 
-      <!-- Google Ads compliance: bold inline disclaimer immediately under the
+      <!-- Google Ads compliance: inline disclaimer immediately under the
            Add to Cart / Buy Now buttons.  Explicitly discloses (a) digital-only
            delivery, (b) no physical media, and (c) our independent-reseller
-           relationship to Microsoft.  Required at this exact position by the
-           Google Ads landing-page audit. -->
-      <div class="pd-inline-disclaimer" data-testid="pd-inline-disclaimer" role="note">
-        <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
-        <span><strong>Notice:</strong> This is a 100% digital license key delivery. No physical media or box will be shipped. Maventech LLC is an independent marketplace reseller and is not affiliated with Microsoft Corporation.</span>
-      </div>
+           relationship to Microsoft.  Styled plain (no highlight box) to match
+           the surrounding "Important Licensing Note:" tone. -->
+      <p class="small text-secondary mt-3 mb-0" data-testid="pd-inline-disclaimer" role="note">
+        <strong>Notice:</strong> This is a 100% digital license key delivery. No physical media or box will be shipped. Maventech LLC is an independent marketplace reseller and is not affiliated with Microsoft Corporation.
+      </p>
 
       <p class="small text-secondary mt-3 mb-0" data-testid="product-licensing-note">
         <strong>Important Licensing Note:</strong> This is an authentic, surplus perpetual license key sourced legally through volume distribution clearings. It is not an OEM bundle or a subscription. Support is strictly limited to key delivery and license activation assistance. <?= esc(SITE_BRAND) ?> does not provide official vendor technical support or software troubleshooting.
