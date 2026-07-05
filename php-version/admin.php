@@ -7052,21 +7052,28 @@ elseif ($tab === 'company'):
     $bpPct    = $bpTotal ? (int)round($bpDone / $bpTotal * 100) : 0;
   ?>
   <div class="card-e card-e--plain p-4 mb-3" id="google-ads-blueprint-card" data-testid="google-ads-blueprint-card">
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
-      <div class="flex-grow-1" style="min-width:280px;">
-        <h2 class="h6 fw-bold mb-1"><i class="bi bi-bullseye text-primary me-1"></i> Google Ads Smart-Bidding Blueprint</h2>
-        <small class="text-muted d-block" style="line-height:1.5;">
-          A step-by-step configuration checklist to make Google's AI bid only for high-purchase-intent shoppers, driving down cost-per-acquisition on your Search / Shopping campaigns.
-        </small>
+    <a href="#google-ads-blueprint-body" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="google-ads-blueprint-body" class="text-decoration-none text-reset d-block bp-toggle" data-testid="bp-toggle">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+        <div class="flex-grow-1" style="min-width:280px;">
+          <h2 class="h6 fw-bold mb-1">
+            <i class="bi bi-bullseye text-primary me-1"></i> Google Ads Smart-Bidding Blueprint
+            <i class="bi bi-chevron-down bp-chevron ms-1 text-secondary" style="font-size:.85rem;transition:transform .2s ease;"></i>
+          </h2>
+          <small class="text-muted d-block" style="line-height:1.5;">
+            A step-by-step configuration checklist to make Google's AI bid only for high-purchase-intent shoppers, driving down cost-per-acquisition on your Search / Shopping campaigns.
+          </small>
+        </div>
+        <div class="text-end flex-shrink-0">
+          <div class="fw-bold text-primary" style="font-size:1.4rem;line-height:1;" data-testid="bp-progress-pct"><?= $bpPct ?>%</div>
+          <small class="text-muted"><?= $bpDone ?> of <?= $bpTotal ?> ready</small>
+        </div>
       </div>
-      <div class="text-end flex-shrink-0">
-        <div class="fw-bold text-primary" style="font-size:1.4rem;line-height:1;" data-testid="bp-progress-pct"><?= $bpPct ?>%</div>
-        <small class="text-muted"><?= $bpDone ?> of <?= $bpTotal ?> ready</small>
+      <div class="progress mb-0" role="progressbar" aria-valuenow="<?= $bpPct ?>" aria-valuemin="0" aria-valuemax="100" style="height:8px;border-radius:999px;">
+        <div class="progress-bar bg-success" style="width:<?= $bpPct ?>%;border-radius:999px;"></div>
       </div>
-    </div>
-    <div class="progress mb-3" role="progressbar" aria-valuenow="<?= $bpPct ?>" aria-valuemin="0" aria-valuemax="100" style="height:8px;border-radius:999px;">
-      <div class="progress-bar bg-success" style="width:<?= $bpPct ?>%;border-radius:999px;"></div>
-    </div>
+    </a>
+    <div class="collapse" id="google-ads-blueprint-body" data-testid="google-ads-blueprint-body">
+    <div class="pt-4">
     <div class="mb-3">
       <div class="fw-bold small text-uppercase text-secondary mb-2" style="letter-spacing:.06em;">On-site checklist</div>
       <?php foreach ($bpChecks as $c): ?>
@@ -7115,6 +7122,12 @@ elseif ($tab === 'company'):
         <i class="bi bi-arrow-up me-1"></i>Jump to tracking ID form
       </a>
     </div>
+    </div>
+    </div><!-- /#google-ads-blueprint-body -->
+    <style>
+      .bp-toggle[aria-expanded="true"] .bp-chevron { transform: rotate(180deg); }
+      .bp-toggle:hover .bp-chevron { color: var(--bs-primary) !important; }
+    </style>
   </div>
 
   <!-- Password-reset diagnostic — fires a one-shot reset to the company email -->
