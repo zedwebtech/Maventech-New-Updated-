@@ -614,7 +614,7 @@ include __DIR__ . '/includes/header.php';
         </script>
       <?php endif; ?>
 
-      <div class="row g-3 small">
+      <div class="row g-3 small mt-3">
         <div class="col-sm-6"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Instant email delivery (15-30 min)</div>
         <div class="col-sm-6"><i class="bi bi-patch-check-fill text-success me-2"></i>Genuine Microsoft key</div>
         <div class="col-sm-6"><i class="bi bi-arrow-counterclockwise text-primary me-2"></i>Money-back guarantee</div>

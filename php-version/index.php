@@ -144,14 +144,20 @@ include __DIR__ . '/includes/header.php';
 </div>
 
 <!-- Google Ads compliance: prominent independent-reseller disclaimer sits
-     directly below the hero on the homepage.  Required at a prominent
-     landing-page position, NOT just in the footer. -->
-<div class="container">
-  <div class="home-independent-disclaimer" data-testid="home-independent-disclaimer" role="note">
-    <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
-    <span>Maventech LLC is an independent reseller of genuine software licenses and is not affiliated with Microsoft Corporation. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</span>
+     directly below the hero on the homepage.  Restyled as a compact pill
+     card to match the visual language of the "Ask Maventech AI" teaser
+     directly below it. -->
+<section class="pt-4">
+  <div class="container text-center">
+    <div class="home-disc-pill d-inline-flex align-items-center gap-3 px-4 py-2 text-start" data-testid="home-independent-disclaimer" role="note">
+      <span class="logo-mark home-disc-mark"><i class="bi bi-info-circle-fill"></i></span>
+      <div class="lh-sm">
+        <div class="fw-bold small">Independent Reseller Notice</div>
+        <small class="text-secondary" style="font-size:.74rem;">Maventech LLC is an independent reseller of genuine software licenses and is not affiliated with Microsoft Corporation. All product names, logos, and brands are the property of their respective trademark owners.</small>
+      </div>
+    </div>
   </div>
-</div>
+</section>
 
 <!-- Ask AI teaser — compact, centered -->
 <section class="pt-4">

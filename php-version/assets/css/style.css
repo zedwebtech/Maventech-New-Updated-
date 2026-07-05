@@ -4755,31 +4755,35 @@ html[data-bs-theme="dark"] .pd-inline-disclaimer {
 }
 html[data-bs-theme="dark"] .pd-inline-disclaimer .bi { color: #fbbf24; }
 
-/* Homepage prominent independent-reseller disclosure — sits directly
-   below the hero on the home page (Google Ads: "Move relationship
-   disclaimers up onto prominent areas of landing pages"). */
-.home-independent-disclaimer {
-  background: #fffbeb;
-  border: 1.5px solid #f59e0b;
-  color: #78350f;
-  border-radius: 12px;
-  padding: 14px 18px;
+/* Homepage prominent independent-reseller disclosure — restyled as a
+   compact pill card to match the "Ask Maventech AI" teaser directly below
+   it. Border radius intentionally rounded (not full 999px pill) so the
+   multiline text stays comfortable. */
+.home-disc-pill {
+  background: var(--theme-primary-soft, #eef4ff);
+  border: 1px solid var(--theme-primary-light, #c7d7fe);
+  border-radius: 18px;
+  max-width: 780px;
+}
+.home-disc-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   font-size: .95rem;
-  font-weight: 600;
-  line-height: 1.55;
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  max-width: 980px;
-  margin: 20px auto 0;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, var(--theme-primary, #2563eb), var(--theme-accent, #06b6d4));
 }
-.home-independent-disclaimer .bi { font-size: 1.35rem; color: #b45309; flex-shrink: 0; margin-top: 1px; }
-html[data-bs-theme="dark"] .home-independent-disclaimer {
-  background: rgba(245, 158, 11, .12);
-  border-color: rgba(251, 191, 36, .5);
-  color: #fde68a;
+html[data-bs-theme="dark"] .home-disc-pill {
+  background: rgba(37, 99, 235, .14);
+  border-color: rgba(96, 165, 250, .32);
 }
-html[data-bs-theme="dark"] .home-independent-disclaimer .bi { color: #fbbf24; }
+html[data-bs-theme="dark"] .home-disc-pill .text-secondary { color: #94A3B8 !important; }
+
+/* Legacy amber home-independent-disclaimer removed — replaced by .home-disc-pill above. */
 
 /* Highlighted "Digital Delivery Only" badge (cards, rows, product page). */
 .pd-360-dd-badge {
