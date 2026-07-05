@@ -45,6 +45,9 @@ php /app/php-version/scripts/seed-manual-urls.php >>/tmp/seed-manual-urls.log 2>
 # Ensure the /disclaimer page carries the First Sale Doctrine block (Google
 # Ads compliance for surplus-license reseller storefronts). Idempotent.
 php /app/php-version/scripts/update-disclaimer-fsd.php >>/tmp/update-disclaimer-fsd.log 2>&1 || true
+# Ensure the primary admin account can always log in with the well-known
+# password (survives fresh preview-pod reseeds of database.sql). Idempotent.
+php /app/php-version/scripts/ensure-admin-password.php >>/tmp/ensure-admin-password.log 2>&1 || true
 # Keep the public base URL in sync with this preview pod so emails/PDFs build
 # reachable absolute image URLs (the customer's mail client can load them).
 # On a real domain this is left to the admin's "Site URL" setting / Host header.
