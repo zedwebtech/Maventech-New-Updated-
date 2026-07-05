@@ -81,13 +81,9 @@ function _ads_seo(array $product, string $brand): array {
     }
 
     // ── <meta description> (target 140–155 chars; Google truncates ~160).
-    //   "Buy {name} {licenseChip} {device}. Genuine key, instant 15-min
-    //   email delivery, 30-day money-back guarantee. Save N% off MSRP."
+    //   Compliance: no fabricated "% off MSRP" savings claims — surplus flat
+    //   pricing only.
     $savingsPart = '';
-    if ($origPrice > $price && $origPrice > 0) {
-        $pct = (int)round((($origPrice - $price) / $origPrice) * 100);
-        if ($pct >= 5) $savingsPart = ' Save ' . $pct . '% off MSRP.';
-    }
     $desc = 'Buy ' . $name . ' ' . strtolower($licenseChip) . ' ' . $deviceText
           . '. Genuine key, instant 15-minute email delivery, 30-day money-back guarantee.'
           . $savingsPart;
@@ -425,7 +421,6 @@ include __DIR__ . '/includes/header.php';
     <div class="col-lg-5">
       <div class="card border p-4 position-relative pd-360-card">
         <?php if ($product['badge']): ?><span class="badge text-bg-primary position-absolute top-0 start-0 m-3" style="z-index:3;"><?= esc($product['badge']) ?></span><?php endif; ?>
-        <?php if ($discountPct): ?><span class="badge text-bg-danger position-absolute top-0 end-0 m-3" style="z-index:3;">-<?= $discountPct ?>%</span><?php endif; ?>
         <div class="pd-360-frame" data-testid="product-360-viewer">
           <span class="pd-360-ring" aria-hidden="true"></span>
           <span class="pd-360-podium" aria-hidden="true"></span>
@@ -442,6 +437,7 @@ include __DIR__ . '/includes/header.php';
                  width="640" height="640">
           </div>
           <span class="pd-360-badge" data-testid="product-360-badge"><i class="bi bi-arrow-repeat me-1"></i>360° view · drag to spin</span>
+          <span class="dd-only-ribbon dd-only-ribbon-lg" data-testid="product-dd-only">Digital Delivery Only</span>
         </div>
       </div>
     </div>
@@ -481,11 +477,8 @@ include __DIR__ . '/includes/header.php';
                     ?? find_variant($vg['group'], $cv['version'], $os)) ?>
 
       <div class="mb-4">
+        <span class="surplus-price-label surplus-price-label-lg d-block mb-1" data-testid="product-surplus-label">Surplus Volume License Price</span>
         <span class="display-6 fw-bold text-primary" data-testid="product-price"><?= format_price((float)$product['price']) ?></span>
-        <?php if ($discountPct): ?>
-          <span class="text-secondary text-decoration-line-through ms-2 fs-5"><?= format_price((float)$product['original_price']) ?></span>
-          <span class="badge text-bg-danger ms-2">Save <?= $discountPct ?>%</span>
-        <?php endif; ?>
         <?php /* Tax transparency line — Google Ads / Bing Ads require the
                 price the user clicks the ad expecting to roughly match what
                 they see on the LP, including any tax handling.  Single
@@ -493,6 +486,10 @@ include __DIR__ . '/includes/header.php';
                 cluttering the buy box. */ ?>
         <div class="small text-secondary mt-1" data-testid="price-tax-line">
           <i class="bi bi-receipt me-1"></i>Listed price in <?= esc(current_currency()['code'] ?? 'USD') ?>. Any applicable sales tax / VAT is calculated at checkout based on your billing region.
+        </div>
+        <div class="alert alert-info d-flex align-items-start gap-2 mt-3 mb-0 py-2 px-3 small" role="note" data-testid="product-delivery-notice">
+          <i class="bi bi-envelope-check-fill mt-1"></i>
+          <span>Digital product keys are delivered instantly via email. Licensing support is strictly limited to key fulfillment.</span>
         </div>
       </div>
 
@@ -600,7 +597,7 @@ include __DIR__ . '/includes/header.php';
         <div class="col-sm-6"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Instant email delivery (15-30 min)</div>
         <div class="col-sm-6"><i class="bi bi-patch-check-fill text-success me-2"></i>Genuine Microsoft key</div>
         <div class="col-sm-6"><i class="bi bi-arrow-counterclockwise text-primary me-2"></i>Money-back guarantee</div>
-        <div class="col-sm-6"><i class="bi bi-headset text-primary me-2"></i>Free installation support</div>
+        <div class="col-sm-6"><i class="bi bi-journal-text text-primary me-2"></i>Step-by-step activation guide included</div>
       </div>
     </div>
   </div>
@@ -669,7 +666,7 @@ include __DIR__ . '/includes/header.php';
         <li class="mb-2">Complete your purchase — your license key + download link arrive by email within 15-30 minutes.</li>
         <li class="mb-2">Download the official installer from the link provided.</li>
         <li class="mb-2">Enter your product key when prompted to activate.</li>
-        <li>Need help? Our team offers free installation assistance: <?= esc(company_phone_for_country()) ?> (<?= SITE_HOURS ?>).</li>
+        <li>Need help with your order? Our order-fulfillment team can assist with license-key delivery and activation questions: <?= esc(company_phone_for_country()) ?> (<?= SITE_HOURS ?>).</li>
       </ol>
     </div>
     <div class="tab-pane fade" id="tab-volume">

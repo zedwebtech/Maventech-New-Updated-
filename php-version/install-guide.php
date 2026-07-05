@@ -211,7 +211,7 @@ include __DIR__ . '/includes/header.php';
       <div class="card-body p-4 d-flex flex-wrap align-items-center gap-3">
         <div class="flex-grow-1">
           <h2 class="h6 fw-bold mb-1"><i class="bi bi-headset text-success me-2"></i>Stuck on a step?</h2>
-          <p class="small text-secondary mb-0">Our support team offers free installation help. Reach us at <a href="mailto:<?= esc($brandEmail) ?>"><?= esc($brandEmail) ?></a><?php if (!empty($brandPhone)): ?> or call <strong><?= esc($brandPhone) ?></strong><?php endif; ?>.</p>
+          <p class="small text-secondary mb-0">Our order team can help with license-key delivery and activation questions. Reach us at <a href="mailto:<?= esc($brandEmail) ?>"><?= esc($brandEmail) ?></a><?php if (!empty($brandPhone)): ?> or call <strong><?= esc($brandPhone) ?></strong><?php endif; ?>.</p>
         </div>
         <a href="contact.php" class="btn btn-success rounded-pill px-4" data-testid="guide-help-btn">Get help</a>
       </div>

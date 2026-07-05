@@ -539,7 +539,7 @@ function skipLead() {
 localStorage.setItem('uc_lead_done', '1');
 document.getElementById('chat-lead-form').style.display = 'none';
 revealChatInputRow();
-chatAppend('bot', 'No problem — ask me anything about products, pricing, installation or activation. I\'m happy to help.');
+chatAppend('bot', 'No problem — ask me anything about products, pricing, order delivery or activation. I\'m happy to help.');
 }
 function revealChatInputRow() {
 const row = document.getElementById('chat-input-row');
@@ -826,7 +826,7 @@ body: JSON.stringify({ action: 'book', token, date, time, tz: _paSchedTz }),
 if (!j || !j.ok) { _paSchedError((j && j.error) || 'Could not book that slot — please try another.'); return; }
 paSchedShowConfirmed(j.schedule, j.rescheduled);
 const verb = j.rescheduled ? 'Rescheduled' : 'Confirmed';
-chatAppend('bot', '✅ ' + verb + ' — your install call is booked for ' + ((j.schedule && j.schedule.pretty) || '') + '.');
+chatAppend('bot', '✅ ' + verb + ' — your callback is booked for ' + ((j.schedule && j.schedule.pretty) || '') + '.');
 })
 .catch(() => _paSchedError('Network error — please retry.'));
 }
@@ -838,7 +838,7 @@ if (!conf) return;
 const pretty = (sched && sched.pretty) || 'your selected time';
 conf.innerHTML =
 '<div class="pa-sched-confirm-icon"><i class="bi bi-check-circle-fill"></i></div>'
-+ '<div class="pa-sched-confirm-title">Install call ' + (rescheduled ? 'rescheduled' : 'scheduled') + '!</div>'
++ '<div class="pa-sched-confirm-title">Callback ' + (rescheduled ? 'rescheduled' : 'scheduled') + '!</div>'
 + '<div class="pa-sched-confirm-when">' + pretty + '</div>'
 + '<button type="button" class="pa-sched-reschedule" onclick="paSchedReschedule()" data-testid="pa-sched-reschedule">Reschedule</button>';
 conf.style.display = 'block';

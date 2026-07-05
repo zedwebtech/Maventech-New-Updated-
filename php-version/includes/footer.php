@@ -141,7 +141,7 @@
 
     <!-- Trademark + legal -->
     <hr class="border-secondary my-4">
-    <p class="small text-center mx-auto" style="max-width: 760px;">Microsoft®, Office®, and Windows® are trademarks of Microsoft Corporation. <?= esc($brandName) ?> is independent of and not affiliated with Microsoft Corporation.</p>
+    <p class="small text-center mx-auto" style="max-width: 820px;"><?= esc($brandLegalName) ?> is an independent marketplace provider of genuine, surplus product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
     <div class="d-flex justify-content-center flex-wrap gap-2 small mb-3">
       <?php
       $legal = [
@@ -235,15 +235,15 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
          below it on first open. -->
     <div class="chat-addie-greeting" id="chat-addie-greeting" data-testid="chat-addie-greeting">
       <div class="chat-msg bot chat-addie-bubble">
-        <strong>Hi, I'm Addie 👋</strong><br>
-        Here to assist you with anything related to your <?= esc($brandName) ?> account!
+        <strong>Need help with your order? 👋</strong><br>
+        Chat with an order specialist about your <?= esc($brandName) ?> order or license delivery.
       </div>
       <div class="chat-addie-meta">Addie • Just now</div>
     </div>
     <!-- AI welcome + quick chips kept in markup for ProAssist auto-open flows
          but hidden by default until JS detects the customer is already
          identified (proLeadId, returning lead, etc.). -->
-    <div class="chat-msg bot" id="chat-welcome-msg" data-testid="chat-default-message" style="display:none;">Hi there! I'm here to help with products, pricing, activation or anything else you need. What can I look up for you?</div>
+    <div class="chat-msg bot" id="chat-welcome-msg" data-testid="chat-default-message" style="display:none;">Need help with your order or license delivery? Chat with an order specialist and we'll help with products, pricing, delivery or activation.</div>
     <div class="chat-chips" id="chat-chips" data-testid="chat-chips" style="display:none;">
       <button class="chat-chip" onclick="quickAsk('Which Office is right for my Mac?')" data-testid="chat-chip-mac"><i class="bi bi-apple me-1"></i>Office for Mac</button>
       <button class="chat-chip" onclick="quickAsk('What is the best deal on Office 2024 right now?')" data-testid="chat-chip-deal"><i class="bi bi-tags me-1"></i>Best deals on Office 2024</button>

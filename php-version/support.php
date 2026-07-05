@@ -178,7 +178,7 @@ include __DIR__ . '/includes/header.php';
       <div class="card p-4 mt-4 d-lg-flex flex-row align-items-center justify-content-between gap-3" style="background: rgba(37,99,235,.05);">
         <div>
           <h3 class="h6 fw-bold mb-1">Need Help Installing?</h3>
-          <small class="text-secondary">Our support team can guide you through the installation process step by step. We offer free installation assistance for all purchases.</small>
+          <small class="text-secondary">Our order team can help with license-key delivery and activation questions, and every purchase includes a step-by-step digital activation guide.</small>
         </div>
         <button class="btn btn-primary rounded-pill px-4 flex-shrink-0 mt-3 mt-lg-0" onclick="toggleChat()" data-testid="get-install-help">Get Install Help</button>
       </div>

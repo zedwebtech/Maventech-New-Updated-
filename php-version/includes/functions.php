@@ -2228,18 +2228,19 @@ function render_product_row(array $p): string
     $teaserHtml = $teaser !== ''
         ? '<p class="shop-row-teaser small text-secondary mb-1" data-testid="row-teaser-' . esc($p['slug']) . '">' . esc($teaser) . '</p>'
         : '';
-    $pct = ($p['original_price'] && $p['original_price'] > $p['price'])
-        ? round((1 - $p['price'] / $p['original_price']) * 100) : 0;
-    $orig = $pct ? '<small class="text-secondary text-decoration-line-through d-block">' . format_price((float)$p['original_price']) . '</small>' : '';
-    $save = $pct ? '<span class="badge text-bg-danger">Save ' . $pct . '%</span>' : '';
+    // Compliance: no strike-through "was" price or % discount badges. A single
+    // flat "Surplus Volume License Price" is shown instead.
+    $orig = '';
+    $save = '';
     $badge = $p['badge'] ? '<span class="badge text-bg-primary">' . esc($p['badge']) . '</span>' : '';
     $osIcon = $p['platform'] === 'Mac' ? 'macos' : 'windows';
     return '
     <div class="card product-card shop-row p-3 p-sm-4" data-testid="product-row-' . esc($p['slug']) . '">
       <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 gap-sm-4">
         <a href="product.php?slug=' . esc($p['slug']) . '" class="flex-shrink-0 mx-auto mx-sm-0">
-          <div class="shop-row-img rounded-4">
+          <div class="shop-row-img rounded-4 dd-only-wrap">
             <img ' . product_img_attrs($p['image'], 240) . ' alt="' . esc(product_img_alt($p)) . '" title="' . esc($p['name']) . '" loading="lazy" decoding="async" width="240" height="240">
+            <span class="dd-only-ribbon">Digital Delivery Only</span>
           </div>
         </a>
         <div class="flex-grow-1 min-w-0">
@@ -2254,11 +2255,12 @@ function render_product_row(array $p): string
           <div class="d-flex flex-wrap gap-3 small text-secondary">
             <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant email delivery</span>
             <span><i class="bi bi-infinity text-primary me-1"></i>One-time purchase</span>
-            <span class="d-none d-md-inline"><i class="bi bi-headset text-primary me-1"></i>Free install support</span>
+            <span class="d-none d-md-inline"><i class="bi bi-journal-text text-primary me-1"></i>Step-by-step activation guide</span>
           </div>
         </div>
         <div class="shop-row-buy text-sm-end flex-shrink-0">
           ' . $orig . '
+          <div class="surplus-price-label" data-testid="row-surplus-label-' . esc($p['slug']) . '">Surplus Volume License Price</div>
           <div class="fw-bold text-primary fs-4 lh-1 mb-1">' . format_price((float)$p['price']) . '</div>
           <div class="mb-2"><span class="badge rounded-pill text-secondary bg-body-tertiary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="row-currency-' . esc($p['slug']) . '">Prices in ' . esc($curCode) . '</span></div>
           <div class="mb-2">' . render_stock_pill($p['slug']) . '</div>
@@ -2279,11 +2281,10 @@ function render_product_card(array $p): string
     $teaserHtml = $teaser !== ''
         ? '<p class="pc-teaser small text-secondary mb-2" data-testid="card-teaser-' . esc($p['slug']) . '">' . esc($teaser) . '</p>'
         : '';
-    $pct = ($p['original_price'] && $p['original_price'] > $p['price'])
-        ? round((1 - $p['price'] / $p['original_price']) * 100) : 0;
-    $discount = $pct ? '<span class="badge text-bg-danger position-absolute top-0 end-0 m-2">-' . $pct . '%</span>' : '';
+    // Compliance: no % discount badge or strike-through price.
+    $discount = '';
     $badge = $p['badge'] ? '<span class="badge text-bg-primary position-absolute top-0 start-0 m-2">' . esc($p['badge']) . '</span>' : '';
-    $orig = $pct ? '<small class="text-secondary text-decoration-line-through">' . format_price((float)$p['original_price']) . '</small>' : '';
+    $orig = '';
     $osIcon = $p['platform'] === 'Mac' ? 'macos' : 'windows';
     $stockPill = render_stock_pill($p['slug']);
     $cartBtn = '<button class="pc-btn pc-btn-cart add-to-cart-btn" data-slug="' . esc($p['slug']) . '" data-testid="add-to-cart-' . esc($p['slug']) . '" aria-label="Add to cart"><i class="bi bi-cart-plus"></i><span class="pc-btn-label">Add</span></button>
@@ -2292,8 +2293,9 @@ function render_product_card(array $p): string
     <div class="card product-card tilt-3d h-100 position-relative" data-testid="product-card-' . esc($p['slug']) . '">
       ' . $badge . $discount . '
       <a href="product.php?slug=' . esc($p['slug']) . '" class="text-decoration-none">
-        <div class="ratio ratio-1x1 bg-body-tertiary rounded-top product-img-wrap">
+        <div class="ratio ratio-1x1 bg-body-tertiary rounded-top product-img-wrap dd-only-wrap">
           <img ' . product_img_attrs($p['image'], 320) . ' alt="' . esc(product_img_alt($p)) . '" title="' . esc($p['name']) . '" class="object-fit-contain p-3" loading="lazy" decoding="async" width="320" height="320">
+          <span class="dd-only-ribbon">Digital Delivery Only</span>
         </div>
       </a>
       <div class="card-body d-flex flex-column">
@@ -2305,7 +2307,8 @@ function render_product_card(array $p): string
         ' . $teaserHtml . '
         <div class="mb-2">' . $stockPill . '</div>
         <small class="text-secondary pc-meta mb-2"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant email delivery · One-time purchase</small>
-        <div class="pc-price-row d-flex align-items-baseline gap-2 mt-auto pt-2">
+        <div class="pc-price-row d-flex flex-column gap-0 mt-auto pt-2">
+          <span class="surplus-price-label" data-testid="card-surplus-label-' . esc($p['slug']) . '">Surplus Volume License Price</span>
           <div class="lh-1 d-flex align-items-baseline gap-2"><span class="fw-bold text-primary fs-5">' . format_price((float)$p['price']) . '</span>' . $orig . '<span class="text-secondary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="card-currency-' . esc($p['slug']) . '">' . esc($curCode) . '</span></div>
         </div>
         <div class="pc-btn-row d-flex gap-2 pt-2">

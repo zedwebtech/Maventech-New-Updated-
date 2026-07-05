@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 $pageTitle = 'About ' . SITE_BRAND . ' | Genuine Software Licenses';
-$pageDescription = SITE_BRAND . ' resells genuine Microsoft Office, Windows and antivirus keys at up to 81% off — independent software key provider with 30-day money-back guarantee.';
+$pageDescription = SITE_BRAND . ' resells genuine Microsoft Office, Windows and antivirus keys at flat, transparent surplus pricing — independent software key provider with 30-day money-back guarantee.';
 
 /* AboutPage schema — gives AI search engines and Google a clear,
    citation-friendly snapshot of who we are, what we sell, and why
@@ -65,7 +65,7 @@ $stats = [
 $checklist = [
     ['bi-award-fill', 'Independent Provider of Genuine Software Keys'],
     ['bi-lightning-charge-fill', 'Instant digital delivery within minutes'],
-    ['bi-tools', 'Free professional installation support'],
+    ['bi-journal-text', 'Step-by-step digital activation guide included'],
     ['bi-headset', 'Customer service Mon–Sat, 9 AM–6 PM EST'],
     ['bi-arrow-counterclockwise', '30-day money-back guarantee'],
 ];
@@ -73,7 +73,7 @@ $features = [
     ['bi-lightning-charge-fill', 'warning', 'Instant Delivery', 'Your authentic license key lands in your inbox within 15–30 minutes of purchase — no waiting, no shipping.'],
     ['bi-patch-check-fill', 'success', 'Genuine Products', 'Every license is sourced from authorized software clearing houses and verified before delivery.'],
     ['bi-infinity', 'primary', 'Perpetual License', 'One payment, yours forever. No recurring fees, no subscriptions — the software belongs to you for life.'],
-    ['bi-headset', 'info', 'Expert Support', 'Professional technical guidance for installation, activation, and any question along the way.'],
+    ['bi-headset', 'info', 'Order Support', 'Help with your order, license-key delivery, activation and checkout. Product installation follows the official vendor documentation we include.'],
     ['bi-lock-fill', 'primary', 'Secure Checkout', 'Shop confidently over SSL-encrypted, PCI-compliant payment processing with trusted providers.'],
     ['bi-arrow-counterclockwise', 'danger', '30-Day Guarantee', 'Not satisfied? Receive a full refund within 30 days — no questions asked, no hoops to jump through.'],
 ];

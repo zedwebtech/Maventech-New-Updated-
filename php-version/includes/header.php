@@ -31,7 +31,7 @@ $cur = current_currency();
 $checkoutHeader = $checkoutHeader ?? false;
 
 /* ---- SEO defaults (pages may override before including this header) ---- */
-$pageDescription = $pageDescription ?? 'Buy genuine Microsoft Office, Windows 11 & antivirus license keys at up to 81% off. Instant delivery, lifetime activation, 24/7 US support.';
+$pageDescription = $pageDescription ?? 'Buy genuine Microsoft Office, Windows 11 & antivirus license keys at flat, transparent surplus pricing. Instant delivery, lifetime activation, 24/7 US order support.';
 /* Auto-clamp every page title (50-60 chars) and description (120-160 chars)
    so admin-edited copy can never blow past Google's SERP cut-off. */
 $pageTitle       = seo_clamp_title($pageTitle, 60);
@@ -950,5 +950,13 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
 </nav>
 <!-- Top promo strip moved INLINE into the trustbar above (next to
      "Instant Digital Delivery") — no separate floating bar anymore. -->
+
+<!-- Compliance: independent-reseller disclosure strip (site-wide, directly
+     below the primary navigation). Plain, crawlable text. -->
+<div class="reseller-notice-bar" data-testid="reseller-notice-bar" role="note">
+  <div class="container">
+    <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i><span><?= esc($brandName) ?> is an independent reseller of genuine software licenses and is not affiliated with Microsoft Corporation.</span>
+  </div>
+</div>
 <?php endif; ?>
 <main id="main-content" role="main">

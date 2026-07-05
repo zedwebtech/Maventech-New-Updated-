@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/seo-content.php';
 $pageTitle = 'Microsoft Office & Windows 11 Keys | ' . SITE_BRAND;
-$pageDescription = 'Buy genuine Microsoft Office 2024, Windows 11 and antivirus keys at up to 81% off. Instant 15-30 minute delivery, lifetime activation.';
+$pageDescription = 'Buy genuine Microsoft Office 2024, Windows 11 and antivirus keys at flat, transparent surplus pricing. Instant 15-30 minute delivery, lifetime activation.';
 $pageKeywords    = marquee_page_keywords('home');
 
 /* ================== SEO + GEO: WebSite + SearchAction schema =====
@@ -200,7 +200,7 @@ include __DIR__ . '/includes/header.php';
         ['bi-patch-check-fill', 'Genuine Licenses', '100% Authentic Guarantee'],
         ['bi-lightning-charge-fill', 'Instant Delivery', '15-30 Minutes'],
         ['bi-infinity', 'Perpetual License', 'No Subscriptions'],
-        ['bi-headset', 'Free Support', SITE_HOURS],
+        ['bi-headset', 'Order Support', SITE_HOURS],
         ['bi-shield-lock-fill', 'SSL Secured', 'Safe Checkout'],
         ['bi-arrow-counterclockwise', '30-Day Guarantee', 'Full Refund'],
       ];
@@ -273,14 +273,11 @@ include __DIR__ . '/includes/header.php';
             <div class="col-sm-7">
 <?php /* product rating stars removed per request */ ?>
               <h3 class="h4 fw-bold mb-2"><a href="product.php?slug=<?= esc($feat['slug']) ?>" class="text-decoration-none text-body"><?= esc($feat['name']) ?></a></h3>
-              <p class="small text-secondary mb-3">Genuine one-time purchase with instant email delivery, free installation support and a 30-day money-back guarantee.</p>
-              <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+              <p class="small text-secondary mb-3">Genuine one-time purchase with instant email delivery, a step-by-step digital activation guide and a 30-day money-back guarantee.</p>
+              <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                 <span class="fw-bold text-primary fs-3 lh-1"><?= format_price((float)$feat['price']) ?></span>
-                <?php if ($featPct): ?>
-                  <small class="text-secondary text-decoration-line-through"><?= format_price((float)$feat['original_price']) ?></small>
-                  <span class="badge text-bg-danger">Save <?= $featPct ?>%</span>
-                <?php endif; ?>
               </div>
+              <div class="surplus-price-label mb-3">Surplus Volume License Price</div>
               <div class="d-flex gap-2 flex-wrap">
                 <button class="btn btn-primary rounded-pill px-4 add-to-cart-btn" data-slug="<?= esc($feat['slug']) ?>" data-testid="add-to-cart-<?= esc($feat['slug']) ?>"><i class="bi bi-cart-plus me-1"></i>Add to Cart</button>
                 <a href="product.php?slug=<?= esc($feat['slug']) ?>" class="btn btn-outline-secondary rounded-pill px-4" data-testid="spotlight-view-details">View Details</a>
@@ -300,7 +297,6 @@ include __DIR__ . '/includes/header.php';
                 <a href="product.php?slug=<?= esc($p['slug']) ?>" class="text-decoration-none text-body fw-bold small d-block"><?= esc($p['name']) ?></a>
 <?php /* product rating stars removed per request */ ?>
                 <span class="fw-bold text-primary"><?= format_price((float)$p['price']) ?></span>
-                <?php if ($p['original_price'] && $p['original_price'] > $p['price']): ?><small class="text-secondary text-decoration-line-through ms-1"><?= format_price((float)$p['original_price']) ?></small><?php endif; ?>
               </div>
               <button class="btn btn-sm btn-primary rounded-circle side-add add-to-cart-btn" data-slug="<?= esc($p['slug']) ?>" aria-label="Add <?= esc($p['name']) ?> to cart" data-testid="add-to-cart-<?= esc($p['slug']) ?>"><i class="bi bi-cart-plus"></i></button>
             </div>
@@ -491,7 +487,7 @@ include __DIR__ . '/includes/header.php';
         ['bi-lightning-charge-fill', 'Instant Delivery', 'Receive your authentic license key via email within 15-30 minutes of purchase.'],
         ['bi-patch-check-fill', 'Genuine Products', 'All licenses are authentic and sourced from authorized software clearing houses.'],
         ['bi-infinity', 'Perpetual License', 'No recurring fees or subscriptions. One-time purchase — yours to use for as long as you own your device.'],
-        ['bi-headset', 'Expert Support', 'Professional technical support for installation, activation, and any questions.'],
+        ['bi-headset', 'Order Support', 'Help with your order, license-key delivery, activation and checkout. Product installation follows the official vendor documentation we include.'],
         ['bi-shield-lock-fill', 'Secure Checkout', 'Shop with confidence using our SSL-encrypted payment processing.'],
         ['bi-arrow-counterclockwise', '30-Day Guarantee', 'Not satisfied? Get a full refund within 30 days, no questions asked.'],
       ];
@@ -517,12 +513,12 @@ include __DIR__ . '/includes/header.php';
       <div class="col-lg-7">
         <h2 class="fw-bold">Your Trusted Software Partner</h2>
         <p class="text-secondary mt-3">At <?= SITE_BRAND ?>, we're committed to providing genuine Microsoft software at competitive prices. Our team of experts ensures every customer receives the support they need for a seamless experience.</p>
-        <p class="text-secondary">We go beyond simply selling products. Our philosophy revolves around problem-solving, ensuring we address any challenges our customers encounter with installation, activation, or usage.</p>
+        <p class="text-secondary">We focus on fast, reliable order fulfillment — making sure your genuine license key is delivered promptly and that you have a clear, step-by-step digital activation guide for every purchase.</p>
         <div class="row g-2 small mt-2">
           <?php
           $partnerPoints = [
             'Independent Provider of Genuine Software Keys', 'Trusted by businesses, schools and freelancers worldwide',
-            'Instant digital delivery within minutes', 'Free professional installation support',
+            'Instant digital delivery within minutes', 'Step-by-step digital activation guide included',
             'Customer service ' . SITE_HOURS, '30-day money-back guarantee',
           ];
           foreach ($partnerPoints as $pp): ?>
