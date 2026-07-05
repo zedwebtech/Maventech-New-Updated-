@@ -13,7 +13,7 @@ $groups = [
     ['icon' => 'bi-house-fill', 'title' => 'Main Pages', 'links' => [
         ['Home', 'index.php'],
         ['Shop All Products', 'shop.php'],
-        ['Device Protection Hub', 'protection-hub.php'],
+        ['Protection Hub', 'protection-hub.php'],
         ['Antivirus Software', 'category.php?slug=antivirus'],
         ['Blog', 'blog.php'],
         ['About Us', 'about-us.php'],

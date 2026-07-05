@@ -46,7 +46,7 @@ $planLogos = [
     'lifetime-elite' => ['icon' => 'bi-gem',                   'color' => '#a855f7'],
 ];
 
-$title       = 'Device Protection Hub — Genuine Support Plans | ' . SITE_BRAND;
+$title       = 'Protection Hub — Genuine Support Plans | ' . SITE_BRAND;
 $description = 'Choose the right level of hands-on support for your Windows &amp; Office licences. One-time payment plans from $29 (Quick Fix) to $199 (Lifetime Elite) — no recurring billing, no hidden fees.';
 include __DIR__ . '/includes/header.php';
 ?>
@@ -151,7 +151,7 @@ html[data-bs-theme="dark"] .ph-price-row .price {
 <section class="ph-hero">
   <div class="container text-center" style="max-width: 900px;">
     <span class="badge rounded-pill text-bg-primary mb-2" data-testid="ph-page-badge">
-      <i class="bi bi-shield-shaded me-1"></i> Device Protection Hub
+      <i class="bi bi-shield-shaded me-1"></i> Protection Hub
     </span>
     <h1 class="fw-bold display-5 mb-2" data-testid="ph-page-title">Choose the plan that keeps every device covered</h1>
     <p class="text-secondary fs-5 mb-3">Hands-on remote setup, licence recovery and priority support &mdash; from a single-session rescue to a dedicated tier-3 specialist for a decade.</p>
@@ -160,7 +160,7 @@ html[data-bs-theme="dark"] .ph-price-row .price {
 </section>
 
 <?php if (empty($plans)): ?>
-<section class="py-5"><div class="container"><div class="alert alert-info">Our Device Protection plans are being finalised. Please check back soon<?= $phone ? ' or call <strong>' . esc($phone) . '</strong>' : '' ?>.</div></div></section>
+<section class="py-5"><div class="container"><div class="alert alert-info">Our Protection Hub plans are being finalised. Please check back soon<?= $phone ? ' or call <strong>' . esc($phone) . '</strong>' : '' ?>.</div></div></section>
 <?php else: ?>
 
 <section class="py-5">
@@ -273,6 +273,89 @@ html[data-bs-theme="dark"] .ph-price-row .price {
     <?php if ($phone): ?>
       <p class="text-center text-secondary mt-4">Questions about a plan? Call us at <a href="tel:<?= esc(tel_e164($phone)) ?>" class="fw-semibold text-decoration-none"><?= esc($phone) ?></a> — we're happy to help.</p>
     <?php endif; ?>
+  </div>
+</section>
+
+<!-- Frequently Asked Questions — accordion styled to match the rest of
+     the hub. Each answer aligns with Google Ads compliance (one-time
+     payment, independent-reseller status, no recurring billing). -->
+<section class="pb-5" id="protection-hub-faq">
+  <div class="container" style="max-width: 900px;">
+    <div class="text-center mb-4">
+      <span class="badge rounded-pill text-bg-primary mb-2" data-testid="ph-faq-badge"><i class="bi bi-patch-question me-1"></i>Frequently Asked Questions</span>
+      <h2 class="fw-bold h3 mb-2">Everything you need to know before you buy</h2>
+      <p class="text-secondary">Straight answers on billing, delivery, refunds and coverage — no fine print.</p>
+    </div>
+    <?php
+      $faqs = [
+        [
+          'q' => 'Is this a subscription that renews automatically?',
+          'a' => 'No. Every Protection Hub plan is a <strong>one-time payment</strong>. You are billed once for the duration you select (single session for Quick Fix, 1 / 3 / 10 years for the other tiers). Nothing renews automatically, and you will never be charged again for the same plan.',
+        ],
+        [
+          'q' => 'How do I access support after purchase?',
+          'a' => 'Within 15&ndash;30 minutes of checkout, you will receive a confirmation email containing (a) your unique Customer ID, (b) a dedicated support email address, and (c) the priority phone / chat access instructions that apply to your specific tier. Save this email &mdash; it is your proof of active coverage.',
+        ],
+        [
+          'q' => 'Which plan should I pick?',
+          'a' => '<strong>Quick Fix</strong> is for a single urgent issue (installation, activation, one-time error). <strong>Starter Care</strong> covers one device for 1 year of unlimited chat support. <strong>Pro Shield</strong> covers up to 3 devices for 3 years with VIP phone support &mdash; the sweet spot for most households. <strong>Lifetime Elite</strong> gives you a dedicated specialist and covers unlimited devices for a decade &mdash; best for power users, freelancers and small businesses.',
+        ],
+        [
+          'q' => 'Can I transfer my licence key to a new PC later?',
+          'a' => 'Yes &mdash; Pro Shield and Lifetime Elite both include our <em>Hardware-to-Hardware Key Transfer</em> service. If you upgrade or replace your PC, our support team will help you reactivate your genuine Microsoft key on the new machine at no extra cost, without needing to re-purchase.',
+        ],
+        [
+          'q' => 'What is your refund policy?',
+          'a' => 'Every plan is backed by our <strong>30-day money-back guarantee</strong>. If you have not consumed a service session and are not satisfied, email us within 30 days of purchase and we will refund your payment in full. See our <a href="returns.php" class="text-decoration-none">Refund Policy</a> for full details.',
+        ],
+        [
+          'q' => 'Is Maventech affiliated with Microsoft?',
+          'a' => '<strong>No.</strong> Maventech LLC is an <em>independent</em> reseller of genuine software licenses and support services. We are not affiliated with, endorsed by, or sponsored by Microsoft Corporation. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.',
+        ],
+        [
+          'q' => 'How do you deliver support &mdash; remote access, phone, or chat?',
+          'a' => 'It depends on the tier. <strong>Quick Fix</strong> is a single remote-desktop session. <strong>Starter Care</strong> uses priority live chat. <strong>Pro Shield</strong> adds VIP phone support with priority queue routing. <strong>Lifetime Elite</strong> assigns you a dedicated tier-3 specialist reachable by phone, chat, or scheduled remote session with a guaranteed 15-minute response window.',
+        ],
+        [
+          'q' => 'Can I upgrade my plan later?',
+          'a' => 'Yes. If you start with Quick Fix or Starter Care and want to upgrade to Pro Shield or Lifetime Elite, contact our support team and we will apply <strong>full credit</strong> for what you already paid toward the higher tier. No repurchase penalty.',
+        ],
+      ];
+    ?>
+    <div class="accordion" id="ph-faq-accordion" data-testid="ph-faq-accordion">
+      <?php foreach ($faqs as $i => $f): ?>
+        <div class="accordion-item mb-2" style="border-radius: 12px; overflow: hidden;">
+          <h3 class="accordion-header">
+            <button class="accordion-button <?= $i === 0 ? '' : 'collapsed' ?> fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#ph-faq-<?= $i ?>" aria-expanded="<?= $i === 0 ? 'true' : 'false' ?>" aria-controls="ph-faq-<?= $i ?>" data-testid="ph-faq-q-<?= $i ?>">
+              <?= $f['q'] ?>
+            </button>
+          </h3>
+          <div id="ph-faq-<?= $i ?>" class="accordion-collapse collapse <?= $i === 0 ? 'show' : '' ?>" data-bs-parent="#ph-faq-accordion">
+            <div class="accordion-body text-secondary" style="line-height: 1.65;" data-testid="ph-faq-a-<?= $i ?>">
+              <?= $f['a'] ?>
+            </div>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+
+    <!-- FAQPage JSON-LD for rich results in Google -->
+    <script type="application/ld+json">
+    <?php
+      echo json_encode([
+        '@context' => 'https://schema.org',
+        '@type'    => 'FAQPage',
+        'mainEntity' => array_map(fn($f) => [
+          '@type' => 'Question',
+          'name'  => strip_tags($f['q']),
+          'acceptedAnswer' => [
+            '@type' => 'Answer',
+            'text'  => strip_tags($f['a']),
+          ],
+        ], $faqs),
+      ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    ?>
+    </script>
   </div>
 </section>
 

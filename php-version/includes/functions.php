@@ -1069,7 +1069,7 @@ function admin_panels(): array
     return [
         'dashboard'   => ['Dashboard',                'admin.php?tab=dashboard',        'bi-speedometer2'],
         'users'       => ['Users',                    'admin.php?tab=users',            'bi-people-fill'],
-        'subscription'=> ['Device Protection Hub',    'admin.php?tab=subscription',     'bi-shield-shaded'],
+        'subscription'=> ['Protection Hub',           'admin.php?tab=subscription',     'bi-shield-shaded'],
         'ai-blogger'  => ['AI Auto-Blogger',          'admin.php?tab=ai-blogger',       'bi-robot'],
         'company'     => ['Company Info',             'admin.php?tab=company',          'bi-building'],
         'inventory'   => ['Inventory Mgmt',           'inventory.php',                  'bi-boxes'],
