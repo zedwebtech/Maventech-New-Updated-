@@ -143,6 +143,16 @@ include __DIR__ . '/includes/header.php';
   </div>
 </div>
 
+<!-- Google Ads compliance: prominent independent-reseller disclaimer sits
+     directly below the hero on the homepage.  Required at a prominent
+     landing-page position, NOT just in the footer. -->
+<div class="container">
+  <div class="home-independent-disclaimer" data-testid="home-independent-disclaimer" role="note">
+    <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+    <span>Maventech LLC is an independent reseller of genuine software licenses and is not affiliated with Microsoft Corporation. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</span>
+  </div>
+</div>
+
 <!-- Ask AI teaser — compact, centered -->
 <section class="pt-4">
   <div class="container text-center">
@@ -515,7 +525,7 @@ include __DIR__ . '/includes/header.php';
         <div class="row g-2 small mt-2">
           <?php
           $partnerPoints = [
-            'Independent Provider of Genuine Software Keys', 'Trusted by businesses, schools and freelancers worldwide',
+            'Maventech LLC is an independent reseller of genuine software licenses and is not affiliated with Microsoft Corporation.', 'Trusted by businesses, schools and freelancers worldwide',
             'Instant digital delivery within minutes', 'Step-by-step digital activation guide included',
             'Customer service ' . SITE_HOURS, '30-day money-back guarantee',
           ];

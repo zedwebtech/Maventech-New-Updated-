@@ -50,14 +50,21 @@ function _ads_seo(array $product, string $brand): array {
     // type ("for 1 PC", "for 1 Mac", "5 devices").  Defaults to "1 device"
     // when the platform is generic / cross-platform.
     $deviceText = 'for 1 ' . ($platform === 'Mac' ? 'Mac' : ($platform === 'Windows' ? 'PC' : 'Device'));
+    // Compact device tag used inside the digital-key visible title
+    // ("– 1 PC Digital Product Key (Lifetime License)").
+    $deviceTag  = '1 ' . ($platform === 'Mac' ? 'Mac' : ($platform === 'Windows' ? 'PC' : 'Device'));
 
     // Licence-type chip — directly mirrors the high-intent query terms.
     $licenseChip = $license === 'subscription' ? '1-Year Subscription'
                  : ($license === 'lifetime' ? 'Lifetime License Key' : 'Genuine License Key');
+    // Human-readable license clause for the digital-key title.
+    $licenseClause = $license === 'subscription' ? '1-Year Subscription'
+                   : ($license === 'lifetime' ? 'Lifetime License' : 'Genuine License');
 
-    // ── Visible H1 (≤ 80 chars, NO price — the buy box renders price beside)
-    //   "Buy Microsoft Office Home 2024 — for 1 PC | Lifetime License Key"
-    $h1 = 'Buy ' . $name . ' — ' . $deviceText . ' | ' . $licenseChip;
+    // ── Visible H1 (Google Ads compliance: title must explicitly state the
+    //   delivery mechanism — "Digital Product Key" not "Box").
+    //   Example: "Microsoft Office 2024 Home & Business – 1 PC Digital Product Key (Lifetime License)"
+    $h1 = $name . ' – ' . $deviceTag . ' Digital Product Key (' . $licenseClause . ')';
 
     // ── <title> tag (target ≤ 60 chars so Google doesn't truncate). Format:
     //   "Buy {short-name} {device} | Lifetime Key | ${price} | {brand}"
@@ -506,6 +513,16 @@ include __DIR__ . '/includes/header.php';
         <button class="btn btn-orange-outline btn-lg rounded-pill px-4 fw-bold buy-now-btn" data-slug="<?= esc($product['slug']) ?>" data-testid="pd-buy-now"><i class="bi bi-lightning-charge-fill me-1"></i>Buy Now</button>
       </div>
 
+      <!-- Google Ads compliance: bold inline disclaimer immediately under the
+           Add to Cart / Buy Now buttons.  Explicitly discloses (a) digital-only
+           delivery, (b) no physical media, and (c) our independent-reseller
+           relationship to Microsoft.  Required at this exact position by the
+           Google Ads landing-page audit. -->
+      <div class="pd-inline-disclaimer" data-testid="pd-inline-disclaimer" role="note">
+        <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+        <span><strong>Notice:</strong> This is a 100% digital license key delivery. No physical media or box will be shipped. Maventech LLC is an independent marketplace reseller and is not affiliated with Microsoft Corporation.</span>
+      </div>
+
       <p class="small text-secondary mt-3 mb-0" data-testid="product-licensing-note">
         <strong>Important Licensing Note:</strong> This is an authentic, surplus perpetual license key sourced legally through volume distribution clearings. It is not an OEM bundle or a subscription. Support is strictly limited to key delivery and license activation assistance. <?= esc(SITE_BRAND) ?> does not provide official vendor technical support or software troubleshooting.
       </p>
@@ -608,7 +625,7 @@ include __DIR__ . '/includes/header.php';
           <i class="bi bi-envelope-paper-fill text-primary fs-5 mt-1"></i>
           <div>
             <div class="fw-bold mb-1">How You Will Receive This Product</div>
-            <p class="small text-secondary mb-0">This is a digital product. No physical box or DVD will be shipped. Within 15&ndash;30 minutes of purchase, you will receive an email containing your genuine product key and official download links directly from the vendor&rsquo;s servers.</p>
+            <p class="small text-secondary mb-0">This is a 100% digital product. No physical media will be shipped. Within 15&ndash;30 minutes of purchase, you will receive an email containing your genuine product key and official download links directly from the vendor&rsquo;s servers.</p>
           </div>
         </div>
       </div>

@@ -21,17 +21,22 @@ function mv_product_image_creds(): array
     return [$k, 'https://integrations.emergentagent.com/llm/v1'];
 }
 
-/** Build a clean retail-card prompt from the product metadata. */
+/** Build a clean digital-key card prompt from the product metadata. */
 function mv_build_image_prompt(array $p): string
 {
     $name     = trim((string)($p['name'] ?? 'Software'));
     $brand    = trim((string)($p['brand'] ?? ''));
     $platform = trim((string)($p['platform'] ?? ''));
-    $prompt   = 'Professional e-commerce product card image for "' . $name . '"'
+    // Google Ads compliance: NEVER describe a "retail box" — these are 100%
+    // digital licence keys. Prompt must produce a flat, modern digital-key
+    // graphic (product key card / digital download voucher), not a 3D box.
+    $prompt   = 'Flat, modern digital product-key voucher graphic for "' . $name . '"'
               . ($brand !== '' ? ' by ' . $brand : '') . '. '
-              . 'A premium software retail box / digital license card on a pure white studio background, '
-              . 'soft realistic shadow, centered, front-facing, photorealistic, sharp high detail, '
-              . 'modern and trustworthy retail-catalog style. No people, no extra text, no watermark, no borders.';
+              . 'A clean 2D digital licence card with a subtle key icon and a "Digital Product Key" label, '
+              . 'on a pure white studio background, soft realistic shadow, centered, front-facing, '
+              . 'photorealistic, sharp high detail, modern and trustworthy e-commerce catalogue style. '
+              . 'ABSOLUTELY NO 3D retail boxes, NO physical packaging, NO DVD case, NO shrink-wrap. '
+              . 'No people, no extra text, no watermark, no borders.';
     if ($platform !== '') $prompt .= ' Platform: ' . $platform . '.';
     return $prompt;
 }

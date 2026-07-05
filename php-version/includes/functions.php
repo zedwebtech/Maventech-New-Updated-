@@ -1916,10 +1916,12 @@ function product_img_alt(array $p): string
     // Build a descriptive alt that names the SKU + license type + delivery,
     // so Google Images, Bing Visual Search and AI multimodal models can
     // surface the listing for "Microsoft Office 2024 Professional Plus
-    // product key box", "Office 2021 lifetime license key" etc.
+    // digital product key", "Office 2021 lifetime license key" etc.
+    // Google Ads compliance — do NOT use the word "box" in software product
+    // listings (these are 100% digital keys, no physical media).
     // Use plain dashes (not HTML entities) so the alt text isn't double-
     // encoded when the caller pipes it through esc().
-    $alt = $p['name'] . ' product key box - genuine one-time purchase for ' . $platform . ', instant digital delivery';
+    $alt = $p['name'] . ' digital product key - genuine one-time purchase for ' . $platform . ', instant email delivery';
     if ($pct > 0) $alt .= ', ' . $pct . '% off';
     return $alt . ' | ' . SITE_BRAND;
 }
