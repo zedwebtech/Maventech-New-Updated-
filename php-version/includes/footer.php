@@ -5,7 +5,7 @@
   <!-- Newsletter band -->
   <div class="border-bottom border-secondary-subtle" style="border-color: rgba(255,255,255,.12) !important;">
     <div class="container text-center py-5">
-      <h2 class="text-white fw-bold fs-2">Join our list and save up to <span style="color:#67e8f9;">81%</span></h2>
+      <h2 class="text-white fw-bold fs-2">Join our list for the latest deals &amp; product updates</h2>
       <p class="small mb-4">Subscribe and receive exclusive weekly deals straight to your inbox!</p>
       <form class="d-flex gap-2 mx-auto" style="max-width: 420px;" onsubmit="subscribeNewsletter(event)">
         <input type="email" required class="form-control rounded-pill px-3" placeholder="Enter your email" data-testid="newsletter-email">
