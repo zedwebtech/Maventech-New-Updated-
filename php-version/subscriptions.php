@@ -89,11 +89,17 @@ html[data-bs-theme="dark"] .ph-hero {
   transform: rotate(-12deg);
 }
 .ph-logo-inline {
-  font-size: 2.1rem;
+  font-size: 2.6rem;
   line-height: 1;
-  margin-bottom: 8px;
-  display: inline-block;
+  margin-bottom: 10px;
+  display: block;
+  text-align: center;
 }
+.ph-card-head { text-align: center; }
+.ph-card-head h3 { text-align: center; }
+.ph-card-head .tagline { text-align: center; min-height: 40px; }
+.ph-price-row { text-align: center; }
+.ph-price-row .d-flex { justify-content: center; }
 .ph-price-row .price {
   font-size: 2.4rem; font-weight: 800; line-height: 1;
   background: linear-gradient(135deg, #1e40af, #3b82f6);
@@ -178,9 +184,11 @@ html[data-bs-theme="dark"] .ph-price-row .price {
             <i class="bi <?= esc($logo['icon']) ?> ph-logo-mark" style="color: <?= esc($logo['color']) ?>;" aria-hidden="true" data-testid="ph-logo-mark-<?= esc($p['slug']) ?>"></i>
 
             <div class="position-relative">
-              <i class="bi <?= esc($logo['icon']) ?> ph-logo-inline" style="color: <?= esc($logo['color']) ?>;" aria-hidden="true"></i>
-              <h3 class="h5 fw-bold mb-1" data-testid="ph-name-<?= esc($p['slug']) ?>"><?= esc($p['name']) ?></h3>
-              <p class="text-secondary small mb-3" style="min-height: 40px;" data-testid="ph-tagline-<?= esc($p['slug']) ?>"><?= esc($p['tagline']) ?></p>
+              <div class="ph-card-head">
+                <i class="bi <?= esc($logo['icon']) ?> ph-logo-inline" style="color: <?= esc($logo['color']) ?>;" aria-hidden="true"></i>
+                <h3 class="h5 fw-bold mb-1" data-testid="ph-name-<?= esc($p['slug']) ?>"><?= esc($p['name']) ?></h3>
+                <p class="text-secondary small mb-3 tagline" data-testid="ph-tagline-<?= esc($p['slug']) ?>"><?= esc($p['tagline']) ?></p>
+              </div>
 
               <div class="ph-price-row mb-3" data-testid="ph-price-<?= esc($p['slug']) ?>">
                 <?php if ($priced): ?>

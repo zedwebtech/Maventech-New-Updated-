@@ -21,6 +21,7 @@ $plans = [
     'devices' => '1 Device',
     'duration_months' => 0,
     'price' => 29.00,
+    'icon_image' => '/assets/images/subscriptions/quick-fix.svg',
     'sort_order' => 10,
     'features' => [
       '1 remote setup session',
@@ -38,6 +39,7 @@ $plans = [
     'devices' => '1 Device',
     'duration_months' => 12,
     'price' => 59.00,
+    'icon_image' => '/assets/images/subscriptions/starter-care.svg',
     'sort_order' => 20,
     'features' => [
       '12 months priority live-chat support',
@@ -56,6 +58,7 @@ $plans = [
     'devices' => 'Up to 3 Devices',
     'duration_months' => 36,
     'price' => 99.00,
+    'icon_image' => '/assets/images/subscriptions/pro-shield.svg',
     'sort_order' => 30,
     'features' => [
       '36 months VIP phone support',
@@ -75,6 +78,7 @@ $plans = [
     'devices' => 'Unlimited Devices',
     'duration_months' => 120,
     'price' => 199.00,
+    'icon_image' => '/assets/images/subscriptions/lifetime-elite.svg',
     'sort_order' => 40,
     'features' => [
       '10 years dedicated tier-3 support',
@@ -104,26 +108,26 @@ foreach ($plans as $p) {
     if ($currentPrice === false) {
         // Insert new row
         $ins = $db->prepare(
-            'INSERT INTO subscription_plans (slug, name, tagline, tenure_label, devices, duration_months, price, features_json, sort_order, active) '
-          . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)'
+            'INSERT INTO subscription_plans (slug, name, tagline, tenure_label, devices, duration_months, price, features_json, sort_order, active, icon_image) '
+          . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)'
         );
         $ins->execute([
             $p['slug'], $p['name'], $p['tagline'], $p['tenure_label'], $p['devices'],
-            $p['duration_months'], $newPrice, $features_json, $p['sort_order'],
+            $p['duration_months'], $newPrice, $features_json, $p['sort_order'], $p['icon_image'],
         ]);
         echo "[protection-hub] INSERT {$p['slug']} @ \${$newPrice}\n";
     } else {
-        // Refresh content (name/tagline/features/duration/sort) + price only if
+        // Refresh content (name/tagline/features/duration/sort/icon) + price only if
         // still the seed default.
         $upd = $db->prepare(
             'UPDATE subscription_plans '
           . 'SET name = ?, tagline = ?, tenure_label = ?, devices = ?, duration_months = ?, '
-          . '    price = ?, features_json = ?, sort_order = ?, active = 1 '
+          . '    price = ?, features_json = ?, sort_order = ?, active = 1, icon_image = ? '
           . 'WHERE slug = ?'
         );
         $upd->execute([
             $p['name'], $p['tagline'], $p['tenure_label'], $p['devices'],
-            $p['duration_months'], $newPrice, $features_json, $p['sort_order'],
+            $p['duration_months'], $newPrice, $features_json, $p['sort_order'], $p['icon_image'],
             $p['slug'],
         ]);
         echo "[protection-hub] UPDATE {$p['slug']} @ \${$newPrice}" . ($currentPrice != $newPrice ? " (was \${$currentPrice})" : '') . "\n";

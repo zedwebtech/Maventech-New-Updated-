@@ -438,5 +438,68 @@ foreach ($products as $p) {
     echo "    </item>\n";
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+ *  Protection Hub plans (append after the product loop).  Emits each active
+ *  plan as its own <item> so Google Merchant Center can index them alongside
+ *  the software SKUs.  Uses `product_type = "Services > Software Support"`
+ *  and Google product category 449 (Business & Industrial > Advertising & Marketing >
+ *  Business Services) so Google classifies them as service offerings.
+ * ───────────────────────────────────────────────────────────────────────── */
+try {
+    $hubPlans = sub_plans(true);
+} catch (Throwable $e) { $hubPlans = []; }
+
+foreach ($hubPlans as $plan) {
+    if ((float)$plan['price'] <= 0) continue; // skip contact-us placeholders
+
+    $planSlug   = (string)$plan['slug'];
+    $planId     = 'plan-' . $planSlug;
+    $planTitle  = $plan['name'] . ' — ' . $plan['tenure_label'];
+    $planPrice  = number_format((float)$plan['price'], 2, '.', '');
+    // Description built from the plan's feature bullets — Merchant Center
+    // requires substantive text (>= 50 chars) so we always append a compliant
+    // suffix.
+    $planFeatures = (array)($plan['features'] ?? []);
+    $planDesc  = trim((string)($plan['tagline'] ?? $plan['name']));
+    if ($planFeatures) $planDesc .= '. Includes: ' . implode(' · ', array_slice($planFeatures, 0, 5)) . '.';
+    $planDesc .= ' Coverage: ' . ($plan['devices'] ?? '') . '. One-time payment · no recurring billing.';
+
+    $planLink   = rtrim($site, '/') . '/protection-hub.php#' . $planSlug;
+    $planImg    = rtrim($site, '/') . ($plan['icon_image'] ?: '/assets/images/product-placeholder.svg');
+
+    // Emit ONE item per active region so Merchant Center can serve the plan
+    // in every country the store trades in.  Mirrors how software SKUs are
+    // multi-region-emitted above.
+    foreach (all_regions() as $reg) {
+        $regCode  = strtoupper((string)$reg['code']);
+        $cur      = $currencyByRegion[$regCode] ?? 'USD';
+        $countryC = $countryByRegion[$regCode] ?? 'US';
+
+        echo "    <item>\n";
+        echo "      <g:id>" . feed_xml_esc($planId . '-' . $regCode) . "</g:id>\n";
+        echo "      <g:title>" . feed_xml_esc($planTitle) . "</g:title>\n";
+        echo "      <g:link>" . feed_xml_esc($planLink) . "</g:link>\n";
+        echo "      <g:description>" . feed_xml_esc($planDesc) . "</g:description>\n";
+        echo "      <g:image_link>" . feed_xml_esc($planImg) . "</g:image_link>\n";
+        echo "      <g:condition>new</g:condition>\n";
+        echo "      <g:availability>in_stock</g:availability>\n";
+        echo "      <g:price>{$planPrice} {$cur}</g:price>\n";
+        echo "      <g:brand>" . feed_xml_esc($brand) . "</g:brand>\n";
+        echo "      <g:identifier_exists>no</g:identifier_exists>\n";
+        echo "      <g:google_product_category>449</g:google_product_category>\n";
+        echo "      <g:product_type>Services &gt; Software Support &gt; " . feed_xml_esc($plan['name']) . "</g:product_type>\n";
+        echo "      <g:shipping>\n";
+        echo "        <g:country>{$countryC}</g:country>\n";
+        echo "        <g:service>Instant email delivery</g:service>\n";
+        echo "        <g:price>0.00 {$cur}</g:price>\n";
+        echo "      </g:shipping>\n";
+        echo "      <g:custom_label_0>" . feed_xml_esc($brand) . "</g:custom_label_0>\n";
+        echo "      <g:custom_label_1>" . feed_xml_esc($regCode) . "</g:custom_label_1>\n";
+        echo "      <g:custom_label_2>Protection Hub</g:custom_label_2>\n";
+        echo "      <g:custom_label_3>" . feed_xml_esc($plan['tenure_label']) . "</g:custom_label_3>\n";
+        echo "    </item>\n";
+    }
+}
+
 echo "  </channel>\n";
 echo "</rss>\n";

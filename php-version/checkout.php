@@ -169,7 +169,7 @@ if ($isSub) {
     $planAmt   = round((float)$subPlan['price'], 2);
     $items     = [[
         'slug'           => 'sub-' . $subPlan['slug'],
-        'name'           => $subPlan['name'] . ' Subscription (' . $subPlan['tenure_label'] . ')',
+        'name'           => $subPlan['name'] . ' Plan (' . $subPlan['tenure_label'] . ')',
         'price'          => $planAmt,
         'original_price' => null,
         'qty'            => 1,

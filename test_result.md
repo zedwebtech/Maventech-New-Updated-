@@ -2962,3 +2962,49 @@ agent_communication:
       The bug fix is working correctly. The idempotent boot script (scripts/ensure-admin-password.php) successfully resets the admin password to Admin@UC2026! on every pod restart. Admin login and Google Ads Blueprint card are both functioning as expected.
       
       No further action needed for this bug fix. Ready to proceed with the compliance overhaul verification (next task in current_focus).
+
+
+---
+
+## BUG FIX (2026-07-05 late) — Protection Hub UX polish
+
+frontend:
+  - task: "Protection Hub — centered logo, correct checkout icon, Merchant feed inclusion"
+    implemented: true
+    working: "NA"
+    file: "subscriptions.php + checkout.php + merchant-feed.php + assets/images/subscriptions/*.svg"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "user"
+        -comment: "1) Plan card logos on /protection-hub.php were left-aligned; user wants them centered above the plan name. 2) On checkout page for a plan purchase, the item image showed a small wrench/tool graphic (fallback), NOT the plan's actual icon that matches the hub card. 3) Plans were not included in the Merchant Center feed — user reversed prior decision and asked to add them."
+        -working: "NA"
+        -agent: "main"
+        -comment: "Fixes: (a) Restructured .ph-card content so .ph-card-head (logo icon, plan name, tagline) is fully centered — .ph-logo-inline now block+2.6rem+text-center. (b) Created 4 new brand-matching SVG icons at /assets/images/subscriptions/{quick-fix,starter-care,pro-shield,lifetime-elite}.svg using each plan's color+glyph (lightning/shield-check/shield-shaded/gem), updated the DB icon_image + the idempotent seed script + start.sh so all pod restarts keep them in sync. Also changed the checkout line-item label from '{name} Subscription (…)' to '{name} Plan (…)' since we've moved away from 'Subscription' terminology. (c) Added a new post-loop block in merchant-feed.php that emits each active plan as its own <g:item> per region (4 plans × 5 regions = 20 new merchant items). Uses g:google_product_category=449 (Business Services), g:product_type='Services > Software Support > <plan>', g:custom_label_2='Protection Hub'. Needs UI verification of the centered layout + checkout image + feed emission."
+
+test_plan:
+  current_focus:
+    - "Protection Hub — centered logo, correct checkout icon, Merchant feed inclusion"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Please verify 3 things on the Maventech PHP storefront preview URL (https://fb70098b-cece-443a-bef9-7df8c67a96bd.preview.emergentagent.com):
+
+      1) **Protection Hub card layout** — go to /protection-hub.php. On each of the 4 plan cards (Quick Fix, Starter Care, Pro Shield, Lifetime Elite), the plan icon + plan name + tagline + price MUST all be centered horizontally within the card. Feature bullets below can remain left-aligned. Confirm the inline logo (bi-lightning-charge-fill / bi-shield-check / bi-shield-shaded / bi-gem) sits directly above the plan name, both centered.
+
+      2) **Checkout page image matches the plan** — click "Get Quick Fix" on the hub page. It should redirect to /checkout.php with a right-hand order summary showing the item "Quick Fix Plan (One-Time Service)" at $29.00. The item's small thumbnail (~40x40) MUST be the yellow/amber lightning-bolt SVG from /assets/images/subscriptions/quick-fix.svg (NOT a generic tool/wrench icon). Verify by inspecting the img src attribute — it should end with quick-fix.svg. The line-item label should say "Quick Fix Plan (One-Time Service)" — NOT "Subscription".
+
+      3) **Merchant Center feed inclusion** — fetch /merchant-feed.php (any HTTP client is fine, no auth). Confirm the response contains AT LEAST 20 protection-hub items with these markers:
+         - <g:id> starting with "plan-quick-fix-", "plan-starter-care-", "plan-pro-shield-", "plan-lifetime-elite-" (one per region)
+         - <g:custom_label_2>Protection Hub</g:custom_label_2>
+         - <g:price> reflecting $29.00 / $59.00 / $99.00 / $199.00 respectively
+         - <g:image_link> ending in quick-fix.svg / starter-care.svg / pro-shield.svg / lifetime-elite.svg
+         - <g:google_product_category>449</g:google_product_category>
+
+      Report only pass/fail on each of the 3 items, with the exact img src attribute value on the checkout page item thumbnail.
