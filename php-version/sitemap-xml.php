@@ -44,6 +44,7 @@ $urls     = [];
 foreach ([
     ['/',                  '1.0', 'daily'],
     ['/shop.php',          '0.9', 'daily'],
+    ['/protection-hub.php', '0.9', 'weekly'],
     ['/reviews.php',       '0.6', 'weekly'],
     ['/blog.php',          '0.8', 'daily'],
     ['/about-us.php',      '0.6', 'monthly'],

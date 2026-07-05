@@ -1,94 +1,212 @@
 <?php
 /**
- * Public subscription plans page — a comparison/pricing page customers can
- * browse before clicking through to checkout via /subscribe.php?plan=<slug>.
+ * Device Protection Hub — public marketing / pricing page for the four
+ * one-time-payment protection plans (Quick Fix / Starter Care / Pro Shield /
+ * Lifetime Elite).  Users can compare features, review inclusions and jump
+ * straight into checkout via /subscribe.php?plan=<slug>.  Prices are pulled
+ * live from the `subscription_plans` DB table so the admin can adjust them
+ * from Admin &rarr; Device Protection Hub &rarr; Plans without any code
+ * deploy.
  */
 require_once __DIR__ . '/includes/functions.php';
-// Compliance: tech-support / remote-support subscription plans have been
-// discontinued. This page now 301-redirects to the shop so no third-party
-// software-support offering is served to customers or crawlers.
-header('Location: shop.php', true, 301);
-exit;
-
 
 $plans = sub_plans(true);
 $co    = function_exists('company_info') ? company_info() : [];
 $phone = (function_exists('company_phone_for_country') ? company_phone_for_country() : ($co['phone'] ?? '')) ?: (defined('SITE_PHONE') ? SITE_PHONE : '');
 
-// Comparison matrix rows (label => per-plan value, keyed by slug).
+// ── Feature-comparison matrix — mirrors the 10-row "Care Plans Feature
+//    Comparison Table" the client circulated.  true / false / string values
+//    render via the $cell closure below.
 $matrix = [
-    'Plan duration'            => ['quick-fix' => 'One session', 'starter-care' => '1 Year', 'pro-shield' => '3 Years', 'lifetime-elite' => '10 Years'],
-    'Device coverage'          => ['quick-fix' => '1', 'starter-care' => '1', 'pro-shield' => 'Up to 3', 'lifetime-elite' => 'Unlimited'],
-    'One-time issue resolution'=> ['quick-fix' => true, 'starter-care' => true, 'pro-shield' => true, 'lifetime-elite' => true],
-    'Unlimited remote support' => ['quick-fix' => false, 'starter-care' => true, 'pro-shield' => true, 'lifetime-elite' => true],
-    'Virus & malware removal'  => ['quick-fix' => true, 'starter-care' => true, 'pro-shield' => true, 'lifetime-elite' => true],
-    'Performance optimization' => ['quick-fix' => true, 'starter-care' => true, 'pro-shield' => true, 'lifetime-elite' => true],
-    'Device transferability'   => ['quick-fix' => false, 'starter-care' => false, 'pro-shield' => true, 'lifetime-elite' => 'Unlimited'],
-    'Priority support'         => ['quick-fix' => false, 'starter-care' => false, 'pro-shield' => true, 'lifetime-elite' => 'Premium'],
-    'Dedicated specialist'     => ['quick-fix' => false, 'starter-care' => false, 'pro-shield' => false, 'lifetime-elite' => true],
+    'Activation Support'        => ['quick-fix' => true,  'starter-care' => true,  'pro-shield' => true,  'lifetime-elite' => true],
+    'OS Compatibility Check'    => ['quick-fix' => true,  'starter-care' => true,  'pro-shield' => true,  'lifetime-elite' => true],
+    '1-Year Key Recovery'       => ['quick-fix' => false, 'starter-care' => true,  'pro-shield' => true,  'lifetime-elite' => true],
+    'Remote Troubleshooting'    => ['quick-fix' => false, 'starter-care' => true,  'pro-shield' => true,  'lifetime-elite' => true],
+    'Hardware Key Transfer'     => ['quick-fix' => false, 'starter-care' => false, 'pro-shield' => true,  'lifetime-elite' => true],
+    'System Bloatware Tuning'   => ['quick-fix' => false, 'starter-care' => false, 'pro-shield' => true,  'lifetime-elite' => true],
+    'Multi-Device Coverage'     => ['quick-fix' => false, 'starter-care' => false, 'pro-shield' => true,  'lifetime-elite' => true],
+    'Malware &amp; Virus Removal'   => ['quick-fix' => false, 'starter-care' => false, 'pro-shield' => false, 'lifetime-elite' => true],
+    'Dedicated VIP Manager'     => ['quick-fix' => false, 'starter-care' => false, 'pro-shield' => false, 'lifetime-elite' => true],
+    '10-Year Support Window'    => ['quick-fix' => false, 'starter-care' => false, 'pro-shield' => false, 'lifetime-elite' => true],
 ];
 $cell = function ($v) {
-    if ($v === true)  return '<i class="bi bi-check-circle-fill text-success"></i>';
-    if ($v === false) return '<i class="bi bi-x-lg text-secondary opacity-50"></i>';
+    if ($v === true)  return '<span class="ph-check"><i class="bi bi-check-lg"></i></span>';
+    if ($v === false) return '<span class="ph-cross"><i class="bi bi-x-lg"></i></span>';
     return '<span class="fw-semibold">' . esc((string)$v) . '</span>';
 };
+
+// ── Per-plan aesthetic-watermark configuration.  Rendered as a soft
+//    inline-SVG icon (single glyph, no square container) at the top of each
+//    plan card + faintly behind the header of each column in the comparison
+//    table.  Colours align to the plan's visual "temperature".
+$planLogos = [
+    'quick-fix'      => ['icon' => 'bi-lightning-charge-fill', 'color' => '#f59e0b'],
+    'starter-care'   => ['icon' => 'bi-shield-check',          'color' => '#22c55e'],
+    'pro-shield'     => ['icon' => 'bi-shield-shaded',         'color' => '#3b82f6'],
+    'lifetime-elite' => ['icon' => 'bi-gem',                   'color' => '#a855f7'],
+];
+
+$title       = 'Device Protection Hub — Genuine Support Plans | ' . SITE_BRAND;
+$description = 'Choose the right level of hands-on support for your Windows &amp; Office licences. One-time payment plans from $29 (Quick Fix) to $199 (Lifetime Elite) — no recurring billing, no hidden fees.';
 include __DIR__ . '/includes/header.php';
 ?>
-<section class="py-5" style="background:linear-gradient(180deg,var(--bs-tertiary-bg,#f1f5f9) 0%, transparent 100%);">
-  <div class="container">
-    <div class="text-center mx-auto" style="max-width:760px;">
-      <span class="badge rounded-pill text-bg-primary mb-2" data-testid="sub-page-badge"><i class="bi bi-stars me-1"></i>Tech Support Subscriptions</span>
-      <h1 class="fw-bold display-6 mb-2" data-testid="sub-page-title">Pick the plan that keeps you covered</h1>
-      <p class="text-secondary fs-5">Genuine, friendly tech support — from a one-time fix to a decade of premium, priority help across all your devices.</p>
-      <?php if (empty($plans)): ?>
-        <div class="alert alert-info mt-3">Our subscription plans are being finalised. Please check back soon<?= $phone ? ' or call <strong>' . esc($phone) . '</strong>' : '' ?>.</div>
-      <?php endif; ?>
-    </div>
+
+<style>
+/* Device Protection Hub — scoped styles */
+.ph-hero {
+  background: linear-gradient(135deg, #eef4ff 0%, #ede9fe 100%);
+  padding: 56px 0 40px;
+}
+html[data-bs-theme="dark"] .ph-hero {
+  background: linear-gradient(135deg, rgba(37,99,235,.10) 0%, rgba(168,85,247,.10) 100%);
+}
+.ph-hero .badge { font-size: .72rem; padding: 6px 12px; letter-spacing: .04em; }
+.ph-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  transition: transform .2s ease, box-shadow .2s ease;
+  border: 1px solid var(--bs-border-color, #e5e7eb);
+  background: var(--bs-body-bg, #fff);
+}
+.ph-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.08); }
+.ph-card.featured { border: 2px solid #3b82f6; box-shadow: 0 12px 32px rgba(59,130,246,.15); }
+.ph-card .ph-badge {
+  position: absolute; top: 12px; right: 12px;
+  background: linear-gradient(135deg, #3b82f6, #a855f7);
+  color: #fff; font-size: .68rem; font-weight: 700;
+  padding: 4px 12px; border-radius: 999px; letter-spacing: .04em;
+  text-transform: uppercase;
+}
+/* Aesthetic watermark logo — subtle glyph, NOT a square container. */
+.ph-logo-mark {
+  position: absolute;
+  top: -16px; right: -16px;
+  font-size: 8.5rem;
+  line-height: 1;
+  opacity: .09;
+  pointer-events: none;
+  transform: rotate(-12deg);
+}
+.ph-logo-inline {
+  font-size: 2.1rem;
+  line-height: 1;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+.ph-price-row .price {
+  font-size: 2.4rem; font-weight: 800; line-height: 1;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: #1e40af;
+}
+html[data-bs-theme="dark"] .ph-price-row .price {
+  background: linear-gradient(135deg, #93c5fd, #c4b5fd);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.ph-price-row .price-unit { font-size: .8rem; color: var(--bs-secondary-color); font-weight: 600; }
+.ph-features li { padding: 5px 0; font-size: .87rem; }
+.ph-features li i { color: #10b981; margin-right: 6px; flex-shrink: 0; }
+.ph-compare-table {
+  border-collapse: separate; border-spacing: 0;
+  width: 100%; background: var(--bs-body-bg);
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--bs-border-color);
+}
+.ph-compare-table thead th {
+  background: var(--bs-tertiary-bg, #f8fafc);
+  padding: 18px 12px; text-align: center;
+  font-weight: 700; font-size: .95rem;
+  border-bottom: 2px solid var(--bs-border-color);
+  position: relative;
+}
+.ph-compare-table thead th:first-child { text-align: left; padding-left: 20px; }
+.ph-compare-table thead th .ph-col-icon {
+  font-size: 1.5rem; display: block; margin-bottom: 2px; line-height: 1;
+}
+.ph-compare-table tbody td {
+  padding: 14px 12px; text-align: center; font-size: .9rem;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+.ph-compare-table tbody td:first-child { text-align: left; font-weight: 600; padding-left: 20px; }
+.ph-compare-table tbody tr:last-child td { border-bottom: 0; }
+.ph-check {
+  display: inline-flex; width: 26px; height: 26px; border-radius: 8px;
+  background: rgba(16,185,129,.14); color: #10b981; align-items: center;
+  justify-content: center; font-size: .95rem;
+}
+.ph-cross {
+  display: inline-flex; width: 26px; height: 26px; border-radius: 8px;
+  background: rgba(239,68,68,.12); color: #ef4444; align-items: center;
+  justify-content: center; font-size: .9rem;
+}
+.ph-ideal-row {
+  background: var(--bs-tertiary-bg, #f8fafc);
+  font-weight: 700; font-size: .82rem; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--bs-secondary-color);
+}
+</style>
+
+<section class="ph-hero">
+  <div class="container text-center" style="max-width: 900px;">
+    <span class="badge rounded-pill text-bg-primary mb-2" data-testid="ph-page-badge">
+      <i class="bi bi-shield-shaded me-1"></i> Device Protection Hub
+    </span>
+    <h1 class="fw-bold display-5 mb-2" data-testid="ph-page-title">Choose the plan that keeps every device covered</h1>
+    <p class="text-secondary fs-5 mb-3">Hands-on remote setup, licence recovery and priority support &mdash; from a single-session rescue to a dedicated tier-3 specialist for a decade.</p>
+    <p class="small text-secondary mb-0"><i class="bi bi-check2-circle text-success me-1"></i>One-time payment &nbsp;·&nbsp; <i class="bi bi-check2-circle text-success me-1"></i>No recurring billing &nbsp;·&nbsp; <i class="bi bi-check2-circle text-success me-1"></i>30-day money-back guarantee</p>
   </div>
 </section>
 
-<section class="pb-5">
+<?php if (empty($plans)): ?>
+<section class="py-5"><div class="container"><div class="alert alert-info">Our Device Protection plans are being finalised. Please check back soon<?= $phone ? ' or call <strong>' . esc($phone) . '</strong>' : '' ?>.</div></div></section>
+<?php else: ?>
+
+<section class="py-5">
   <div class="container">
-    <div class="row g-4 justify-content-center" data-testid="sub-plan-cards">
-      <?php foreach ($plans as $p): $priced = (float)$p['price'] > 0; $featured = $p['slug'] === 'pro-shield'; ?>
+    <div class="row g-4 justify-content-center" data-testid="ph-plan-cards">
+      <?php foreach ($plans as $p):
+        $priced   = (float)$p['price'] > 0;
+        $featured = $p['slug'] === 'pro-shield';
+        $logo     = $planLogos[$p['slug']] ?? ['icon' => 'bi-shield-check', 'color' => '#3b82f6'];
+      ?>
         <div class="col-md-6 col-xl-3">
-          <div class="card h-100 shadow-sm <?= $featured ? 'border-primary' : '' ?>" style="border-radius:16px;<?= $featured ? 'border-width:2px;' : '' ?>" data-testid="sub-card-<?= esc($p['slug']) ?>">
-            <?php if ($featured): ?><div class="text-center"><span class="badge text-bg-primary rounded-pill" style="margin-top:-12px;">Most popular</span></div><?php endif; ?>
-            <div class="card-body d-flex flex-column p-4">
-              <?php if (!empty($p['icon_image'])):
-                  $iconPng  = (string)$p['icon_image'];
-                  $iconWebp = preg_replace('/\.png$/i', '.webp', $iconPng);
-                  $hasWebp  = $iconWebp !== $iconPng && is_file(__DIR__ . '/' . ltrim($iconWebp, '/'));
-              ?>
-                <div class="text-center mb-2">
-                  <picture>
-                    <?php if ($hasWebp): ?><source srcset="<?= esc($iconWebp) ?>" type="image/webp"><?php endif; ?>
-                    <img src="<?= esc($iconPng) ?>" alt="<?= esc($p['name']) ?> icon" data-testid="sub-icon-<?= esc($p['slug']) ?>" loading="lazy" width="84" height="84"
-                       style="width:84px;height:84px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(37,99,235,.22));">
-                  </picture>
-                </div>
-              <?php endif; ?>
-              <h3 class="h5 fw-bold mb-1 text-center"><?= esc($p['name']) ?></h3>
-              <p class="text-secondary small mb-3 text-center" style="min-height:38px;"><?= esc($p['tagline']) ?></p>
-              <div class="mb-2">
+          <div class="ph-card h-100 p-4 <?= $featured ? 'featured' : '' ?>" data-testid="ph-card-<?= esc($p['slug']) ?>">
+            <?php if ($featured): ?><span class="ph-badge" data-testid="ph-badge-popular">Most popular</span><?php endif; ?>
+            <!-- Aesthetic watermark logo — soft & rotated, NOT a square. -->
+            <i class="bi <?= esc($logo['icon']) ?> ph-logo-mark" style="color: <?= esc($logo['color']) ?>;" aria-hidden="true" data-testid="ph-logo-mark-<?= esc($p['slug']) ?>"></i>
+
+            <div class="position-relative">
+              <i class="bi <?= esc($logo['icon']) ?> ph-logo-inline" style="color: <?= esc($logo['color']) ?>;" aria-hidden="true"></i>
+              <h3 class="h5 fw-bold mb-1" data-testid="ph-name-<?= esc($p['slug']) ?>"><?= esc($p['name']) ?></h3>
+              <p class="text-secondary small mb-3" style="min-height: 40px;" data-testid="ph-tagline-<?= esc($p['slug']) ?>"><?= esc($p['tagline']) ?></p>
+
+              <div class="ph-price-row mb-3" data-testid="ph-price-<?= esc($p['slug']) ?>">
                 <?php if ($priced): ?>
-                  <span class="display-6 fw-bold"><?= esc(format_price((float)$p['price'])) ?></span>
-                  <div class="small text-secondary"><?= esc($p['tenure_label']) ?> · <?= esc($p['devices']) ?></div>
+                  <div class="d-flex align-items-baseline gap-2">
+                    <span class="price"><?= esc(format_price((float)$p['price'])) ?></span>
+                    <span class="price-unit">one-time</span>
+                  </div>
+                  <div class="small text-secondary mt-1"><?= esc($p['tenure_label']) ?> &middot; <?= esc($p['devices']) ?></div>
                 <?php else: ?>
                   <span class="h5 fw-bold text-secondary">Contact us</span>
-                  <div class="small text-secondary"><?= esc($p['tenure_label']) ?> · <?= esc($p['devices']) ?></div>
+                  <div class="small text-secondary"><?= esc($p['tenure_label']) ?> &middot; <?= esc($p['devices']) ?></div>
                 <?php endif; ?>
               </div>
-              <ul class="list-unstyled small flex-grow-1 mb-3">
-                <?php foreach (array_slice($p['features'], 0, 7) as $f): ?>
-                  <li class="mb-1"><i class="bi bi-check2 text-success me-1"></i><?= esc($f) ?></li>
+
+              <ul class="list-unstyled ph-features mb-4">
+                <?php foreach ($p['features'] as $f): ?>
+                  <li class="d-flex align-items-start"><i class="bi bi-check2-circle mt-1"></i><span><?= esc($f) ?></span></li>
                 <?php endforeach; ?>
-                <?php if (count($p['features']) > 7): ?><li class="text-secondary">+ <?= count($p['features']) - 7 ?> more benefits</li><?php endif; ?>
               </ul>
+
               <?php if ($priced): ?>
-                <a href="subscribe.php?plan=<?= esc($p['slug']) ?>" class="btn <?= $featured ? 'btn-primary' : 'btn-outline-primary' ?> w-100 rounded-pill fw-semibold" data-testid="sub-buy-<?= esc($p['slug']) ?>"><i class="bi bi-cart-check me-1"></i>Buy Now</a>
+                <a href="subscribe.php?plan=<?= esc($p['slug']) ?>" class="btn <?= $featured ? 'btn-primary' : 'btn-outline-primary' ?> w-100 rounded-pill fw-semibold" data-testid="ph-buy-<?= esc($p['slug']) ?>">
+                  <i class="bi bi-cart-check me-1"></i>Get <?= esc($p['name']) ?>
+                </a>
               <?php else: ?>
-                <a href="contact.php" class="btn btn-outline-secondary w-100 rounded-pill" data-testid="sub-contact-<?= esc($p['slug']) ?>">Contact us</a>
+                <a href="contact.php" class="btn btn-outline-secondary w-100 rounded-pill" data-testid="ph-contact-<?= esc($p['slug']) ?>">Contact us</a>
               <?php endif; ?>
             </div>
           </div>
@@ -98,22 +216,40 @@ include __DIR__ . '/includes/header.php';
   </div>
 </section>
 
-<?php if (!empty($plans)): ?>
 <section class="pb-5">
   <div class="container">
-    <h2 class="h4 fw-bold text-center mb-4">Compare all plans</h2>
+    <div class="text-center mb-4">
+      <h2 class="fw-bold h3 mb-2">Care Plans Feature Comparison Table</h2>
+      <p class="text-secondary">Everything included at each tier, side-by-side.</p>
+    </div>
     <div class="table-responsive">
-      <table class="table align-middle text-center" style="min-width:680px;" data-testid="sub-compare-table">
+      <table class="ph-compare-table" data-testid="ph-compare-table">
         <thead>
           <tr>
-            <th class="text-start" style="width:240px;">Features</th>
-            <?php foreach ($plans as $p): ?><th><?= esc($p['name']) ?><?php if ((float)$p['price']>0): ?><div class="small fw-normal text-secondary"><?= esc(format_price((float)$p['price'])) ?></div><?php endif; ?></th><?php endforeach; ?>
+            <th style="width: 260px;">Service Feature</th>
+            <?php foreach ($plans as $p):
+              $logo = $planLogos[$p['slug']] ?? ['icon' => 'bi-shield-check', 'color' => '#3b82f6']; ?>
+              <th data-testid="ph-compare-head-<?= esc($p['slug']) ?>">
+                <span class="ph-col-icon" style="color: <?= esc($logo['color']) ?>;"><i class="bi <?= esc($logo['icon']) ?>"></i></span>
+                <?= esc($p['name']) ?>
+                <?php if ((float)$p['price'] > 0): ?>
+                  <div class="small fw-normal text-secondary mt-1"><?= esc(format_price((float)$p['price'])) ?> one-time</div>
+                <?php endif; ?>
+              </th>
+            <?php endforeach; ?>
           </tr>
         </thead>
         <tbody>
+          <tr class="ph-ideal-row">
+            <td>Ideal for</td>
+            <td>Urgent single errors</td>
+            <td>Individual users</td>
+            <td>Multi-device homes</td>
+            <td>Power users / Businesses</td>
+          </tr>
           <?php foreach ($matrix as $label => $vals): ?>
             <tr>
-              <td class="text-start fw-semibold"><?= esc($label) ?></td>
+              <td><?= $label ?></td>
               <?php foreach ($plans as $p): ?>
                 <td><?= $cell($vals[$p['slug']] ?? false) ?></td>
               <?php endforeach; ?>
@@ -122,17 +258,24 @@ include __DIR__ . '/includes/header.php';
           <tr>
             <td></td>
             <?php foreach ($plans as $p): ?>
-              <td><?php if ((float)$p['price']>0): ?><a href="subscribe.php?plan=<?= esc($p['slug']) ?>" class="btn btn-sm btn-primary rounded-pill px-3" data-testid="sub-compare-buy-<?= esc($p['slug']) ?>">Buy Now</a><?php else: ?><a href="contact.php" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Contact</a><?php endif; ?></td>
+              <td>
+                <?php if ((float)$p['price'] > 0): ?>
+                  <a href="subscribe.php?plan=<?= esc($p['slug']) ?>" class="btn btn-sm btn-primary rounded-pill px-3" data-testid="ph-compare-buy-<?= esc($p['slug']) ?>">Get Plan</a>
+                <?php else: ?>
+                  <a href="contact.php" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Contact</a>
+                <?php endif; ?>
+              </td>
             <?php endforeach; ?>
           </tr>
         </tbody>
       </table>
     </div>
     <?php if ($phone): ?>
-      <p class="text-center text-secondary mt-3">Questions about a plan? Call us at <a href="tel:<?= esc(tel_e164($phone)) ?>" class="fw-semibold text-decoration-none"><?= esc($phone) ?></a> — we're happy to help.</p>
+      <p class="text-center text-secondary mt-4">Questions about a plan? Call us at <a href="tel:<?= esc(tel_e164($phone)) ?>" class="fw-semibold text-decoration-none"><?= esc($phone) ?></a> — we're happy to help.</p>
     <?php endif; ?>
   </div>
 </section>
+
 <?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

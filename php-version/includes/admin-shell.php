@@ -56,7 +56,7 @@ if (!function_exists('current_admin')) {
 $navItems = [
     'dashboard'   => ['icon' => 'bi-speedometer2',       'label' => 'Dashboard',          'href' => 'admin.php?tab=dashboard'],
     'users'       => ['icon' => 'bi-people-fill',        'label' => 'Users',              'href' => 'admin.php?tab=users'],
-    'subscription'=> ['icon' => 'bi-stars',               'label' => 'Subscription',       'href' => 'admin.php?tab=subscription'],
+    'subscription'=> ['icon' => 'bi-shield-shaded',      'label' => 'Device Protection Hub','href' => 'admin.php?tab=subscription'],
     'ai-blogger'  => ['icon' => 'bi-robot',              'label' => 'AI Auto-Blogger',    'href' => 'admin.php?tab=ai-blogger'],
     'company'     => ['icon' => 'bi-building',           'label' => 'Company Info',       'href' => 'admin.php?tab=company'],
     'inventory'   => ['icon' => 'bi-boxes',              'label' => 'Inventory Mgmt',     'href' => 'inventory.php'],

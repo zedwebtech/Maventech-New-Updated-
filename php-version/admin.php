@@ -4196,7 +4196,7 @@ elseif ($tab === 'subscription'):
 ?>
 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
   <div>
-    <h4 class="fw-bold mb-1" data-testid="subscription-title"><i class="bi bi-stars text-primary me-2"></i>Subscription</h4>
+    <h4 class="fw-bold mb-1" data-testid="subscription-title"><i class="bi bi-shield-shaded text-primary me-2"></i>Device Protection Hub</h4>
     <div class="small text-secondary">Set plan pricing and manage everyone who has subscribed.</div>
   </div>
   <ul class="nav nav-pills" role="tablist">
