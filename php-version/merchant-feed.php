@@ -399,7 +399,8 @@ foreach ($products as $p) {
        promo bar switched ON (Company Info → Show promo bar) so the feed
        never advertises a coupon the storefront isn't showing.  */
     if (setting_get('promo_bar_enabled', '0') === '1') {
-        echo "      <g:promotion_id>MAVEN10</g:promotion_id>\n";
+        $__pbCode = strtoupper(preg_replace('/[^A-Z0-9]/', '', (string) setting_get('promo_bar_code', 'MAVEN10'))) ?: 'MAVEN10';
+        echo "      <g:promotion_id>" . feed_xml_esc($__pbCode) . "</g:promotion_id>\n";
     }
 
     // g:product_highlight — up to 4 bullets rendered under the title in

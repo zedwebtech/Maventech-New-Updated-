@@ -705,8 +705,9 @@ endif;
 // scheduled label/code wins; otherwise the static defaults below.
 $_vibePromo    = function_exists('active_vibe_promo') ? active_vibe_promo() : null;
 $_promoBarOn   = (setting_get('promo_bar_enabled', '0') === '1');
-$_dealHeadline = 'Save up to 10%';
-$_dealCode     = 'MAVEN10';
+$_promoCfg     = function_exists('promo_bar_config') ? promo_bar_config() : ['percent' => 10, 'code' => 'MAVEN10'];
+$_dealHeadline = 'Save up to ' . $_promoCfg['percent'] . '%';
+$_dealCode     = $_promoCfg['code'];
 if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupon_percent'] > 0) {
     $_pct       = (int)$_vibePromo['coupon_percent'];
     $_labelTxt  = trim((string)($_vibePromo['label'] ?? ''));
@@ -738,7 +739,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
       </span>
       <?php endif; ?>
     </div>
-    <div class="d-flex gap-3 align-items-center">
+    <div class="d-flex gap-2 align-items-center trustbar-right">
       <!-- Trust + age + phone — wrapped in dedicated classes so the dark-mode
            override block can tune them for crisp contrast on BOTH themes
            (Bootstrap's text-bg-warning + bg-white both wash out against the
@@ -750,6 +751,8 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
       <a href="tel:<?= esc(tel_e164($brandPhone)) ?>" class="trustbar-phone-link" data-testid="trustbar-phone">
         <i class="bi bi-telephone-fill me-1"></i><?= esc($brandPhone) ?>
       </a>
+
+      <span class="trustbar-divider" aria-hidden="true"></span>
 
       <?php /* Utility actions promoted from the main nav so the front line
               breathes (per user feedback "front line should not look so

@@ -4441,8 +4441,8 @@ body:not(.adm) .navbar-brand:hover .brand-grad { opacity: .9; }
 /* === LIGHT MODE === */
 .trustbar-store-pill {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 11px;
-  font-size: .74rem; font-weight: 700;
+  padding: 0 11px; min-height: 26px;
+  font-size: .74rem; font-weight: 700; line-height: 1;
   background: #FFF3CD; color: #6B4F00;
   border-radius: 999px;
   border: 1px solid #FFE69C;
@@ -4451,9 +4451,9 @@ body:not(.adm) .navbar-brand:hover .brand-grad { opacity: .9; }
 .trustbar-store-pill .bi { color: #F5A623; font-size: .82em; }
 
 .trustbar-age-pill {
-  display: inline-flex; align-items: baseline; gap: 3px;
-  padding: 3px 10px;
-  font-size: .78rem; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 0 10px; min-height: 26px;
+  font-size: .78rem; font-weight: 700; line-height: 1;
   background: #FFFFFF; color: #131619;
   border-radius: 999px;
   border: 1px solid #E4E8EE;
@@ -4461,11 +4461,20 @@ body:not(.adm) .navbar-brand:hover .brand-grad { opacity: .9; }
 }
 .trustbar-age-pill small { font-size: .68em; font-weight: 600; opacity: .7; }
 
+/* Thin vertical divider that groups the pills+phone from the utility
+   controls (currency + dark-mode) so the right side reads as two neat
+   clusters instead of one long uneven row. */
+.trustbar-divider {
+  width: 1px; height: 18px; align-self: center;
+  background: rgba(255, 255, 255, .18);
+  flex: 0 0 auto;
+}
+
 .trustbar-phone-link {
   color: #FFFFFF !important;          /* topbar bg is dark navy in both themes */
   text-decoration: none;
   font-weight: 600; font-size: .85rem;
-  display: inline-flex; align-items: center;
+  display: inline-flex; align-items: center; min-height: 26px;
   letter-spacing: .005em;
 }
 .trustbar-phone-link:hover { color: #79A6FF !important; }
@@ -4594,21 +4603,21 @@ body:not(.adm) footer .h2 { font-size: 1.4rem !important; font-weight: 600 !impo
   display: inline-flex;
   align-items: center;
   gap: .25rem;
-  padding: .22rem .65rem;
+  padding: 0 .65rem; min-height: 26px;
   border: 1px solid rgba(255, 255, 255, .18);
   background: transparent;
   color: #E5ECFA;
   font-size: .78rem;
   font-weight: 500;
   border-radius: 999px;
-  line-height: 1.15;
+  line-height: 1;
   transition: background-color .15s, border-color .15s, color .15s;
   cursor: pointer;
 }
 .trustbar-utility-btn:hover,
 .trustbar-utility-btn:focus { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .32); color: #fff; }
 .trustbar-utility-btn.dropdown-toggle::after { margin-left: .3rem; opacity: .75; }
-.trustbar-utility-icon { padding: .22rem .42rem; }
+.trustbar-utility-icon { padding: 0; width: 26px; justify-content: center; }
 .trustbar-utility-icon .bi { font-size: .95em; line-height: 1; }
 .trustbar-currency .dropdown-menu { font-size: .85rem; }
 /* The trustbar surface is navy in BOTH light + dark site themes (it's the

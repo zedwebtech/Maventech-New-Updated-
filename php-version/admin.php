@@ -1099,6 +1099,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Promo bar (the "Save up to 10% · MAVEN10" strip in the top trust bar).
         // Admin-toggleable so it only shows on the storefront when switched on.
         setting_set('promo_bar_enabled', !empty($_POST['promo_bar_enabled']) ? '1' : '0');
+        // Promo bar customization — discount percent + coupon code.
+        $__pbPct = (int) ($_POST['promo_bar_percent'] ?? 10);
+        if ($__pbPct < 1)  $__pbPct = 1;
+        if ($__pbPct > 95) $__pbPct = 95;
+        setting_set('promo_bar_percent', (string) $__pbPct);
+        $__pbCode = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) ($_POST['promo_bar_code'] ?? 'MAVEN10')));
+        setting_set('promo_bar_code', $__pbCode !== '' ? substr($__pbCode, 0, 24) : 'MAVEN10');
         // Brand vibe — bundles motion + gradient + corners + font-weight.
         // When the admin picks a vibe we ALSO write its bundled motion so
         // the navbar bounce/spin/pulse/static reflects the chosen vibe.
@@ -6756,18 +6763,38 @@ elseif ($tab === 'company'):
             </div>
           </div>
 
-          <?php $promoOn = (setting_get('promo_bar_enabled', '0') === '1'); ?>
-          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 p-3 mt-3" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
-            <div class="flex-grow-1">
-              <label class="form-check-label fw-semibold mb-1" for="ciPromoBarToggle" style="cursor:pointer;">
-                <i class="bi bi-tag-fill me-1 text-primary"></i>Show promo bar ("Save up to 10% · MAVEN10")
-              </label>
-              <div class="text-secondary small">When enabled, the top trust-bar shows the <strong>Save up to 10% · MAVEN10</strong> coupon strip with a Shop Now link. Turn it OFF to hide the promo strip completely across the storefront. <strong>Default is OFF.</strong></div>
+          <?php $promoOn = (setting_get('promo_bar_enabled', '0') === '1'); $promoPct = (int) setting_get('promo_bar_percent', '10'); $promoCode = setting_get('promo_bar_code', 'MAVEN10'); ?>
+          <div class="p-3 mt-3" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+              <div class="flex-grow-1">
+                <label class="form-check-label fw-semibold mb-1" for="ciPromoBarToggle" style="cursor:pointer;">
+                  <i class="bi bi-tag-fill me-1 text-primary"></i>Show promo bar
+                </label>
+                <div class="text-secondary small">When enabled, the top trust-bar shows a <strong>Save up to <span id="ciPromoPctPreview"><?= (int)$promoPct ?></span>% · <span id="ciPromoCodePreview"><?= esc($promoCode) ?></span></strong> coupon strip with a Shop Now link. The code below works at checkout. Turn OFF to hide it everywhere. <strong>Default is OFF.</strong></div>
+              </div>
+              <div class="form-check form-switch mb-0" style="min-width:60px;">
+                <input class="form-check-input" type="checkbox" role="switch" id="ciPromoBarToggle"
+                       name="promo_bar_enabled" value="1" <?= $promoOn ? 'checked' : '' ?>
+                       style="width:48px;height:26px;" data-testid="ci-promo-bar-toggle">
+              </div>
             </div>
-            <div class="form-check form-switch mb-0" style="min-width:60px;">
-              <input class="form-check-input" type="checkbox" role="switch" id="ciPromoBarToggle"
-                     name="promo_bar_enabled" value="1" <?= $promoOn ? 'checked' : '' ?>
-                     style="width:48px;height:26px;" data-testid="ci-promo-bar-toggle">
+            <div class="row g-2 mt-2">
+              <div class="col-sm-4">
+                <label class="form-label small fw-semibold mb-1">Discount %</label>
+                <div class="input-group input-group-sm">
+                  <input class="form-control" type="number" min="1" max="95" name="promo_bar_percent"
+                         value="<?= (int)$promoPct ?>" oninput="var e=document.getElementById('ciPromoPctPreview'); if(e)e.textContent=this.value;"
+                         data-testid="ci-promo-percent-input">
+                  <span class="input-group-text">%</span>
+                </div>
+              </div>
+              <div class="col-sm-8">
+                <label class="form-label small fw-semibold mb-1">Promo code</label>
+                <input class="form-control form-control-sm text-uppercase" type="text" maxlength="24" name="promo_bar_code"
+                       value="<?= esc($promoCode) ?>" placeholder="MAVEN10"
+                       oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,''); var e=document.getElementById('ciPromoCodePreview'); if(e)e.textContent=this.value;"
+                       data-testid="ci-promo-code-input">
+              </div>
             </div>
           </div>
         </div>

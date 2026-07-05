@@ -2165,7 +2165,27 @@ function coupons(): array
             if ($code !== '') $base[$code] = max(1, min(95, (int)$p['coupon_percent']));
         }
     }
+    // Admin promo-bar coupon (Company Info → customizable code + percent) is
+    // always a valid checkout code so buyers can copy+paste it from the strip.
+    $pb = ['percent' => (int) setting_get('promo_bar_percent', '10'), 'code' => strtoupper(preg_replace('/[^A-Z0-9]/', '', (string) setting_get('promo_bar_code', 'MAVEN10')))];
+    if ($pb['code'] !== '' && $pb['percent'] > 0) {
+        $base[$pb['code']] = max(1, min(95, $pb['percent']));
+    }
     return $base;
+}
+
+/**
+ * The admin-configured promo-bar coupon: percent + code (Company Info).
+ * Returns ['percent' => int, 'code' => string]. Defaults: 10 / MAVEN10.
+ */
+function promo_bar_config(): array
+{
+    $percent = (int) setting_get('promo_bar_percent', '10');
+    if ($percent < 1)  $percent = 10;
+    if ($percent > 95) $percent = 95;
+    $code = strtoupper(preg_replace('/[^A-Z0-9]/', '', (string) setting_get('promo_bar_code', 'MAVEN10')));
+    if ($code === '') $code = 'MAVEN10';
+    return ['percent' => $percent, 'code' => $code];
 }
 
 /* ---------------- Rendering helpers ---------------- */
