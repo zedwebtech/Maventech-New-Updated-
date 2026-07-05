@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 import sys
 
-BASE_URL = "https://surplus-licenses-pro.preview.emergentagent.com"
+BASE_URL = "https://clean-footer-11.preview.emergentagent.com"
 
 def test_product_page_install_block(slug, expected_buttons):
     """

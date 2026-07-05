@@ -927,7 +927,6 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
         <?php endif; ?>
         <li class="nav-item"><a class="nav-link fw-semibold" href="contact.php">Request a Quote</a></li>
         <li class="nav-item"><a class="nav-link fw-semibold" href="shop.php" data-testid="nav-shop">Shop</a></li>
-        <li class="nav-item"><a class="nav-link fw-semibold" href="protection-hub.php" data-testid="nav-protection-hub"><i class="bi bi-shield-shaded me-1"></i>Protection Hub</a></li>
         <li class="nav-item"><a class="nav-link fw-semibold" href="blog.php">Blog</a></li>
         <li class="nav-item"><a class="nav-link fw-semibold" href="track-order.php" data-testid="nav-track-order"><i class="bi bi-truck me-1"></i>Track Order</a></li>
       </ul>

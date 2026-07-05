@@ -84,7 +84,6 @@
         <h3 class="h6 text-white fw-bold mb-3">Support</h3>
         <ul class="list-unstyled small d-grid gap-2">
           <li><a href="account.php">My Account</a></li>
-          <li><a href="protection-hub.php" data-testid="footer-protection-hub"><i class="bi bi-shield-shaded me-1"></i>Protection Hub</a></li>
           <li><a href="track-order.php" data-testid="footer-order-history-link">Track Order &amp; Receipts</a></li>
           <li><a href="support.php">Support Center</a></li>
           <li><a href="page.php?slug=help-center">Help Center</a></li>
@@ -93,6 +92,7 @@
           <li><a href="page.php?slug=faqs">FAQs</a></li>
           <li><a href="contact.php">Contact Us</a></li>
           <li><a href="returns.php">Returns &amp; Refunds</a></li>
+          <li><a href="protection-hub.php" data-testid="footer-protection-hub"><i class="bi bi-shield-shaded me-1"></i>Protection Hub</a></li>
         </ul>
       </div>
 
