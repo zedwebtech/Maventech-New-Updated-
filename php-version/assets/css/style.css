@@ -4688,6 +4688,14 @@ html[data-bs-theme="dark"] .reseller-notice-bar {
 }
 
 /* Highlighted "Digital Delivery Only" badge (cards, rows, product page). */
+.pd-360-dd-badge {
+  position: absolute;
+  left: 50%;
+  bottom: -12px;
+  transform: translateX(-50%);
+  z-index: 2;
+  pointer-events: none;
+}
 .dd-badge {
   display: inline-flex;
   align-items: center;
