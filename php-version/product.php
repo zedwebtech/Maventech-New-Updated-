@@ -501,11 +501,7 @@ include __DIR__ . '/includes/header.php';
       <?php /* Stock status is shown as a chip near the title above; no duplicate label here. */ ?>
 
       <div class="d-flex gap-3 align-items-center mb-4 flex-wrap">
-        <div class="input-group" style="width: 130px;">
-          <button class="btn btn-outline-secondary" type="button" onclick="const q=document.getElementById('pd-qty'); q.value=Math.max(1, parseInt(q.value)-1)">−</button>
-          <input id="pd-qty" type="number" class="form-control text-center" value="1" min="1" max="100" data-testid="pd-qty-input">
-          <button class="btn btn-outline-secondary" type="button" onclick="const q=document.getElementById('pd-qty'); q.value=Math.min(100, parseInt(q.value)+1)">+</button>
-        </div>
+        <input id="pd-qty" type="hidden" value="1" data-testid="pd-qty-input">
         <button class="btn btn-orange-solid btn-lg rounded-pill px-4 add-to-cart-btn" data-slug="<?= esc($product['slug']) ?>" data-name="<?= esc($product['name']) ?>" data-price="<?= esc((string)$product['price']) ?>" data-currency="<?= esc(current_currency()['code'] ?? 'USD') ?>" data-testid="pd-add-to-cart"><i class="bi bi-cart-plus me-2"></i>Add to Cart</button>
         <button class="btn btn-orange-outline btn-lg rounded-pill px-4 fw-bold buy-now-btn" data-slug="<?= esc($product['slug']) ?>" data-testid="pd-buy-now"><i class="bi bi-lightning-charge-fill me-1"></i>Buy Now</button>
       </div>
