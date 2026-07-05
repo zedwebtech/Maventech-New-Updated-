@@ -837,11 +837,10 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
            theme or close the menu without scrolling to a link. -->
       <div class="d-flex d-lg-none align-items-center justify-content-between gap-2 mb-2 pb-2 border-bottom" data-testid="mobile-nav-header">
         <button type="button" class="trustbar-utility-btn trustbar-utility-icon"
-                onclick="toggleTheme()" aria-label="Toggle dark mode"
+                onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode"
                 data-testid="theme-toggle-mobile"
-                style="background:var(--bs-tertiary-bg);border:1px solid var(--bs-border-color);color:var(--bs-body-color);border-radius:999px;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;font-size:.85rem;">
+                style="background:var(--bs-tertiary-bg);border:1px solid var(--bs-border-color);color:var(--bs-body-color);border-radius:999px;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">
           <i id="theme-icon-mobile" class="bi bi-moon"></i>
-          <span style="font-weight:600;">Theme</span>
         </button>
         <div class="dropdown" data-testid="trustbar-currency-mobile">
           <button class="trustbar-utility-btn dropdown-toggle" data-bs-toggle="dropdown"

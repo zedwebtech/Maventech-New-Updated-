@@ -1,0 +1,27 @@
+{
+  "summary": "Verified 5 mobile UX / scroll / XML fixes on Maventech PHP store. All 5 items PASS.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verification_details": {
+    "hamburger_visible_light_and_dark": "PASS - navbar-toggler visible=True in both modes. LIGHT icon uses stroke=rgba(33,37,41,0.75) (dark stroke on light bg). DARK icon uses stroke=rgba(255,255,255,0.9) with width=2.2 (light stroke on dark bg) via dark-mode-polish.css override. Confirmed visually in screenshot.",
+    "mobile_menu_row_layout": "PASS - theme-toggle-mobile (icon-only: <i class='bi bi-moon'/>, empty text content), currency-selector-mobile (USD), navbar-close-x all visible. bbox: theme x=11.25-49.25, currency x=56.75-123.0, close x=356.25-378.75. No overlaps between the three.",
+    "theme_toggle_functionality": "PASS - clicking theme-toggle-mobile flips html[data-bs-theme] from 'light' -> 'dark'.",
+    "no_overscroll_whitespace": "PASS - on both mobile (390x844) and desktop (1920x1080), for '/' and '/track-order.php': footerBottomInViewport equals winH (~844/1080), scrollY+winH == docH (gapBelow=0). #main-content flex='1 0 auto' applied. html overscroll-behavior-y=none applied. Footer sits flush at viewport bottom with no blank white space below.",
+    "xml_feeds": "PASS - /sitemap.xml -> HTTP 200, content-type application/xml. /merchant-feed.xml -> HTTP 200, application/xml, contains <g:price> tags. grep for 'g:sale_price' returned ZERO matches. (Note: <g:price>0.00 USD</g:price> occurrences are inside <g:shipping> blocks - legitimate free shipping cost, not sale price.)"
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "None blocking. Minor: overscroll-behavior-y is set to 'none' on <html>; consider also setting on <body> for iOS Safari (some versions ignore html-level rule), but current tests confirm no visible whitespace below footer."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped per request)", "frontend": "100% (5/5 items pass)"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 5 targeted fixes verified. Mobile menu top row uses icon-only theme toggle (bi-moon/bi-sun), USD currency selector, and X close - no overlap. Dark-mode hamburger icon uses light stroke via SVG override in dark-mode-polish.css. Sticky footer confirmed with main#main-content{flex:1 0 auto} and html{overscroll-behavior-y:none}. merchant-feed.xml has no <g:sale_price> tags."
+}

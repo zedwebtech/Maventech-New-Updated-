@@ -278,8 +278,6 @@ foreach ($products as $p) {
     $country  = $countryByRegion[$region] ?? 'US';
 
     $price    = number_format((float)$p['price'], 2, '.', '');
-    $orig     = (float)($p['original_price'] ?? 0);
-    $hasSale  = $orig > (float)$p['price'];
 
     $title    = trim((string)$p['name']);
     $brandPi  = _brand_from(trim((string)$p['brand']), $title);
@@ -296,7 +294,7 @@ foreach ($products as $p) {
     $descRaw = trim((string)($p['description'] ?? ''));
     if ($descRaw === '') {
         $descRaw = sprintf(
-            'Genuine %s license key for %s%s. Digital delivery by email within seconds of payment confirmation. Lifetime activation, 24/7 support and 30-day money-back guarantee — sold by %s, an authorised software reseller.',
+            'Genuine %s license key for %s%s. Digital delivery by email within seconds of payment confirmation. Lifetime activation, 24/7 support and 30-day money-back guarantee — sold by %s, an independent software reseller (not affiliated with Microsoft Corporation).',
             $brandPi,
             $title,
             $p['version'] ? ' ' . $p['version'] : '',
@@ -327,22 +325,10 @@ foreach ($products as $p) {
         echo "      <g:image_link>" . feed_xml_esc($imageAbs) . "</g:image_link>\n";
     }
     echo "      <g:availability>"  . $availability . "</g:availability>\n";
-    if ($hasSale) {
-        echo "      <g:price>"     . feed_xml_esc(number_format($orig, 2, '.', '') . ' ' . $currency) . "</g:price>\n";
-        echo "      <g:sale_price>" . feed_xml_esc($price . ' ' . $currency) . "</g:sale_price>\n";
-        // g:sale_price_effective_date — ISO-8601 interval; tells Google when
-        // to render the strikethrough badge in Shopping results.  Falls back
-        // to a rolling 30-day window when the admin hasn't pinned a window.
-        $effective = _sale_effective_date_range(
-            $p['sale_starts_at'] ?? null,
-            $p['sale_ends_at']   ?? null
-        );
-        if ($effective !== '') {
-            echo "      <g:sale_price_effective_date>" . feed_xml_esc($effective) . "</g:sale_price_effective_date>\n";
-        }
-    } else {
-        echo "      <g:price>"     . feed_xml_esc($price . ' ' . $currency) . "</g:price>\n";
-    }
+    /* Compliance: single transparent price only. No strike-through /
+       sale_price / sale_price_effective_date — the store no longer runs
+       fake-discount pricing (Google Merchant "misleading pricing" policy). */
+    echo "      <g:price>"     . feed_xml_esc($price . ' ' . $currency) . "</g:price>\n";
     echo "      <g:brand>"         . feed_xml_esc($brandPi) . "</g:brand>\n";
     // --- Product identifiers (Google Shopping) ---
     // SKU drives both g:id-level uniqueness and the MPN; GTIN is emitted only

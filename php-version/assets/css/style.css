@@ -3068,8 +3068,15 @@ section h3, section .h3, section h6 { color: var(--bs-emphasis-color); }
 
 /* --- Sticky footer pattern: footer stays at the bottom, content fills above --- */
 html, body { min-height: 100vh; }
-body { display: flex; flex-direction: column; }
-body > footer.footer-dark { margin-top: auto !important; }
+/* Kill mobile rubber-band overscroll that flashed the (white) html background
+   below the footer, and stop the page from scrolling into empty space. */
+html { overscroll-behavior-y: none; }
+body { display: flex; flex-direction: column; overflow-x: hidden; }
+/* Main content grows to fill the viewport so the footer always sits flush at
+   the bottom — canonical sticky-footer, robust even when fixed widgets (chat
+   bubble, back-to-top) are rendered as trailing body siblings. */
+main#main-content { flex: 1 0 auto; }
+body > footer.footer-dark { margin-top: auto !important; flex-shrink: 0; }
 /* Disable any unintended growth/parallax: footer never animates its height */
 footer.footer-dark { transition: none !important; transform: none !important; will-change: auto !important; }
 
