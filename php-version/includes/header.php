@@ -845,11 +845,13 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
         <div class="dropdown" data-testid="trustbar-currency-mobile">
           <button class="trustbar-utility-btn dropdown-toggle" data-bs-toggle="dropdown"
                   data-testid="currency-selector-mobile"
+                  data-bs-display="static"
+                  aria-expanded="false"
                   style="background:var(--bs-tertiary-bg);border:1px solid var(--bs-border-color);color:var(--bs-body-color);border-radius:999px;padding:6px 12px;font-size:.85rem;font-weight:600;">
             <?php $__ctryM = current_country_code(); ?>
             <?= esc($cur['code']) ?>
           </button>
-          <ul class="dropdown-menu dropdown-menu-end">
+          <ul class="dropdown-menu mv-mobile-currency-menu shadow-sm" style="min-width:220px;max-width:calc(100vw - 32px);">
             <?php
             $regionToCurrencyM = ['US'=>'USD','UK'=>'GBP','EU'=>'EUR','CA'=>'CAD','AU'=>'AUD'];
             $countryLabelsM    = ['US'=>'United States','UK'=>'United Kingdom','AU'=>'Australia','CA'=>'Canada','EU'=>'Europe'];

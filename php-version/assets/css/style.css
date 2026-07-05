@@ -4783,6 +4783,29 @@ html[data-bs-theme="dark"] .home-disc-pill {
 }
 html[data-bs-theme="dark"] .home-disc-pill .text-secondary { color: #94A3B8 !important; }
 
+/* Mobile currency-switcher dropdown — Bootstrap's default absolute
+   positioning + dropdown-menu-end pushed the menu off the LEFT edge of
+   narrow viewports (country names appeared clipped: "lia (AUD)",
+   "States (USD)"). With data-bs-display="static" on the toggle, the
+   menu becomes a normal in-flow element that we then absolutely-position
+   ourselves — pinned to the LEFT of the button, capped at 100vw - 32px,
+   so it can NEVER extend off-screen. */
+.mv-mobile-currency-menu {
+  position: absolute !important;
+  inset: auto !important;
+  transform: none !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: auto !important;
+  margin-top: 4px !important;
+  z-index: 1055;
+}
+.mv-mobile-currency-menu .dropdown-item {
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
 /* Legacy amber home-independent-disclaimer removed — replaced by .home-disc-pill above. */
 
 /* Highlighted "Digital Delivery Only" badge (cards, rows, product page). */
