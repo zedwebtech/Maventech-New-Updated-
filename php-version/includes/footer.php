@@ -41,7 +41,7 @@
             <?php endif; ?>
           </span>
         </div>
-        <p class="small">Your trusted source for genuine Microsoft Office licenses at competitive prices. Instant delivery, one-time purchase with no recurring fees, and professional support.</p>
+        <p class="small">Your trusted source for genuine Microsoft Office licenses at competitive prices. Instant email delivery, one-time purchase with no recurring fees, and dedicated order-fulfillment support.</p>
 
         <div class="small fw-bold text-white mb-2">Subscribe for Deals</div>
         <form class="d-flex gap-2 mb-3" style="max-width: 320px;" onsubmit="subscribeNewsletter(event)">
@@ -52,6 +52,7 @@
         <p class="small mb-1"><i class="bi bi-telephone me-2 text-info"></i><a href="tel:<?= esc(tel_e164($brandPhone)) ?>"><?= esc($brandPhone) ?></a></p>
         <p class="small mb-1"><i class="bi bi-envelope me-2 text-info"></i><a href="mailto:<?= esc($brandEmail) ?>"><?= esc($brandEmail) ?></a></p>
         <p class="small mb-2"><i class="bi bi-geo-alt me-2 text-info"></i><?= esc($brandAddress) ?></p>
+        <?php if ($brandRegNumber): ?><p class="small mb-2" data-testid="footer-reg-number"><i class="bi bi-patch-check me-2 text-info"></i><?= esc($brandLegalName) ?> · California LLC No. <?= esc($brandRegNumber) ?></p><?php endif; ?>
         <a href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($brandAddress) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-light rounded-pill mb-2 gmap-btn" data-testid="footer-gmap-btn">
           <span class="gmap-pin"><i class="bi bi-geo-alt-fill"></i></span>View on Google Maps
         </a>
@@ -154,7 +155,7 @@
         <a href="<?= $lh ?>"><?= $ll ?></a><?= $idx < count($legal) - 1 ? '<span aria-hidden="true" style="color:#94a3b8;">|</span>' : '' ?>
       <?php endforeach; ?>
     </div>
-    <div class="text-center small">© <?= date('Y') ?> <?= esc($brandLegalName) ?>. All rights reserved.</div>
+    <div class="text-center small">© <?= date('Y') ?> <?= esc($brandLegalName) ?>. All rights reserved.<?php if ($brandRegNumber): ?> · California LLC No. <?= esc($brandRegNumber) ?><?php endif; ?></div>
   </div>
 </footer>
 

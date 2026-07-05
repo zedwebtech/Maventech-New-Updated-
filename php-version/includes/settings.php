@@ -142,6 +142,9 @@ function company_info(): array {
         'email'      => setting_get('company_email',   defined('SITE_EMAIL') ? SITE_EMAIL : ''),
         'phone'      => setting_get('company_phone',   defined('SITE_PHONE') ? SITE_PHONE : ''),
         'address'    => setting_get('company_address', ''),
+        // Official corporate registration number (e.g. California LLC file no.)
+        // shown in the footer + About Us for transparency / Google Ads trust.
+        'reg_number' => setting_get('company_reg_number', ''),
         'logo'       => normalize_company_logo(setting_get('company_logo', '')),
         // Prefix for generated subscription customer IDs (e.g. MVN → MVNUS00001).
         'id_prefix' => strtoupper(preg_replace('/[^A-Za-z0-9]/', '', setting_get('company_id_prefix', 'MVN')) ?: 'MVN'),

@@ -26,6 +26,7 @@ $brandEmail = $co['email'] ?: (defined('SITE_EMAIL') ? SITE_EMAIL : '');
 $brandPhone = company_phone_for_country() ?: (defined('SITE_PHONE') ? SITE_PHONE : '');
 $brandLogo  = $co['logo']  ?: '';
 $brandAddress = $co['address'] ?: (defined('SITE_ADDRESS') ? SITE_ADDRESS : '');
+$brandRegNumber = $co['reg_number'] ?? '';
 $pageTitle = $pageTitle ?? ($brandName . ' | Genuine Microsoft Software Keys');
 $cur = current_currency();
 $checkoutHeader = $checkoutHeader ?? false;

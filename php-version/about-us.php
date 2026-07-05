@@ -52,7 +52,7 @@ $aboutFaqLd = [
         ['@type' => 'Question', 'name' => 'How long has ' . SITE_BRAND . ' been in business?',
          'acceptedAnswer' => ['@type' => 'Answer', 'text' => SITE_BRAND . ' has been shipping genuine software licences since 2018, serving customers across the United States, United Kingdom, Canada, Australia and the European Union.']],
         ['@type' => 'Question', 'name' => 'Is the software genuine?',
-         'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Yes — every licence we sell is a genuine perpetual or subscription key sourced through authorised channels.  The software is downloaded directly from the vendor (microsoft.com, bitdefender.com, mcafee.com, etc.); we never ship pirated, cracked or shared keys.']],
+         'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Yes — every licence we sell is a genuine perpetual or subscription key sourced through legitimate volume-licensing channels.  The software is downloaded directly from the vendor (microsoft.com, bitdefender.com, mcafee.com, etc.); we never ship pirated, cracked or shared keys.']],
     ],
 ];
 include __DIR__ . '/includes/header.php';
@@ -99,7 +99,7 @@ $features = [
         <span class="eyebrow">WHO WE ARE</span>
         <h2 class="fw-bold mt-1">Your Trusted Software Partner</h2>
         <p class="text-secondary mt-3">At <?= SITE_LEGAL ?>, we are committed to delivering genuine Microsoft software at honest, competitive prices. Our team of specialists makes sure every customer gets the guidance they need for a seamless experience — from checkout to activation.</p>
-        <p class="text-secondary">We see ourselves as more than a storefront. Our philosophy is built around problem-solving: whatever challenge you meet with installation, activation, or everyday use, we stay with you until it's resolved.</p>
+        <p class="text-secondary">We see ourselves as more than a storefront. Our focus is fast, reliable order fulfillment — making sure your genuine license key is delivered promptly, along with a clear, step-by-step digital activation guide for every purchase.</p>
         <a href="page.php?slug=why-choose-us" class="btn btn-outline-primary rounded-pill px-4 mt-2" data-testid="about-learn-more">Learn More About Us <i class="bi bi-arrow-right ms-1"></i></a>
       </div>
       <div class="col-lg-6">
@@ -150,6 +150,34 @@ $features = [
     </div>
   </div>
 </section>
+
+<!-- Company / legal transparency (Google Ads trust signal) -->
+<section class="py-5" data-testid="about-company-info">
+  <div class="container">
+    <div class="text-center mb-4">
+      <span class="eyebrow">COMPANY INFORMATION</span>
+      <h2 class="fw-bold mt-1">Legal &amp; Business Details</h2>
+      <p class="text-secondary">We believe in full transparency. Here is our registered business information.</p>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card p-4">
+          <div class="row g-3 small">
+            <div class="col-sm-6"><i class="bi bi-building text-primary me-2"></i><strong>Legal entity:</strong> <?= esc($brandLegalName) ?></div>
+            <?php if ($brandRegNumber): ?><div class="col-sm-6"><i class="bi bi-patch-check text-primary me-2"></i><strong>California LLC No.:</strong> <?= esc($brandRegNumber) ?></div><?php endif; ?>
+            <div class="col-sm-6"><i class="bi bi-geo-alt text-primary me-2"></i><strong>Registered address:</strong> <?= esc($brandAddress) ?></div>
+            <div class="col-sm-6"><i class="bi bi-envelope text-primary me-2"></i><strong>Email:</strong> <a href="mailto:<?= esc($brandEmail) ?>"><?= esc($brandEmail) ?></a></div>
+            <div class="col-sm-6"><i class="bi bi-telephone text-primary me-2"></i><strong>Phone:</strong> <a href="tel:<?= esc(tel_e164($brandPhone)) ?>"><?= esc($brandPhone) ?></a></div>
+            <div class="col-sm-6"><i class="bi bi-clock text-primary me-2"></i><strong>Hours:</strong> <?= SITE_HOURS ?></div>
+          </div>
+          <hr class="my-3">
+          <p class="small text-secondary mb-0"><?= esc($brandLegalName) ?> is an independent marketplace provider of genuine, surplus product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 
 <!-- CTA -->
 <?php /* Emit the FAQPage schema so Google can render "People Also Ask"

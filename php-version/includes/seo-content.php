@@ -642,7 +642,7 @@ function product_seo_copy(array $p): string
     $h .= '<p class="text-secondary mb-4">Yes &mdash; this listing is the perpetual licence. Pay once at ' . esc($price) . ', activate on your ' . $platform . ' device, and use ' . $name . ' for as long as you own the device. There are no monthly fees, no renewals and no surprise charges. If you need to move the licence to a new computer, our support team helps you transfer it free of charge.</p>';
 
     $h .= '<h3 class="fw-bold h5 mt-4 mb-2">Best price for ' . $name . ' in ' . date('Y') . '</h3>';
-    $h .= '<p class="text-secondary mb-0">' . esc(SITE_BRAND) . ' partners directly with authorised channels, which is how we can sell ' . $name . ' for ' . esc($price) . ' &mdash; up to 81% below the manufacturer&rsquo;s retail price. ';
+    $h .= '<p class="text-secondary mb-0">' . esc(SITE_BRAND) . ' sources genuine, surplus ' . $name . ' licences through legitimate volume-licensing channels, which is how we can offer a flat, transparent price of ' . esc($price) . '. ';
     $h .= 'Every key is verified pre-dispatch, every payment is encrypted, and every order is protected by our 30-day money-back guarantee. ';
     $h .= 'Compare us with any other reseller on price, delivery speed and support quality &mdash; we are confident you will buy here.</p>';
 
@@ -953,7 +953,7 @@ function category_intro_seo(string $slug, string $title): string
     $isWindows   = (strpos($slug, 'windows') !== false);
 
     if ($isAntivirus) {
-        return 'Compare and buy genuine ' . esc($title) . ' licences below &mdash; full antivirus, anti-malware and ransomware protection with the lowest verified prices online, instant email delivery and 30-day money-back peace of mind. Every key is sourced directly from authorised channels and activates inside the official ' . esc($title) . ' installer.';
+        return 'Compare and buy genuine ' . esc($title) . ' licences below &mdash; full antivirus, anti-malware and ransomware protection at competitive, flat surplus pricing, with instant email delivery and 30-day money-back peace of mind. Every key is sourced through legitimate volume-licensing channels and activates inside the official ' . esc($title) . ' installer.';
     }
     if ($isOffice) {
         return 'Shop ' . esc($title) . ' &mdash; a one-time purchase that gives you a lifetime licence for Word, Excel, PowerPoint and the rest of the Office apps. No monthly Microsoft 365 fees, no renewals, no surprise charges. Pay once, install on your device, and use it for as long as you own the computer. Backed by our 30-day money-back guarantee.';
@@ -961,7 +961,7 @@ function category_intro_seo(string $slug, string $title): string
     if ($isWindows) {
         return 'Activate your PC with a genuine ' . esc($title) . ' product key in minutes. Buy the perpetual licence below and pay once &mdash; never a subscription. Instant email delivery, free upgrade-style updates within the version and round-the-clock activation support.';
     }
-    return 'Explore the full range of ' . esc($title) . ' below. Every licence is a perpetual one-time purchase with instant email delivery, free activation support and a 30-day money-back guarantee. Save up to 81% versus retail pricing in ' . $year . '.';
+    return 'Explore the full range of ' . esc($title) . ' below. Every licence is a perpetual one-time purchase with instant email delivery, a step-by-step digital activation guide and a 30-day money-back guarantee. Flat, transparent surplus volume-license pricing.';
 }
 
 /* ------------------------------------------------------------------
@@ -1021,7 +1021,7 @@ function category_faqs(string $slug, string $title): array
     $faqs = [
         [
             'question' => 'Are the ' . $title . ' license keys genuine?',
-            'answer'   => 'Yes. Every ' . $title . ' licence key sold by ' . SITE_BRAND . ' is genuine and sourced through authorised channels. The key activates directly inside the official ' . $brand . ' software downloaded from the manufacturer&rsquo;s website. We never sell cracked, repackaged or modified installers, and every key is verified before dispatch.',
+            'answer'   => 'Yes. Every ' . $title . ' licence key sold by ' . SITE_BRAND . ' is genuine and sourced through legitimate volume-licensing channels. The key activates directly inside the official ' . $brand . ' software downloaded from the manufacturer&rsquo;s website. We never sell cracked, repackaged or modified installers, and every key is verified before dispatch.',
         ],
         [
             'question' => 'How quickly will I receive my ' . $title . ' license key?',
@@ -1416,7 +1416,7 @@ function category_buying_guide_html(string $slug, string $title, int $productCou
     $h .= '<strong>Support:</strong> Live chat, email and phone support is available six days a week. Our specialists handle activation, transfers, downgrades and replacement keys at no extra charge.</p>';
 
     $h .= '<h3 class="fw-bold h5 mt-4 mb-2">Lowest verified prices on ' . esc($title) . ' in ' . $year . '</h3>';
-    $h .= '<p class="text-secondary mb-0">' . esc(SITE_BRAND) . ' works directly with authorised distributors, which is how we offer ' . esc($title) . ' at <strong>up to 81% below retail</strong>. ';
+    $h .= '<p class="text-secondary mb-0">' . esc(SITE_BRAND) . ' sources genuine, surplus ' . esc($title) . ' licences through legitimate volume-licensing clearings, which is how we can offer <strong>flat, transparent pricing</strong>. ';
     $h .= 'Every licence is paid for upfront, fully transferable and protected by our 30-day money-back guarantee. ';
     $h .= 'If you find ' . esc($title) . ' cheaper at another verified reseller, we will match the price &mdash; just send us the link.</p>';
     $h .= '</section>';
@@ -1646,7 +1646,7 @@ function product_paa_faqs(array $p): array
     return [
         [
             'question' => 'Where is the cheapest place to buy ' . $name . '?',
-            'answer'   => esc(SITE_BRAND) . ' sells ' . esc($name) . ' for ' . esc($price) . ' &mdash; up to 81% below the manufacturer&rsquo;s retail price. We work directly with authorised channels, which is how we keep prices low while guaranteeing every key is genuine, activates inside the official ' . esc($brand) . ' installer, and ships with a 30-day money-back protection.',
+            'answer'   => esc(SITE_BRAND) . ' sells ' . esc($name) . ' at a flat, transparent price of ' . esc($price) . '. We source genuine, surplus licences through legitimate volume-licensing channels, guaranteeing every key is genuine, activates inside the official ' . esc($brand) . ' installer, and ships with a 30-day money-back protection.',
         ],
         [
             'question' => 'How long does ' . $name . ' delivery take?',
@@ -1715,7 +1715,7 @@ function _topic_hub_default_seeds(): array
         [
             'slug'       => 'microsoft-office',
             'title'      => 'Microsoft Office — the complete buying guide',
-            'headline'   => 'Microsoft Office is a one-time-purchase office suite (Word, Excel, PowerPoint, Outlook, Publisher, Access) sold by ' . $brand . ' at up to 81% below retail. Every licence is genuine, lifetime, activates inside the official Microsoft installer, delivered by email in 15-30 minutes, and protected by a 30-day money-back guarantee.',
+            'headline'   => 'Microsoft Office is a one-time-purchase office suite (Word, Excel, PowerPoint, Outlook, Publisher, Access) sold by ' . $brand . ' at flat, transparent surplus pricing. Every licence is genuine, lifetime, activates inside the official Microsoft installer, delivered by email in 15-30 minutes, and protected by a 30-day money-back guarantee.',
             'audience'   => 'home users, students, freelancers and small-business owners choosing between Office 2024, 2021 and 2019 on Windows or Mac',
             'categories' => ['office-pc','office-mac','office-2024-pc','office-2021-pc','office-2019-pc','office-2024-mac','office-2021-mac','office-2019-mac','apps','microsoft-project','microsoft-visio'],
             'blogTags'   => ['%office%','%word%','%excel%','%powerpoint%','%outlook%','%microsoft 365%','%publisher%'],
@@ -1727,7 +1727,7 @@ function _topic_hub_default_seeds(): array
         [
             'slug'       => 'windows',
             'title'      => 'Microsoft Windows — Windows 11, 10 and Pro buying guide',
-            'headline'   => 'Microsoft Windows is the world\'s most-used desktop operating system. ' . $brand . ' sells genuine Windows 11 and Windows 10 product keys (Home, Pro and Education) at up to 81% off retail. Pay once, activate inside the official Windows setup, and keep the licence for life — instant email delivery and 30-day guarantee.',
+            'headline'   => 'Microsoft Windows is the world\'s most-used desktop operating system. ' . $brand . ' sells genuine Windows 11 and Windows 10 product keys (Home, Pro and Education) at flat, transparent surplus pricing. Pay once, activate inside the official Windows setup, and keep the licence for life — instant email delivery and 30-day guarantee.',
             'audience'   => 'self-builders, IT teams and home upgraders looking for a genuine Windows 11 Pro or Windows 10 product key',
             'categories' => ['windows-11','windows-10','windows','os'],
             'blogTags'   => ['%windows 11%','%windows 10%','%windows%'],
@@ -1739,7 +1739,7 @@ function _topic_hub_default_seeds(): array
         [
             'slug'       => 'antivirus',
             'title'      => 'Antivirus software — Bitdefender, McAfee & internet-security buying guide',
-            'headline'   => 'Modern antivirus software protects every device in your household from malware, ransomware and identity theft. ' . $brand . ' carries genuine Bitdefender and McAfee licences for 1, 3, 5 and 10 devices at up to 81% off retail. Activates inside the official vendor installer, delivered by email, with our 30-day money-back guarantee.',
+            'headline'   => 'Modern antivirus software protects every device in your household from malware, ransomware and identity theft. ' . $brand . ' carries genuine Bitdefender and McAfee licences for 1, 3, 5 and 10 devices at flat, transparent surplus pricing. Activates inside the official vendor installer, delivered by email, with our 30-day money-back guarantee.',
             'audience'   => 'home users, families and small businesses choosing between Bitdefender Total Security, McAfee Total Protection and other paid antivirus suites',
             'categories' => ['antivirus','bitdefender','mcafee','internet-security'],
             'blogTags'   => ['%bitdefender%','%mcafee%','%antivirus%','%malware%','%ransomware%','%internet security%'],

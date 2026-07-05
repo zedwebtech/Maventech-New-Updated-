@@ -54,7 +54,7 @@ $activationCopy = strtr($g['activation'], [
 
 /* ---- SEO ---- */
 $pageTitle       = 'How to Install ' . $name . ' — Step-by-step Guide';
-$pageDescription = 'Install and activate ' . $name . ' in minutes: download the official installer, follow the illustrated steps, and enter your key. Free activation support from Maventech.';
+$pageDescription = 'Install and activate ' . $name . ' in minutes: download the official installer, follow the illustrated steps, and enter your key. Step-by-step digital activation guide from Maventech.';
 $ogImage         = !empty($product['image']) ? to_public_url((string)$product['image']) : null;
 
 /* ---- HowTo JSON-LD (built from the same steps shown below) ---- */

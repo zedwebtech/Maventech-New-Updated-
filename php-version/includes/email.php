@@ -219,7 +219,7 @@ function default_lead_followup_template(): string {
           <td style="padding:14px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;width:33%;text-align:center;">
             <div style="font-size:22px;">&#10003;</div>
             <div style="font-weight:700;color:#065f46;font-size:13px;margin-top:4px;">100% Genuine</div>
-            <div style="font-size:11.5px;color:#475569;margin-top:2px;">Direct from authorized channels</div>
+            <div style="font-size:11.5px;color:#475569;margin-top:2px;">Genuine surplus licences</div>
           </td>
           <td style="width:8px;"></td>
           <td style="padding:14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;width:33%;text-align:center;">
@@ -588,7 +588,7 @@ function product_faqs(array $product): array {
         ],
         [
             'question' => 'Is this a genuine ' . $brand . ' license key?',
-            'answer'   => 'Yes. ' . $brandStore . ' only sells genuine, activation-ready ' . $brand . ' license keys sourced through authorised channels. The key you receive activates the official ' . $brand . ' software downloaded directly from the ' . $brand . ' website — it is never a cracked, repackaged, or modified installer. Every key is verified before dispatch and backed by our 30-day money-back guarantee if it fails to activate.',
+            'answer'   => 'Yes. ' . $brandStore . ' only sells genuine, activation-ready ' . $brand . ' license keys sourced through legitimate volume-licensing channels. The key you receive activates the official ' . $brand . ' software downloaded directly from the ' . $brand . ' website — it is never a cracked, repackaged, or modified installer. Every key is verified before dispatch and backed by our 30-day money-back guarantee if it fails to activate.',
         ],
         [
             'question' => 'What if my ' . $name . ' license key does not activate?',

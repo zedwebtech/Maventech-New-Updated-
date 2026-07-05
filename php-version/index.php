@@ -179,7 +179,6 @@ include __DIR__ . '/includes/header.php';
                 <div>
                   <div class="small fw-semibold text-body lh-sm"><?= esc($p['name']) ?></div>
                   <span class="fw-bold text-primary small"><?= format_price((float)$p['price']) ?></span>
-                  <?php if ($p['original_price']): ?><small class="text-secondary text-decoration-line-through ms-1"><?= format_price((float)$p['original_price']) ?></small><?php endif; ?>
                 </div>
               </div>
             </a>
@@ -243,12 +242,12 @@ include __DIR__ . '/includes/header.php';
   </div>
 </section>
 
-<!-- Best Sellers — featured spotlight + stacked side picks -->
+<!-- Featured products — featured spotlight + stacked side picks -->
 <section class="py-5 bg-soft">
   <div class="container">
     <div class="text-center mb-4">
-      <span class="eyebrow">TOP RATED</span>
-      <h2 class="fw-bold mt-1 mb-1">Best Sellers</h2>
+      <span class="eyebrow">FEATURED</span>
+      <h2 class="fw-bold mt-1 mb-1">Featured Products</h2>
       <small class="text-secondary"><?= count($bestSellers) ?> products available · <a href="shop.php" class="text-decoration-none fw-semibold">View All <i class="bi bi-arrow-right"></i></a></small>
     </div>
     <?php
@@ -265,7 +264,6 @@ include __DIR__ . '/includes/header.php';
             <div class="col-sm-5">
               <a href="product.php?slug=<?= esc($feat['slug']) ?>" class="d-block">
                 <div class="spotlight-img-wrap rounded-4 p-3 position-relative">
-                  <span class="badge text-bg-warning text-dark position-absolute top-0 start-0 m-2" style="z-index:2;">BEST SELLER</span>
                   <img <?= product_img_attrs($feat['image'], 240) ?> alt="<?= esc(product_img_alt($feat)) ?>" title="<?= esc($feat['name']) ?>" loading="lazy" decoding="async" width="200" height="200">
                 </div>
               </a>

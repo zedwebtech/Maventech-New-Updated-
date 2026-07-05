@@ -70,7 +70,7 @@ $payload = [
         'pci_dss_level_1'      => true,
         'gdpr_aligned'         => true,
         'money_back_days'      => 30,
-        'license_authenticity' => 'Direct from authorised distributors (Microsoft, Bitdefender, Norton, McAfee, Adobe, etc.) — never cracked / pirated / repackaged.',
+        'license_authenticity' => 'Genuine, surplus keys sourced through legitimate volume-licensing channels — never cracked / pirated / repackaged.',
         'payment_methods'      => ['stripe', 'paypal'],
         'delivery'             => 'Digital license key emailed within seconds of payment confirmation.',
     ],
