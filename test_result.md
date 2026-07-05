@@ -2119,14 +2119,160 @@ agent_communication:
           
           All requirements from the review request validated successfully. No issues found. Feature is production-ready.
 
+frontend:
+  - task: "Google Ads/Merchant Compliance Overhaul - Remove discount badges, verify no ProAssist upsell, compliance spot-checks"
+    implemented: true
+    working: false
+    file: "php-version/index.php, php-version/shop.php, php-version/checkout.php, php-version/product.php, php-version/about-us.php, php-version/support.php, php-version/contact.php, php-version/includes/header.php, php-version/includes/footer.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "testing"
+        -comment: |
+          COMPREHENSIVE GOOGLE ADS/MERCHANT COMPLIANCE TESTING COMPLETE
+          Tested 10 critical compliance items on preview URL: https://db982f1a-429e-4dc5-9398-1731e8fd1ac6.preview.emergentagent.com
+          
+          CRITICAL FAILURES (MUST FIX):
+          
+          1. ✗ DISCOUNT BADGE FOUND - "Save up to 10%" badge appears in top navigation bar
+             - Location: Top blue bar with "Genuine Microsoft Products ⚡ Instant Digital Delivery 🏷️ Save up to 10%"
+             - Requirement: NO discount badges (-%/Save %) should appear anywhere
+             - Impact: Google Ads compliance violation
+             - Also found: Multiple references to "discounts" in menu promo text ("Exclusive discounts on bulk licenses")
+          
+          2. ⚠ CHECKOUT PAGE SHOWS "ERROR" OR "WARNING" TEXT
+             - Playwright detected error-related text on checkout page
+             - Need to verify if this is actual error or just informational text (e.g., "error handling" in code)
+             - Screenshot shows "TEST MODE" banner which may have triggered false positive
+          
+          3. ⚠ PROASSIST/PREMIUM INSTALLATION TEXT DETECTED
+             - Playwright found "ProAssist" or "Premium Installation" text in checkout page content
+             - Need to verify: Is this a $47 line item (FAIL) or just mentioned in help text (acceptable)?
+             - Requirement: NO $47 ProAssist/Premium Installation line item should exist
+          
+          PASSES (7 out of 10):
+          
+          ✓ TEST 1 (Cart → Checkout Flow): MOSTLY PASS
+             - Navigates directly to checkout.php (no modal interception) ✓
+             - No ProAssist upsell modal appears ✓
+             - No pre-checked opt-in checkboxes (SMS/newsletter/insurance all unchecked) ✓
+             - Order totals visible ✓
+             - Minor issues: error text detected (may be false positive), ProAssist text found (need verification)
+          
+          ✓ TEST 2 (Redirects): PASS
+             - /subscriptions.php → /shop.php (301 redirect) ✓
+             - /subscribe.php?plan=pro-shield → /shop.php (redirect) ✓
+          
+          ✓ TEST 3 (Support Page): PASS
+             - Shows ONLY 2 tabs: "Activation Guide" and "FAQ" ✓
+             - NO forbidden tabs (Troubleshooting, Error Codes, Uninstall) ✓
+          
+          ✓ TEST 4 (Contact Page): PASS
+             - All 3 contact cards present: Email Support, Live Chat, Phone Support ✓
+             - Subject dropdown has NO "Technical Support" option ✓
+             - Subject dropdown has "Order / Delivery" and "License / Activation Help" ✓
+          
+          ⚠ TEST 5 (Compliance Spot-Checks): PARTIAL FAIL
+             - ✓ No strike-through prices on homepage or shop page
+             - ✗ "Save up to 10%" discount badge found in top bar (MUST REMOVE)
+             - ✓ "Surplus Volume License Price" label present
+             - ✓ Independent-reseller notice present ("Maventech is an independent reseller of genuine software licenses and is not affiliated with Microsoft Corporation")
+          
+          ⚠ TEST 6 (Product Page): PARTIAL PASS
+             - ✗ "DIGITAL DELIVERY ONLY" badge NOT detected by Playwright (but curl confirms it exists with data-testid="product-dd-only" and text "Digital Delivery Only")
+             - ✓ No "360 view · drag to spin" badge
+             - ✓ "How You Will Receive This Product" section present
+             - ✓ Delivery notice present
+             - ✓ "Important Licensing Note" present
+             - Note: Badge exists in HTML but may not be visible at bottom-center of product image as specified
+          
+          ✓ TEST 7 (Footer): PASS
+             - ✓ "MavenTech LLC" present in footer copyright
+             - ✓ "California LLC No. 202463711253" present
+             - ✓ Extended trademark disclaimer mentions Microsoft, Bitdefender AND McAfee
+             - ✓ NO "Subscription Plans" link
+             - ✓ Newsletter heading does NOT contain "81%"
+          
+          ⚠ TEST 8 (About Us): PARTIAL PASS
+             - ✗ "Legal & Business Details" section NOT detected by Playwright (but curl confirms it exists: "Legal &amp; Business Details" with heading "COMPANY INFORMATION")
+             - ✓ "MavenTech LLC" present
+             - ✓ "California LLC No. 202463711253" present
+             - ✓ Contact info present (address, email, phone)
+             - ✓ "Founded 2024" present (NOT 2018)
+             - Note: Section exists in HTML but may not be rendering as expected
+          
+          ⚠ TEST 9 (Chat Widget): ERROR
+             - Chat widget element found in DOM
+             - Could not click widget (element not visible after 30s timeout)
+             - Unable to verify greeting text ("Need help with your order? ... Chat with an order specialist")
+             - Unable to verify text alignment (left-aligned, no large gap)
+             - Note: Widget may require specific conditions to become visible
+          
+          ✓ TEST 10 (Terms Page): PASS
+             - ✓ "Governing Law" section present
+             - ✓ Says "State of California" (NOT Missouri)
+          
+          SUMMARY:
+          - 7 out of 10 tests PASS or MOSTLY PASS
+          - 1 CRITICAL FAILURE: "Save up to 10%" discount badge in top bar (Google Ads compliance violation)
+          - 2 items need verification: ProAssist text in checkout, error text in checkout
+          - 3 items have detection issues but exist in HTML: DIGITAL DELIVERY ONLY badge, Legal & Business Details section, Chat widget
+          
+          REQUIRED FIXES:
+          1. CRITICAL: Remove "Save up to 10%" badge from top navigation bar (php-version/includes/header.php)
+          2. VERIFY: Check if ProAssist is a line item or just help text in checkout
+          3. VERIFY: Check if checkout "error" is actual error or just TEST MODE banner
+          4. INVESTIGATE: Why DIGITAL DELIVERY ONLY badge not visible at bottom-center of product image
+          5. INVESTIGATE: Why Legal & Business Details section not detected (may be rendering issue)
+          6. INVESTIGATE: Chat widget visibility conditions
+
 test_plan:
   current_focus:
-    - "Bug fix — Google Merchant Center rejects every product with 3 feed-schema errors (Invalid free_shipping_threshold format, Invalid google_product_category, Missing sub-attribute [country] in return_policy)"
+    - "Google Ads/Merchant Compliance Overhaul - Remove discount badges, verify no ProAssist upsell, compliance spot-checks"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
+    -agent: "testing"
+    -message: |
+      ✅ GOOGLE ADS/MERCHANT COMPLIANCE TESTING COMPLETE — 1 CRITICAL FAILURE FOUND
+      
+      Tested all 10 compliance items from the review request on preview URL: https://db982f1a-429e-4dc5-9398-1731e8fd1ac6.preview.emergentagent.com
+      
+      CRITICAL FAILURE (MUST FIX IMMEDIATELY):
+      ✗ "Save up to 10%" discount badge appears in top navigation bar
+         - This violates Google Ads compliance requirements (NO discount badges allowed)
+         - Location: Top blue bar with "🏷️ Save up to 10%" text
+         - File: php-version/includes/header.php (likely around line with trustbar-deal-text)
+         - Also found: "Exclusive discounts" text in menu promo
+      
+      ITEMS NEEDING VERIFICATION:
+      1. Checkout page shows "error" or "warning" text (may be TEST MODE banner, not actual error)
+      2. ProAssist/Premium Installation text detected in checkout (need to verify if it's a $47 line item or just help text)
+      
+      PASSES (7/10):
+      ✓ Cart → Checkout flow (no modal, no pre-checked boxes, navigates directly to checkout.php)
+      ✓ Redirects (subscriptions.php → shop.php, subscribe.php?plan=pro-shield → shop.php)
+      ✓ Support page (only 2 tabs: Activation Guide, FAQ)
+      ✓ Contact page (3 cards, no Technical Support option)
+      ✓ Footer (MavenTech LLC, California LLC No. 202463711253, extended trademark disclaimer, no Subscription Plans link, no 81%)
+      ✓ Terms page (Governing Law = State of California)
+      ⚠ Compliance spot-checks (PARTIAL: no strike-through prices ✓, Surplus Volume License Price ✓, independent-reseller notice ✓, but discount badge found ✗)
+      
+      DETECTION ISSUES (elements exist in HTML but not detected by Playwright):
+      - DIGITAL DELIVERY ONLY badge (exists with data-testid="product-dd-only", confirmed via curl)
+      - Legal & Business Details section (exists with heading "COMPANY INFORMATION", confirmed via curl)
+      - Chat widget (found in DOM but not clickable/visible)
+      
+      NEXT STEPS FOR MAIN AGENT:
+      1. Remove "Save up to 10%" badge from top navigation bar (CRITICAL)
+      2. Verify ProAssist is not a $47 line item in checkout
+      3. Verify checkout "error" is just TEST MODE banner
+      4. Check if DIGITAL DELIVERY ONLY badge is positioned at bottom-center of product image
+      5. Verify Legal & Business Details section renders correctly on About Us page
     -agent: "main"
     -message: |
       BUG FIX FOR VERIFICATION — Google Merchant Center product feed must pass the 3 schema audits it currently fails on every SKU (free_shipping_threshold sub-attribute format, google_product_category, and the return_policy country sub-attribute).
@@ -2672,3 +2818,46 @@ agent_communication:
       NET EFFECT: When admin clicks "Resend Email" on a pending order, customer receives email with products + checkout link. Order state unchanged (no license keys consumed). Admin sees accurate success message.
 
       Bug fix is production-ready and safe to deploy. Pending order MV260704ABCD (id=5) left intact for future testing.
+
+#====================================================================================================
+# Google Ads / Merchant Center COMPLIANCE OVERHAUL (Feb 2026) — needs frontend verification
+#====================================================================================================
+
+frontend:
+  - task: "Compliance overhaul: reseller disclaimer strip, flat pricing (no discounts), Digital-Delivery-Only badge, product notices, refund policy, footer legal, chat copy, subscriptions removed, ProAssist disabled, governing law, contact card alignment"
+    implemented: true
+    working: "NA"
+    file: "php-version/includes/header.php, includes/footer.php, includes/functions.php, product.php, index.php, about-us.php, support.php, contact.php, subscriptions.php, subscribe.php, cart.php, checkout.php, sitemap.php, sitemap-xml.php, includes/seo-content.php, includes/email.php, agents-json.php, install-guide.php, assets/css/style.css, assets/js/main.js, DB(settings/products/pages)"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          Large compliance overhaul across the storefront. Please verify (all pages served by PHP on port 3000 / preview URL):
+          1) Independent-reseller notice strip appears directly below the navbar on every public page (data-testid="reseller-notice-bar").
+          2) NO strike-through / % discount pricing anywhere (home spotlight/side-sellers, shop.php cards+rows, product.php, cart). Every price shows a "Surplus Volume License Price" label (data-testid contains surplus-label / product-surplus-label). original_price is NULL for all products.
+          3) Product page: highlighted "DIGITAL DELIVERY ONLY" badge sits at bottom-center of the product image (data-testid="product-dd-only"), replacing the old 360-view badge. Cards/rows show "Digital delivery only" badge (data-testid="dd-delivery-badge").
+          4) Product page has: delivery notice (data-testid="product-delivery-notice"), Important Licensing Note (data-testid="product-licensing-note"), and "How You Will Receive This Product" section (data-testid="how-you-receive"). Product JSON-LD availability = InStock and price = the shown flat price.
+          5) Footer: extended trademark disclaimer (Microsoft+Bitdefender+McAfee, not authorized distributor), © MavenTech LLC + "California LLC No. 202463711253" (data-testid="footer-reg-number"), plain-text address/email. NO "Subscription Plans" footer link. Newsletter heading has NO "81%".
+          6) About Us: "Company Information / Legal & Business Details" section (data-testid="about-company-info") with MavenTech LLC, California LLC No. 202463711253, address, email, phone, hours neatly aligned; "Founded 2024" (NOT 2018).
+          7) Chat widget greeting reads "Need help with your order? … Chat with an order specialist" and is left-aligned cleanly (no big gap/indent). Open chat via the bubble/#chat-bubble or toggleChat().
+          8) Support page (support.php) shows ONLY "Activation Guide" + "FAQ" tabs (Troubleshooting/Error Codes/Uninstall removed). No "troubleshoot" wording in intro.
+          9) Contact page (contact.php): three cards (Email/Live Chat/Phone) with matching outline pill buttons, all bottom-aligned/equal height; reasons dropdown has NO "Technical Support" (has Order/Delivery + License/Activation). Governing-law and business info correct.
+          10) Redirects: /subscriptions.php and /subscribe.php?plan=pro-shield both 301-redirect to /shop.php.
+          11) Cart → Checkout flow: cart "Proceed to Checkout" goes straight to checkout.php (NO ProAssist upsell modal). Add a product to cart, open cart, proceed to checkout, confirm checkout page loads with correct totals and NO ProAssist $47 line and NO pre-checked opt-in boxes.
+          12) Terms page (page.php?slug=terms-of-service) governing law = State of California (NOT Missouri).
+          FOCUS: confirm nothing is broken in the cart→checkout flow, support/contact pages, and the two redirects. Report any PHP errors, broken layouts, or missing elements.
+
+test_plan:
+  current_focus:
+    - "Compliance overhaul: reseller disclaimer strip, flat pricing (no discounts), Digital-Delivery-Only badge, product notices, refund policy, footer legal, chat copy, subscriptions removed, ProAssist disabled, governing law, contact card alignment"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Please run a frontend verification of the compliance overhaul (see the new frontend task above for the 12-point checklist). This is a PHP storefront served on port 3000 (use the preview URL). Key flows to confirm NOT broken: (a) cart → checkout (add a product, open /cart.php, click "Proceed to Checkout" — it must go straight to /checkout.php with no ProAssist upsell modal and no $47 install line, and no pre-checked opt-ins), (b) /support.php and /contact.php render correctly with the new tabs/cards, (c) /subscriptions.php and /subscribe.php?plan=pro-shield both 301-redirect to /shop.php. Also spot-check the reseller strip, flat "Surplus Volume License Price" (no strike-throughs), the DIGITAL DELIVERY ONLY badge on a product page, footer registration number, and the About Us company-info block. No login required for these public pages. Report any broken layout, PHP error, or missing element.
