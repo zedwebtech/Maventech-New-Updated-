@@ -437,7 +437,6 @@ include __DIR__ . '/includes/header.php';
                  width="640" height="640">
           </div>
           <span class="pd-360-badge" data-testid="product-360-badge"><i class="bi bi-arrow-repeat me-1"></i>360° view · drag to spin</span>
-          <span class="dd-only-ribbon dd-only-ribbon-lg" data-testid="product-dd-only">Digital Delivery Only</span>
         </div>
       </div>
     </div>
@@ -598,6 +597,7 @@ include __DIR__ . '/includes/header.php';
         <div class="col-sm-6"><i class="bi bi-patch-check-fill text-success me-2"></i>Genuine Microsoft key</div>
         <div class="col-sm-6"><i class="bi bi-arrow-counterclockwise text-primary me-2"></i>Money-back guarantee</div>
         <div class="col-sm-6"><i class="bi bi-journal-text text-primary me-2"></i>Step-by-step activation guide included</div>
+        <div class="col-sm-6"><i class="bi bi-cloud-download-fill text-primary me-2"></i>Digital delivery only</div>
       </div>
     </div>
   </div>

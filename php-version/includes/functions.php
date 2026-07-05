@@ -2238,9 +2238,8 @@ function render_product_row(array $p): string
     <div class="card product-card shop-row p-3 p-sm-4" data-testid="product-row-' . esc($p['slug']) . '">
       <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 gap-sm-4">
         <a href="product.php?slug=' . esc($p['slug']) . '" class="flex-shrink-0 mx-auto mx-sm-0">
-          <div class="shop-row-img rounded-4 dd-only-wrap">
+          <div class="shop-row-img rounded-4">
             <img ' . product_img_attrs($p['image'], 240) . ' alt="' . esc(product_img_alt($p)) . '" title="' . esc($p['name']) . '" loading="lazy" decoding="async" width="240" height="240">
-            <span class="dd-only-ribbon">Digital Delivery Only</span>
           </div>
         </a>
         <div class="flex-grow-1 min-w-0">
@@ -2256,6 +2255,7 @@ function render_product_row(array $p): string
             <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant email delivery</span>
             <span><i class="bi bi-infinity text-primary me-1"></i>One-time purchase</span>
             <span class="d-none d-md-inline"><i class="bi bi-journal-text text-primary me-1"></i>Step-by-step activation guide</span>
+            <span><i class="bi bi-cloud-download-fill text-primary me-1"></i>Digital delivery only</span>
           </div>
         </div>
         <div class="shop-row-buy text-sm-end flex-shrink-0">
@@ -2293,9 +2293,8 @@ function render_product_card(array $p): string
     <div class="card product-card tilt-3d h-100 position-relative" data-testid="product-card-' . esc($p['slug']) . '">
       ' . $badge . $discount . '
       <a href="product.php?slug=' . esc($p['slug']) . '" class="text-decoration-none">
-        <div class="ratio ratio-1x1 bg-body-tertiary rounded-top product-img-wrap dd-only-wrap">
+        <div class="ratio ratio-1x1 bg-body-tertiary rounded-top product-img-wrap">
           <img ' . product_img_attrs($p['image'], 320) . ' alt="' . esc(product_img_alt($p)) . '" title="' . esc($p['name']) . '" class="object-fit-contain p-3" loading="lazy" decoding="async" width="320" height="320">
-          <span class="dd-only-ribbon">Digital Delivery Only</span>
         </div>
       </a>
       <div class="card-body d-flex flex-column">
@@ -2306,7 +2305,7 @@ function render_product_card(array $p): string
         <a href="product.php?slug=' . esc($p['slug']) . '" class="text-decoration-none text-body fw-semibold product-title mb-1">' . esc($p['name']) . '</a>
         ' . $teaserHtml . '
         <div class="mb-2">' . $stockPill . '</div>
-        <small class="text-secondary pc-meta mb-2"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant email delivery · One-time purchase</small>
+        <small class="text-secondary pc-meta mb-2"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant email delivery · One-time purchase · <i class="bi bi-cloud-download-fill me-1"></i>Digital delivery only</small>
         <div class="pc-price-row d-flex flex-column gap-0 mt-auto pt-2">
           <span class="surplus-price-label" data-testid="card-surplus-label-' . esc($p['slug']) . '">Surplus Volume License Price</span>
           <div class="lh-1 d-flex align-items-baseline gap-2"><span class="fw-bold text-primary fs-5">' . format_price((float)$p['price']) . '</span>' . $orig . '<span class="text-secondary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="card-currency-' . esc($p['slug']) . '">' . esc($curCode) . '</span></div>
