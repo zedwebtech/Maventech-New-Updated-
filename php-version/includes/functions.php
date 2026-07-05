@@ -2221,6 +2221,17 @@ function product_teaser(string $description, int $maxLen = 150): string
     return $teaser;
 }
 
+/**
+ * Highlighted "Digital Delivery Only" badge. Uses an inline SVG (cloud-download)
+ * so the icon always renders regardless of the subsetted Bootstrap-Icons font.
+ */
+function dd_delivery_badge(string $size = ''): string
+{
+    $cls = 'dd-badge' . ($size === 'sm' ? ' dd-badge-sm' : '');
+    $svg = '<svg class="dd-badge-ico" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 6.854-1.5 1.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 8.793V5.5a.5.5 0 0 1 1 0v3.293l.646-.647a.5.5 0 0 1 .708.708z"/></svg>';
+    return '<span class="' . $cls . '" data-testid="dd-delivery-badge">' . $svg . 'Digital Delivery Only</span>';
+}
+
 function render_product_row(array $p): string
 {
     $curCode = current_currency()['code'];
@@ -2251,11 +2262,11 @@ function render_product_row(array $p): string
           <a href="product.php?slug=' . esc($p['slug']) . '" class="text-decoration-none text-body fw-bold fs-6 d-block">' . esc($p['name']) . '</a>
           ' . render_product_rating($p['slug'], 'row') . '
           ' . $teaserHtml . '
-          <div class="d-flex flex-wrap gap-3 small text-secondary">
+          <div class="d-flex flex-wrap gap-3 gap-y-2 small text-secondary align-items-center">
             <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant email delivery</span>
             <span><i class="bi bi-infinity text-primary me-1"></i>One-time purchase</span>
             <span class="d-none d-md-inline"><i class="bi bi-journal-text text-primary me-1"></i>Step-by-step activation guide</span>
-            <span><i class="bi bi-cloud-download-fill text-primary me-1"></i>Digital delivery only</span>
+            ' . dd_delivery_badge('sm') . '
           </div>
         </div>
         <div class="shop-row-buy text-sm-end flex-shrink-0">
@@ -2305,7 +2316,8 @@ function render_product_card(array $p): string
         <a href="product.php?slug=' . esc($p['slug']) . '" class="text-decoration-none text-body fw-semibold product-title mb-1">' . esc($p['name']) . '</a>
         ' . $teaserHtml . '
         <div class="mb-2">' . $stockPill . '</div>
-        <small class="text-secondary pc-meta mb-2"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant email delivery · One-time purchase · <i class="bi bi-cloud-download-fill me-1"></i>Digital delivery only</small>
+        <small class="text-secondary pc-meta mb-1"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant email delivery · One-time purchase</small>
+        <div class="mb-2">' . dd_delivery_badge('sm') . '</div>
         <div class="pc-price-row d-flex flex-column gap-0 mt-auto pt-2">
           <span class="surplus-price-label" data-testid="card-surplus-label-' . esc($p['slug']) . '">Surplus Volume License Price</span>
           <div class="lh-1 d-flex align-items-baseline gap-2"><span class="fw-bold text-primary fs-5">' . format_price((float)$p['price']) . '</span>' . $orig . '<span class="text-secondary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="card-currency-' . esc($p['slug']) . '">' . esc($curCode) . '</span></div>

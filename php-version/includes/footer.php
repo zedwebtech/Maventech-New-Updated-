@@ -234,10 +234,7 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
          friendly first-touch message; the 3-field contact form sits right
          below it on first open. -->
     <div class="chat-addie-greeting" id="chat-addie-greeting" data-testid="chat-addie-greeting">
-      <div class="chat-msg bot chat-addie-bubble">
-        <strong>Need help with your order? 👋</strong><br>
-        Chat with an order specialist about your <?= esc($brandName) ?> order or license delivery.
-      </div>
+      <div class="chat-msg bot chat-addie-bubble"><strong>Need help with your order? 👋</strong><br>Chat with an order specialist about your <?= esc($brandName) ?> order or license delivery.</div>
       <div class="chat-addie-meta">Addie • Just now</div>
     </div>
     <!-- AI welcome + quick chips kept in markup for ProAssist auto-open flows

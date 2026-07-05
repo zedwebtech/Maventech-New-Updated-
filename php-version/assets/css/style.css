@@ -4687,6 +4687,32 @@ html[data-bs-theme="dark"] .reseller-notice-bar {
   border-bottom-color: rgba(96, 165, 250, .28);
 }
 
+/* Highlighted "Digital Delivery Only" badge (cards, rows, product page). */
+.dd-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #e0edff, #eef4ff);
+  color: #1d4ed8;
+  border: 1px solid #bcd3ff;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 999px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.dd-badge-ico { width: 15px; height: 15px; flex-shrink: 0; }
+.dd-badge-sm { font-size: .58rem; padding: 3px 8px; letter-spacing: .02em; }
+.dd-badge-sm .dd-badge-ico { width: 12px; height: 12px; }
+html[data-bs-theme="dark"] .dd-badge {
+  background: rgba(37, 99, 235, .16);
+  color: #93c5fd;
+  border-color: rgba(96, 165, 250, .3);
+}
+
 /* Flat "Surplus Volume License Price" label shown above every price. */
 .surplus-price-label {
   display: block;

@@ -506,6 +506,10 @@ include __DIR__ . '/includes/header.php';
         <button class="btn btn-orange-outline btn-lg rounded-pill px-4 fw-bold buy-now-btn" data-slug="<?= esc($product['slug']) ?>" data-testid="pd-buy-now"><i class="bi bi-lightning-charge-fill me-1"></i>Buy Now</button>
       </div>
 
+      <p class="small text-secondary mt-3 mb-0" data-testid="product-licensing-note">
+        <strong>Important Licensing Note:</strong> This is an authentic, surplus perpetual license key sourced legally through volume distribution clearings. It is not an OEM bundle or a subscription. Support is strictly limited to key delivery and license activation assistance. <?= esc(SITE_BRAND) ?> does not provide official vendor technical support or software troubleshooting.
+      </p>
+
       <?php if (false): /* Out-of-stock "Notify When Available" removed — every product is always purchasable (backorders are delivered within the hour). */ ?>
         <!-- Notify When Available -->
         <div class="card border-0 shadow-sm mb-4" id="notify-card" data-testid="notify-card"
@@ -597,7 +601,7 @@ include __DIR__ . '/includes/header.php';
         <div class="col-sm-6"><i class="bi bi-patch-check-fill text-success me-2"></i>Genuine Microsoft key</div>
         <div class="col-sm-6"><i class="bi bi-arrow-counterclockwise text-primary me-2"></i>Money-back guarantee</div>
         <div class="col-sm-6"><i class="bi bi-journal-text text-primary me-2"></i>Step-by-step activation guide included</div>
-        <div class="col-sm-6"><i class="bi bi-cloud-download-fill text-primary me-2"></i>Digital delivery only</div>
+        <div class="col-12 mt-1"><?= dd_delivery_badge() ?></div>
       </div>
     </div>
   </div>
