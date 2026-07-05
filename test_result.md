@@ -1051,7 +1051,7 @@ frontend:
           ✅ BUG FIX VERIFICATION COMPLETE - ALL 4 SECTIONS PASSED
           
           SECTION 1 — External preview URL (through Cloudflare): ✅ PASS
-          - curl -sk -i https://site-viewer-32.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301) ✅
+          - curl -sk -i https://preview-show-18.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301) ✅
           - x-powered-by: PHP/8.2.31 header present ✅
           - Body contains "Maventech" (site title) ✅
           - Body contains "Microsoft" (hero copy) ✅
@@ -1493,7 +1493,7 @@ agent_communication:
     -agent: "main"
     -message: |
       COMPREHENSIVE UI TESTING REQUEST — Test the installation guide feature end-to-end via browser automation.
-      Focus ONLY on the new installation guide feature. Test at https://site-viewer-32.preview.emergentagent.com
+      Focus ONLY on the new installation guide feature. Test at https://preview-show-18.preview.emergentagent.com
       
       PART 1-4: Test native guide pages, product page block, order history page, and admin filter.
 
@@ -2338,7 +2338,7 @@ agent_communication:
 
       PLEASE VERIFY at http://localhost:3000/ (preview) and via curl with faked host headers (we can't test their real Apache, but we can validate the intent of router.php + inspect .htaccess statically):
 
-        (a) Preview host unchanged: GET https://58485f15-d8bc-415a-9027-8cd21a31434f.preview.emergentagent.com/ → HTTP 200 (no redirect). Also confirm curl -si -H "Host: 58485f15-d8bc-415a-9027-8cd21a31434f.preview.emergentagent.com" http://127.0.0.1:3000/ → 200.
+        (a) Preview host unchanged: GET https://preview-show-18.preview.emergentagent.com/ → HTTP 200 (no redirect). Also confirm curl -si -H "Host: 58485f15-d8bc-415a-9027-8cd21a31434f.preview.emergentagent.com" http://127.0.0.1:3000/ → 200.
 
         (b) Router redirect direction for a real-world host — simulate an HTTPS request behind a proxy. Send curl -si -H "Host: www.maventechsoftware.com" -H "X-Forwarded-Proto: https" http://127.0.0.1:3000/. Expected: HTTP/1.1 301 Moved Permanently with `Location: https://maventechsoftware.com/` (www stripped, HTTPS preserved). Then curl -si -H "Host: maventechsoftware.com" -H "X-Forwarded-Proto: https" http://127.0.0.1:3000/ → HTTP 200 (naked passes through, no redirect).
 
@@ -2368,7 +2368,7 @@ agent_communication:
 
       User report: clicking the "open in new tab" arrow on the Emergent preview panel opens a broken page. Cause was router.php redirecting the preview host (bdc5651e-…preview.emergentagent.com) 301 → http://www.bdc5651e-…preview.emergentagent.com/ (that www. host doesn't resolve).
       Fix applied in /app/php-version/router.php lines 65-73: broadened the canonical-host-redirect bypass to cover any *.emergentagent.com (and *.emergent.host) host, and to also honour X-Forwarded-Host (Cloudflare/ingress) with any :port suffix stripped. Localhost bypass unchanged. No other files touched.
-      Please verify at https://site-viewer-32.preview.emergentagent.com/ (and via internal curl at http://localhost:3000/):
+      Please verify at https://preview-show-18.preview.emergentagent.com/ (and via internal curl at http://localhost:3000/):
         (a) GET / returns HTTP 200 (no 301 to a www.* host).
         (b) Homepage renders full HTML — title contains "Maventech" / "Microsoft Office", hero section present.
         (c) A few other key routes still return 200: /shop.php, /product.php?slug=windows-11-pro, /cart.php, /install-guide.php?slug=microsoft-office-2024-professional-plus-windows.
@@ -2462,7 +2462,7 @@ agent_communication:
       TEST RESULTS:
       
       SECTION 1 — External preview URL (through Cloudflare): ✅ PASS
-      - curl -sk -i https://site-viewer-32.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301 to www.*)
+      - curl -sk -i https://preview-show-18.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301 to www.*)
       - x-powered-by: PHP/8.2.31 header present
       - Body contains "Maventech" (site title) and "Microsoft" (hero copy)
       - Full HTML rendered, not an empty body or redirect page
