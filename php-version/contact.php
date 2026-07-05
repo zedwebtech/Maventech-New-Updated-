@@ -163,29 +163,29 @@ include __DIR__ . '/includes/header.php';
   <!-- Contact methods -->
   <div class="row g-4 mb-5">
     <div class="col-lg-4">
-      <div class="card h-100 p-4 text-center position-relative" data-testid="contact-card-email">
+      <div class="card h-100 p-4 text-center position-relative d-flex flex-column" data-testid="contact-card-email">
         <span class="badge text-bg-primary position-absolute top-0 start-50 translate-middle">Recommended</span>
         <i class="bi bi-envelope-fill text-primary fs-2"></i>
         <h3 class="h6 fw-bold mt-2 mb-1">Email Support</h3>
-        <small class="text-secondary d-block mb-2">Get a response within 24 hours</small>
-        <a href="mailto:<?= SITE_EMAIL ?>" class="fw-bold text-decoration-none"><?= SITE_EMAIL ?></a>
+        <small class="text-secondary d-block mb-3">Get a response within 24 hours</small>
+        <a href="mailto:<?= SITE_EMAIL ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 mx-auto mt-auto text-truncate mw-100"><i class="bi bi-envelope me-1"></i><?= SITE_EMAIL ?></a>
       </div>
     </div>
     <div class="col-lg-4">
-      <div class="card h-100 p-4 text-center position-relative" data-testid="contact-card-chat">
+      <div class="card h-100 p-4 text-center position-relative d-flex flex-column" data-testid="contact-card-chat">
         <span class="badge text-bg-success position-absolute top-0 start-50 translate-middle">Instant</span>
         <i class="bi bi-chat-dots-fill text-primary fs-2"></i>
         <h3 class="h6 fw-bold mt-2 mb-1">Live Chat</h3>
-        <small class="text-secondary d-block mb-2">Chat with our support team</small>
-        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 mx-auto" onclick="toggleChat()">Start a chat · <?= SITE_HOURS ?></button>
+        <small class="text-secondary d-block mb-3">Chat with our support team</small>
+        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 mx-auto mt-auto" onclick="toggleChat()"><i class="bi bi-chat-dots me-1"></i>Start a chat · <?= SITE_HOURS ?></button>
       </div>
     </div>
     <div class="col-lg-4">
-      <div class="card h-100 p-4 text-center" data-testid="contact-card-phone">
+      <div class="card h-100 p-4 text-center d-flex flex-column" data-testid="contact-card-phone">
         <i class="bi bi-telephone-fill text-primary fs-2"></i>
         <h3 class="h6 fw-bold mt-2 mb-1">Phone Support</h3>
-        <small class="text-secondary d-block mb-2">Talk to a specialist</small>
-        <a href="tel:<?= esc(tel_e164(company_phone_for_country())) ?>" class="fw-bold text-decoration-none"><?= esc(company_phone_for_country()) ?></a>
+        <small class="text-secondary d-block mb-3">Talk to a specialist</small>
+        <a href="tel:<?= esc(tel_e164(company_phone_for_country())) ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 mx-auto mt-auto"><i class="bi bi-telephone me-1"></i><?= esc(company_phone_for_country()) ?></a>
       </div>
     </div>
   </div>
