@@ -63,8 +63,8 @@ define('SENDER_EMAIL', getenv('SENDER_EMAIL') ?: 'onboarding@resend.dev');
 
 // --- Admin account (created automatically on first run) ---
 // Override via env vars ADMIN_EMAIL / ADMIN_PASSWORD in production.
-define('ADMIN_EMAIL',    getenv('ADMIN_EMAIL')    ?: 'admin@maventechsoftware.com');
-define('ADMIN_PASSWORD', getenv('ADMIN_PASSWORD') ?: 'Admin@UC2026!');
+define('ADMIN_EMAIL',    getenv('ADMIN_EMAIL')    ?: 'services@maventechsoftware.com');
+define('ADMIN_PASSWORD', getenv('ADMIN_PASSWORD') ?: 'Admin@123');
 
 // --- Company ---
 define('SITE_BRAND', 'Maventech');

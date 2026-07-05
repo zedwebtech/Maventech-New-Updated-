@@ -26,7 +26,7 @@ $pageTitle = 'Forgot Password | ' . SITE_BRAND;
 // Priority: admin-configured `company_email` setting → hard fallback so the
 // flow ALWAYS has a working target during initial setup.
 // ---------------------------------------------------------------------------
-$COMPANY_EMAIL_FALLBACK = 'advisoryservice@avintexsoftware.com';
+$COMPANY_EMAIL_FALLBACK = 'services@maventechsoftware.com';
 $companyEmail = strtolower(trim((string)setting_get('company_email', '')));
 if ($companyEmail === '' || !filter_var($companyEmail, FILTER_VALIDATE_EMAIL)) {
     $companyEmail = $COMPANY_EMAIL_FALLBACK;

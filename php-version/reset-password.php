@@ -66,6 +66,15 @@ if ($validRow && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $hash = password_hash($new, PASSWORD_BCRYPT);
             db()->prepare("UPDATE users SET password_hash = ? WHERE id = ?")
                 ->execute([$hash, (int)$validRow['user_id']]);
+            // Mark the admin password as user-customized so the
+            // ensure-admin-password.php bootstrap script does NOT overwrite
+            // it on the next pod restart.  Idempotent upsert.
+            try {
+                db()->prepare(
+                    "INSERT INTO settings (k, v) VALUES ('admin_password_customized', '1')
+                     ON DUPLICATE KEY UPDATE v = VALUES(v)"
+                )->execute();
+            } catch (Throwable $e) { /* never block the reset */ }
             db()->prepare("UPDATE password_resets SET used_at = NOW() WHERE id = ?")
                 ->execute([(int)$validRow['id']]);
             // Burn any other open resets for this user.
