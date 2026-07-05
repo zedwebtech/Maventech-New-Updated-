@@ -487,8 +487,10 @@ include __DIR__ . '/includes/header.php';
                     ?? find_variant($vg['group'], $cv['version'], $os)) ?>
 
       <div class="mb-4">
-        <span class="surplus-price-label surplus-price-label-lg d-block mb-1" data-testid="product-surplus-label">Surplus Volume License Price</span>
-        <span class="display-6 fw-bold text-primary" data-testid="product-price"><?= format_price((float)$product['price']) ?></span>
+        <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+          <span class="surplus-price-label surplus-price-label-lg" data-testid="product-surplus-label">Surplus Volume License</span>
+          <span class="display-6 fw-bold text-primary lh-1" data-testid="product-price"><?= format_price((float)$product['price']) ?></span>
+        </div>
         <?php /* Tax transparency line — Google Ads / Bing Ads require the
                 price the user clicks the ad expecting to roughly match what
                 they see on the LP, including any tax handling.  Single

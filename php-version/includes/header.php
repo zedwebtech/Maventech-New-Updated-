@@ -716,16 +716,6 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
 }
 ?>
 
-<!-- Google Ads compliance: thin site-wide top notice explicitly disclosing our
-     independent surplus-volume-license distributor role. Sits at the very top
-     of every page (both mobile and desktop) so it is the first thing a
-     compliance reviewer / customer sees. -->
-<div class="trust-topbar" data-testid="trust-topbar" role="note">
-  <div class="container">
-    <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i><span>Independent Distributor of Surplus Volume Licenses.</span>
-  </div>
-</div>
-
 <!-- Trust bar (sticky-top so it stays visible while the user scrolls; the main
      navbar sticks below it so neither ever covers the other). -->
 <div class="trustbar trustbar-sticky py-1 px-3 d-none d-md-block">

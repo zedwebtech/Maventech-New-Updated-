@@ -4815,18 +4815,44 @@ html[data-bs-theme="dark"] .dd-badge {
   border-color: rgba(96, 165, 250, .3);
 }
 
-/* Flat "Surplus Volume License Price" label shown above every price. */
+/* Small subtle inline pill shown BEFORE the price on every card / row /
+   product page — replaces the loud uppercase eyebrow that used to sit
+   above the price. Styled to match .dd-badge-sm ("Digital Delivery Only")
+   so both pills feel like the same visual family. */
 .surplus-price-label {
-  display: block;
-  font-size: .6rem;
-  font-weight: 700;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.surplus-price-label::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #64748b;
+  flex-shrink: 0;
 }
 .surplus-price-label-lg {
-  font-size: .72rem;
-  color: #475569;
+  font-size: .68rem;
+  padding: 4px 10px;
 }
-html[data-bs-theme="dark"] .surplus-price-label { color: #94a3b8; }
+html[data-bs-theme="dark"] .surplus-price-label {
+  background: rgba(148, 163, 184, .12);
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, .28);
+}
+html[data-bs-theme="dark"] .surplus-price-label::before { background: #94a3b8; }
 

@@ -2293,7 +2293,7 @@ function render_product_row(array $p): string
         </div>
         <div class="shop-row-buy text-sm-end flex-shrink-0">
           ' . $orig . '
-          <div class="surplus-price-label" data-testid="row-surplus-label-' . esc($p['slug']) . '">Surplus Volume License Price</div>
+          <div class="mb-1"><span class="surplus-price-label" data-testid="row-surplus-label-' . esc($p['slug']) . '">Surplus Volume License</span></div>
           <div class="fw-bold text-primary fs-4 lh-1 mb-1">' . format_price((float)$p['price']) . '</div>
           <div class="mb-2"><span class="badge rounded-pill text-secondary bg-body-tertiary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="row-currency-' . esc($p['slug']) . '">Prices in ' . esc($curCode) . '</span></div>
           <div class="mb-2">' . render_stock_pill($p['slug']) . '</div>
@@ -2340,8 +2340,8 @@ function render_product_card(array $p): string
         <div class="mb-2">' . $stockPill . '</div>
         <small class="text-secondary pc-meta mb-1"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant email delivery · One-time purchase</small>
         <div class="mb-2">' . dd_delivery_badge('sm') . '</div>
-        <div class="pc-price-row d-flex flex-column gap-0 mt-auto pt-2">
-          <span class="surplus-price-label" data-testid="card-surplus-label-' . esc($p['slug']) . '">Surplus Volume License Price</span>
+        <div class="pc-price-row d-flex flex-column gap-1 mt-auto pt-2">
+          <span class="surplus-price-label align-self-start" data-testid="card-surplus-label-' . esc($p['slug']) . '">Surplus Volume License</span>
           <div class="lh-1 d-flex align-items-baseline gap-2"><span class="fw-bold text-primary fs-5">' . format_price((float)$p['price']) . '</span>' . $orig . '<span class="text-secondary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="card-currency-' . esc($p['slug']) . '">' . esc($curCode) . '</span></div>
         </div>
         <div class="pc-btn-row d-flex gap-2 pt-2">
