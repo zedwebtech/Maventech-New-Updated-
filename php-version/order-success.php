@@ -335,17 +335,45 @@ if (!$isDemo && $order && $order['status'] === 'paid') {
   $ga4Id     = trim((string)setting_get('ga4_measurement_id', ''));
   $uetId     = trim((string)setting_get('bing_uet_tag_id', ''));
   $isPaid    = !$isDemo && !empty($order) && (($order['status'] ?? '') === 'paid');
-  if ($isPaid && ($gAdsId !== '' || $ga4Id !== '' || $uetId !== '')):
+  if ($isPaid):
     $purchaseValue   = round((float)($order['total'] ?? 0), 2);
     $purchaseCurrent = (string)($order['currency'] ?? 'USD');
     $purchaseTxnId   = (string)($order['order_number'] ?? '');
+    /* Build items[] array for the GTM ecommerce object (GA4 spec).
+       This is what GTM's built-in Purchase trigger picks up. */
+    $purchaseItems = [];
+    foreach (($order['items'] ?? []) as $__it) {
+        $purchaseItems[] = [
+            'item_id'    => (string)($__it['slug'] ?? ''),
+            'item_name'  => (string)($__it['name'] ?? ''),
+            'item_brand' => (string)($__it['brand'] ?? 'Microsoft'),
+            'price'      => round((float)($__it['price'] ?? 0), 2),
+            'quantity'   => (int)($__it['qty'] ?? 1),
+        ];
+    }
 ?>
-    <!-- Cross-platform purchase event (GA4 + Google Ads + Bing UET) -->
+    <!-- Cross-platform purchase event (GTM dataLayer + GA4 + Google Ads + Bing UET) -->
     <script>
     (function(){
       var txn = <?= json_encode($purchaseTxnId) ?>;
       var val = <?= json_encode($purchaseValue) ?>;
       var cur = <?= json_encode($purchaseCurrent) ?>;
+      var items = <?= json_encode($purchaseItems) ?>;
+
+      /* GTM ecommerce push — ALWAYS fires on paid order (no tracking-ID gate).
+         GTM's built-in Purchase trigger listens for event='purchase' with an
+         ecommerce object. Clear stale data first per GA4 best practice. */
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: 'purchase',
+        ecommerce: {
+          transaction_id: txn,
+          value: val,
+          currency: cur,
+          items: items
+        }
+      });
 
       <?php
       /* Enhanced Conversions — pass hashed (SHA-256 hex, lowercased,

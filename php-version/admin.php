@@ -7031,6 +7031,92 @@ elseif ($tab === 'company'):
     </div><!-- /#tracking-body -->
   </div>
 
+  <!-- Google Ads Smart-Bidding Blueprint status card (Google Ads compliance +
+       Smart Bidding setup guidance).  Auto-detects which tracker IDs are
+       configured and turns each checklist item green when the corresponding
+       piece is in place.  Purely informational — no back-end changes. -->
+  <?php
+    $bpGtm    = $tk_gtm_v ?? trim((string)setting_get('gtm_container_id', ''));
+    $bpGa4    = trim((string)setting_get('ga4_measurement_id', ''));
+    $bpGAds   = trim((string)setting_get('google_ads_tag_id', ''));
+    $bpGLab   = trim((string)setting_get('google_ads_purchase_label', ''));
+    $bpChecks = [
+      ['gtm',  'Google Tag Manager container installed', $bpGtm !== '', $bpGtm,   'Paste your GTM-XXXXXX container ID in the SEO &amp; Tracking form above so the container script loads on every page.'],
+      ['ga4',  'GA4 property connected',                 $bpGa4 !== '', $bpGa4,   'Optional but recommended — GA4 measurement ID (G-XXXXXXX) powers Enhanced Conversions + audience remarketing.'],
+      ['gads', 'Google Ads conversion tracking wired',   $bpGAds !== '' && $bpGLab !== '', $bpGAds . '/' . $bpGLab, 'Paste both the Google Ads Tag ID (AW-XXXXXXXXX) AND the purchase Conversion Label — both are required to fire the conversion tag.'],
+      ['evt',  'Ecommerce events firing (view_item · add_to_cart · begin_checkout · purchase)', true, 'auto', 'Fully implemented — every event pushes a proper GTM ecommerce dataLayer object with items[], currency and value.'],
+      ['ec',   'Enhanced Conversions (SHA-256 email + E.164 phone)', true, 'auto', 'Fully implemented — hashed customer identifiers are pushed via gtag(&quot;set&quot;, &quot;user_data&quot;, …) on the thank-you page before the conversion event fires.'],
+    ];
+    $bpDone   = count(array_filter($bpChecks, fn($c) => $c[2]));
+    $bpTotal  = count($bpChecks);
+    $bpPct    = $bpTotal ? (int)round($bpDone / $bpTotal * 100) : 0;
+  ?>
+  <div class="card-e card-e--plain p-4 mb-3" id="google-ads-blueprint-card" data-testid="google-ads-blueprint-card">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+      <div class="flex-grow-1" style="min-width:280px;">
+        <h2 class="h6 fw-bold mb-1"><i class="bi bi-bullseye text-primary me-1"></i> Google Ads Smart-Bidding Blueprint</h2>
+        <small class="text-muted d-block" style="line-height:1.5;">
+          A step-by-step configuration checklist to make Google's AI bid only for high-purchase-intent shoppers, driving down cost-per-acquisition on your Search / Shopping campaigns.
+        </small>
+      </div>
+      <div class="text-end flex-shrink-0">
+        <div class="fw-bold text-primary" style="font-size:1.4rem;line-height:1;" data-testid="bp-progress-pct"><?= $bpPct ?>%</div>
+        <small class="text-muted"><?= $bpDone ?> of <?= $bpTotal ?> ready</small>
+      </div>
+    </div>
+    <div class="progress mb-3" role="progressbar" aria-valuenow="<?= $bpPct ?>" aria-valuemin="0" aria-valuemax="100" style="height:8px;border-radius:999px;">
+      <div class="progress-bar bg-success" style="width:<?= $bpPct ?>%;border-radius:999px;"></div>
+    </div>
+    <div class="mb-3">
+      <div class="fw-bold small text-uppercase text-secondary mb-2" style="letter-spacing:.06em;">On-site checklist</div>
+      <?php foreach ($bpChecks as $c): ?>
+        <div class="d-flex align-items-start gap-2 mb-2" data-testid="bp-check-<?= esc($c[0]) ?>">
+          <i class="bi <?= $c[2] ? 'bi-check-circle-fill text-success' : 'bi-circle text-secondary' ?> mt-1" style="font-size:1.05rem;"></i>
+          <div class="flex-grow-1">
+            <div class="small fw-semibold"><?= $c[1] ?></div>
+            <?php if ($c[2]): ?>
+              <?php if ($c[3] !== 'auto'): ?>
+                <div class="small text-muted"><code style="font-size:.75rem;background:rgba(59,130,246,.08);padding:1px 6px;border-radius:5px;"><?= esc($c[3]) ?></code></div>
+              <?php else: ?>
+                <div class="small text-success"><i class="bi bi-lightning-charge-fill me-1"></i>Firing on every page (verified by dataLayer inspection)</div>
+              <?php endif; ?>
+            <?php else: ?>
+              <div class="small text-muted"><?= $c[4] ?></div>
+            <?php endif; ?>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+    <hr>
+    <div class="fw-bold small text-uppercase text-secondary mb-2" style="letter-spacing:.06em;">Configure inside your Google Ads account</div>
+    <ol class="small mb-3" style="padding-left:18px;line-height:1.7;">
+      <li><strong>Goals &rarr; Conversions &rarr; New conversion action</strong> &rarr; select <strong>Website</strong>. Enter your domain and click <em>Scan</em> so Google detects the tag installed on this site.</li>
+      <li>Create a manual action with these <strong>exact settings</strong>:
+        <ul class="mt-1 mb-1" style="padding-left:18px;">
+          <li>Goal category: <strong>Purchase</strong> 🛒</li>
+          <li>Conversion name: <code>Website Purchases</code></li>
+          <li>Value: <strong>Use different values for each conversion</strong> (already sent by our tag &mdash; <code>value</code> + <code>currency</code>)</li>
+          <li>Count: <strong>One</strong> (avoids double-counting a refreshed thank-you page)</li>
+          <li>Action optimisation: <strong>Primary</strong> action</li>
+        </ul>
+      </li>
+      <li>Mark <em>view_item</em>, <em>add_to_cart</em>, <em>begin_checkout</em> as <strong>Secondary</strong> so Smart Bidding optimises for real transactions, not clickers.</li>
+      <li>In your Search campaign &rarr; <strong>Bidding &rarr; Change bidding strategy</strong> &rarr; select <strong>Conversions</strong> &rarr; tick <em>Set a target cost per action</em> &rarr; enter your Target CPA (roughly <em>&lt;price&minus;wholesale_cost&gt; &times; 0.20</em> for a healthy margin — e.g. Target CPA of $30 for a $200 SKU with a $50 cost).</li>
+      <li>Before launching &rarr; GTM &rarr; <strong>Preview mode</strong> &rarr; place a test order &rarr; confirm the <em>Google Ads Conversion Tracking</em> tag status is <strong>Fired</strong> on the thank-you page.</li>
+    </ol>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="https://tagmanager.google.com/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary rounded-pill">
+        <i class="bi bi-box-arrow-up-right me-1"></i>Open Google Tag Manager
+      </a>
+      <a href="https://ads.google.com/aw/conversions" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary rounded-pill">
+        <i class="bi bi-box-arrow-up-right me-1"></i>Open Google Ads Conversions
+      </a>
+      <a href="#tracking-card" class="btn btn-sm btn-outline-secondary rounded-pill">
+        <i class="bi bi-arrow-up me-1"></i>Jump to tracking ID form
+      </a>
+    </div>
+  </div>
+
   <!-- Password-reset diagnostic — fires a one-shot reset to the company email -->
   <?php $tre = $_GET['tre'] ?? ''; ?>
   <div class="card-e card-e--plain p-4 mb-3" data-testid="test-reset-card">

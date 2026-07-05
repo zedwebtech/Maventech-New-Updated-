@@ -1313,11 +1313,12 @@ function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c
 </script>
 
 <?php /* begin_checkout — fires once when the user lands on the checkout
-        page.  Whichever tracker(s) are configured will receive the event. */ ?>
+        page.  Always emits a GTM ecommerce dataLayer push so GTM-only
+        setups work; gtag() and uetq() paths remain gated on their IDs. */ ?>
 <?php
 $tk_ga4_c = trim((string)setting_get('ga4_measurement_id', ''));
 $tk_uet_c = trim((string)setting_get('bing_uet_tag_id', ''));
-if (($tk_ga4_c !== '' || $tk_uet_c !== '') && !empty(cart())):
+if (!empty(cart())):
     $cartItemsJs = [];
     foreach (cart() as $slug => $line) {
         $cartItemsJs[] = [
@@ -1335,6 +1336,13 @@ if (($tk_ga4_c !== '' || $tk_uet_c !== '') && !empty(cart())):
   var items = <?= json_encode($cartItemsJs) ?>;
   var total = <?= json_encode($checkoutTotal) ?>;
   var currency = <?= json_encode($checkoutCurrency) ?>;
+  /* GTM ecommerce push — always fires. */
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ ecommerce: null });
+  window.dataLayer.push({
+    event: 'begin_checkout',
+    ecommerce: { currency: currency, value: total, items: items }
+  });
   <?php if ($tk_ga4_c !== ''): ?>
   if (typeof gtag === 'function') {
     gtag('event', 'begin_checkout', { currency: currency, value: total, items: items });

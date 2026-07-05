@@ -1220,7 +1220,8 @@ include __DIR__ . '/includes/header.php';
 <?php
 $tk_ga4_v  = trim((string)setting_get('ga4_measurement_id', ''));
 $tk_uet_v  = trim((string)setting_get('bing_uet_tag_id', ''));
-if ($tk_ga4_v !== '' || $tk_uet_v !== ''):
+// view_item is ALWAYS emitted as a GTM ecommerce dataLayer push so
+// GTM-only setups work. gtag() / uetq() paths remain gated on their IDs.
 ?>
 <script>
 (function(){
@@ -1232,6 +1233,14 @@ if ($tk_ga4_v !== '' || $tk_uet_v !== ''):
     price:      <?= json_encode(round((float)$product['price'], 2)) ?>,
     currency:   <?= json_encode((string)(current_currency()['code'] ?? 'USD')) ?>
   };
+  /* GTM ecommerce push — always fires. GA4's built-in view_item trigger
+     picks this up regardless of whether direct gtag() IDs are configured. */
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ ecommerce: null });
+  window.dataLayer.push({
+    event: 'view_item',
+    ecommerce: { currency: item.currency, value: item.price, items: [item] }
+  });
   <?php if ($tk_ga4_v !== ''): ?>
   if (typeof gtag === 'function') {
     gtag('event', 'view_item', { currency: item.currency, value: item.price, items: [item] });
@@ -1247,7 +1256,6 @@ if ($tk_ga4_v !== '' || $tk_uet_v !== ''):
   <?php endif; ?>
 })();
 </script>
-<?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
 

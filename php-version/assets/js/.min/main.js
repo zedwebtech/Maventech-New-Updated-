@@ -125,6 +125,12 @@ price: parseFloat(btn.dataset.price || data.unitPrice || 0) || 0,
 quantity: qty,
 currency: btn.dataset.currency || data.currency || 'USD'
 };
+window.dataLayer = window.dataLayer || [];
+window.dataLayer.push({ ecommerce: null });
+window.dataLayer.push({
+event: 'add_to_cart',
+ecommerce: { currency: ev.currency, value: ev.price * ev.quantity, items: [ev] }
+});
 if (typeof gtag === 'function') {
 gtag('event', 'add_to_cart', { currency: ev.currency, value: ev.price * ev.quantity, items: [ev] });
 }
