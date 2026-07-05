@@ -3304,3 +3304,58 @@ frontend:
       
       No code modifications made during testing (verification only).
 
+
+
+---
+
+## BUG FIX (2026-07-05 batch 3) — Checkout stale-plan hijack + qty stepper on plan items
+
+frontend:
+  - task: "Checkout page: stale Protection Hub plan hijacks a cart-based checkout"
+    implemented: true
+    working: "NA"
+    file: "checkout.php + includes/checkout-summary-partial.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "user"
+        -comment: "User workflow: (1) opened /protection-hub.php and clicked Get Pro Shield ($99) — the plan slug was stored in the session. (2) went to /shop.php and added Microsoft Office Home & Business 2024 ($194.99) to cart. (3) opened /cart.php — cart correctly showed 1 Microsoft Office item at $194.99. (4) clicked Proceed to Checkout — checkout.php WRONGLY showed the Pro Shield plan (from session) instead of the Office cart contents. Also: on the plan-only checkout, the quantity stepper (- 1 +) is shown even though every Protection Hub plan is a fixed one-time purchase (qty always 1)."
+        -working: "NA"
+        -agent: "main"
+        -comment: "Fixes: (a) checkout.php now considers a lingering $_SESSION['sub_plan'] ONLY when the regular product cart is empty (cart_items() returns []). If the cart has ANY row, the sub_plan session is unset and checkout renders normally from the cart. This matches expected e-commerce behavior — cart is the source of truth once populated. (b) includes/checkout-summary-partial.php detects Protection Hub line items by slug prefix 'sub-' and replaces the input-group qty stepper with a static 'One-time purchase' pill (data-testid=summary-plan-qty-<slug>). Regular product SKUs keep the interactive +/- stepper untouched."
+
+test_plan:
+  current_focus:
+    - "Checkout page: stale Protection Hub plan hijacks a cart-based checkout"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Please verify two independent fixes on the Maventech PHP storefront preview URL (https://fb70098b-cece-443a-bef9-7df8c67a96bd.preview.emergentagent.com).
+
+      TEST A — Cart takes precedence over stale plan session
+      1) Open a fresh browser context (clean cookies/session).
+      2) Navigate to /protection-hub.php.
+      3) Click [data-testid="ph-buy-pro-shield"] — this stows the plan in $_SESSION['sub_plan'].
+      4) You'll land on /checkout.php with Pro Shield shown. Now instead of continuing, go BACK to /shop.php.
+      5) Click any product card and on its /product.php page click Add to Cart ([data-testid="pd-add-to-cart"]).
+      6) Navigate to /cart.php and click "Proceed to Checkout" — should link to /checkout.php.
+      7) ASSERT: the order summary on the right-hand side shows ONLY the Microsoft Office product (or whichever product you added), NOT the Pro Shield plan. The line-item text on the checkout page must contain the product name, NOT "Pro Shield Plan".
+      8) ASSERT: the "1 item · Instant digital delivery" tagline reflects the product count (1 item, not 1 plan).
+      9) ASSERT: adding a SECOND different product to the cart and returning to /checkout.php shows BOTH line items in the summary.
+      10) ASSERT: adding the same product twice (click Add to Cart twice on the same PDP) increments its qty in the cart, and /checkout.php shows one line item with qty 2.
+
+      TEST B — Qty stepper hidden on Protection Hub plan checkouts
+      1) Fresh browser context. Navigate to /protection-hub.php.
+      2) Click [data-testid="ph-buy-quick-fix"].
+      3) You'll land on /checkout.php with the plan in the summary.
+      4) ASSERT: there is NO input-group with - / 1 / + buttons for the Quick Fix line item. Look at [data-testid^="summary-item-sub-"] — inside it there should be a chip [data-testid="summary-plan-qty-sub-quick-fix"] with text "One-time purchase", NOT the stepper.
+      5) Repeat for pro-shield, starter-care, lifetime-elite plans — each should show the "One-time purchase" pill instead of the stepper.
+      6) Sanity check: adding a regular product (Microsoft Office) to a fresh cart and going to /checkout.php should STILL show the − / N / + stepper as before (regression check).
+
+      Report PASS/FAIL for each numbered assertion, with the exact HTML observed for the first failing one.

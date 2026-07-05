@@ -53,11 +53,23 @@ if (!isset($items)) { return; }
         </div>
       <?php } ?>
       <div class="d-flex justify-content-between align-items-center mt-1">
-        <div class="input-group input-group-sm" style="width: 96px;">
-          <button type="button" class="btn btn-outline-secondary px-2" data-cart-qty="<?= $i['qty'] - 1 ?>" data-slug="<?= esc($i['slug']) ?>">−</button>
-          <span class="form-control text-center px-1"><?= (int)$i['qty'] ?></span>
-          <button type="button" class="btn btn-outline-secondary px-2" data-cart-qty="<?= $i['qty'] + 1 ?>" data-slug="<?= esc($i['slug']) ?>">+</button>
-        </div>
+        <?php
+          // Protection Hub plans are one-time purchases fixed at qty=1 — hide
+          // the +/- stepper for those and show a plain "1 × one-time" chip
+          // instead.  Regular product SKUs keep the interactive stepper.
+          $isPlanRow = (strpos((string)$i['slug'], 'sub-') === 0);
+        ?>
+        <?php if ($isPlanRow): ?>
+          <span class="badge rounded-pill text-bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size:.68rem;font-weight:600;letter-spacing:.02em;" data-testid="summary-plan-qty-<?= esc($i['slug']) ?>">
+            <i class="bi bi-check-lg me-1"></i>One-time purchase
+          </span>
+        <?php else: ?>
+          <div class="input-group input-group-sm" style="width: 96px;">
+            <button type="button" class="btn btn-outline-secondary px-2" data-cart-qty="<?= $i['qty'] - 1 ?>" data-slug="<?= esc($i['slug']) ?>">−</button>
+            <span class="form-control text-center px-1"><?= (int)$i['qty'] ?></span>
+            <button type="button" class="btn btn-outline-secondary px-2" data-cart-qty="<?= $i['qty'] + 1 ?>" data-slug="<?= esc($i['slug']) ?>">+</button>
+          </div>
+        <?php endif; ?>
         <span class="fw-bold text-primary small"><?= format_price($i['price'] * $i['qty']) ?></span>
       </div>
     </div>

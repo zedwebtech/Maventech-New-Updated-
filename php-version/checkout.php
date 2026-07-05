@@ -162,8 +162,18 @@ if (!isset($REGION_FORMS[$curRegionCC])) $curRegionCC = 'US';
 // Subscription checkout — when a visitor arrives via /subscribe.php the
 // session carries the chosen plan.  We synthesise a single line item from the
 // plan and bypass the product cart / coupons / ProAssist entirely.
-$subPlan = !empty($_SESSION['sub_plan']) ? sub_plan_get((string)$_SESSION['sub_plan']) : null;
-$isSub   = $subPlan && (float)$subPlan['price'] > 0 && (int)$subPlan['active'] === 1;
+// Bug-fix (2026-07): the regular product cart ALWAYS takes precedence over a
+// lingering sub_plan session so a customer who bought a Protection Hub plan,
+// then added a Microsoft Office SKU, doesn't get their Office order hijacked
+// by the stale plan.  Only fall into plan-only checkout when the cart is
+// completely empty.
+$subPlan     = !empty($_SESSION['sub_plan']) ? sub_plan_get((string)$_SESSION['sub_plan']) : null;
+$hasCartRow  = !empty(cart_items());
+$isSub       = $subPlan && (float)$subPlan['price'] > 0 && (int)$subPlan['active'] === 1 && !$hasCartRow;
+if (!$isSub && !empty($_SESSION['sub_plan'])) {
+    unset($_SESSION['sub_plan']);
+    $subPlan = null;
+}
 
 if ($isSub) {
     $planAmt   = round((float)$subPlan['price'], 2);
