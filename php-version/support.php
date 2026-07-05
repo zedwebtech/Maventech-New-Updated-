@@ -51,7 +51,7 @@ include __DIR__ . '/includes/header.php';
   <div class="container py-5 text-center">
     <span class="eyebrow">SUPPORT</span>
     <h1 class="fw-bold display-6 mt-1" data-testid="support-title">Support Center</h1>
-    <p class="text-secondary mx-auto" style="max-width:640px;">Everything you need to install, activate, and troubleshoot your Microsoft Office software</p>
+    <p class="text-secondary mx-auto" style="max-width:640px;">Your step-by-step activation guide, plus help with your order and license-key delivery</p>
     <div class="mx-auto mt-3" style="max-width:480px;">
       <div class="input-group input-group-lg">
         <span class="input-group-text bg-body border-end-0"><i class="bi bi-search text-secondary"></i></span>
@@ -92,10 +92,7 @@ include __DIR__ . '/includes/header.php';
 
   <!-- Topic tabs -->
   <ul class="nav nav-pills justify-content-center gap-2 mb-4" role="tablist" data-testid="support-tabs">
-    <li class="nav-item"><button class="nav-link active rounded-pill" data-bs-toggle="pill" data-bs-target="#tab-install"><i class="bi bi-download me-1"></i>Installation</button></li>
-    <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="pill" data-bs-target="#tab-trouble"><i class="bi bi-wrench-adjustable me-1"></i>Troubleshooting</button></li>
-    <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="pill" data-bs-target="#tab-errors"><i class="bi bi-exclamation-octagon me-1"></i>Error Codes</button></li>
-    <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="pill" data-bs-target="#tab-uninstall"><i class="bi bi-trash3 me-1"></i>Uninstall</button></li>
+    <li class="nav-item"><button class="nav-link active rounded-pill" data-bs-toggle="pill" data-bs-target="#tab-install"><i class="bi bi-journal-text me-1"></i>Activation Guide</button></li>
     <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="pill" data-bs-target="#tab-faq"><i class="bi bi-question-circle me-1"></i>FAQ</button></li>
   </ul>
 
@@ -182,76 +179,6 @@ include __DIR__ . '/includes/header.php';
         </div>
         <button class="btn btn-primary rounded-pill px-4 flex-shrink-0 mt-3 mt-lg-0" onclick="toggleChat()" data-testid="get-install-help">Get Install Help</button>
       </div>
-    </div>
-
-    <!-- Troubleshooting -->
-    <div class="tab-pane fade" id="tab-trouble">
-      <div class="row g-4">
-        <?php
-        $troubles = [
-          ['License key isn\'t working', ['Ensure you\'re entering the key correctly (no extra spaces)', 'Make sure you\'re using the right version of the software', 'Check our Activation Help page', 'Contact support if issues persist']],
-          ['Installation stuck or frozen', ['Check your internet connection', 'Disable antivirus temporarily', 'Restart the installation', 'Free up disk space if below 10 GB']],
-          ['Activation failed', ['Verify your product key is entered correctly', 'Ensure you have an internet connection', 'Disable VPN if active', 'See our Activation Help page']],
-          ['Haven\'t received my order', ['Check your spam/junk folder', 'Verify the email address used at checkout', 'Wait up to 24 hours for processing', 'Contact our support team if it still hasn\'t arrived']],
-        ];
-        foreach ($troubles as [$t, $list]): ?>
-          <div class="col-lg-6 support-topic">
-            <div class="card p-4 h-100">
-              <h3 class="h6 fw-bold"><i class="bi bi-wrench-adjustable text-primary me-2"></i><?= esc($t) ?></h3>
-              <ol class="small text-secondary mb-0 mt-2 d-grid gap-1">
-                <?php foreach ($list as $li): ?><li><?= esc($li) ?></li><?php endforeach; ?>
-              </ol>
-            </div>
-          </div>
-        <?php endforeach; ?>
-      </div>
-    </div>
-
-    <!-- Error codes -->
-    <div class="tab-pane fade" id="tab-errors">
-      <div class="card p-4 support-topic">
-        <h2 class="h5 fw-bold mb-3">Common Error Codes</h2>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle small">
-            <thead><tr><th>Code</th><th>Meaning</th><th>Fix</th></tr></thead>
-            <tbody>
-              <?php foreach ($errorCodes as [$code, $meaning, $fix]): ?>
-                <tr><td><code class="fw-bold"><?= esc($code) ?></code></td><td><?= esc($meaning) ?></td><td class="text-secondary"><?= esc($fix) ?></td></tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
-        <small class="text-secondary">Code not listed? <a href="#support-message" class="fw-semibold">Send us a message</a> with the exact error and we'll help.</small>
-      </div>
-    </div>
-
-    <!-- Uninstall -->
-    <div class="tab-pane fade" id="tab-uninstall">
-      <div class="row g-4">
-        <div class="col-lg-6 support-topic">
-          <div class="card p-4 h-100">
-            <h3 class="h6 fw-bold"><img src="assets/images/os/windows.svg" alt="Windows" class="os-icon os-icon-lg me-2">Uninstall on Windows</h3>
-            <ol class="small text-secondary mb-0 mt-2 d-grid gap-1">
-              <li>Open Settings &gt; Apps &gt; Installed apps</li>
-              <li>Find Microsoft Office (or Windows app)</li>
-              <li>Click the three dots and choose Uninstall</li>
-              <li>Restart your computer when finished</li>
-            </ol>
-          </div>
-        </div>
-        <div class="col-lg-6 support-topic">
-          <div class="card p-4 h-100">
-            <h3 class="h6 fw-bold"><img src="assets/images/os/macos.svg" alt="macOS" class="os-icon os-icon-lg me-2">Uninstall on Mac</h3>
-            <ol class="small text-secondary mb-0 mt-2 d-grid gap-1">
-              <li>Open Finder &gt; Applications</li>
-              <li>Drag the Office apps to the Trash</li>
-              <li>Empty the Trash</li>
-              <li>Restart your Mac to complete removal</li>
-            </ol>
-          </div>
-        </div>
-      </div>
-      <div class="alert alert-info small mt-4"><i class="bi bi-info-circle me-2"></i>Uninstalling does not deactivate your license — you can reinstall and activate again on the same device anytime.</div>
     </div>
 
     <!-- FAQ -->

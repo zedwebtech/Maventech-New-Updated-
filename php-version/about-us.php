@@ -21,17 +21,17 @@ $jsonLdAboutPage = [
         'name'     => SITE_BRAND,
         'url'      => site_url() . '/',
         'logo'     => site_url() . '/assets/images/badges/microsoft-verified.svg',
-        'foundingDate'    => '2018',
+        'foundingDate'    => '2024',
         'numberOfEmployees' => ['@type' => 'QuantitativeValue', 'value' => 12],
         'slogan'     => 'Genuine software, instant delivery, dedicated support.',
-        'description'=> SITE_BRAND . ' has shipped genuine Microsoft, Adobe and antivirus licence keys since 2018. Every key is verified pre-dispatch and backed by a 30-day money-back guarantee.',
+        'description'=> SITE_BRAND . ' has shipped genuine Microsoft, Adobe and antivirus licence keys since 2024. Every key is verified pre-dispatch and backed by a 30-day money-back guarantee.',
         'knowsAbout' => ['Microsoft Office', 'Microsoft 365', 'Windows 11', 'Windows 10', 'Bitdefender', 'McAfee', 'Adobe', 'software licensing', 'digital downloads', 'SaaS subscriptions'],
-        'award'   => ['Independent software key provider', '30-day money-back guarantee since 2018'],
+        'award'   => ['Independent software key provider', '30-day money-back guarantee since 2024'],
     ],
     // E-E-A-T signals: explicit datePublished + dateModified on the
     // AboutPage so Google's quality raters can verify the page is
     // actively maintained.  Datemod auto-tracks file mtime.
-    'datePublished' => '2018-01-15',
+    'datePublished' => '2024-09-03',
     'dateModified'  => date('Y-m-d', @filemtime(__FILE__) ?: time()),
 ];
 
@@ -50,7 +50,7 @@ $aboutFaqLd = [
         ['@type' => 'Question', 'name' => 'What is your refund policy?',
          'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Every order is covered by a 30-day money-back guarantee. If the key fails to activate or the product is not what you expected, contact support within 30 days for a full refund — no hoops to jump through.']],
         ['@type' => 'Question', 'name' => 'How long has ' . SITE_BRAND . ' been in business?',
-         'acceptedAnswer' => ['@type' => 'Answer', 'text' => SITE_BRAND . ' has been shipping genuine software licences since 2018, serving customers across the United States, United Kingdom, Canada, Australia and the European Union.']],
+         'acceptedAnswer' => ['@type' => 'Answer', 'text' => SITE_BRAND . ' has been shipping genuine software licences since 2024, serving customers across the United States, United Kingdom, Canada, Australia and the European Union.']],
         ['@type' => 'Question', 'name' => 'Is the software genuine?',
          'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Yes — every licence we sell is a genuine perpetual or subscription key sourced through legitimate volume-licensing channels.  The software is downloaded directly from the vendor (microsoft.com, bitdefender.com, mcafee.com, etc.); we never ship pirated, cracked or shared keys.']],
     ],
@@ -162,13 +162,13 @@ $features = [
     <div class="row justify-content-center">
       <div class="col-lg-8">
         <div class="card p-4">
-          <div class="row g-3 small">
-            <div class="col-sm-6"><i class="bi bi-building text-primary me-2"></i><strong>Legal entity:</strong> <?= esc($brandLegalName) ?></div>
-            <?php if ($brandRegNumber): ?><div class="col-sm-6"><i class="bi bi-patch-check text-primary me-2"></i><strong>California LLC No.:</strong> <?= esc($brandRegNumber) ?></div><?php endif; ?>
-            <div class="col-sm-6"><i class="bi bi-geo-alt text-primary me-2"></i><strong>Registered address:</strong> <?= esc($brandAddress) ?></div>
-            <div class="col-sm-6"><i class="bi bi-envelope text-primary me-2"></i><strong>Email:</strong> <a href="mailto:<?= esc($brandEmail) ?>"><?= esc($brandEmail) ?></a></div>
-            <div class="col-sm-6"><i class="bi bi-telephone text-primary me-2"></i><strong>Phone:</strong> <a href="tel:<?= esc(tel_e164($brandPhone)) ?>"><?= esc($brandPhone) ?></a></div>
-            <div class="col-sm-6"><i class="bi bi-clock text-primary me-2"></i><strong>Hours:</strong> <?= SITE_HOURS ?></div>
+          <div class="row g-3 small company-info-grid">
+            <div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-building text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Legal entity</div><div class="fw-semibold"><?= esc($brandLegalName) ?></div></div></div>
+            <?php if ($brandRegNumber): ?><div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-patch-check text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">California LLC No.</div><div class="fw-semibold"><?= esc($brandRegNumber) ?></div></div></div><?php endif; ?>
+            <div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-geo-alt text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Registered address</div><div class="fw-semibold"><?= esc($brandAddress) ?></div></div></div>
+            <div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-envelope text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Email</div><div class="fw-semibold"><a href="mailto:<?= esc($brandEmail) ?>"><?= esc($brandEmail) ?></a></div></div></div>
+            <div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-telephone text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Phone</div><div class="fw-semibold"><a href="tel:<?= esc(tel_e164($brandPhone)) ?>"><?= esc($brandPhone) ?></a></div></div></div>
+            <div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-clock text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Hours</div><div class="fw-semibold"><?= SITE_HOURS ?></div></div></div>
           </div>
           <hr class="my-3">
           <p class="small text-secondary mb-0"><?= esc($brandLegalName) ?> is an independent marketplace provider of genuine, surplus product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
@@ -201,7 +201,7 @@ $features = [
       $trustRows = [
         ['bi-shield-check',   'Independent reseller — not Microsoft', 'Microsoft® is a trademark of Microsoft Corporation. We are independent of, and not affiliated with, Microsoft Corporation.', 'page.php?slug=disclaimer'],
         ['bi-arrow-counterclockwise', '30-day money-back guarantee', 'Refund any licence within 30 days of purchase — full amount, no questions asked.',         'page.php?slug=refund-policy'],
-        ['bi-clock-history',  'Founded 2018 · in continuous operation', 'Maventech has shipped genuine licences continuously since January 2018.',         'page.php?slug=terms-of-service'],
+        ['bi-clock-history',  'Founded 2024 · California LLC', 'MavenTech LLC was formed in California on September 3, 2024 (LLC No. 202463711253) and has shipped genuine licences ever since.',         'page.php?slug=terms-of-service'],
         ['bi-lock-fill',      'PCI-DSS-secured checkout',                'Payments processed by Stripe & PayPal; we never see or store full card numbers.',             'page.php?slug=payment-policy'],
         ['bi-eye-slash-fill', 'GDPR + CCPA-aware data handling',         'Customer data is collected for fulfilment only and never sold to third parties.',              'page.php?slug=privacy-policy'],
         ['bi-headset',        'Real human support — Mon–Sat, 9am–6pm ET','Live phone + chat. Average first-response time under 15 minutes during business hours.',     'contact.php'],

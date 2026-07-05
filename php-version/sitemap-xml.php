@@ -44,7 +44,6 @@ $urls     = [];
 foreach ([
     ['/',                  '1.0', 'daily'],
     ['/shop.php',          '0.9', 'daily'],
-    ['/subscriptions.php', '0.9', 'weekly'],
     ['/reviews.php',       '0.6', 'weekly'],
     ['/blog.php',          '0.8', 'daily'],
     ['/about-us.php',      '0.6', 'monthly'],
@@ -61,23 +60,8 @@ foreach ([
 }
 
 // ---------------------------------------------------------------
-// 1b) Subscription plans — one URL per active plan (revenue pages).
-// Pulled live from sub_plans() so new/retired plans auto-track.
+// 1b) Subscription plans removed — tech-support subscriptions discontinued.
 // ---------------------------------------------------------------
-if (function_exists('sub_plans')) {
-    try {
-        foreach (sub_plans(true) as $sp) {
-            if (empty($sp['slug'])) continue;
-            $urls[] = [
-                'loc'     => $base . '/subscribe.php?plan=' . $sp['slug'],
-                'lastmod' => $today,
-                'freq'    => 'weekly',
-                'pri'     => '0.7',
-                'images'  => [],
-            ];
-        }
-    } catch (Throwable $e) {}
-}
 
 // ---------------------------------------------------------------
 // 2) Categories — derived from the live `products.category` column

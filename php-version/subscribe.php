@@ -8,6 +8,11 @@
  */
 require_once __DIR__ . '/includes/functions.php';
 
+// Compliance: subscription tech-support plans are discontinued — always
+// bounce any /subscribe.php?plan= link to the shop.
+header('Location: shop.php', true, 301);
+exit;
+
 $slug = trim($_GET['plan'] ?? '');
 $plan = $slug !== '' ? sub_plan_get($slug) : null;
 

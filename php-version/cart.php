@@ -94,41 +94,8 @@ include __DIR__ . '/includes/header.php';
           <?php endif; ?>
           <hr>
           <div class="d-flex justify-content-between mb-3"><span class="fw-bold">Total</span><span class="fw-bold text-primary fs-5"><?= format_price($subtotal) ?></span></div>
-          <button class="btn btn-primary btn-lg rounded-pill w-100" data-bs-toggle="modal" data-bs-target="#proAssistModal" data-testid="proceed-checkout">Proceed to Checkout</button>
+          <a href="checkout.php" class="btn btn-primary btn-lg rounded-pill w-100" data-testid="proceed-checkout">Proceed to Checkout</a>
           <div class="text-center mt-3 small text-secondary"><i class="bi bi-shield-lock me-1"></i>Secure 256-bit SSL checkout</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ProAssist upsell modal -->
-    <div class="modal fade" id="proAssistModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fw-bold">Add ProAssist Premium Installation</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <div class="d-flex align-items-center gap-3 mb-3">
-              <span class="logo-mark"><i class="bi bi-headset"></i></span>
-              <div><div class="fw-bold">ProAssist Premium</div><small class="text-secondary">Installation</small></div>
-            </div>
-            <p class="small">Let us install it for you. ProAssist includes:</p>
-            <ul class="small text-secondary">
-              <li>Our team will remotely install the software for you.</li>
-              <li>Secure end-to-end encrypted connection.</li>
-              <li>Installation within the same business day.</li>
-              <li>Backed by our money-back guarantee.</li>
-            </ul>
-            <div class="small text-secondary border-top pt-2 mt-3" style="font-size:.72rem;">
-              <div class="mb-1"><sup>1</sup> Installation service guaranteed within business hours (Monday-Saturday 9AM-5PM EST).</div>
-              <div><sup>2</sup> We guarantee a successful installation of your software or we refund you for the service.</div>
-            </div>
-          </div>
-          <div class="modal-footer flex-column flex-sm-row">
-            <a href="checkout.php" class="btn btn-outline-secondary flex-fill" data-testid="skip-proassist">No thanks, Continue to Checkout</a>
-            <a href="checkout.php?pro=1" class="btn btn-primary flex-fill" data-testid="add-proassist">Add ProAssist <?= format_price(PRO_ASSIST_PRICE) ?></a>
-          </div>
         </div>
       </div>
     </div>

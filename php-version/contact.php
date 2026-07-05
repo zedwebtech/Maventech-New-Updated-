@@ -150,7 +150,7 @@ include __DIR__ . '/includes/header.php';
   <div class="container py-5 text-center">
     <span class="eyebrow">WE'RE HERE TO HELP</span>
     <h1 class="fw-bold display-6 mt-1" data-testid="contact-title">Contact <?= esc(SITE_BRAND) ?> — Sales &amp; Support</h1>
-    <p class="text-secondary mx-auto" style="max-width:620px;">Have questions about your order, license activation, or need technical support? Our team is ready to assist you.</p>
+    <p class="text-secondary mx-auto" style="max-width:620px;">Questions about your order, license-key delivery, or activation? Our order-fulfillment team is ready to help.</p>
     <div class="d-flex justify-content-center gap-4 flex-wrap small mt-3">
       <span><i class="bi bi-patch-check-fill text-success me-1"></i>Genuine Microsoft Licenses</span>
       <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant Digital Delivery</span>
@@ -223,10 +223,9 @@ include __DIR__ . '/includes/header.php';
                 <label class="form-label small fw-semibold">Subject *</label>
                 <select name="subject" class="form-select" required data-testid="contact-subject">
                   <option value="General Inquiry">General Inquiry</option>
-                  <option value="Order Issue">Order Issue</option>
+                  <option value="Order / Delivery">Order / Delivery</option>
                   <option value="License / Activation Help">License / Activation Help</option>
                   <option value="Refund Request">Refund Request</option>
-                  <option value="Technical Support">Technical Support</option>
                   <option value="Volume / Business Pricing">Volume / Business Pricing</option>
                 </select>
               </div>

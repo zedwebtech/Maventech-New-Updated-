@@ -6,17 +6,13 @@ include __DIR__ . '/includes/header.php';
 // Link to the product page when the slug exists, otherwise to the category listing
 $r = fn(string $slug, string $fallback) => get_product($slug) ? 'product.php?slug=' . $slug : $fallback;
 
-// Subscription plan links (dynamic — active plans only).
-$subLinks = [['Compare all subscription plans', 'subscriptions.php']];
-foreach (sub_plans(true) as $sp) {
-    $subLinks[] = [$sp['name'] . ' — ' . $sp['tenure_label'], 'subscribe.php?plan=' . $sp['slug']];
-}
+// Subscription plan links removed — tech-support subscriptions discontinued.
+$subLinks = [];
 
 $groups = [
     ['icon' => 'bi-house-fill', 'title' => 'Main Pages', 'links' => [
         ['Home', 'index.php'],
         ['Shop All Products', 'shop.php'],
-        ['Subscription Plans', 'subscriptions.php'],
         ['Antivirus Software', 'category.php?slug=antivirus'],
         ['Blog', 'blog.php'],
         ['About Us', 'about-us.php'],
@@ -60,7 +56,6 @@ $groups = [
         ['All McAfee Products', 'category.php?slug=mcafee'],
         ['All Bitdefender Products', 'category.php?slug=bitdefender'],
     ]],
-    ['icon' => 'bi-stars', 'title' => 'Subscription Plans', 'links' => $subLinks],
     ['icon' => 'bi-life-preserver', 'title' => 'Support & Help', 'links' => [
         ['Support Center', 'support.php'],
         ['Help Center', 'page.php?slug=help-center'],

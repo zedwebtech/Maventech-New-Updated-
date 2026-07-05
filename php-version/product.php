@@ -147,7 +147,11 @@ foreach ($brandLookup as $kw => $br) {
 }
 
 $availableNow = function_exists('available_keys_count') ? available_keys_count($product['slug']) : 0;
-$availability = $availableNow > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
+// Compliance / GMC: every digital product is always purchasable (backorders
+// are fulfilled within the hour and the on-page stock pill always reads
+// "In Stock"), so the Product schema availability must match that — always
+// InStock. A stock-count-based OutOfStock here caused a feed↔page mismatch.
+$availability = 'https://schema.org/InStock';
 
 // Google's Product schema REQUIRES an absolute image URL — a root-relative
 // path (/uploads/...) is a validation error that suppresses the rich result.
@@ -601,6 +605,16 @@ include __DIR__ . '/includes/header.php';
         <div class="col-sm-6"><i class="bi bi-patch-check-fill text-success me-2"></i>Genuine Microsoft key</div>
         <div class="col-sm-6"><i class="bi bi-arrow-counterclockwise text-primary me-2"></i>Money-back guarantee</div>
         <div class="col-sm-6"><i class="bi bi-journal-text text-primary me-2"></i>Step-by-step activation guide included</div>
+      </div>
+
+      <div class="card border-0 mt-4 p-3" style="background:#f0f6ff;" data-testid="how-you-receive">
+        <div class="d-flex align-items-start gap-2">
+          <i class="bi bi-envelope-paper-fill text-primary fs-5 mt-1"></i>
+          <div>
+            <div class="fw-bold mb-1">How You Will Receive This Product</div>
+            <p class="small text-secondary mb-0">This is a digital product. No physical box or DVD will be shipped. Within 15&ndash;30 minutes of purchase, you will receive an email containing your genuine product key and official download links directly from the vendor&rsquo;s servers.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>

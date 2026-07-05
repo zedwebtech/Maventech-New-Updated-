@@ -101,7 +101,6 @@
         <ul class="list-unstyled small d-grid gap-2">
           <li><a href="about-us.php">About Us</a></li>
           <li><a href="page.php?slug=why-choose-us">Why Choose Us</a></li>
-          <li><a href="subscriptions.php" data-testid="footer-subscription-link">Subscription Plans</a></li>
           <li><a href="reviews.php">Customer Reviews</a></li>
           <li><a href="blog.php">Blog</a></li>
           <?php
@@ -289,7 +288,7 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
       <div class="pa-sched-header">
         <i class="bi bi-calendar-check"></i>
         <div>
-          <div class="pa-sched-title" data-testid="pa-sched-title">Schedule your install call</div>
+          <div class="pa-sched-title" data-testid="pa-sched-title">Schedule a callback</div>
           <div class="pa-sched-sub" data-testid="pa-sched-sub">Pick a time that works for you</div>
         </div>
       </div>

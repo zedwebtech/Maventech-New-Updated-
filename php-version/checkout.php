@@ -194,7 +194,10 @@ if ($isSub) {
         header('Location: cart.php');
         exit;
     }
-    $proAssist = ($_GET['pro'] ?? ($_POST['pro'] ?? '')) === '1';
+    // Compliance: ProAssist Premium Installation (paid tech-support add-on) is
+    // discontinued. Force it off so it can never be billed or scheduled, even
+    // if a stale ?pro=1 link is used.
+    $proAssist = false;
     $subtotal = cart_subtotal();
     // Savings from list prices
     $savings = 0;

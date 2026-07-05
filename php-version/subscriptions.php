@@ -4,8 +4,12 @@
  * browse before clicking through to checkout via /subscribe.php?plan=<slug>.
  */
 require_once __DIR__ . '/includes/functions.php';
-$pageTitle = 'Subscription Plans | ' . SITE_BRAND;
-$pageDescription = 'Compare ' . SITE_BRAND . ' tech-support subscription plans — Quick Fix, Starter Care, Pro Shield and Lifetime Elite. Unlimited remote support, device coverage, priority help and more.';
+// Compliance: tech-support / remote-support subscription plans have been
+// discontinued. This page now 301-redirects to the shop so no third-party
+// software-support offering is served to customers or crawlers.
+header('Location: shop.php', true, 301);
+exit;
+
 
 $plans = sub_plans(true);
 $co    = function_exists('company_info') ? company_info() : [];
