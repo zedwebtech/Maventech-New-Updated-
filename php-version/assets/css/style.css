@@ -430,8 +430,17 @@ body[data-brand-motion="static"] .logo-3d > img:first-of-type {
 .btn-hero-ghost { color: #0f172a; border: 1.5px solid #e2e8f0; background: #fff; font-weight: 600; }
 .btn-hero-ghost:hover { color: #2563eb; border-color: #93c5fd; background: #eff6ff; }
 
-/* Dark mode: keep the clean look but with a dark surface */
-[data-bs-theme="dark"] .hero { background: #0b1220; color: #e6edf7; }
+/* Dark mode: hero blends into the page — no hard-edged rectangle.  A soft
+   radial watermark carries the theme color without drawing a box. */
+[data-bs-theme="dark"] .hero { background: transparent; color: #e6edf7; }
+[data-bs-theme="dark"] .hero::before {
+  background:
+    radial-gradient(1200px 700px at 8% 15%,  rgba(37, 99, 235, .22),  transparent 55%),
+    radial-gradient(900px 620px at 100% 100%, rgba(6, 182, 212, .16), transparent 60%),
+    radial-gradient(700px 500px at 50% 50%,  rgba(11, 92, 255, .10), transparent 65%);
+  mask-image: radial-gradient(120% 100% at 50% 50%, #000 55%, transparent 100%);
+  -webkit-mask-image: radial-gradient(120% 100% at 50% 50%, #000 55%, transparent 100%);
+}
 [data-bs-theme="dark"] .hero h1 { color: #fff; }
 [data-bs-theme="dark"] .hero .text-secondary { color: #94a3b8 !important; }
 [data-bs-theme="dark"] .hero .hero-stats .fs-3 { color: #fff; }
