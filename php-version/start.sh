@@ -84,6 +84,12 @@ if [ -n "$PREVIEW_URL" ]; then
 fi
 # gw_mode on orders — captured at checkout so admins can filter test vs live orders
 mysql -uroot ucode_store -e "ALTER TABLE orders ADD COLUMN IF NOT EXISTS gw_mode VARCHAR(10) NOT NULL DEFAULT 'test' AFTER status" 2>/dev/null || true
+# Google Ads tag cleanup — the previously-baked-in placeholder AW-18263028048
+# returns HTTP 404 from https://www.googletagmanager.com/gtag/js?id=AW-18263028048
+# (the Ads account was deleted / never activated). If the merchant's `settings`
+# row still holds that stale value, empty it so no 404-ing secondary gtag.js
+# request is emitted. Any OTHER admin-set AW-* id is preserved. Idempotent.
+mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='google_ads_tag_id' AND v='AW-18263028048'" 2>/dev/null || true
 # chat_messages attachments — file uploads + voice notes in the support chat
 mysql -uroot ucode_store -e "ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS attachment_url  VARCHAR(500) DEFAULT NULL" 2>/dev/null || true
 mysql -uroot ucode_store -e "ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS attachment_type VARCHAR(20)  DEFAULT NULL" 2>/dev/null || true

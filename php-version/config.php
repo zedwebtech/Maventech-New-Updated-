@@ -103,7 +103,15 @@ define('BAIDU_SITE_VERIFICATION',  getenv('BAIDU_SITE_VERIFICATION')  ?: '');
 define('GA4_MEASUREMENT_ID', getenv('GA4_MEASUREMENT_ID') ?: 'G-9824E82NN1');   // G-XXXXXXXXXX (GA4)
 define('GOOGLE_TAG_ID',      getenv('GOOGLE_TAG_ID')      ?: 'GT-TQV4X72G');    // Google tag (gtag.js loader)
 define('GTM_CONTAINER_ID',   getenv('GTM_CONTAINER_ID')   ?: 'GTM-N6Q7FKS2');   // Google Tag Manager container
-define('GOOGLE_ADS_TAG_ID',  getenv('GOOGLE_ADS_TAG_ID')  ?: 'AW-18263028048'); // Google Ads conversion tag
+// GOOGLE_ADS_TAG_ID intentionally defaults to '' — the previous baked-in default
+// (AW-18263028048) belongs to a Google Ads account that now returns HTTP 404 on
+// https://www.googletagmanager.com/gtag/js?id=AW-18263028048, so every page load
+// was emitting a broken secondary gtag.js request (flagged by Lighthouse /
+// PageSpeed as "Failed to load resource: 404 Not Found"). Set your own live
+// AW-<9-11 digit> id in Admin → SEO & Tracking (or via the GOOGLE_ADS_TAG_ID
+// env var) once your Google Ads campaign is live. Leaving it empty simply
+// disables the Ads conversion tag — the site keeps working normally.
+define('GOOGLE_ADS_TAG_ID',  getenv('GOOGLE_ADS_TAG_ID')  ?: '');                // Google Ads conversion tag (blank until set in admin)
 define('CLARITY_PROJECT_ID', getenv('CLARITY_PROJECT_ID') ?: 'xcp5vd09fb');     // Microsoft Clarity project id
 define('GOOGLE_MERCHANT_ID', getenv('GOOGLE_MERCHANT_ID') ?: '5815017210');     // Google Merchant Center id
 // Google Business Profile "Write a review" link — shown as a stylish post-purchase
