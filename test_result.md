@@ -4078,3 +4078,301 @@ agent_communication:
       - Address "already activated" scenario (still eligible within 30 days)
       
       All restrictive clauses removed. Policy pages fully consistent with homepage promise. Bug fix is production-ready and safe to deploy.
+
+
+#====================================================================================================
+# Bug fix — Merchant Center: strict DIGITAL refund copy + return_policy_label on every feed item
+#====================================================================================================
+
+backend:
+  - task: "Refund policy body: strict digital-only refund copy (email/chat request, key deactivation, 3-day processing timeline). Zero physical-goods template phrases (shipping / shipment / restocking / mailing address / mail back)."
+    implemented: true
+    working: true
+    file: "php-version/scripts/update-refund-policy-mc.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          User asked to remove template phrases like "shipping boxes",
+          "restocking physical items", "mailing addresses" from the refund
+          policy AND explicitly describe a digital process (email or chat
+          request → licence key deactivation → 3-business-day refund
+          processing). Rewrote both the refund-policy and returns-refunds
+          page bodies in scripts/update-refund-policy-mc.php with copy that:
+            • Leads with "30-day money-back guarantee — no questions asked"
+              (matches homepage + Merchant Center policy).
+            • Has 3 explicit steps: (1) email or live chat, (2) we deactivate
+              the licence key in vendor systems, (3) refund issued within
+              3 business days to the original payment method.
+            • Adds a "Fully online refund process" alert that uses ZERO
+              shipping/restocking/mailing language — pure digital
+              vocabulary only.
+            • Processing timeline table shows 4 concrete steps:
+              acknowledged (24h) → key deactivated (same day) → refund
+              approved & issued (within 3 business days) → credit posted
+              by bank (3-10 additional days).
+            • FAQ answers "do I have to return anything" (no), "what if
+              already installed" (still eligible, we deactivate on our
+              side), "are fees deducted" (none), "Protection Hub" (same
+              guarantee).
+          Migration re-runs are idempotent — the script now checks BOTH
+          for the old restrictive markers AND for any physical-goods
+          template phrases still present, so a partially-migrated pod
+          gets re-rewritten.
+          Verified locally: grep for "shipping|shipment|restocking|mail back|
+          mailing address|return shipping|shipping boxes" inside the
+          policy body content = 0 (the only "shipping" occurrence in the
+          rendered HTML is the footer nav link to Shipping & Delivery,
+          which is a legitimate separate page).
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ VERIFIED - Refund policy digital copy compliance complete. Tested BOTH pages (refund-policy + returns-refunds) via direct DB content check. FORBIDDEN phrases (all 10): shipping=0, shipment=0, restocking=0, mail back=0, mail anything=0, mailing address=0, return shipping=0, shipping boxes=0, package or mail=0, nothing to mail=0 ✅. REQUIRED phrases (all 8): no questions asked=1, 30-day money-back=1, defective and non-defective=1, email or=1, chat=1, deactivate=1, 3 business days=1, digital=1 ✅. Both pages now contain ONLY digital-only refund copy with zero physical-goods template phrases. Migration script idempotent: both runs show "already MC-compliant — no change" for both slugs ✅.
+
+  - task: "Merchant feed: emit return_policy_label on every product AND Protection Hub plan item — binds products to the account-level Merchant Center return policy"
+    implemented: true
+    working: true
+    file: "php-version/merchant-feed.php, php-version/admin.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          Google Merchant Center dashboard was reporting products as "not
+          actively covered" by the return policy because the feed carried
+          no <g:return_policy_label> attribute — the previous iteration
+          intentionally omitted the tag (deferring to account-level defaults),
+          which meant Merchant Center never bound products to the saved
+          policy.  Now every <item> emits BOTH signals:
+
+            1. <g:return_policy_label>{LABEL}</g:return_policy_label>
+               — top-level attribute that links the item to the account-
+               level policy Google's UI checks for the "covered by policy"
+               indicator.
+
+            2. Full <g:return_policy>{country, policy=30, label}</g:return_policy>
+               block as a spec-compliant fallback so Merchant Center still
+               has a valid policy signal even before the merchant creates
+               the matching account-level entry.
+
+          The label defaults to "maventech-30-day-refund" and is admin-
+          configurable via Admin → Company Info → SEO & Tracking →
+          "Return Policy Label" (also mirrored in the /admin.php?tab=seo
+          SEO card).  The admin panel input has data-testid
+          "admin-return-policy-label-input" and stores the value in
+          setting `merchant_return_policy_label` (validated: 2-50 chars,
+          A-Z 0-9 dash underscore space).  Setting blank omits the tag
+          entirely so merchants who prefer account-level defaults can
+          opt out cleanly.
+
+          Feed inspection (curl /merchant-feed.xml on the preview pod):
+            • 57 <item>s total (products across regions + 4 Protection
+              Hub plans × 5 regions).
+            • 57 <g:return_policy_label>maventech-30-day-refund</g:return_policy_label> tags
+            • 57 <g:return_policy> blocks with country + policy=30 + label.
+            • XML validates cleanly (xmllint --noout, exit 0).
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ VERIFIED - Merchant feed return_policy_label compliance complete. Feed URL: http://localhost:3000/merchant-feed.xml. XML well-formed (xmllint exit 0) ✅. Item count: 57, return_policy_label count: 57 (every item has label) ✅, return_policy block count: 57 (every item has full block) ✅. All labels match setting value: "maventech-30-day-refund" ✅. All return_policy blocks contain required sub-attributes: <g:country> (114 total, 57 in return_policy blocks), <g:policy>30</g:policy> (57, all 30-day window) ✅, <g:label> (57) ✅. Pre-existing g:shipping signal preserved: "Digital delivery by email" found 94 times (no regression) ✅. Blank setting opt-out tested: blanked setting → 0 labels/blocks ✅, restored setting → 57 labels/blocks reappear ✅. Sample block structure correct: <g:return_policy><g:country>US</g:country><g:policy>30</g:policy><g:label>maventech-30-day-refund</g:label></g:return_policy> ✅.
+
+metadata:
+  updated_by: "main_agent"
+  updated_at: "2026-07-06"
+
+test_plan:
+  current_focus:
+    - "Refund policy body: strict digital-only refund copy (email/chat request, key deactivation, 3-day processing timeline). Zero physical-goods template phrases (shipping / shipment / restocking / mailing address / mail back)."
+    - "Merchant feed: emit return_policy_label on every product AND Protection Hub plan item — binds products to the account-level Merchant Center return policy"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Two related fixes ready for verification.  Both are backend-only —
+      no UI browser tests needed.
+
+      TEST A — REFUND POLICY DIGITAL COPY
+
+        For BOTH URLs:
+          curl http://localhost:3000/page.php?slug=refund-policy
+          curl http://localhost:3000/page.php?slug=returns-refunds
+
+        Isolate the policy body (anything between the H1 "Refund Policy" /
+        "Returns & Refunds" and the site footer <footer>) — the site
+        footer contains a legit "Shipping & Delivery" nav link that must
+        NOT count.  Simplest approach:
+          curl ... | awk '/<h1[^>]*>Refund Policy|<h1[^>]*>Returns/,/<footer/'
+        OR
+          check the DB `content` column directly:
+          mysql -uroot ucode_store -e "SELECT content FROM pages WHERE slug='refund-policy';"
+
+        In the isolated policy body, assert case-insensitive grep counts:
+
+          FORBIDDEN (must all be 0):
+            • shipping
+            • shipment
+            • restocking
+            • mail back
+            • mail anything
+            • mailing address
+            • return shipping
+            • shipping boxes
+            • package or mail
+            • nothing to mail
+
+          REQUIRED (must all be >= 1):
+            • no questions asked
+            • 30-day money-back
+            • defective and non-defective
+            • email or (from "email or live chat")
+            • chat
+            • deactivate  (licence deactivation language)
+            • 3 business days
+            • digital
+
+        Same assertions for BOTH slugs.
+
+      TEST B — MERCHANT FEED return_policy_label
+
+        curl http://localhost:3000/merchant-feed.xml -o /tmp/feed.xml
+
+        Assert:
+          • xmllint --noout /tmp/feed.xml exits 0 (well-formed XML).
+            Install libxml2-utils first if needed.
+          • Count of <item> == count of <g:return_policy_label> — every
+            item is labelled, none missed.  Both counts should equal 57
+            on the preview pod (may vary in prod, but the two counts MUST
+            match).
+          • Every emitted <g:return_policy_label> value == the current
+            setting value.  Fetch the setting via
+              mysql -uroot ucode_store -e "SELECT v FROM settings WHERE k='merchant_return_policy_label';"
+            OR fall back to the default 'maventech-30-day-refund' when
+            the setting row does not exist.
+          • Every <g:return_policy> block contains all three sub-attrs
+            in the exact order: <g:country>, <g:policy>, <g:label>.
+            Simple xpath / grep check per block; policy value must be
+            30 (30 days).
+          • Feed also still contains the pre-existing g:shipping block
+            with service="Digital delivery by email" so we haven't
+            regressed the shipping signal (grep for the string).
+
+      TEST C — SETTING BLANK OPT-OUT
+
+        Temporarily blank the setting:
+          mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='merchant_return_policy_label';"
+        Re-fetch the feed.  Assert:
+          • 0 <g:return_policy_label> tags in output.
+          • 0 <g:return_policy> blocks in output.
+        Restore the setting so downstream tests keep passing:
+          mysql -uroot ucode_store -e "UPDATE settings SET v='maventech-30-day-refund' WHERE k='merchant_return_policy_label';"
+          OR
+          mysql -uroot ucode_store -e "INSERT INTO settings (k, v) VALUES ('merchant_return_policy_label','maventech-30-day-refund') ON DUPLICATE KEY UPDATE v='maventech-30-day-refund';"
+        Confirm the tags reappear on the next curl.
+
+      TEST D — MIGRATION IDEMPOTENCY
+
+        Run twice:
+          php /app/php-version/scripts/update-refund-policy-mc.php
+        On the SECOND run, both slugs must print "already MC-compliant —
+        no change." (proving the script recognises the new copy and
+        won't overwrite admin edits).
+
+      Do NOT test anything outside these four blocks.  Report a concise
+      pass/fail per test and update test_result.md.
+
+    -agent: "testing"
+    -message: |
+      ✅ GOOGLE MERCHANT CENTER COMPLIANCE BUG FIX VERIFICATION COMPLETE — ALL 4 TESTS PASSED
+      
+      Executed comprehensive backend testing per the detailed review request. All 4 test items (A, B, C, D) PASSED with no issues.
+      
+      TEST A: REFUND POLICY DIGITAL COPY ✓
+      -------------------------------------
+      Verified BOTH pages (refund-policy + returns-refunds) via direct DB content check.
+      
+      refund-policy page:
+        FORBIDDEN phrases (all must be 0): ✓ ALL 0
+          • shipping: 0, shipment: 0, restocking: 0, mail back: 0, mail anything: 0
+          • mailing address: 0, return shipping: 0, shipping boxes: 0
+          • package or mail: 0, nothing to mail: 0
+        
+        REQUIRED phrases (all must be >= 1): ✓ ALL >= 1
+          • no questions asked: 1, 30-day money-back: 1, defective and non-defective: 1
+          • email or: 1, chat: 1, deactivate: 1, 3 business days: 1, digital: 1
+      
+      returns-refunds page:
+        FORBIDDEN phrases (all must be 0): ✓ ALL 0
+          • shipping: 0, shipment: 0, restocking: 0, mail back: 0, mail anything: 0
+          • mailing address: 0, return shipping: 0, shipping boxes: 0
+          • package or mail: 0, nothing to mail: 0
+        
+        REQUIRED phrases (all must be >= 1): ✓ ALL >= 1
+          • no questions asked: 1, 30-day money-back: 1, defective and non-defective: 1
+          • email or: 1, chat: 1, deactivate: 1, 3 business days: 1, digital: 1
+      
+      TEST B: MERCHANT FEED return_policy_label ✓
+      --------------------------------------------
+      Feed URL: http://localhost:3000/merchant-feed.xml
+      
+      ✓ XML well-formed (xmllint --noout exit 0)
+      ✓ Item count: 57
+      ✓ return_policy_label count: 57 (every item has label)
+      ✓ return_policy block count: 57 (every item has full block)
+      ✓ All labels match setting value: "maventech-30-day-refund"
+      ✓ All return_policy blocks contain required sub-attributes:
+          - <g:country>: 114 (57 in return_policy blocks + 57 in shipping blocks)
+          - <g:policy>30</g:policy>: 57 (all 30-day window)
+          - <g:label>: 57
+      ✓ Pre-existing g:shipping signal preserved: "Digital delivery by email" found 94 times (no regression)
+      
+      Sample return_policy block structure:
+        <g:return_policy>
+          <g:country>US</g:country>
+          <g:policy>30</g:policy>
+          <g:label>maventech-30-day-refund</g:label>
+        </g:return_policy>
+      
+      TEST C: BLANK SETTING OPT-OUT ✓
+      --------------------------------
+      ✓ Blanked setting: merchant_return_policy_label = ''
+      ✓ Re-fetched feed: 0 return_policy_label tags, 0 return_policy blocks (correct opt-out)
+      ✓ Restored setting: merchant_return_policy_label = 'maventech-30-day-refund'
+      ✓ Re-fetched feed: 57 return_policy_label tags, 57 return_policy blocks (tags reappear)
+      
+      TEST D: MIGRATION SCRIPT IDEMPOTENCY ✓
+      ---------------------------------------
+      Script: /app/php-version/scripts/update-refund-policy-mc.php
+      
+      First run output:
+        [refund-policy-mc] refund-policy already MC-compliant — no change.
+        [refund-policy-mc] returns-refunds already MC-compliant — no change.
+        [refund-policy-mc] Done.
+      
+      Second run output:
+        [refund-policy-mc] refund-policy already MC-compliant — no change.
+        [refund-policy-mc] returns-refunds already MC-compliant — no change.
+        [refund-policy-mc] Done.
+      
+      ✓ Both runs show "already MC-compliant — no change" for BOTH slugs
+      ✓ Migration is idempotent (safe to re-run)
+      
+      CONCLUSION:
+      ✓ ALL 4 TESTS PASSED
+      
+      The two Google Merchant Center compliance bug fixes are working correctly:
+      
+      1. Refund policy pages (refund-policy + returns-refunds) now contain ONLY digital-only refund copy with zero physical-goods template phrases. All required phrases present (no questions asked, 30-day money-back, defective and non-defective, email or chat, deactivate, 3 business days, digital).
+      
+      2. Merchant feed emits <g:return_policy_label> on every product item (57/57), along with full <g:return_policy> blocks containing country/policy/label sub-attributes. Setting can be blanked to opt out cleanly. Pre-existing Digital delivery signal preserved (no regression).
+      
+      3. Migration script is idempotent (recognizes already-compliant content and skips updates on subsequent runs).
+      
+      Bug fixes are production-ready and safe to deploy. No code modifications made during testing (verification only).

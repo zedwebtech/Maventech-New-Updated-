@@ -1165,6 +1165,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $errors[] = 'google_review_url';
         }
+        // Merchant Center Return-policy label — plain string that references
+        // an account-level policy in Merchant Center. Length + charset only
+        // (Google allows up to 50 chars: letters, digits, dash, underscore).
+        if (array_key_exists('merchant_return_policy_label', $_POST)) {
+            $rpl = trim((string)$_POST['merchant_return_policy_label']);
+            if ($rpl === '' || preg_match('/^[A-Za-z0-9_\- ]{2,50}$/', $rpl)) {
+                setting_set('merchant_return_policy_label', $rpl);
+            } else {
+                $errors[] = 'merchant_return_policy_label';
+            }
+        }
         $flash = $errors ? ('Saved with ' . count($errors) . ' invalid ID(s) ignored: ' . implode(', ', $errors))
                          : 'Tracking IDs saved';
         header('Location: admin.php?tab=company&tracking_msg=' . urlencode($flash) . '#tracking-card'); exit;
@@ -5376,6 +5387,7 @@ elseif ($tab === 'ai-blogger'):
     $seoYandex  = setting_get('yandex_site_verification_token', defined('YANDEX_SITE_VERIFICATION') ? YANDEX_SITE_VERIFICATION : '');
     $seoPint    = setting_get('pinterest_site_verification_token', defined('PINTEREST_SITE_VERIFICATION') ? PINTEREST_SITE_VERIFICATION : '');
     $seoGmc     = setting_get('google_merchant_id', '');
+    $seoGmcRPL  = setting_get('merchant_return_policy_label', 'maventech-30-day-refund');
     $seoDomain  = setting_get('site_domain_url', rtrim(site_url(), '/'));
     $seoCanonHost = strtolower((string)setting_get('seo_canonical_host_pref', 'naked'));
     if (!in_array($seoCanonHost, ['naked', 'www'], true)) $seoCanonHost = 'naked';
@@ -5571,6 +5583,16 @@ elseif ($tab === 'ai-blogger'):
               <a href="https://merchants.google.com" target="_blank" class="text-primary text-decoration-none">merchants.google.com <i class="bi bi-box-arrow-up-right" style="font-size:10px;"></i></a>
             </div>
             <div class="text-secondary small mt-1">Shows your products in Google Shopping results with prices.</div>
+
+            <!-- Return-policy label — links every product in the feed to
+                 an account-level return policy configured in Merchant
+                 Center (Settings → Shipping and returns → Return policies).
+                 Must exactly match the "Policy label" you saved there. -->
+            <div class="mt-3 pt-2" style="border-top:1px dashed #e2e8f0;">
+              <label class="small fw-semibold d-block mb-1" for="merchant_return_policy_label" style="font-size:12px;">Return policy label <span class="text-secondary fw-normal">(binds products to the account-level policy)</span></label>
+              <input type="text" id="merchant_return_policy_label" name="merchant_return_policy_label" class="form-control form-control-sm" value="<?= esc($seoGmcRPL) ?>" placeholder="maventech-30-day-refund" style="font-size:12px;" data-testid="admin-return-policy-label-input">
+              <div class="text-secondary small mt-1">Emitted as <code>&lt;g:return_policy_label&gt;</code> on every item in the Merchant feed. Must match the label of a policy already saved in Merchant Center → Settings → Return policies. Leave blank to omit the tag.</div>
+            </div>
           </div>
         </div>
 
@@ -7000,6 +7022,14 @@ elseif ($tab === 'company'):
                  value="<?= esc($tk_gmc_v) ?>" placeholder="12345678"
                  pattern="^[0-9]{6,15}$" data-testid="tk-gmc-input">
           <small class="text-muted">merchants.google.com — unlocks the "Verified by Google Customers" badge after opt-in surveys</small>
+        </div>
+        <div class="col-md-6">
+          <?php $tk_rpl_v = (string)setting_get('merchant_return_policy_label', 'maventech-30-day-refund'); ?>
+          <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_rpl"><span>Return Policy Label <i class="bi bi-arrow-counterclockwise text-warning ms-1"></i></span><?= $tkStatus($tk_rpl_v) ?></label>
+          <input class="form-control form-control-sm" id="tk_rpl" name="merchant_return_policy_label"
+                 value="<?= esc($tk_rpl_v) ?>" placeholder="maventech-30-day-refund"
+                 pattern="^[A-Za-z0-9_\- ]{2,50}$" data-testid="admin-return-policy-label-input">
+          <small class="text-muted">Emitted as <code>&lt;g:return_policy_label&gt;</code> on every product in the Merchant feed. Must match the label of a policy already saved in Merchant Center → Settings → Return policies.</small>
         </div>
         <div class="col-12">
           <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_grev"><span>Google Review Link <i class="bi bi-google text-primary ms-1"></i></span><?= $tkStatus($tk_grev_v) ?></label>

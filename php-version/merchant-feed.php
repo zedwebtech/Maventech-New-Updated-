@@ -47,6 +47,17 @@ $site    = rtrim(site_url(), '/');
 $ci      = company_info();
 $brand   = $ci['name'] ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
 $updated = gmdate('D, d M Y H:i:s') . ' GMT';
+
+/* Return-policy label — binds every <item> to an account-level Return
+   Policy configured in Google Merchant Center (Settings → Shipping and
+   returns → Return policies).  The label the merchant saved there must
+   equal the value below.  This is what flips Merchant Center from
+   "policy not linked" to "products actively covered by policy".
+   Configurable per-store via Admin → SEO → Google Merchant Center.
+   Emitted as <g:return_policy_label> only when set — an empty setting
+   omits the tag so the feed remains valid.  */
+$returnPolicyLabel = trim((string)setting_get('merchant_return_policy_label', 'maventech-30-day-refund'));
+$returnPolicyDays  = 30; // 30-day money-back guarantee, matches on-site policy.
 // Dynamic self-link — whichever feed alias the crawler hit
 // (/merchant-feed.xml, /feed/google-products.xml, etc.) is echoed back
 // so Google's <atom:link rel="self"> validation always matches.
@@ -411,17 +422,35 @@ foreach ($products as $p) {
     echo "      </g:shipping>\n";
     echo "      <g:shipping_weight>0 kg</g:shipping_weight>\n";
 
-    /* Return policy is configured at the MERCHANT-CENTER ACCOUNT LEVEL
-       (Settings → Shipping and returns → Return policies).  Emitting a
-       product-level <g:return_policy> block requires the exact sub-attribute
-       tags <g:country> + <g:label> (label must reference an existing
-       account-level policy) or <g:return_shipping_fee>.  A prior version
-       of this feed used the wrong sub-tag names (g:return_policy_country /
-       g:return_policy_policy) which triggered "Missing sub-attribute
-       [country]" in Merchant Center for every item.  The safe, spec-clean
-       fix is to omit the tag entirely and let the account-level policy
-       apply — Google's own recommendation for merchants with a single
-       universal return policy.  */
+    /* Return policy — links this product to the account-level policy
+       configured in Merchant Center (Settings → Shipping and returns →
+       Return policies).  The customer-facing policy is documented at
+       /page.php?slug=refund-policy: 30-day money-back guarantee, no
+       questions asked, no shipping required (digital licences).
+
+       Emits TWO overlapping signals so Merchant Center recognises the
+       product as "actively covered":
+
+         1. <g:return_policy_label>  — links the item to the merchant's
+            saved account-level policy by its label.  This is what
+            Google's UI checks when it shows a product as covered.
+
+         2. <g:return_policy> block  — self-contained fallback with
+            country + policy (30 days) + label, so Merchant Center still
+            has a valid policy even before the merchant creates the
+            account-level entry (or if the label temporarily doesn't
+            match).  Uses the exact sub-attribute tag names
+            (<g:country>/<g:policy>/<g:label>) required by the RSS spec.
+       If the admin blanks the label in Admin → SEO, both blocks are
+       omitted so the account-level default takes over transparently. */
+    if ($returnPolicyLabel !== '') {
+        echo "      <g:return_policy_label>" . feed_xml_esc($returnPolicyLabel) . "</g:return_policy_label>\n";
+        echo "      <g:return_policy>\n";
+        echo "        <g:country>" . $country . "</g:country>\n";
+        echo "        <g:policy>" . $returnPolicyDays . "</g:policy>\n";
+        echo "        <g:label>"  . feed_xml_esc($returnPolicyLabel) . "</g:label>\n";
+        echo "      </g:return_policy>\n";
+    }
 
     /* <g:free_shipping_threshold> was previously emitted as a scalar
        ("0.00 USD"), but Google's schema defines it as a sub-attribute
@@ -505,6 +534,17 @@ foreach ($hubPlans as $plan) {
         echo "        <g:service>Digital delivery by email</g:service>\n";
         echo "        <g:price>0.00 {$cur}</g:price>\n";
         echo "      </g:shipping>\n";
+        // Same 30-day money-back guarantee applies to subscription plans —
+        // bind the plan to the merchant's account-level return policy so
+        // Merchant Center dashboard reports plans as "actively covered".
+        if ($returnPolicyLabel !== '') {
+            echo "      <g:return_policy_label>" . feed_xml_esc($returnPolicyLabel) . "</g:return_policy_label>\n";
+            echo "      <g:return_policy>\n";
+            echo "        <g:country>{$countryC}</g:country>\n";
+            echo "        <g:policy>{$returnPolicyDays}</g:policy>\n";
+            echo "        <g:label>"  . feed_xml_esc($returnPolicyLabel) . "</g:label>\n";
+            echo "      </g:return_policy>\n";
+        }
         echo "      <g:custom_label_0>" . feed_xml_esc($brand) . "</g:custom_label_0>\n";
         echo "      <g:custom_label_1>" . feed_xml_esc($regCode) . "</g:custom_label_1>\n";
         echo "      <g:custom_label_2>Protection Hub</g:custom_label_2>\n";
