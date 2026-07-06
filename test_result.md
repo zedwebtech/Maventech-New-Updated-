@@ -4376,3 +4376,264 @@ agent_communication:
       3. Migration script is idempotent (recognizes already-compliant content and skips updates on subsequent runs).
       
       Bug fixes are production-ready and safe to deploy. No code modifications made during testing (verification only).
+
+
+#====================================================================================================
+# Bug fix — Merchant Center: (1) products disconnected from policy (Products col = "-"),
+#                            (2) "customer pays return shipping" contradicts digital delivery.
+#====================================================================================================
+
+backend:
+  - task: "Merchant feed: emit <g:return_shipping_fee><g:type>free</g:type> on every item — resolves 'customer pays return costs' contradiction for digital-only merchants"
+    implemented: true
+    working: true
+    file: "php-version/merchant-feed.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          Google's Merchant Center dashboard was raising a "Contradictory
+          rules" flag: the account-level Return Policy declared "customer
+          responsibility for return costs" while the site explicitly
+          promises instant digital delivery by email (nothing to physically
+          return). The fix, per Google's spec
+          (support.google.com/merchants/answer/14011730), is to emit an
+          explicit product-level <g:return_shipping_fee><g:type>free</g:type>
+          </g:return_shipping_fee> block that declares returns are $0
+          cost for the customer. Applied to both the products loop AND
+          the Protection Hub plans loop so ALL feed items carry the
+          "free returns" signal.
+
+          Also simplified the inline <g:return_policy> block: removed the
+          duplicated <g:label> sub-attribute (kept only <g:country> +
+          <g:policy>30</g:policy>) so it no longer competes with the
+          top-level <g:return_policy_label>, which is what Google's UI
+          actually reads for the "Products covered" column.
+
+          Feed inspection (curl /merchant-feed.xml):
+            • 57 <item>s → 57 <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+            • 57 <g:return_policy> blocks (country + policy=30, no label sub-attr)
+            • 57 <g:return_shipping_fee> blocks, all with <g:type>free</g:type>
+            • Inline <g:label> sub-attribute count = 0 (cleaned up)
+            • xmllint --noout /tmp/feed.xml → exit 0
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ VERIFIED - Both Merchant Center bug fixes working correctly.
+          
+          TEST 1 — MERCHANT FEED SIGNALS: ✅ PASS
+          
+          Feed URL: http://localhost:3000/merchant-feed.xml (144,945 bytes)
+          XML validation: PASS (xmllint exit 0) ✅
+          
+          Count assertions (all equal, all 57):
+          - n1 (items):                  57 ✅
+          - n2 (return_policy_label):    57 ✅
+          - n3 (return_policy):          57 ✅
+          - n4 (return_shipping_fee):    57 ✅
+          - n5 (type=free):              57 ✅
+          
+          Every item has all three return signals (label + policy + shipping-fee=free).
+          
+          Structural assertions:
+          - Inline <g:label> sub-attribute count: 0 ✅ (cleaned up, no competitor to top-level label)
+          - First item's return block structure verified correct:
+              <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+              <g:return_policy>
+                <g:country>US</g:country>
+                <g:policy>30</g:policy>
+              </g:return_policy>
+              <g:return_shipping_fee>
+                <g:type>free</g:type>
+              </g:return_shipping_fee>
+          
+          Regression checks (pre-existing signals preserved):
+          - "Digital download (instant by email)": 37 occurrences ✅
+          - "Digital delivery by email":           20 occurrences ✅
+          
+          Opt-out check:
+          - Blanked setting → 0 return_policy_label, 0 return_policy, 0 return_shipping_fee ✅
+          - Restored setting → all three signals reappear (57 each) ✅
+          
+          TEST 2 — ADMIN SETUP GUIDE: ✅ PASS
+          
+          Source file: /app/php-version/admin.php
+          All required testids and phrases present:
+          - data-testid="admin-return-policy-guide": 1 occurrence ✅
+          - data-testid="admin-return-policy-copy":  1 occurrence ✅
+          - "Do NOT choose" (step-7 warning):        1 occurrence ✅
+          - "Return shipping fee":                   1 occurrence ✅
+          - "Contradictory rules":                   1 occurrence ✅
+          
+          CONCLUSION:
+          ✅ Both bug fixes verified and working correctly.
+          
+          FIX 1: Feed now emits <g:return_shipping_fee><g:type>free</g:type> on every item (57/57), declaring free returns → resolves "customer pays return shipping" contradiction for digital-only merchants.
+          
+          FIX 2: Simplified inline <g:return_policy> to country + policy=30 only (removed duplicated <g:label> sub-attr) → top-level <g:return_policy_label> no longer has a competitor → Products column on Merchant Center dashboard should now bind correctly.
+          
+          FIX 3: Admin panel now has 9-step setup guide (data-testid="admin-return-policy-guide") explaining how to create the matching account-level policy on Merchant Center dashboard with critical warning about "Return shipping fee = Free" (not "Customer responsibility").
+          
+          NET EFFECT:
+          - "Contradictory rules" flag should disappear (free return shipping declared at product level).
+          - Products column should change from "-" to the count of covered products once merchant creates the account-level policy following the admin guide.
+          
+          Bug fixes are production-ready. No code modifications made during testing (verification only).
+
+  - task: "Admin Merchant Center setup wizard — step-by-step guide for creating the account-level return policy that binds to the feed's return_policy_label"
+    implemented: true
+    working: true
+    file: "php-version/admin.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          Products column on Merchant Center dashboard was showing "-"
+          because binding requires TWO sides: (a) the feed's
+          return_policy_label (already emitted, previous iteration), AND
+          (b) an account-level Return Policy on the Merchant Center
+          dashboard with the exact same label. Google can't bind if the
+          policy doesn't exist yet on their side.
+
+          Added a prominent info card in Admin → Company Info → SEO &
+          Tracking (data-testid="admin-return-policy-guide") with a
+          9-step recipe:
+            1. Open merchants.google.com → Settings → Shipping & returns
+               → Return policies
+            2. + Add return policy
+            3. Set Policy label = <current admin value, shown as
+               copyable <code data-testid="admin-return-policy-copy">>
+            4. Select countries (US/GB/CA/AU/EU)
+            5. Return window = 30 days
+            6. Return method = Any
+            7. CRITICAL: Return shipping fee = Free (not "Customer
+               responsibility" — that's what causes the contradiction)
+            8. Restocking fee = 0%
+            9. Save; products will bind on next feed crawl
+
+          Green ✓ badges below the steps confirm the 3 signals the feed
+          already emits (label + shipping-fee=free + inline policy).
+          The card renders inside the tracking form so admins see it in
+          the exact place they configure the label.
+        -working: true
+        -agent: "testing"
+        -comment: "See combined verification comment in first task above."
+
+metadata:
+  updated_by: "main_agent"
+  updated_at: "2026-07-06"
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Two related fixes ready for verification (backend-only, no browser
+      UI tests).
+
+      TEST 1 — MERCHANT FEED SIGNALS
+
+        curl http://localhost:3000/merchant-feed.xml -o /tmp/feed.xml
+        xmllint --noout /tmp/feed.xml  (must exit 0)
+
+        Count assertions — all four counts must be EQUAL, and > 0
+        (should be 57 on the preview pod; some variance is fine):
+          n1 = grep -c '<item>'                     /tmp/feed.xml
+          n2 = grep -c '<g:return_policy_label>'    /tmp/feed.xml
+          n3 = grep -c '<g:return_policy>'          /tmp/feed.xml
+          n4 = grep -c '<g:return_shipping_fee>'    /tmp/feed.xml
+          n5 = grep -c '<g:type>free</g:type>'      /tmp/feed.xml
+        Every <return_shipping_fee> block must carry <g:type>free</g:type>
+        so n4 == n5.
+
+        Structural assertions per block (grep-based is fine):
+          • Inside every <g:return_policy> block there must be exactly
+            <g:country> and <g:policy>30</g:policy>, and NO <g:label>
+            sub-attribute (the label lives at top level).  Assert:
+              grep -c '<g:label>' /tmp/feed.xml   =>  0
+          • Sample the first item and verify the exact sequence:
+              <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+              <g:return_policy>
+                <g:country>{US or region code}</g:country>
+                <g:policy>30</g:policy>
+              </g:return_policy>
+              <g:return_shipping_fee>
+                <g:type>free</g:type>
+              </g:return_shipping_fee>
+
+        Regression:
+          • Feed still contains <g:service>Digital download (instant by email)</g:service>
+            for regular product items (pre-existing signal — grep -c must be > 0)
+          • Feed still contains <g:service>Digital delivery by email</g:service>
+            for Protection Hub plan items (grep -c > 0)
+
+        Opt-out:
+          mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='merchant_return_policy_label';"
+          Refetch feed → ALL of n2, n3, n4 must be 0 (setting-off omits
+          every return block including the new shipping-fee one).
+          Restore:
+          mysql -uroot ucode_store -e "UPDATE settings SET v='maventech-30-day-refund' WHERE k='merchant_return_policy_label';"
+
+      TEST 2 — ADMIN SETUP GUIDE
+
+        Not testable via curl (auth-gated), so verify via DB + file:
+          • grep -c 'admin-return-policy-guide' /app/php-version/admin.php >= 1
+          • grep -c 'admin-return-policy-copy'  /app/php-version/admin.php >= 1
+          • grep -c 'Do NOT choose'             /app/php-version/admin.php >= 1
+            (that phrase is inside the critical step-7 warning)
+          • grep -c 'Return shipping fee'       /app/php-version/admin.php >= 1
+          • grep -c 'Contradictory rules'       /app/php-version/admin.php >= 1
+
+      Do NOT re-test anything from previous iterations.  If any assertion
+      fails, report the diff and stop.
+    -agent: "testing"
+    -message: |
+      ✅ GOOGLE MERCHANT CENTER BUG FIX VERIFICATION COMPLETE — ALL TESTS PASSED
+      
+      Executed comprehensive backend testing per the detailed review request. Both TEST 1 (Merchant feed signals) and TEST 2 (Admin setup guide) PASSED with no issues.
+      
+      SUMMARY:
+      
+      TEST 1 — MERCHANT FEED SIGNALS: ✅ PASS
+      - Feed serves cleanly: HTTP 200, 144,945 bytes, XML well-formed (xmllint exit 0)
+      - Count assertions: All 5 counts equal 57 (items=57, return_policy_label=57, return_policy=57, return_shipping_fee=57, type=free=57)
+      - Structural assertions: Inline <g:label> count = 0 (cleaned up), first item's return block structure correct
+      - Regression checks: "Digital download (instant by email)" = 37, "Digital delivery by email" = 20 (pre-existing signals preserved)
+      - Opt-out check: Blanked setting → 0 labels/policies/shipping-fees, restored setting → all reappear (57 each)
+      
+      TEST 2 — ADMIN SETUP GUIDE: ✅ PASS
+      - All 5 required testids/phrases present in admin.php:
+        * admin-return-policy-guide: 1
+        * admin-return-policy-copy: 1
+        * "Do NOT choose": 1
+        * "Return shipping fee": 1
+        * "Contradictory rules": 1
+      
+      CONCLUSION:
+      ✅ Both bug fixes verified and working correctly.
+      
+      FIX 1: Feed now emits <g:return_shipping_fee><g:type>free</g:type> on every item (57/57) → resolves "customer pays return shipping" contradiction.
+      
+      FIX 2: Simplified inline <g:return_policy> to country + policy=30 only (removed duplicated <g:label> sub-attr) → top-level <g:return_policy_label> no longer has a competitor → Products column should now bind correctly.
+      
+      FIX 3: Admin panel has 9-step setup guide (data-testid="admin-return-policy-guide") with critical warning about "Return shipping fee = Free".
+      
+      NET EFFECT:
+      - "Contradictory rules" flag should disappear (free return shipping declared at product level).
+      - Products column should change from "-" to the count of covered products once merchant creates the account-level policy following the admin guide.
+      
+      Bug fixes are production-ready. No code modifications made during testing (verification only).
+      
+      NEXT STEPS FOR MAIN AGENT:
+      - Both tasks verified successfully with no issues found.
+      - Ask main agent to summarize and finish.

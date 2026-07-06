@@ -422,34 +422,53 @@ foreach ($products as $p) {
     echo "      </g:shipping>\n";
     echo "      <g:shipping_weight>0 kg</g:shipping_weight>\n";
 
-    /* Return policy — links this product to the account-level policy
-       configured in Merchant Center (Settings → Shipping and returns →
-       Return policies).  The customer-facing policy is documented at
-       /page.php?slug=refund-policy: 30-day money-back guarantee, no
-       questions asked, no shipping required (digital licences).
+    /* Return policy — binds this product to the account-level Return
+       Policy configured in Google Merchant Center (Settings → Shipping
+       and returns → Return policies).  The customer-facing policy is
+       documented at /page.php?slug=refund-policy — 30-day money-back
+       guarantee, no questions asked, digital process (no physical
+       return required).
 
-       Emits TWO overlapping signals so Merchant Center recognises the
-       product as "actively covered":
+       Emits THREE overlapping signals so Merchant Center's dashboard
+       reports products as "actively covered by policy" AND explicitly
+       flags returns as FREE (no shipping cost to the customer) — which
+       resolves the "customer responsibility for return costs"
+       contradiction Google's policy bots raise on digital-only feeds:
 
-         1. <g:return_policy_label>  — links the item to the merchant's
-            saved account-level policy by its label.  This is what
-            Google's UI checks when it shows a product as covered.
+         1. <g:return_policy_label>   — top-level attribute, binds the
+            item to the merchant's saved account-level policy by its
+            exact label.  This is what the Merchant Center "Products"
+            column reads when it shows N products covered by policy.
+            Google spec ref: support.google.com/merchants/answer/14011730
 
-         2. <g:return_policy> block  — self-contained fallback with
-            country + policy (30 days) + label, so Merchant Center still
-            has a valid policy even before the merchant creates the
-            account-level entry (or if the label temporarily doesn't
-            match).  Uses the exact sub-attribute tag names
-            (<g:country>/<g:policy>/<g:label>) required by the RSS spec.
-       If the admin blanks the label in Admin → SEO, both blocks are
-       omitted so the account-level default takes over transparently. */
+         2. <g:return_policy> block   — self-contained inline fallback
+            (country + policy days) so the item ALWAYS carries a valid
+            30-day return signal even if the merchant hasn't finished
+            configuring the account-level policy yet.  We intentionally
+            OMIT the <g:label> sub-attribute inside this block so it
+            doesn't compete with the top-level label attribute above.
+
+         3. <g:return_shipping_fee>   — declares returns are FREE
+            (customer pays $0.00 to return).  Digital keys have no
+            physical return, so return-shipping cost is definitionally
+            zero — emitting this explicitly counters the "customer
+            responsibility for return costs" flag on the Merchant
+            Center dashboard's Return-Policy page.
+
+       If the admin blanks the label in Admin → SEO, all three blocks
+       are omitted so the account-level default takes over transparently. */
     if ($returnPolicyLabel !== '') {
         echo "      <g:return_policy_label>" . feed_xml_esc($returnPolicyLabel) . "</g:return_policy_label>\n";
         echo "      <g:return_policy>\n";
         echo "        <g:country>" . $country . "</g:country>\n";
         echo "        <g:policy>" . $returnPolicyDays . "</g:policy>\n";
-        echo "        <g:label>"  . feed_xml_esc($returnPolicyLabel) . "</g:label>\n";
         echo "      </g:return_policy>\n";
+        // Free returns — digital licence keys carry no physical return
+        // shipment, so the cost to return is $0.  This is the signal
+        // that resolves Google's "customer pays return costs" contradiction.
+        echo "      <g:return_shipping_fee>\n";
+        echo "        <g:type>free</g:type>\n";
+        echo "      </g:return_shipping_fee>\n";
     }
 
     /* <g:free_shipping_threshold> was previously emitted as a scalar
@@ -536,14 +555,18 @@ foreach ($hubPlans as $plan) {
         echo "      </g:shipping>\n";
         // Same 30-day money-back guarantee applies to subscription plans —
         // bind the plan to the merchant's account-level return policy so
-        // Merchant Center dashboard reports plans as "actively covered".
+        // the Merchant Center dashboard reports plans as "actively covered".
+        // Emits the FREE return-shipping-fee too so digital plans clear
+        // the "customer pays return costs" contradiction check.
         if ($returnPolicyLabel !== '') {
             echo "      <g:return_policy_label>" . feed_xml_esc($returnPolicyLabel) . "</g:return_policy_label>\n";
             echo "      <g:return_policy>\n";
             echo "        <g:country>{$countryC}</g:country>\n";
             echo "        <g:policy>{$returnPolicyDays}</g:policy>\n";
-            echo "        <g:label>"  . feed_xml_esc($returnPolicyLabel) . "</g:label>\n";
             echo "      </g:return_policy>\n";
+            echo "      <g:return_shipping_fee>\n";
+            echo "        <g:type>free</g:type>\n";
+            echo "      </g:return_shipping_fee>\n";
         }
         echo "      <g:custom_label_0>" . feed_xml_esc($brand) . "</g:custom_label_0>\n";
         echo "      <g:custom_label_1>" . feed_xml_esc($regCode) . "</g:custom_label_1>\n";
