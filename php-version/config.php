@@ -100,7 +100,18 @@ define('BAIDU_SITE_VERIFICATION',  getenv('BAIDU_SITE_VERIFICATION')  ?: '');
 // saved in the admin panel. A value saved in admin → SEO / Tracking ALWAYS
 // overrides the default below (the admin panel writes to the settings table,
 // which is read first; these constants are only the fallback).
-define('GA4_MEASUREMENT_ID', getenv('GA4_MEASUREMENT_ID') ?: 'G-9824E82NN1');   // G-XXXXXXXXXX (GA4)
+// GA4_MEASUREMENT_ID intentionally defaults to '' — the previous baked-in default
+// (G-9824E82NN1) belongs to a GA4 property that now returns HTTP 404 on
+// https://www.googletagmanager.com/gtag/js?id=G-9824E82NN1 (property was
+// deleted at Google's end). Every page load was silently firing a
+// gtag('config','G-9824E82NN1') call, which triggers a secondary gtag.js
+// fetch from googletagmanager.com — that request 404s (Lighthouse /
+// PageSpeed flags it under "Console errors" and it costs main-thread /
+// network time for zero analytics benefit). Set your own live G-XXXXXXXXXX
+// id in Admin → SEO & Tracking (or via the GA4_MEASUREMENT_ID env var).
+// Leaving it empty simply disables the GA4 config call — the Google tag
+// (GT-…) loader still runs and the site keeps working normally.
+define('GA4_MEASUREMENT_ID', getenv('GA4_MEASUREMENT_ID') ?: '');                // G-XXXXXXXXXX (GA4) — blank until set in admin
 define('GOOGLE_TAG_ID',      getenv('GOOGLE_TAG_ID')      ?: 'GT-TQV4X72G');    // Google tag (gtag.js loader)
 define('GTM_CONTAINER_ID',   getenv('GTM_CONTAINER_ID')   ?: 'GTM-N6Q7FKS2');   // Google Tag Manager container
 // GOOGLE_ADS_TAG_ID intentionally defaults to '' — the previous baked-in default

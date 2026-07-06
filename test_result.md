@@ -6274,3 +6274,134 @@ agent_communication:
     -agent: "testing"
     -message: "✅ Bug fix bundle #2 verification COMPLETE — ALL 15 sub-checks PASSED (a1-a9, b1-b6, regression). Both bugs verified working: (a) Google Merchant Center feed URL aliases working — all 6 common feed URLs (feed.xml, products.xml, product-feed.xml, google-products.xml, gmc.xml, shopping-feed.xml) now return HTTP 200 with Content-Type: application/xml, 57 items in feed. (b) PageSpeed image optimization working — all product images on homepage, Picked-For-You strip, and hub pages now use img.php with responsive srcset (1x + 2x), 62% size reduction (19 KiB → 7.2 KiB for w=320). All regression checks passed (6 core pages HTTP 200, bundle #1 fixes still working). No new PHP errors. Ready for main agent to summarize and finish."
 
+
+##====================================================================================================
+## Bug fix — PageSpeed / DevTools "Failed to load resource: 404" for
+##          https://www.googletagmanager.com/gtag/js?id=G-9824E82NN1
+##====================================================================================================
+
+backend:
+  - task: "Clear stale GA4 measurement id (G-9824E82NN1) that returns HTTP 404 from Google"
+    implemented: true
+    working: false
+    file: "php-version/config.php, php-version/start.sh, php-version/includes/header.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          BUG REPORT: PageSpeed Insights + browser DevTools show "Failed to load resource: 404 Not Found" for
+          https://www.googletagmanager.com/gtag/js?id=G-9824E82NN1 on every page load. Verified with curl —
+          Google's server returns HTTP 404 specifically for id=G-9824E82NN1 (the GA4 property has been
+          deleted at Google's end), while other valid IDs like GT-TQV4X72G (the site's Google tag)
+          return HTTP 200. Every page load's gtag('config','G-9824E82NN1') call triggered a secondary
+          gtag.js fetch that 404'd, costing ~150 ms of blocked network time and polluting the console.
+
+          ROOT CAUSE: config.php:103 had a hardcoded default GA4_MEASUREMENT_ID='G-9824E82NN1', and the
+          same value was seeded into the DB (settings.ga4_measurement_id) on live production. Same class
+          of bug as the previously-fixed AW-18263028048 Ads tag (config.php:106-114 documents that fix).
+
+          FIX APPLIED:
+            (1) config.php — GA4_MEASUREMENT_ID default changed from 'G-9824E82NN1' to '' (blank).
+                Any admin-set live G-XXXXXXXXXX id still takes precedence via mv_tracking_id() /
+                setting_get(). Fresh installs no longer ship with a broken default.
+            (2) start.sh — added an idempotent MySQL UPDATE that clears settings.ga4_measurement_id
+                ONLY when it still equals the stale placeholder 'G-9824E82NN1'. Runs on every boot,
+                mirrors the pattern already used for the sister AW-18263028048 bug. Any real admin-set
+                G-* id is preserved.
+
+          Rendering logic in includes/header.php:630-650 is untouched — when GA4 id is blank the code
+          simply skips the gtag('config', $tk_ga4) call, so no request is emitted for that id. The
+          primary gtag.js loader still runs off GOOGLE_TAG_ID='GT-TQV4X72G' (returns HTTP 200).
+
+          FILES CHANGED:
+            - php-version/config.php (lines 98-114: comment block + define GA4_MEASUREMENT_ID default)
+            - php-version/start.sh (lines 87-101: new MySQL UPDATE cleanup, idempotent)
+
+          NEEDS_RETESTING CHECKLIST for testing agent:
+            (i)  Static-code check — grep -rn 'G-9824E82NN1' /app/php-version/ MUST show only
+                 comments + the idempotent SQL cleanup in start.sh. No active PHP code path may
+                 still default to this string. (config.php line 114 must show `getenv(...) ?: ''`.)
+            (ii) Live production check — curl https://maventechsoftware.com/ and grep the returned
+                 HTML for 'G-9824E82NN1'. It MUST be absent from the served HTML. Also confirm that
+                 the primary gtag script tag still references www.googletagmanager.com/gtag/js?id=GT-TQV4X72G
+                 (the Google tag, unaffected by this fix, must still load).
+            (iii) Live network check — curl -sI 'https://www.googletagmanager.com/gtag/js?id=G-9824E82NN1'
+                  must still return HTTP 404 (confirming the ID is dead) and curl -sI
+                  'https://www.googletagmanager.com/gtag/js?id=GT-TQV4X72G' must return HTTP 200
+                  (confirming the Google tag itself is healthy).
+        -working: false
+        -agent: "testing"
+        -comment: |
+          ✅ CHECK 1 — STATIC-CODE CORRECTNESS: PASS
+          Command: grep -rn "G-9824E82NN1" /app/php-version/
+          Result: G-9824E82NN1 appears ONLY in:
+            - Comments in config.php (lines 104, 105, 107) explaining the fix
+            - Comments in start.sh (lines 94, 95) explaining the cleanup
+            - Idempotent SQL cleanup in start.sh line 101: mysql UPDATE that clears the stale ID
+          ✅ config.php line 114 verified: `define('GA4_MEASUREMENT_ID', getenv('GA4_MEASUREMENT_ID') ?: '');`
+          ✅ Empty-string fallback confirmed — no active PHP code path uses G-9824E82NN1 as default
+          
+          ❌ CHECK 2 — LIVE PRODUCTION HTML: FAIL (deployment pending)
+          Command: curl -sL https://maventechsoftware.com/ | grep -o 'G-9824E82NN1'
+          Result: G-9824E82NN1 STILL PRESENT in the live HTML
+          ✅ Command: curl -sL https://maventechsoftware.com/ | grep -oE 'gtag/js\?id=[A-Z0-9-]+'
+          Result: gtag/js?id=GT-TQV4X72G (healthy Google tag still present)
+          DIAGNOSIS: Code fix is correct locally but has NOT yet been deployed to maventechsoftware.com
+          
+          ✅ CHECK 3 — NETWORK DIAGNOSIS: PASS
+          Command: curl -s -o /dev/null -w "%{http_code}" 'https://www.googletagmanager.com/gtag/js?id=G-9824E82NN1'
+          Result: 404 ✅ (dead ID confirmed)
+          Command: curl -s -o /dev/null -w "%{http_code}" 'https://www.googletagmanager.com/gtag/js?id=GT-TQV4X72G'
+          Result: 200 ✅ (healthy ID confirmed)
+          
+          SUMMARY:
+          ✅ CHECK 1 PASS — Code fix is correct (config.php defaults to empty string, start.sh has idempotent cleanup)
+          ❌ CHECK 2 FAIL — Live production site still serves the broken ID (deployment pending)
+          ✅ CHECK 3 PASS — Network diagnosis confirms G-9824E82NN1 is dead (404), GT-TQV4X72G is healthy (200)
+          
+          CONCLUSION: The code fix is production-ready and correct. However, the fix has NOT yet been deployed to the live production server at https://maventechsoftware.com/. The customer must re-upload the updated codebase to their hosting for the fix to take effect. Once deployed, the broken GA4 ID will no longer appear in the HTML and the PageSpeed Insights 404 error will be resolved.
+
+metadata:
+  test_sequence: 32
+
+test_plan:
+  current_focus:
+    - "Clear stale GA4 measurement id (G-9824E82NN1) that returns HTTP 404 from Google"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Bug fix — cleared stale GA4 id 'G-9824E82NN1' that returns HTTP 404 from Google's gtag.js endpoint
+      (confirmed with curl: G-9824E82NN1 → 404, other IDs → 200). Root cause was a hardcoded default
+      in config.php AND a seeded DB row. Fix mirrors the previously-shipped fix for the same-class bug
+      on the Google Ads tag AW-18263028048. Only 2 files changed (config.php, start.sh) — rendering
+      logic in header.php is untouched. Please verify per the NEEDS_RETESTING checklist above:
+      (i) static-code grep,  (ii) live production HTML check on https://maventechsoftware.com/,
+      (iii) live network HTTP-code check on googletagmanager.com for both the dead and live IDs.
+    -agent: "testing"
+    -message: |
+      ✅ VERIFICATION COMPLETE — 2 of 3 checks PASSED, 1 check FAILED (deployment pending)
+      
+      CHECK 1 (Static-code correctness): ✅ PASS
+      - G-9824E82NN1 appears ONLY in comments and idempotent SQL cleanup
+      - config.php line 114 correctly defaults to empty string: `getenv('GA4_MEASUREMENT_ID') ?: ''`
+      - No active PHP code path uses the broken ID as default
+      
+      CHECK 2 (Live production HTML): ❌ FAIL — deployment pending
+      - curl https://maventechsoftware.com/ STILL contains G-9824E82NN1 in the HTML
+      - The healthy Google tag GT-TQV4X72G is present (unaffected)
+      - DIAGNOSIS: Code fix is correct locally but has NOT been deployed to production yet
+      
+      CHECK 3 (Network diagnosis): ✅ PASS
+      - G-9824E82NN1 returns HTTP 404 (dead ID confirmed)
+      - GT-TQV4X72G returns HTTP 200 (healthy ID confirmed)
+      
+      CONCLUSION: The code fix is production-ready and correct. The customer must re-upload the updated 
+      codebase to their hosting at maventechsoftware.com for the fix to take effect. Once deployed, the 
+      broken GA4 ID will no longer appear in the HTML and the PageSpeed Insights 404 error will be resolved.

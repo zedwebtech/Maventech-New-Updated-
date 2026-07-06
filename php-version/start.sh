@@ -90,6 +90,15 @@ mysql -uroot ucode_store -e "ALTER TABLE orders ADD COLUMN IF NOT EXISTS gw_mode
 # row still holds that stale value, empty it so no 404-ing secondary gtag.js
 # request is emitted. Any OTHER admin-set AW-* id is preserved. Idempotent.
 mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='google_ads_tag_id' AND v='AW-18263028048'" 2>/dev/null || true
+# GA4 measurement id cleanup — SAME class of bug: the previously baked-in
+# placeholder G-9824E82NN1 belongs to a GA4 property that has since been
+# deleted at Google, so every page-load's gtag('config','G-9824E82NN1') call
+# triggers a secondary gtag.js fetch that returns HTTP 404 (surfaced by
+# Lighthouse / PageSpeed under "Console errors" and by browser DevTools as
+# a failed network request). If the merchant's `settings` row still holds
+# that stale value, clear it so no broken analytics config call is emitted.
+# Any OTHER admin-set G-* id is preserved. Idempotent.
+mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='ga4_measurement_id' AND v='G-9824E82NN1'" 2>/dev/null || true
 # Google Merchant Center compliance — cap aggressive MSRP discounts at 35%.
 # The original seed had several products with 60–81% "spread" between
 # `original_price` (MSRP) and `price`, which Google's automated review reads
