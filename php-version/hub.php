@@ -259,7 +259,7 @@ include __DIR__ . '/includes/header.php';
            onmouseover="this.style.borderColor='<?= esc($topic['color']) ?>';this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(15,23,42,.06)'"
            onmouseout="this.style.borderColor='#e2e8f0';this.style.transform='none';this.style.boxShadow='none'">
           <div class="d-flex align-items-center gap-3 mb-2">
-            <img src="<?= esc($p['image']) ?>" alt="<?= esc($p['name']) ?>" style="width:64px;height:64px;object-fit:contain;flex-shrink:0;" loading="lazy" decoding="async">
+            <img <?= product_img_attrs($p['image'], 64) ?> alt="<?= esc($p['name']) ?>" style="width:64px;height:64px;object-fit:contain;flex-shrink:0;" loading="lazy" decoding="async">
             <div class="flex-grow-1" style="min-width:0;">
               <div class="fw-bold text-truncate" style="color:#0f172a;font-size:14px;" title="<?= esc($p['name']) ?>"><?= esc($p['name']) ?></div>
               <div class="d-flex align-items-center gap-2 mt-1">

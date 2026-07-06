@@ -99,7 +99,7 @@ include __DIR__ . '/includes/header.php';
                     ['assets/images/os/windows.svg', 'Microsoft Windows'],
                 ];
                 foreach ($heroIcons as $i => [$src, $label]): ?>
-                  <span class="hero-big-icon<?= $i === 0 ? ' active' : '' ?>" data-testid="hero-big-icon-<?= $i ?>"><img src="<?= esc($src) ?>" alt="<?= esc($label) ?>" title="<?= esc($label) ?>" loading="<?= $i === 0 ? 'eager' : 'lazy' ?>" decoding="async" width="200" height="200" <?= $i === 0 ? 'fetchpriority="high"' : '' ?>></span>
+                  <span class="hero-big-icon<?= $i === 0 ? ' active' : '' ?>" data-testid="hero-big-icon-<?= $i ?>"><img <?= product_img_attrs($src, 200) ?> alt="<?= esc($label) ?>" title="<?= esc($label) ?>" loading="<?= $i === 0 ? 'eager' : 'lazy' ?>" decoding="async" width="200" height="200" <?= $i === 0 ? 'fetchpriority="high"' : '' ?>></span>
                 <?php endforeach; ?>
                 <div class="glass-card gc-code">
                   <div class="gc-dots"><i></i><i></i><i></i></div>
@@ -338,7 +338,7 @@ include __DIR__ . '/includes/header.php';
           <?php /* Discount % badge removed at user request. */ ?>
           <a href="product.php?slug=<?= esc($p['slug']) ?>" class="d-block">
             <div class="strip-img">
-              <img src="<?= esc($p['image']) ?>" alt="<?= esc(product_img_alt($p)) ?>" title="<?= esc($p['name']) ?>" loading="lazy" decoding="async" width="200" height="200">
+              <img <?= product_img_attrs($p['image'], 200) ?> alt="<?= esc(product_img_alt($p)) ?>" title="<?= esc($p['name']) ?>" loading="lazy" decoding="async" width="200" height="200">
             </div>
           </a>
           <div class="card-body d-flex flex-column p-3">

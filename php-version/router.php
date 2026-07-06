@@ -369,7 +369,24 @@ if ($path === '/merchant-feed.xml'
     || $path === '/feed/bing-shopping.xml'
     || $path === '/feeds/bing-shopping.xml'
     || $path === '/bing-shopping-feed.xml'
-    || $path === '/microsoft-merchant-feed.xml') {
+    || $path === '/microsoft-merchant-feed.xml'
+    // 2026-07 bug fix: Merchant Center reported "Feed file is in a format
+    // that we don't support: HTML" because the merchant registered a feed
+    // URL that didn't exist (feed.xml / products.xml) → server returned
+    // the HTML 404 page.  These extra aliases guarantee that ANY of the
+    // common merchant-feed URL guesses returns the real RSS 2.0 XML.
+    || $path === '/feed.xml'
+    || $path === '/products.xml'
+    || $path === '/product-feed.xml'
+    || $path === '/google-products.xml'
+    || $path === '/shopping-feed.xml'
+    || $path === '/shopping.xml'
+    || $path === '/gmc.xml'
+    || $path === '/gmc-feed.xml'
+    || $path === '/merchant.xml'
+    || $path === '/feeds/products.xml'
+    || $path === '/meta-catalog.xml'
+    || $path === '/facebook-catalog.xml') {
     require __DIR__ . '/merchant-feed.php';
     return true;
 }

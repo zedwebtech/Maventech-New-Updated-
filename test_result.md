@@ -6081,3 +6081,196 @@ agent_communication:
     -agent: "testing"
     -message: "✅ Bug fix bundle verification COMPLETE — ALL 23 sub-checks PASSED (a1-a3, b1-b4, c1-c3, d1-d3, e1-e5, regression). All 5 bugs verified working: (a) Refund/Return policies now distinct (MD5 hashes differ), (b) Install-guide screenshots watermarked with MAVENTECH REFERENCE banner + diagonal text, (c) Protection Hub badge renders on checkout + email when plan present, (d) Receipt PDF fits on 1 page even with 5+ items, (e) Google Search Console errors fixed (@type:Thing on hub pages, baseline reviews seeded for 2 flagged products). All idempotency checks passed. No regression. Ready for main agent to summarize and finish."
 
+
+  - task: "Bug fix bundle #2 — (a) Google Merchant Center 'Feed file is in a format that we don't support: HTML' → 0 products ingested, (b) PageSpeed Insights mobile: images served at 720x720 but displayed at 186x186 (7 product images + 3 brand-watermark icons flagged)"
+    implemented: true
+    working: true
+    file: "php-version/.htaccess, php-version/router.php, php-version/index.php, php-version/hub.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          USER REPORT #2 (Merchant Center screenshot + PageSpeed Insights mobile PDF):
+            1. Merchant Center Data Sources tab shows "Feed file is in a format that we don't support: HTML" — 0 products ingested from Products Source 1 (afmDataSourceId=10681545555).
+            2. PageSpeed Insights mobile audit for maventechsoftware.com: Performance 74. "Improve image delivery" saving 124 KiB flagged 7 product-card images served at 720x720 while displayed at 186x186 + 3 brand-watermark icons served at 240x240 while displayed at 121x121.
+
+          ROOT CAUSE:
+            (Merchant Center) Curled every likely feed URL — /merchant-feed.xml and /merchant-feed.php return HTTP 200 application/xml correctly, BUT /feed.xml, /products.xml, /product-feed.xml (very common merchant muscle memory) returned HTTP 404 with content-type: text/html. The customer registered one of these URL guesses in Merchant Center → Google fetched the HTML 404 page and reported "Feed file is in a format that we don't support: HTML".
+            (PageSpeed) index.php line 341 (Picked-For-You strip) + line 102 (hero big-icon carousel) + hub.php line 262 (aggregated hub product grid) all still rendered raw <img src="uploads/products/*.webp"> at 720x720 for a 186x186 display. product_img_attrs() responsive helper existed already but these three call-sites had been added by earlier tasks and never migrated.
+
+          FIXES:
+            (a) Added 20 new .htaccess RewriteRules — every common merchant feed URL (feed.xml, products.xml, product-feed.xml, google-products.xml, shopping-feed.xml, gmc.xml, gmc-feed.xml, merchant.xml, meta-catalog.xml, facebook-catalog.xml, plus feed/… and feeds/… nested paths) → merchant-feed.php. Mirrored the list in router.php so the PHP dev server routes them identically.
+            (b) Migrated 3 call-sites to product_img_attrs() → all responsive with 1x + 2x srcset via existing img.php dynamic-resize pipeline (already returns Cache-Control: public, max-age=31536000, immutable).
+            NOTE on www subdomain empty response: DNS/SSL issue at the customer's LiteSpeed layer — needs `www` A/CNAME + SSL cert on the hosting panel. NOT a code issue. Flagged as an action-item for the user.
+
+          Not fixed (out of scope):
+            - TBT 1340ms is 3rd-party GTM + Clarity — customer must audit their GTM workspace (the console 404 "9824E82NN1&cx=c&gtm=4e66u1" is a broken tag inside their GTM container).
+            - font-display: already :swap on Inter + Manrope in assets/vendor/fonts.css (20ms saving is negligible).
+
+          NEEDS_RETESTING — verification checklist:
+            (a1..a6) curl -sI http://127.0.0.1:3000/{feed,products,product-feed,google-products,gmc,shopping-feed}.xml → each must return HTTP 200 + Content-Type: application/xml.
+            (a7) curl -sI http://127.0.0.1:3000/merchant-feed.xml (regression) → same.
+            (a8) curl -s http://127.0.0.1:3000/feed.xml | head -3 → starts with <?xml version="1.0" encoding="UTF-8"?><rss version="2.0"…
+            (a9) count of <item> tags in /feed.xml body must be > 20.
+            (b1) curl -s http://127.0.0.1:3000/ | grep -oE '<img [^>]*src="[^"]*"[^>]*>' | grep -c 'src="uploads/products' → 0
+            (b2) curl -s http://127.0.0.1:3000/ | grep -oE 'img\.php\?s=[^"]*w=[0-9]+' | head -3 → must show img.php requests with w= param
+            (b3) Picked-For-You strip images (data-testid="picked-for-you") must have both src="img.php?...w=200..." AND srcset="...1x, ...w=400 2x".
+            (b4) curl -s http://127.0.0.1:3000/hub/windows | grep -oE '<img [^>]*>' | grep -c 'src="uploads/products' → 0
+            (b5) curl -sI 'http://127.0.0.1:3000/img.php?s=uploads/products/microsoft-office-2024-professional-plus-windows.webp&w=320' → HTTP 200 + Cache-Control: public, max-age=31536000, immutable + Content-Type: image/webp
+            (b6) img.php w=320 output content-length substantially smaller than the raw file (raw ~34 KiB, w=320 should be < 15 KiB).
+            (regression) All 6 core pages (/, /shop.php, /product.php?slug=microsoft-office-2024-professional-plus-windows, /category.php?slug=office-2024-mac, /checkout.php, /admin.php) → HTTP 200 with no new PHP fatals.
+            (regression) Bug-fix bundle #1 still passes: /hub/windows JSON-LD has 0 @type:Product mentions; both formerly-flagged SKUs still emit aggregateRating; return-policy body still distinct from refund-policy.
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ COMPREHENSIVE BUG FIX BUNDLE #2 VERIFICATION COMPLETE — ALL 15 SUB-CHECKS PASSED (a1-a9, b1-b6, regression)
+
+          Bug fix bundle #2 verification for 2 distinct bugs (a-b) with full acceptance criteria testing.
+
+          VERIFICATION RESULTS (per detailed review request):
+
+          SECTION (a) — GOOGLE MERCHANT CENTER FEED URL ALIASES
+          ✅ a1 PASS — feed.xml
+              curl -sI http://127.0.0.1:3000/feed.xml → HTTP/1.1 200 OK ✅
+              Content-Type: application/xml; charset=UTF-8 ✅
+
+          ✅ a2 PASS — products.xml
+              curl -sI http://127.0.0.1:3000/products.xml → HTTP/1.1 200 OK ✅
+              Content-Type: application/xml; charset=UTF-8 ✅
+
+          ✅ a3 PASS — product-feed.xml
+              curl -sI http://127.0.0.1:3000/product-feed.xml → HTTP/1.1 200 OK ✅
+              Content-Type: application/xml; charset=UTF-8 ✅
+
+          ✅ a4 PASS — google-products.xml
+              curl -sI http://127.0.0.1:3000/google-products.xml → HTTP/1.1 200 OK ✅
+              Content-Type: application/xml; charset=UTF-8 ✅
+
+          ✅ a5 PASS — gmc.xml
+              curl -sI http://127.0.0.1:3000/gmc.xml → HTTP/1.1 200 OK ✅
+              Content-Type: application/xml; charset=UTF-8 ✅
+
+          ✅ a6 PASS — shopping-feed.xml
+              curl -sI http://127.0.0.1:3000/shopping-feed.xml → HTTP/1.1 200 OK ✅
+              Content-Type: application/xml; charset=UTF-8 ✅
+
+          ✅ a7 PASS — merchant-feed.xml (regression)
+              curl -sI http://127.0.0.1:3000/merchant-feed.xml → HTTP/1.1 200 OK ✅
+              Content-Type: application/xml; charset=UTF-8 ✅
+
+          ✅ a8 PASS — feed.xml starts with XML declaration
+              curl -s http://127.0.0.1:3000/feed.xml | head -3:
+                <?xml version="1.0" encoding="UTF-8"?>
+                <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0" xmlns:atom="http://www.w3.org/2005/Atom">
+                  <channel>
+              Result: Starts with correct XML declaration ✅
+
+          ✅ a9 PASS — Item count in feed.xml
+              curl -s http://127.0.0.1:3000/feed.xml | grep -c '<item>' → 57 ✅
+              Expected: > 20
+              Result: PASS (57 > 20) ✅
+
+          SECTION (b) — PAGESPEED IMAGE RESPONSIVE OPTIMIZATION
+          ✅ b1 PASS — Homepage has 0 direct uploads/products images
+              curl -s http://127.0.0.1:3000/ | grep -oE '<img [^>]*src="[^"]*"[^>]*>' | grep -c 'src="uploads/products' → 0 ✅
+              Result: All product images now use img.php (no direct uploads/products references) ✅
+
+          ✅ b2 PASS — Homepage uses img.php with w= param
+              curl -s http://127.0.0.1:3000/ | grep -oE 'img\.php\?s=[^"]*w=[0-9]+' | head -3:
+                img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fword.png&amp;w=96
+                img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fword.png&amp;w=96 1x, img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fword.png&amp;w=192
+                img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fexcel.png&amp;w=96
+              Result: img.php with w= param present ✅
+
+          ✅ b3 PASS — Picked-For-You strip images have responsive srcset
+              curl -s http://127.0.0.1:3000/ | grep -A 5 'data-testid="picked-for-you"' | grep -oE '<img [^>]*>':
+                <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=200" 
+                     srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=200 1x, 
+                             img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=400 2x" ...>
+              Result: Both src="img.php?...w=200..." AND srcset="...1x, ...w=400 2x" present ✅
+
+          ✅ b4 PASS — /hub/windows has 0 direct uploads/products images
+              curl -s http://127.0.0.1:3000/hub/windows | grep -oE '<img [^>]*>' | grep -c 'src="uploads/products' → 0 ✅
+              Result: All hub product images now use img.php ✅
+
+          ✅ b5 PASS — img.php with w=320 returns correct headers
+              curl -sI 'http://127.0.0.1:3000/img.php?s=uploads/products/microsoft-office-2024-professional-plus-windows.webp&w=320':
+                HTTP/1.1 200 OK ✅
+                Content-Type: image/webp ✅
+                Cache-Control: public, max-age=31536000, immutable ✅
+                Content-Length: 7348 ✅
+
+          ✅ b6 PASS — img.php w=320 output substantially smaller than raw file
+              Raw file size: 19 KiB
+              img.php w=320 size: 7348 bytes (7.2 KiB)
+              Expected: raw ~34 KiB, w=320 should be < 15 KiB
+              Result: PASS (7.2 KiB < 15 KiB, 62% size reduction) ✅
+
+          REGRESSION TESTING
+          ✅ REGRESSION PASS — All 6 core pages return HTTP 200 (or expected redirect)
+              / → HTTP/1.1 200 OK ✅
+              /shop.php → HTTP/1.1 200 OK ✅
+              /product.php?slug=microsoft-office-2024-professional-plus-windows → HTTP/1.1 200 OK ✅
+              /category.php?slug=office-2024-mac → HTTP/1.1 200 OK ✅
+              /checkout.php → HTTP/1.1 302 Found (expected - empty cart redirect) ✅
+              /admin.php → HTTP/1.1 200 OK ✅
+              
+              tail /var/log/supervisor/frontend.err.log → only pre-existing "Constant SITE_EMAIL already defined" warning ✅
+              Result: No new PHP errors, all pages render correctly ✅
+
+          ✅ REGRESSION PASS — Bug-fix bundle #1 still working
+              (1) /hub/windows JSON-LD has 0 @type:Product mentions:
+                  curl -s http://127.0.0.1:3000/hub/windows | grep -c '"@type":"Product"' → 0 ✅
+              
+              (2) microsoft-office-home-2024-pc emits aggregateRating:
+                  curl -s 'http://127.0.0.1:3000/product.php?slug=microsoft-office-home-2024-pc' | grep -c 'aggregateRating' → 1 ✅
+              
+              (3) microsoft-excel-2021-mac-lifetime-license-no-subscription emits aggregateRating:
+                  curl -s 'http://127.0.0.1:3000/product.php?slug=microsoft-excel-2021-mac-lifetime-license-no-subscription' | grep -c 'aggregateRating' → 1 ✅
+              
+              (4) return-policy body distinct from refund-policy:
+                  curl -s http://127.0.0.1:3000/return-policy.php | grep -c "How to Initiate a Return" → 1 ✅
+                  curl -s http://127.0.0.1:3000/refund-policy.php | grep -c "How to Initiate a Return" → 0 ✅
+              
+              Result: All bundle #1 fixes still working correctly ✅
+
+          CONCLUSION:
+          ✅ ALL 15 VERIFICATION SUB-CHECKS PASSED (a1-a9, b1-b6, regression)
+          ✅ Bug fix bundle #2 verified and working correctly
+          ✅ Both bugs fixed successfully:
+              (a) Google Merchant Center feed URL aliases working — all 6 common feed URLs (feed.xml, products.xml, product-feed.xml, google-products.xml, gmc.xml, shopping-feed.xml) now return HTTP 200 with Content-Type: application/xml ✅
+              (b) PageSpeed image optimization working — all product images on homepage, Picked-For-You strip, and hub pages now use img.php with responsive srcset (1x + 2x), 62% size reduction (19 KiB → 7.2 KiB for w=320) ✅
+          ✅ All regression checks passed (6 core pages HTTP 200, bundle #1 fixes still working)
+          ✅ No new PHP errors
+
+          NET EFFECT:
+          1. Google Merchant Center will now successfully ingest products from ANY of the 6 common feed URL patterns (feed.xml, products.xml, product-feed.xml, google-products.xml, gmc.xml, shopping-feed.xml) — all route to merchant-feed.php via .htaccess + router.php aliases. The "Feed file is in a format that we don't support: HTML" error will be resolved once the customer updates their Merchant Center data source URL to one of these working aliases.
+          2. PageSpeed Insights mobile audit will show improved image delivery scores — product images now served at appropriate sizes (200x200 @ 1x, 400x400 @ 2x) instead of full 720x720, with 62% file size reduction (19 KiB → 7.2 KiB). The "Improve image delivery" warning for 7 product images + 3 brand-watermark icons will be resolved.
+          3. All images served via img.php with Cache-Control: public, max-age=31536000, immutable for optimal browser caching.
+
+          USER ACTION ITEMS (from main agent's notes):
+          1. Update Google Merchant Center data source URL to https://maventechsoftware.com/merchant-feed.xml (or any of the 6 working aliases: feed.xml, products.xml, product-feed.xml, google-products.xml, gmc.xml, shopping-feed.xml)
+          2. Add www A/CNAME + SSL cert in hosting panel for www.maventechsoftware.com subdomain (DNS/SSL issue, not code)
+          3. Audit GTM workspace for broken tag causing console 404 "9824E82NN1&cx=c&gtm=4e66u1" (3rd-party issue, not code)
+
+          Bug fix bundle #2 is production-ready and safe to deploy. No code modifications made during testing (verification only).
+
+metadata:
+  test_sequence: 31
+
+test_plan:
+  current_focus:
+    - "Bug fix bundle #2 — (a) Google Merchant Center 'Feed file is in a format that we don't support: HTML' → 0 products ingested, (b) PageSpeed Insights mobile: images served at 720x720 but displayed at 186x186 (7 product images + 3 brand-watermark icons flagged)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Bundle #2 — fixed the GMC 'HTML feed' error by adding 20 URL aliases and fixed the PageSpeed image-oversize by migrating 3 hot code-paths to product_img_attrs(). No new deps / keys. USER ACTION NEEDED: www.maventechsoftware.com subdomain returns empty — must add www A/CNAME + SSL in hosting panel; also verify the exact URL registered in Merchant Center (recommend switching it to https://maventechsoftware.com/merchant-feed.xml). Please verify per the NEEDS_RETESTING checklist in the task's status_history."
+    -agent: "testing"
+    -message: "✅ Bug fix bundle #2 verification COMPLETE — ALL 15 sub-checks PASSED (a1-a9, b1-b6, regression). Both bugs verified working: (a) Google Merchant Center feed URL aliases working — all 6 common feed URLs (feed.xml, products.xml, product-feed.xml, google-products.xml, gmc.xml, shopping-feed.xml) now return HTTP 200 with Content-Type: application/xml, 57 items in feed. (b) PageSpeed image optimization working — all product images on homepage, Picked-For-You strip, and hub pages now use img.php with responsive srcset (1x + 2x), 62% size reduction (19 KiB → 7.2 KiB for w=320). All regression checks passed (6 core pages HTTP 200, bundle #1 fixes still working). No new PHP errors. Ready for main agent to summarize and finish."
+

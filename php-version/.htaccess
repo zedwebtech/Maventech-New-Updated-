@@ -36,6 +36,34 @@ RewriteRule ^agents\.json$        agents-json.php   [L]
 RewriteRule ^robots\.txt$         robots-txt.php    [L]
 RewriteRule ^ai\.txt$             ai-txt.php        [L]
 
+# ---- Google Merchant Center / Bing Shopping / Meta Catalog: extra aliases ----
+# Google's Merchant Center accepts ANY URL that returns valid RSS/XML with the
+# g: namespace, but merchants commonly type feed URLs from muscle memory:
+# feed.xml, products.xml, google-products.xml, etc.  Without these aliases the
+# storefront returns its HTML 404 page and Merchant Center reports:
+#     "Feed file is in a format that we don't support: HTML"
+# All aliases resolve to the same merchant-feed.php generator (RSS 2.0 with
+# the g:namespace) — safe to point Merchant Center / Bing / Meta at any of them.
+RewriteRule ^feed\.xml$                   merchant-feed.php [L]
+RewriteRule ^feeds/products\.xml$         merchant-feed.php [L]
+RewriteRule ^products\.xml$               merchant-feed.php [L]
+RewriteRule ^product-feed\.xml$           merchant-feed.php [L]
+RewriteRule ^google-products\.xml$        merchant-feed.php [L]
+RewriteRule ^google-shopping-feed\.xml$   merchant-feed.php [L]
+RewriteRule ^shopping-feed\.xml$          merchant-feed.php [L]
+RewriteRule ^shopping\.xml$               merchant-feed.php [L]
+RewriteRule ^gmc\.xml$                    merchant-feed.php [L]
+RewriteRule ^gmc-feed\.xml$               merchant-feed.php [L]
+RewriteRule ^merchant\.xml$               merchant-feed.php [L]
+RewriteRule ^feed/google-products\.xml$   merchant-feed.php [L]
+RewriteRule ^feeds/google-products\.xml$  merchant-feed.php [L]
+RewriteRule ^feed/bing-shopping\.xml$     merchant-feed.php [L]
+RewriteRule ^feeds/bing-shopping\.xml$    merchant-feed.php [L]
+RewriteRule ^bing-shopping-feed\.xml$     merchant-feed.php [L]
+RewriteRule ^microsoft-merchant-feed\.xml$ merchant-feed.php [L]
+RewriteRule ^meta-catalog\.xml$           merchant-feed.php [L]
+RewriteRule ^facebook-catalog\.xml$       merchant-feed.php [L]
+
 # ============================================================================
 # SEO — Google Search Console legacy-URL clean-up (2026-07)
 # Fixes reported issues:
