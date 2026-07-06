@@ -1646,6 +1646,44 @@ footer p:has(> a[href^="tel:"]), footer p:has(> a[href^="mailto:"]) { margin-bot
 }
 .social-circle:hover { background: #06b6d4; color: #fff !important; transform: translateY(-2px); }
 
+/* --- Footer brand column: compact & aligned ------------------------------ */
+.footer-newsletter { max-width: 340px; }
+.footer-newsletter .form-control {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.14);
+  color: #fff;
+}
+.footer-newsletter .form-control::placeholder { color: rgba(255,255,255,.55); }
+.footer-newsletter .form-control:focus { border-color: rgba(103,232,249,.55); box-shadow: 0 0 0 .18rem rgba(103,232,249,.18); background: rgba(255,255,255,.10); color: #fff; }
+.footer-newsletter .btn { width: 42px; display: inline-flex; align-items: center; justify-content: center; }
+
+.footer-contact-list { padding: 0; margin: 0; }
+.footer-contact-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: .55rem;
+  padding: .32rem 0;
+  line-height: 1.4;
+  color: #cbd5e1;
+}
+.footer-contact-list li i {
+  flex-shrink: 0;
+  width: 16px;
+  font-size: .95rem;
+  margin-top: 2px;
+  text-align: center;
+}
+.footer-contact-list li a { color: #cbd5e1; text-decoration: none; transition: color .15s ease; }
+.footer-contact-list li a:hover { color: #67e8f9; text-decoration: underline; }
+
+/* Give the four footer link columns a small top offset so their h6 headings
+   optically align with the logo (which sits taller due to the icon). */
+@media (min-width: 992px) {
+  footer .col-lg-2, footer .col-lg-3 { padding-top: .55rem; }
+  footer .col-lg-2 h3, footer .col-lg-3 h3 { margin-top: .1rem; }
+}
+
+
 /* Unavailable variant options: blurred + non-interactive */
 .variant-blur {
   filter: blur(1px);

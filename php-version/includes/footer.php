@@ -23,7 +23,7 @@
     <div class="row g-4">
       <!-- Brand column -->
       <div class="col-lg-4">
-        <div class="d-flex align-items-center gap-2 mb-2">
+        <div class="d-flex align-items-center gap-2 mb-3">
           <?php if (!empty($brandLogo)): ?>
             <?= brand_logo_html(42, 'width="140" height="42" loading="lazy" decoding="async"') ?>
           <?php else: ?>
@@ -41,32 +41,38 @@
             <?php endif; ?>
           </span>
         </div>
-        <p class="small">Your trusted source for genuine Microsoft Office licenses at competitive prices. Digital delivery by email, one-time purchase with no recurring fees, and dedicated order-fulfillment support.</p>
+        <p class="small mb-3" style="line-height:1.55;">Your trusted source for genuine Microsoft Office licenses at competitive prices. One-time purchase — no recurring fees.</p>
 
+        <!-- Newsletter -->
         <div class="small fw-bold text-white mb-2">Subscribe for Deals</div>
-        <form class="d-flex gap-2 mb-3" style="max-width: 320px;" onsubmit="subscribeNewsletter(event)">
+        <form class="d-flex gap-2 mb-4 footer-newsletter" onsubmit="subscribeNewsletter(event)">
           <input type="email" required class="form-control form-control-sm" placeholder="Enter your email" aria-label="Email address for deals newsletter">
-          <button class="btn btn-sm btn-primary" type="submit" aria-label="Subscribe to deals newsletter"><i class="bi bi-arrow-right"></i></button>
+          <button class="btn btn-sm btn-primary flex-shrink-0" type="submit" aria-label="Subscribe to deals newsletter"><i class="bi bi-arrow-right"></i></button>
         </form>
 
-        <p class="small mb-1"><i class="bi bi-telephone me-2 text-info"></i><a href="tel:<?= esc(tel_e164($brandPhone)) ?>"><?= esc($brandPhone) ?></a></p>
-        <p class="small mb-1"><i class="bi bi-envelope me-2 text-info"></i><a href="mailto:<?= esc($brandEmail) ?>"><?= esc($brandEmail) ?></a></p>
-        <p class="small mb-2"><i class="bi bi-geo-alt me-2 text-info"></i><?= esc($brandAddress) ?></p>
-        <?php if ($brandRegNumber): ?><p class="small mb-2" data-testid="footer-reg-number"><i class="bi bi-patch-check me-2 text-info"></i><?= esc($brandLegalName) ?> · File No. <?= esc($brandRegNumber) ?><?php if (!empty($brandRegDateFiled)): ?> · Filed <?= esc(date('n/j/Y', strtotime((string)$brandRegDateFiled))) ?><?php endif; ?></p><?php endif; ?>
-        <a href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($brandAddress) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-light rounded-pill mb-2 gmap-btn" data-testid="footer-gmap-btn">
-          <span class="gmap-pin"><i class="bi bi-geo-alt-fill"></i></span>View on Google Maps
-        </a>
-        <p class="small mb-3"><i class="bi bi-clock me-2 text-info"></i><?= SITE_HOURS ?></p>
+        <!-- Contact block: tight vertical rhythm, aligned icons -->
+        <ul class="list-unstyled small mb-3 footer-contact-list">
+          <li><i class="bi bi-telephone-fill text-info"></i><a href="tel:<?= esc(tel_e164($brandPhone)) ?>"><?= esc($brandPhone) ?></a></li>
+          <li><i class="bi bi-envelope-fill text-info"></i><a href="mailto:<?= esc($brandEmail) ?>"><?= esc($brandEmail) ?></a></li>
+          <li><i class="bi bi-geo-alt-fill text-info"></i><?= esc($brandAddress) ?></li>
+          <li><i class="bi bi-clock-fill text-info"></i><?= SITE_HOURS ?></li>
+          <?php if ($brandRegNumber): ?><li data-testid="footer-reg-number"><i class="bi bi-patch-check-fill text-info"></i>File No. <?= esc($brandRegNumber) ?><?php if (!empty($brandRegDateFiled)): ?> · Filed <?= esc(date('n/j/Y', strtotime((string)$brandRegDateFiled))) ?><?php endif; ?></li><?php endif; ?>
+        </ul>
 
-        <div class="d-flex gap-2">
-          <?php foreach ([['Facebook', 'bi-facebook'], ['Twitter', 'bi-twitter-x'], ['LinkedIn', 'bi-linkedin'], ['Instagram', 'bi-instagram']] as [$sn, $si]): ?>
-            <a href="#top" aria-label="<?= $sn ?>" class="social-circle"><i class="bi <?= $si ?>"></i></a>
-          <?php endforeach; ?>
+        <!-- Google Maps + socials on the same visual row for compactness -->
+        <div class="d-flex align-items-center flex-wrap gap-3 mb-3">
+          <a href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($brandAddress) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-light rounded-pill gmap-btn" data-testid="footer-gmap-btn">
+            <span class="gmap-pin"><i class="bi bi-geo-alt-fill"></i></span>View on Google Maps
+          </a>
+          <div class="d-flex gap-2">
+            <?php foreach ([['Facebook', 'bi-facebook'], ['Twitter', 'bi-twitter-x'], ['LinkedIn', 'bi-linkedin'], ['Instagram', 'bi-instagram']] as [$sn, $si]): ?>
+              <a href="#top" aria-label="<?= $sn ?>" class="social-circle"><i class="bi <?= $si ?>"></i></a>
+            <?php endforeach; ?>
+          </div>
         </div>
 
-        <!-- Compliance disclaimer inline with the brand column so a single
-             transparent statement travels with the contact info block. -->
-        <p class="small mt-3 mb-0 fst-italic" style="line-height:1.5;color:#94a3b8;" data-testid="footer-brand-disclaimer">
+        <!-- Compliance disclaimer -->
+        <p class="small mb-0 fst-italic" style="line-height:1.5;color:#94a3b8;font-size:.78rem;" data-testid="footer-brand-disclaimer">
           <strong>Disclaimer:</strong> <?= esc($brandLegalName) ?> is an independent reseller of authentic software licenses. All product names, logos, and brands are property of their respective owners.
         </p>
       </div>
