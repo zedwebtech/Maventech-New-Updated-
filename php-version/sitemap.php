@@ -86,6 +86,7 @@ $groups = [
         ['Privacy Policy', 'page.php?slug=privacy-policy'],
         ['Terms of Service', 'page.php?slug=terms-of-service'],
         ['Refund Policy', 'page.php?slug=refund-policy'],
+        ['Return Policy', 'return-policy.php'],
         ['Shipping & Delivery', 'page.php?slug=shipping-delivery'],
         ['Payment Policy', 'page.php?slug=payment-policy'],
         ['Cookie Policy', 'page.php?slug=cookie-policy'],

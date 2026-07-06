@@ -4637,3 +4637,245 @@ agent_communication:
       NEXT STEPS FOR MAIN AGENT:
       - Both tasks verified successfully with no issues found.
       - Ask main agent to summarize and finish.
+
+
+#====================================================================================================
+# Feature — Dedicated /return-policy.php page + cleanup of admin descriptions
+#====================================================================================================
+
+backend:
+  - task: "Dedicated /return-policy.php page at a clean URL (mirrors refund-policy content from DB — single source of truth)"
+    implemented: true
+    working: true
+    file: "php-version/return-policy.php, php-version/includes/footer.php, php-version/sitemap.php, php-version/sitemap-xml.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          User requested a separate "Return Policy" page on the website
+          (in addition to the existing /page.php?slug=refund-policy) so
+          the URL fed to Google Merchant Center → Settings → Return
+          policies looks professional (example.com/return-policy) rather
+          than a query-string variant.
+          Implementation:
+            - New /app/php-version/return-policy.php reads the canonical
+              refund-policy content from the pages table (slug=refund-
+              policy) and renders it at the clean URL, so both URLs stay
+              in perfect sync (single source of truth).  Head <title> +
+              H1 both read "Return Policy".  data-testids:
+              return-policy-page / return-policy-title /
+              return-policy-updated / return-policy-content.
+            - Footer nav gained a "Return Policy" link right after
+              "Refund Policy" pointing at return-policy.php.
+            - Sitemap.php + sitemap-xml.php both include the new URL.
+          Verified locally: HTTP 200 (67KB), body contains
+          "30-day money-back guarantee" (7x), "no questions asked" (4x),
+          "3 business days" (3x), "deactivate" (4x) — identical policy
+          copy as the refund-policy page.
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED - Dedicated /return-policy.php page working correctly. HTTP 200 ✅. All required testids present (return-policy-page, return-policy-title) ✅. H1 and title both contain 'Return Policy' ✅. All required phrases present: 'no questions asked' (5), '30-day money-back' (9), '3 business days' (3), 'deactivate' (4), 'defective and non-defective' (1) ✅. All forbidden phrases absent: 'shipping boxes' (0), 'mail back' (0), 'restocking fee' (0), 'customer responsibility' (0) ✅. DB cross-check: content matches slug='refund-policy' (single source of truth verified) ✅. Footer link present (1 occurrence) ✅. Sitemap.php (2 occurrences) and sitemap-xml.php (7 occurrences) both include the new URL ✅."
+
+  - task: "Admin panel cleanup: remove long help-text descriptions on 4 fields + the 9-step Merchant Center guide panel — keep titles/taglines only"
+    implemented: true
+    working: true
+    file: "php-version/admin.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          User asked for a leaner admin UI: keep the field titles (they
+          are self-explanatory) but drop the long descriptions and the
+          9-step Merchant Center setup guide.  Removed all four:
+
+            1. "Leave any field blank to use the US number above as the
+               default..." — under Country-specific toll-free numbers
+               (line ~6742). Removed.
+            2. "When enabled, the GENUINE LICENSES tag appears next to
+               your logo..." — under the Genuine Licenses badge toggle
+               (line ~6779). Removed.
+            3. "When enabled, the top trust-bar shows a Save up to 10%
+               · MAVEN10 coupon strip..." — under the Promo Bar toggle
+               (line ~6795). Removed.
+            4. "Emitted as <g:return_policy_label> on every product in
+               the Merchant feed..." — under the Return Policy Label
+               input in BOTH places it appeared (SEO platform card ~5594
+               AND compact tracking form ~7032). Removed from both.
+            5. The prominent 9-step "Merchant Center dashboard setup"
+               info card (data-testid="admin-return-policy-guide") is
+               fully deleted from admin.php.
+
+          Field labels/titles all retained.  Toggle labels also tightened
+          to sit on `mb-0` since there is no longer a description below.
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED - Admin panel cleanup working correctly. All 9 removed descriptions/help-text blocks are gone (0 occurrences each): 'Leave any field blank to use the US number above' (0), 'GENUINE LICENSES.*tag appears next to your logo' (0), 'top trust-bar shows a.*coupon strip with a Shop Now' (0), 'Emitted as .code.&lt;g:return_policy_label' (0), 'Merchant Center dashboard setup (required for the label above to bind)' (0), 'admin-return-policy-guide' (0), 'admin-return-policy-copy' (0), 'Do NOT choose' (0), 'Contradictory rules' (0) ✅. All 5 field titles/labels preserved (1 occurrence each): 'Country-specific toll-free numbers' (1), 'Show \"Genuine Licenses\" badge site-wide' (1), 'Show promo bar' (1), 'Return Policy Label' (1), 'Return policy label' (1) ✅. Admin UI is now leaner with titles only, no long descriptions."
+
+metadata:
+  updated_by: "main_agent"
+  updated_at: "2026-07-06"
+
+test_plan:
+  current_focus:
+    - "Dedicated /return-policy.php page at a clean URL (mirrors refund-policy content from DB — single source of truth)"
+    - "Admin panel cleanup: remove long help-text descriptions on 4 fields + the 9-step Merchant Center guide panel — keep titles/taglines only"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Two backend + template fixes ready to verify.  Curl + grep only —
+      no browser automation needed.
+
+      TEST 1 — /return-policy.php page
+
+        curl -s -o /tmp/rp.html -w "%{http_code}" http://localhost:3000/return-policy.php
+        Assert HTTP status == 200.
+
+        Assert HTML contains (all >= 1 occurrence, case-insensitive):
+          • data-testid="return-policy-page"
+          • data-testid="return-policy-title"
+          • <h1 ...>Return Policy</h1>  (exact text "Return Policy")
+          • <title>Return Policy | ...</title>  (head title starts with "Return Policy")
+          • no questions asked
+          • 30-day money-back
+          • 3 business days
+          • deactivate
+          • defective and non-defective
+
+        Assert HTML does NOT contain (each must be 0 case-insensitive):
+          • shipping boxes
+          • mail back
+          • restocking fee
+          • customer responsibility
+
+        Cross-check that the content matches the DB refund-policy page:
+          mysql -uroot ucode_store -e "SELECT LEFT(content, 200) FROM pages WHERE slug='refund-policy'"
+          — the first ~200 chars of that value should appear inside
+          /tmp/rp.html (both point to the same DB row).
+
+        Footer link check:
+          curl -s http://localhost:3000/index.php | grep -c 'href="return-policy.php"' >= 1
+        Sitemap checks:
+          curl -s http://localhost:3000/sitemap.php     | grep -c 'return-policy.php' >= 1
+          curl -s http://localhost:3000/sitemap-xml.php | grep -c '/return-policy.php' >= 1
+
+      TEST 2 — Admin panel description cleanup
+
+        Grep the raw source file /app/php-version/admin.php.
+
+        Assert 0 occurrences of each removed description:
+          • "Leave any field blank to use the US number above"
+          • "GENUINE LICENSES.*tag appears next to your logo"
+          • "top trust-bar shows a.*coupon strip with a Shop Now"
+          • "Emitted as .code.&lt;g:return_policy_label"
+          • "Merchant Center dashboard setup (required for the label above to bind)"
+          • "admin-return-policy-guide"
+          • "admin-return-policy-copy"
+          • "Do NOT choose"
+          • "Contradictory rules"
+
+        Assert titles/tags PRESERVED (each >= 1):
+          • "Country-specific toll-free numbers"
+          • "Show \"Genuine Licenses\" badge site-wide"
+          • "Show promo bar"
+          • "Return Policy Label"  (in tracking form)
+          • "Return policy label"  (in SEO platform card, case-sensitive)
+
+      Regression:
+          curl -sI http://localhost:3000/return-policy.php | head -1
+          — status line must contain "200".
+          curl -s http://localhost:3000/merchant-feed.xml | grep -c "<g:return_policy_label>" > 0
+          — Merchant feed still emits the label attribute (previous fix
+          intact).
+
+      Do NOT test anything outside these two tests.  Report a concise
+      pass/fail summary and update test_result.md.
+    -agent: "testing"
+    -message: |
+      ✅ COMPREHENSIVE VERIFICATION COMPLETE — ALL TESTS PASSED
+
+      Executed both TEST 1 (dedicated /return-policy.php page) and TEST 2 (admin panel cleanup) per the detailed review request. All assertions PASSED with no issues.
+
+      TEST 1 — /return-policy.php PAGE: ✅ PASS
+      ----------------------------------------
+      HTTP Status: 200 ✅
+      
+      Required testids and content (all present):
+      - data-testid="return-policy-page": 1 occurrence ✅
+      - data-testid="return-policy-title": 1 occurrence ✅
+      - <h1>Return Policy</h1>: exact match found ✅
+      - <title>Return Policy | Maventech</title>: head title starts with "Return Policy" ✅
+      
+      Required phrases (all >= 1 occurrence, case-insensitive):
+      - "no questions asked": 5 occurrences ✅
+      - "30-day money-back": 9 occurrences ✅
+      - "3 business days": 3 occurrences ✅
+      - "deactivate": 4 occurrences ✅
+      - "defective and non-defective": 1 occurrence ✅
+      
+      Forbidden phrases (all must be 0, case-insensitive):
+      - "shipping boxes": 0 occurrences ✅
+      - "mail back": 0 occurrences ✅
+      - "restocking fee": 0 occurrences ✅
+      - "customer responsibility": 0 occurrences ✅
+      
+      DB cross-check:
+      - DB content (first 200 chars): "Your satisfaction is our top priority. Every order is backed by a straightforward 30-day money-back guarantee — no questions asked." ✅
+      - HTML contains matching content: 4 occurrences of "Your satisfaction is our top priority" ✅
+      - Single source of truth verified: /return-policy.php mirrors DB slug='refund-policy' content ✅
+      
+      Footer and sitemap links:
+      - Footer link (homepage): 1 occurrence of href="return-policy.php" ✅
+      - Sitemap.php: 2 occurrences of "return-policy.php" ✅
+      - Sitemap-xml.php: 7 occurrences of "/return-policy.php" ✅
+      
+      TEST 2 — ADMIN PANEL CLEANUP: ✅ PASS
+      --------------------------------------
+      Removed descriptions (all must be 0 occurrences):
+      - "Leave any field blank to use the US number above": 0 ✅
+      - "GENUINE LICENSES.*tag appears next to your logo": 0 ✅
+      - "top trust-bar shows a.*coupon strip with a Shop Now": 0 ✅
+      - "Emitted as .code.&lt;g:return_policy_label": 0 ✅
+      - "Merchant Center dashboard setup (required for the label above to bind)": 0 ✅
+      - "admin-return-policy-guide": 0 ✅
+      - "admin-return-policy-copy": 0 ✅
+      - "Do NOT choose": 0 ✅
+      - "Contradictory rules": 0 ✅
+      
+      Preserved titles (all must be >= 1 occurrence):
+      - "Country-specific toll-free numbers": 1 ✅
+      - "Show \"Genuine Licenses\" badge site-wide": 1 ✅
+      - "Show promo bar": 1 ✅
+      - "Return Policy Label" (tracking form): 1 ✅
+      - "Return policy label" (SEO platform card, case-sensitive): 1 ✅
+      
+      REGRESSION CHECKS: ✅ PASS
+      --------------------------
+      - curl -sI http://localhost:3000/return-policy.php | head -1 → HTTP/1.1 200 OK ✅
+      - Merchant feed still emits return_policy_label: 57 occurrences of <g:return_policy_label> ✅
+      
+      CONCLUSION:
+      ✅ ALL TESTS PASSED (TEST 1 + TEST 2 + REGRESSION)
+      
+      FIX 1: Dedicated /return-policy.php page working correctly:
+      - Serves HTTP 200 with clean URL (no query string)
+      - Contains all required content (30-day money-back, no questions asked, 3 business days, deactivate, defective and non-defective)
+      - Contains ZERO forbidden phrases (shipping boxes, mail back, restocking fee, customer responsibility)
+      - Mirrors DB refund-policy content (single source of truth verified)
+      - Footer link present, both sitemaps include the new URL
+      
+      FIX 2: Admin panel cleanup working correctly:
+      - All 9 removed descriptions/help-text blocks are gone (0 occurrences each)
+      - All 5 field titles/labels preserved (1 occurrence each)
+      - Admin UI is now leaner with titles only, no long descriptions
+      
+      Both features are production-ready and safe to deploy. No code modifications made during testing (verification only).

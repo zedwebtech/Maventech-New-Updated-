@@ -5589,9 +5589,8 @@ elseif ($tab === 'ai-blogger'):
                  Center (Settings → Shipping and returns → Return policies).
                  Must exactly match the "Policy label" you saved there. -->
             <div class="mt-3 pt-2" style="border-top:1px dashed #e2e8f0;">
-              <label class="small fw-semibold d-block mb-1" for="merchant_return_policy_label" style="font-size:12px;">Return policy label <span class="text-secondary fw-normal">(binds products to the account-level policy)</span></label>
+              <label class="small fw-semibold d-block mb-1" for="merchant_return_policy_label" style="font-size:12px;">Return policy label</label>
               <input type="text" id="merchant_return_policy_label" name="merchant_return_policy_label" class="form-control form-control-sm" value="<?= esc($seoGmcRPL) ?>" placeholder="maventech-30-day-refund" style="font-size:12px;" data-testid="admin-return-policy-label-input">
-              <div class="text-secondary small mt-1">Emitted as <code>&lt;g:return_policy_label&gt;</code> on every item in the Merchant feed. Must match the label of a policy already saved in Merchant Center → Settings → Return policies. Leave blank to omit the tag.</div>
             </div>
           </div>
         </div>
@@ -6738,8 +6737,7 @@ elseif ($tab === 'company'):
         </div>
         <div class="col-12">
           <div class="border rounded p-3" style="background:#f8fafc;">
-            <div class="small fw-semibold mb-1"><i class="bi bi-globe2 me-1 text-primary"></i>Country-specific toll-free numbers <span class="text-muted fw-normal">(optional)</span></div>
-            <div class="small text-muted mb-3">Leave any field blank to use the US number above as the default. When filled in, that number is shown to visitors in the matching region (<code>/au</code>, <code>/uk</code>, <code>/ca</code>, <code>/eu</code>) and in their order emails, receipts &amp; PDF invoices.</div>
+            <div class="small fw-semibold mb-3"><i class="bi bi-globe2 me-1 text-primary"></i>Country-specific toll-free numbers <span class="text-muted fw-normal">(optional)</span></div>
             <div class="row g-2">
               <div class="col-md-3 col-6">
                 <label class="form-label small fw-semibold">🇨🇦 Canada</label>
@@ -6773,10 +6771,9 @@ elseif ($tab === 'company'):
           <?php $showAR = (setting_get('show_authorized_reseller_badge', '0') === '1'); ?>
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 p-3" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
             <div class="flex-grow-1">
-              <label class="form-check-label fw-semibold mb-1" for="ciShowARToggle" style="cursor:pointer;">
+              <label class="form-check-label fw-semibold mb-0" for="ciShowARToggle" style="cursor:pointer;">
                 <i class="bi bi-patch-check-fill me-1 text-primary"></i>Show "Genuine Licenses" badge site-wide
               </label>
-              <div class="text-secondary small">When enabled, the <strong>GENUINE LICENSES</strong> tag appears next to your logo in the header, footer and checkout. <strong>Default is OFF</strong> — Microsoft brand-compliance requires independent resellers to avoid any wording that implies an official partnership (e.g. "Authorized Reseller", "Microsoft Verified"). Only enable this if you have written authorisation to use the badge.</div>
             </div>
             <div class="form-check form-switch mb-0" style="min-width:60px;">
               <input class="form-check-input" type="checkbox" role="switch" id="ciShowARToggle"
@@ -6789,10 +6786,9 @@ elseif ($tab === 'company'):
           <div class="p-3 mt-3" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
               <div class="flex-grow-1">
-                <label class="form-check-label fw-semibold mb-1" for="ciPromoBarToggle" style="cursor:pointer;">
+                <label class="form-check-label fw-semibold mb-0" for="ciPromoBarToggle" style="cursor:pointer;">
                   <i class="bi bi-tag-fill me-1 text-primary"></i>Show promo bar
                 </label>
-                <div class="text-secondary small">When enabled, the top trust-bar shows a <strong>Save up to <span id="ciPromoPctPreview"><?= (int)$promoPct ?></span>% · <span id="ciPromoCodePreview"><?= esc($promoCode) ?></span></strong> coupon strip with a Shop Now link. The code below works at checkout. Turn OFF to hide it everywhere. <strong>Default is OFF.</strong></div>
               </div>
               <div class="form-check form-switch mb-0" style="min-width:60px;">
                 <input class="form-check-input" type="checkbox" role="switch" id="ciPromoBarToggle"
@@ -7029,39 +7025,6 @@ elseif ($tab === 'company'):
           <input class="form-control form-control-sm" id="tk_rpl" name="merchant_return_policy_label"
                  value="<?= esc($tk_rpl_v) ?>" placeholder="maventech-30-day-refund"
                  pattern="^[A-Za-z0-9_\- ]{2,50}$" data-testid="admin-return-policy-label-input">
-          <small class="text-muted">Emitted as <code>&lt;g:return_policy_label&gt;</code> on every product in the Merchant feed. Must match the label of a policy already saved in Merchant Center → Settings → Return policies.</small>
-        </div>
-
-        <!-- Detailed Merchant Center setup wizard for digital-only merchants.
-             Explains how to configure the account-level policy so the label
-             above actually binds to it, AND avoids the "customer pays return
-             shipping" contradiction that Google's policy bots flag on
-             digital feeds.  Placed on col-12 so it wraps across both
-             columns for readability. -->
-        <div class="col-12 mt-1" data-testid="admin-return-policy-guide">
-          <div class="p-3" style="background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(6,182,212,.06));border:1px solid #93c5fd;border-radius:10px;">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <i class="bi bi-lightbulb-fill text-warning" style="font-size:18px;"></i>
-              <strong class="mb-0" style="font-size:13px;color:#1e3a8a;">Merchant Center dashboard setup (required for the label above to bind)</strong>
-            </div>
-            <p class="small mb-2 text-secondary">Merchant Center shows the <em>Products</em> column as <code>-</code> until you save a matching account-level policy AND wait for the next feed crawl. Follow these steps once:</p>
-            <ol class="small mb-2" style="padding-left:20px;">
-              <li>Open <a href="https://merchants.google.com" target="_blank" rel="noopener" class="text-primary fw-semibold text-decoration-none">merchants.google.com <i class="bi bi-box-arrow-up-right" style="font-size:10px;"></i></a> → your account → <strong>Settings</strong> → <strong>Shipping and returns</strong> → <strong>Return policies</strong>.</li>
-              <li>Click <strong>+ Add return policy</strong>.</li>
-              <li>Set the <strong>Policy label</strong> field to exactly:&nbsp; <code data-testid="admin-return-policy-copy" class="user-select-all"><?= esc($tk_rpl_v) ?></code> &nbsp;(same as the input above).</li>
-              <li>Select countries you sell in — the feed emits regions US, GB, CA, AU, EU by default.</li>
-              <li>Set <strong>Return window</strong> = <strong>30 days</strong> (matches the on-site refund policy).</li>
-              <li>Set <strong>Return method</strong> = <strong>Any</strong> (or leave default — digital keys don&rsquo;t need a physical method).</li>
-              <li><strong>Critical:</strong> Set <strong>Return shipping fee</strong> = <strong>Free</strong>. Do NOT choose &ldquo;Customer responsibility&rdquo; — that clashes with digital delivery and triggers the &ldquo;Contradictory rules&rdquo; flag.</li>
-              <li>Set <strong>Restocking fee</strong> = <strong>0%</strong> (no fee) so the policy matches the on-site &ldquo;no fees deducted&rdquo; promise.</li>
-              <li>Save the policy. On the next feed refresh (usually within a few hours), the Products column will switch from <code>-</code> to the actual count.</li>
-            </ol>
-            <div class="small text-secondary d-flex flex-wrap gap-3">
-              <span><i class="bi bi-check-circle-fill text-success me-1"></i>Feed emits <code>&lt;g:return_policy_label&gt;</code> on every item</span>
-              <span><i class="bi bi-check-circle-fill text-success me-1"></i>Feed emits <code>&lt;g:return_shipping_fee&gt; type=free</code> — clears the &ldquo;customer pays&rdquo; contradiction</span>
-              <span><i class="bi bi-check-circle-fill text-success me-1"></i>Feed emits inline <code>&lt;g:return_policy&gt;</code> (30-day fallback)</span>
-            </div>
-          </div>
         </div>
         <div class="col-12">
           <label class="form-label small mb-1 d-flex align-items-center justify-content-between" for="tk_grev"><span>Google Review Link <i class="bi bi-google text-primary ms-1"></i></span><?= $tkStatus($tk_grev_v) ?></label>
