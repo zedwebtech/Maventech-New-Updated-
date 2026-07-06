@@ -11,7 +11,7 @@ echo ""
 echo "(a) EMERGENT PREVIEW UNCHANGED"
 echo "-------------------------------------------"
 echo "Test 1: External preview URL (HTTPS)"
-curl -sIL https://show-preview-43.preview.emergentagent.com/ | head -20
+curl -sIL https://bugfix-preview-11.preview.emergentagent.com/ | head -20
 echo ""
 echo "Test 2: Internal curl with preview Host header"
 curl -si -H "Host: 58485f15-d8bc-415a-9027-8cd21a31434f.preview.emergentagent.com" http://127.0.0.1:3000/ | head -20
