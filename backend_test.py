@@ -1,343 +1,343 @@
 #!/usr/bin/env python3
 """
-Backend test for Protection Hub "Get <Plan>" bug fix verification.
-
-Bug: Clicking any "Get Quick Fix / Get Starter Care / Get Pro Shield / Get Lifetime Elite" 
-button on /protection-hub.php OR the shareable payment link arrow on Admin → Subscription Plans 
-landed on /checkout.php showing a stale "Microsoft Office 2024 Professional Plus" line item 
-at ~$209.99 instead of the chosen plan.
-
-Fix: /app/php-version/subscribe.php now wipes $_SESSION['cart'] = [] immediately BEFORE 
-writing $_SESSION['sub_plan']. This makes an explicit plan click authoritative.
+Backend testing for Maventech PHP storefront bug fixes:
+- Bug A: Text-selection highlight CSS fix
+- Bug B: Remove support@maventechsoftware.com sitewide
 """
 
 import requests
-import re
-from http.cookiejar import CookieJar
+import subprocess
 import sys
+from typing import Dict, List, Tuple
 
+# Base URL for testing
 BASE_URL = "http://localhost:3000"
 
-# Plan slugs and expected prices (from seed-protection-hub.php)
-PLANS = {
-    'quick-fix': {'name': 'Quick Fix', 'price': '29.00'},
-    'starter-care': {'name': 'Starter Care', 'price': '59.00'},
-    'pro-shield': {'name': 'Pro Shield', 'price': '99.00'},
-    'lifetime-elite': {'name': 'Lifetime Elite', 'price': '199.00'}
+# Test results storage
+test_results = {
+    "passed": [],
+    "failed": [],
+    "warnings": []
 }
 
-# Microsoft Office product slug (common test product)
-OFFICE_PRODUCT_SLUG = 'microsoft-office-2024-professional-plus-windows'
-OFFICE_PRODUCT_NAME = 'Microsoft Office 2024 Professional Plus'
+def log_pass(test_name: str, details: str = ""):
+    """Log a passing test"""
+    msg = f"✅ PASS: {test_name}"
+    if details:
+        msg += f" - {details}"
+    print(msg)
+    test_results["passed"].append(test_name)
 
-def test_plan_click_with_cart(plan_slug, plan_data):
-    """
-    Test that clicking a plan button clears the cart and shows the plan on checkout.
-    
-    Steps:
-    1. Fresh cookie jar (new session)
-    2. Add Microsoft Office product to cart
-    3. Verify cart shows Office product
-    4. Click plan button via GET /subscribe.php?plan=<slug>
-    5. Verify checkout shows the plan (not Office product)
-    """
-    print(f"\n{'='*80}")
-    print(f"TEST: Plan click with existing cart - {plan_data['name']}")
-    print(f"{'='*80}")
-    
-    session = requests.Session()
-    
-    # Step 1: Add Office product to cart
-    print(f"\n[1] Adding {OFFICE_PRODUCT_NAME} to cart...")
-    
-    # First, get the product page to find the add-to-cart form
-    product_url = f"{BASE_URL}/product.php?slug={OFFICE_PRODUCT_SLUG}"
-    resp = session.get(product_url)
-    
-    if resp.status_code != 200:
-        print(f"❌ FAIL: Product page returned {resp.status_code}")
-        return False
-    
-    # Add to cart (POST to cart.php)
-    cart_add_data = {
-        'action': 'add',
-        'slug': OFFICE_PRODUCT_SLUG,
-        'qty': '1'
-    }
-    resp = session.post(f"{BASE_URL}/cart.php", data=cart_add_data, allow_redirects=True)
-    
-    if resp.status_code != 200:
-        print(f"❌ FAIL: Add to cart returned {resp.status_code}")
-        return False
-    
-    print(f"✅ Added product to cart (status: {resp.status_code})")
-    
-    # Step 2: Verify cart shows Office product
-    print(f"\n[2] Verifying cart contains {OFFICE_PRODUCT_NAME}...")
-    resp = session.get(f"{BASE_URL}/cart.php")
-    
-    if resp.status_code != 200:
-        print(f"❌ FAIL: Cart page returned {resp.status_code}")
-        return False
-    
-    if OFFICE_PRODUCT_NAME not in resp.text and 'Office 2024' not in resp.text:
-        print(f"❌ FAIL: Cart does not contain Office product")
-        print(f"   Cart HTML snippet: {resp.text[:500]}")
-        return False
-    
-    print(f"✅ Cart contains Office product")
-    
-    # Step 3: Click plan button (GET /subscribe.php?plan=<slug>)
-    print(f"\n[3] Clicking plan button: GET /subscribe.php?plan={plan_slug}...")
-    resp = session.get(f"{BASE_URL}/subscribe.php?plan={plan_slug}", allow_redirects=True)
-    
-    if resp.status_code != 200:
-        print(f"❌ FAIL: Subscribe endpoint returned {resp.status_code}")
-        return False
-    
-    # Should redirect to checkout.php
-    if '/checkout.php' not in resp.url:
-        print(f"❌ FAIL: Did not redirect to checkout.php (url: {resp.url})")
-        return False
-    
-    print(f"✅ Redirected to checkout.php")
-    
-    # Step 4: Verify checkout shows the plan (not Office product)
-    print(f"\n[4] Verifying checkout shows {plan_data['name']} plan...")
-    
-    checkout_html = resp.text
-    
-    # Check for plan name
-    plan_name_found = plan_data['name'] in checkout_html or f"{plan_data['name']} Plan" in checkout_html
-    
-    # Check for plan price
-    plan_price_found = plan_data['price'] in checkout_html or f"${plan_data['price']}" in checkout_html
-    
-    # Check that Office product is NOT present
-    office_not_present = OFFICE_PRODUCT_NAME not in checkout_html
-    
-    # Check for line-item testid starting with summary-item-sub-<plan-slug>
-    testid_pattern = f'data-testid="summary-item-sub-{plan_slug}"'
-    testid_found = testid_pattern in checkout_html
-    
-    # Report results
-    results = []
-    
-    if plan_name_found:
-        print(f"   ✅ Plan name '{plan_data['name']}' found in checkout")
-        results.append(True)
-    else:
-        print(f"   ❌ Plan name '{plan_data['name']}' NOT found in checkout")
-        results.append(False)
-    
-    if plan_price_found:
-        print(f"   ✅ Plan price ${plan_data['price']} found in checkout")
-        results.append(True)
-    else:
-        print(f"   ❌ Plan price ${plan_data['price']} NOT found in checkout")
-        results.append(False)
-    
-    if office_not_present:
-        print(f"   ✅ Office product NOT present in checkout (correct)")
-        results.append(True)
-    else:
-        print(f"   ❌ Office product STILL present in checkout (BUG!)")
-        results.append(False)
-    
-    if testid_found:
-        print(f"   ✅ Line-item testid 'summary-item-sub-{plan_slug}' found")
-        results.append(True)
-    else:
-        print(f"   ⚠️  Line-item testid 'summary-item-sub-{plan_slug}' NOT found (may be minor)")
-        # Don't fail the test for missing testid, just warn
-    
-    # Check for "1 item" text
-    if '1 item' in checkout_html or '1 Item' in checkout_html:
-        print(f"   ✅ '1 item' text found in checkout")
-        results.append(True)
-    else:
-        print(f"   ⚠️  '1 item' text NOT found (may be minor)")
-    
-    if all(results):
-        print(f"\n✅ PASS: {plan_data['name']} plan checkout working correctly")
-        return True
-    else:
-        print(f"\n❌ FAIL: {plan_data['name']} plan checkout has issues")
-        print(f"\n   Checkout HTML snippet (first 1000 chars):")
-        print(f"   {checkout_html[:1000]}")
-        return False
+def log_fail(test_name: str, details: str):
+    """Log a failing test"""
+    msg = f"❌ FAIL: {test_name} - {details}"
+    print(msg)
+    test_results["failed"].append(f"{test_name}: {details}")
 
+def log_warning(test_name: str, details: str):
+    """Log a warning"""
+    msg = f"⚠️  WARNING: {test_name} - {details}"
+    print(msg)
+    test_results["warnings"].append(f"{test_name}: {details}")
 
-def test_regression_cart_only():
-    """
-    Regression test R1: Fresh session, add Office to cart, go directly to checkout.
-    Should show Office product with qty stepper (not plan).
-    """
-    print(f"\n{'='*80}")
-    print(f"REGRESSION TEST R1: Cart-only checkout (no plan click)")
-    print(f"{'='*80}")
+def test_css_selection_rules():
+    """Test Bug A: CSS selection rules fixed"""
+    print("\n" + "="*80)
+    print("TEST 1: CSS SELECTION RULES (Bug A)")
+    print("="*80)
     
-    session = requests.Session()
-    
-    # Add Office product to cart
-    print(f"\n[1] Adding {OFFICE_PRODUCT_NAME} to cart...")
-    
-    cart_add_data = {
-        'action': 'add',
-        'slug': OFFICE_PRODUCT_SLUG,
-        'qty': '1'
-    }
-    resp = session.post(f"{BASE_URL}/cart.php", data=cart_add_data, allow_redirects=True)
-    
-    if resp.status_code != 200:
-        print(f"❌ FAIL: Add to cart returned {resp.status_code}")
-        return False
-    
-    print(f"✅ Added product to cart")
-    
-    # Go directly to checkout (no plan click)
-    print(f"\n[2] Going directly to /checkout.php...")
-    resp = session.get(f"{BASE_URL}/checkout.php")
-    
-    if resp.status_code != 200:
-        print(f"❌ FAIL: Checkout returned {resp.status_code}")
-        return False
-    
-    checkout_html = resp.text
-    
-    # Should show Office product
-    office_present = OFFICE_PRODUCT_NAME in checkout_html or 'Office 2024' in checkout_html
-    
-    # Should have qty stepper (look for input or +/- buttons)
-    qty_stepper_present = 'type="number"' in checkout_html or 'qty-minus' in checkout_html or 'qty-plus' in checkout_html
-    
-    if office_present:
-        print(f"   ✅ Office product present in checkout")
-    else:
-        print(f"   ❌ Office product NOT present in checkout")
-        return False
-    
-    if qty_stepper_present:
-        print(f"   ✅ Qty stepper present (correct for product checkout)")
-    else:
-        print(f"   ⚠️  Qty stepper NOT detected (may be minor)")
-    
-    print(f"\n✅ PASS: Cart-only checkout working correctly")
-    return True
+    try:
+        response = requests.get(f"{BASE_URL}/assets/css/style.css", timeout=10, allow_redirects=True)
+        
+        if response.status_code != 200:
+            log_fail("CSS file fetch", f"HTTP {response.status_code}")
+            return
+        
+        css_content = response.text
+        
+        # Check for the new selection rules with color declarations
+        required_rules = [
+            "::selection { background: rgba(6, 182, 212, .32); color: #fff; }",
+            "::-moz-selection { background: rgba(6, 182, 212, .32); color: #fff; }",
+            "[data-bs-theme=\"light\"] ::selection,",
+            "html:not([data-bs-theme=\"dark\"]) ::selection { background: rgba(11, 92, 255, .18); color: #0f172a; }",
+            "[data-bs-theme=\"light\"] ::-moz-selection,",
+            "html:not([data-bs-theme=\"dark\"]) ::-moz-selection { background: rgba(11, 92, 255, .18); color: #0f172a; }"
+        ]
+        
+        all_found = True
+        for rule in required_rules:
+            if rule in css_content:
+                log_pass(f"CSS rule present", rule[:60] + "...")
+            else:
+                log_fail(f"CSS rule missing", rule[:60] + "...")
+                all_found = False
+        
+        # Check that the old rule WITHOUT color is not the first occurrence
+        old_rule = "::selection { background: rgba(11, 92, 255, .22); }"
+        first_selection_idx = css_content.find("::selection")
+        
+        if first_selection_idx == -1:
+            log_fail("CSS first ::selection", "No ::selection rule found at all")
+        else:
+            # Extract the first ::selection rule (up to closing brace)
+            first_rule_start = first_selection_idx
+            first_rule_end = css_content.find("}", first_rule_start) + 1
+            first_rule = css_content[first_rule_start:first_rule_end]
+            
+            if "color:" in first_rule or "color :" in first_rule:
+                log_pass("CSS first ::selection has color", "First ::selection rule includes color declaration")
+            else:
+                log_fail("CSS first ::selection missing color", f"First rule: {first_rule}")
+        
+        # Verify the old rule is NOT present (or only in zoom-ink section)
+        if old_rule in css_content:
+            # Check if it's only in the zoom-ink section
+            old_rule_idx = css_content.find(old_rule)
+            # Look for zoom-ink context around it
+            context_start = max(0, old_rule_idx - 200)
+            context_end = min(len(css_content), old_rule_idx + 200)
+            context = css_content[context_start:context_end]
+            
+            if "zoom-ink" in context:
+                log_pass("Old CSS rule", "Old rule only present in zoom-ink section (acceptable)")
+            else:
+                log_warning("Old CSS rule", "Old rule found outside zoom-ink section")
+        else:
+            log_pass("Old CSS rule removed", "Old rule without color not found")
+            
+    except Exception as e:
+        log_fail("CSS test exception", str(e))
 
-
-def test_regression_plan_then_cart():
+def test_email_sitewide(url_path: str, page_name: str) -> Tuple[int, int]:
     """
-    Regression test R2: Click plan first, then add Office to cart, then checkout.
-    Should show Office product (cart wins over stale sub_plan).
+    Test a single page for email occurrences
+    Returns: (support_count, services_count)
     """
-    print(f"\n{'='*80}")
-    print(f"REGRESSION TEST R2: Plan click, then add product to cart")
-    print(f"{'='*80}")
-    
-    session = requests.Session()
-    
-    # Click plan first
-    print(f"\n[1] Clicking Pro Shield plan...")
-    resp = session.get(f"{BASE_URL}/subscribe.php?plan=pro-shield", allow_redirects=True)
-    
-    if resp.status_code != 200:
-        print(f"❌ FAIL: Subscribe endpoint returned {resp.status_code}")
-        return False
-    
-    print(f"✅ Plan click successful (redirected to checkout)")
-    
-    # Now add Office product to cart
-    print(f"\n[2] Adding {OFFICE_PRODUCT_NAME} to cart...")
-    
-    cart_add_data = {
-        'action': 'add',
-        'slug': OFFICE_PRODUCT_SLUG,
-        'qty': '1'
-    }
-    resp = session.post(f"{BASE_URL}/cart.php", data=cart_add_data, allow_redirects=True)
-    
-    if resp.status_code != 200:
-        print(f"❌ FAIL: Add to cart returned {resp.status_code}")
-        return False
-    
-    print(f"✅ Added product to cart")
-    
-    # Go to checkout
-    print(f"\n[3] Going to /checkout.php...")
-    resp = session.get(f"{BASE_URL}/checkout.php")
-    
-    if resp.status_code != 200:
-        print(f"❌ FAIL: Checkout returned {resp.status_code}")
-        return False
-    
-    checkout_html = resp.text
-    
-    # Should show Office product (cart wins)
-    office_present = OFFICE_PRODUCT_NAME in checkout_html or 'Office 2024' in checkout_html
-    
-    # Should NOT show Pro Shield plan
-    plan_not_present = 'Pro Shield' not in checkout_html
-    
-    if office_present:
-        print(f"   ✅ Office product present in checkout (cart wins)")
-    else:
-        print(f"   ❌ Office product NOT present in checkout")
-        return False
-    
-    if plan_not_present:
-        print(f"   ✅ Pro Shield plan NOT present (correct - cart trumps stale plan)")
-    else:
-        print(f"   ⚠️  Pro Shield plan still present (may indicate issue)")
-    
-    print(f"\n✅ PASS: Cart-trumps-stale-plan behavior preserved")
-    return True
+    try:
+        response = requests.get(f"{BASE_URL}{url_path}", timeout=10, allow_redirects=True)
+        
+        if response.status_code != 200:
+            log_fail(f"Page fetch {page_name}", f"HTTP {response.status_code}")
+            return (-1, -1)
+        
+        html_content = response.text
+        
+        support_count = html_content.count("support@maventechsoftware.com")
+        services_count = html_content.count("services@maventechsoftware.com")
+        
+        return (support_count, services_count)
+        
+    except Exception as e:
+        log_fail(f"Page test exception {page_name}", str(e))
+        return (-1, -1)
 
+def test_bug_b_email_replacement():
+    """Test Bug B: support@ removed, services@ present"""
+    print("\n" + "="*80)
+    print("TEST 2: EMAIL REPLACEMENT SITEWIDE (Bug B)")
+    print("="*80)
+    
+    # Pages to test
+    test_pages = [
+        ("/", "Homepage"),
+        ("/contact.php", "Contact"),
+        ("/shipping-delivery.php", "Shipping & Delivery"),
+        ("/about-us.php", "About Us"),
+        ("/shop.php", "Shop"),
+        ("/product.php?slug=microsoft-office-home-2024-pc", "Product Page")
+    ]
+    
+    # Pages that should show services@ email
+    pages_with_email = ["/", "/contact.php", "/shipping-delivery.php", "/about-us.php"]
+    
+    all_passed = True
+    
+    for url_path, page_name in test_pages:
+        print(f"\nTesting {page_name} ({url_path})...")
+        support_count, services_count = test_email_sitewide(url_path, page_name)
+        
+        if support_count == -1:  # Error occurred
+            all_passed = False
+            continue
+        
+        # Check support@ count (should be 0)
+        if support_count == 0:
+            log_pass(f"{page_name} - support@ removed", f"0 occurrences")
+        else:
+            log_fail(f"{page_name} - support@ still present", f"{support_count} occurrences found")
+            all_passed = False
+        
+        # Check services@ count (should be >= 1 for certain pages)
+        if url_path in pages_with_email:
+            if services_count >= 1:
+                log_pass(f"{page_name} - services@ present", f"{services_count} occurrences")
+            else:
+                log_fail(f"{page_name} - services@ missing", f"Expected >= 1, found {services_count}")
+                all_passed = False
+        else:
+            # For other pages, just report the count
+            if services_count > 0:
+                log_pass(f"{page_name} - services@ count", f"{services_count} occurrences")
+
+def test_shipping_page_emails():
+    """Test Bug B: Shipping page specific email checks"""
+    print("\n" + "="*80)
+    print("TEST 3: SHIPPING PAGE EMAIL LINKS (Bug B)")
+    print("="*80)
+    
+    try:
+        response = requests.get(f"{BASE_URL}/shipping-delivery.php", timeout=10, allow_redirects=True)
+        
+        if response.status_code != 200:
+            log_fail("Shipping page fetch", f"HTTP {response.status_code}")
+            return
+        
+        html_content = response.text
+        
+        # Count mailto links
+        services_mailto_count = html_content.count("mailto:services@maventechsoftware.com")
+        support_mailto_count = html_content.count("mailto:support@maventechsoftware.com")
+        
+        if services_mailto_count >= 3:
+            log_pass("Shipping page - services@ mailto", f"{services_mailto_count} occurrences (expected >= 3)")
+        else:
+            log_fail("Shipping page - services@ mailto", f"{services_mailto_count} occurrences (expected >= 3)")
+        
+        if support_mailto_count == 0:
+            log_pass("Shipping page - support@ mailto removed", "0 occurrences")
+        else:
+            log_fail("Shipping page - support@ mailto present", f"{support_mailto_count} occurrences")
+            
+    except Exception as e:
+        log_fail("Shipping page test exception", str(e))
+
+def test_contact_page_emails():
+    """Test Bug B: Contact page specific email checks"""
+    print("\n" + "="*80)
+    print("TEST 4: CONTACT PAGE EMAIL DISPLAY (Bug B)")
+    print("="*80)
+    
+    try:
+        response = requests.get(f"{BASE_URL}/contact.php", timeout=10, allow_redirects=True)
+        
+        if response.status_code != 200:
+            log_fail("Contact page fetch", f"HTTP {response.status_code}")
+            return
+        
+        html_content = response.text
+        
+        services_count = html_content.count("services@maventechsoftware.com")
+        support_count = html_content.count("support@maventechsoftware.com")
+        
+        if services_count >= 1:
+            log_pass("Contact page - services@ present", f"{services_count} occurrences")
+        else:
+            log_fail("Contact page - services@ missing", f"Expected >= 1, found {services_count}")
+        
+        if support_count == 0:
+            log_pass("Contact page - support@ removed", "0 occurrences")
+        else:
+            log_fail("Contact page - support@ present", f"{support_count} occurrences")
+            
+    except Exception as e:
+        log_fail("Contact page test exception", str(e))
+
+def test_database_settings():
+    """Test Bug B: Database settings check"""
+    print("\n" + "="*80)
+    print("TEST 5: DATABASE EMAIL SETTINGS (Bug B)")
+    print("="*80)
+    
+    try:
+        # Run MySQL query
+        query = "SELECT k,v FROM settings WHERE k IN ('support_email','company_email','contact_email');"
+        result = subprocess.run(
+            ["mysql", "-uroot", "ucode_store", "-e", query],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        
+        if result.returncode != 0:
+            log_fail("Database query", f"MySQL error: {result.stderr}")
+            return
+        
+        output = result.stdout
+        print(f"Database output:\n{output}")
+        
+        # Parse the output
+        lines = output.strip().split('\n')[1:]  # Skip header
+        
+        settings_found = {}
+        for line in lines:
+            if '\t' in line:
+                key, value = line.split('\t', 1)
+                settings_found[key] = value
+        
+        # Check each setting
+        expected_email = "services@maventechsoftware.com"
+        
+        for key in ['support_email', 'contact_email', 'company_email']:
+            if key in settings_found:
+                if settings_found[key] == expected_email:
+                    log_pass(f"DB setting {key}", f"= {expected_email}")
+                else:
+                    log_fail(f"DB setting {key}", f"= {settings_found[key]} (expected {expected_email})")
+            else:
+                log_warning(f"DB setting {key}", "Not found in database")
+        
+        # Verify no support@ in any setting
+        if any("support@maventechsoftware.com" in v for v in settings_found.values()):
+            log_fail("DB settings", "support@maventechsoftware.com found in database")
+        else:
+            log_pass("DB settings", "No support@maventechsoftware.com in database")
+            
+    except Exception as e:
+        log_fail("Database test exception", str(e))
+
+def print_summary():
+    """Print test summary"""
+    print("\n" + "="*80)
+    print("TEST SUMMARY")
+    print("="*80)
+    
+    print(f"\n✅ PASSED: {len(test_results['passed'])} tests")
+    print(f"❌ FAILED: {len(test_results['failed'])} tests")
+    print(f"⚠️  WARNINGS: {len(test_results['warnings'])} tests")
+    
+    if test_results['failed']:
+        print("\nFailed tests:")
+        for failure in test_results['failed']:
+            print(f"  - {failure}")
+    
+    if test_results['warnings']:
+        print("\nWarnings:")
+        for warning in test_results['warnings']:
+            print(f"  - {warning}")
+    
+    print("\n" + "="*80)
+    
+    # Return exit code
+    return 0 if len(test_results['failed']) == 0 else 1
 
 def main():
-    """Run all tests."""
-    print(f"\n{'#'*80}")
-    print(f"# Protection Hub 'Get <Plan>' Bug Fix Verification")
-    print(f"# Base URL: {BASE_URL}")
-    print(f"{'#'*80}")
+    """Main test execution"""
+    print("="*80)
+    print("MAVENTECH PHP STOREFRONT - BUG FIX VERIFICATION")
+    print("Testing Bug A (CSS selection) and Bug B (email replacement)")
+    print("="*80)
     
-    results = []
+    # Run all tests
+    test_css_selection_rules()
+    test_bug_b_email_replacement()
+    test_shipping_page_emails()
+    test_contact_page_emails()
+    test_database_settings()
     
-    # Test each plan
-    for plan_slug, plan_data in PLANS.items():
-        result = test_plan_click_with_cart(plan_slug, plan_data)
-        results.append((f"Plan click: {plan_data['name']}", result))
-    
-    # Regression tests
-    result = test_regression_cart_only()
-    results.append(("Regression R1: Cart-only checkout", result))
-    
-    result = test_regression_plan_then_cart()
-    results.append(("Regression R2: Plan then cart", result))
-    
-    # Summary
-    print(f"\n{'#'*80}")
-    print(f"# TEST SUMMARY")
-    print(f"{'#'*80}")
-    
-    passed = sum(1 for _, r in results if r)
-    total = len(results)
-    
-    for test_name, result in results:
-        status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{status}: {test_name}")
-    
-    print(f"\n{'='*80}")
-    print(f"Total: {passed}/{total} tests passed")
-    print(f"{'='*80}")
-    
-    if passed == total:
-        print(f"\n✅ ALL TESTS PASSED - Bug fix verified successfully!")
-        return 0
-    else:
-        print(f"\n❌ SOME TESTS FAILED - Bug fix needs attention")
-        return 1
+    # Print summary and exit
+    exit_code = print_summary()
+    sys.exit(exit_code)
 
-
-if __name__ == '__main__':
-    sys.exit(main())
+if __name__ == "__main__":
+    main()

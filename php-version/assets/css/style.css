@@ -84,7 +84,12 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 { font-weight: 650; }
    so admin pages (`.adm` body) and form inputs in light mode share one
    consistent highlight colour with the rest of the storefront. Dark-mode
    pages override this further down via the data-bs-theme rule. */
-::selection { background: rgba(11, 92, 255, .22); }
+::selection { background: rgba(6, 182, 212, .32); color: #fff; }
+::-moz-selection { background: rgba(6, 182, 212, .32); color: #fff; }
+[data-bs-theme="light"] ::selection,
+html:not([data-bs-theme="dark"]) ::selection { background: rgba(11, 92, 255, .18); color: #0f172a; }
+[data-bs-theme="light"] ::-moz-selection,
+html:not([data-bs-theme="dark"]) ::-moz-selection { background: rgba(11, 92, 255, .18); color: #0f172a; }
 
 /* ---------- Brand logo ---------- */
 .brand-mark { flex-shrink: 0; filter: drop-shadow(0 4px 10px rgba(6, 182, 212, .35)); }

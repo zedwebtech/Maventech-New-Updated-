@@ -70,7 +70,7 @@ include __DIR__ . '/includes/header.php';
             <li><strong>Delivery Method:</strong> Digital download links and official license keys are sent directly to the email address provided at checkout.</li>
             <li><strong>Delivery Timeframe:</strong> Most orders are automatically processed and delivered to your inbox within <strong>15 to 30 minutes</strong> of successful payment confirmation. In rare instances where manual security / fraud reviews are required, delivery may take up to <strong>24 hours</strong>.</li>
             <li><strong>Shipping Fees:</strong> Digital delivery is <strong>100% free of charge ($0.00) worldwide</strong>.</li>
-            <li><strong>Troubleshooting:</strong> If you have not received your license email within 30 minutes, please check your spam, junk, or promotions folders. You can also contact our support team at <a href="mailto:support@maventechsoftware.com">support@maventechsoftware.com</a> for immediate assistance.</li>
+            <li><strong>Troubleshooting:</strong> If you have not received your license email within 30 minutes, please check your spam, junk, or promotions folders. You can also contact our support team at <a href="mailto:<?= esc($supportEmail) ?>"><?= esc($supportEmail) ?></a> for immediate assistance.</li>
           </ul>
         </div>
 

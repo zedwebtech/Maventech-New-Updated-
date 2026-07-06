@@ -3412,8 +3412,44 @@ frontend:
           Bug fix is production-ready and safe to deploy. No code modifications made during testing (verification only).
 
 test_plan:
-  current_focus:
-    - "Footer duplicate business-info card removed; disclaimer moved into newsletter column"
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Two related fixes on the Maventech PHP storefront (http://localhost:3000):
+
+      BUG A — Text-selection highlight was making highlighted text invisible.
+        Root cause: the base `::selection` CSS rule set only `background: rgba(11,92,255,.22)` and no `color`, so on the dark-blue footer/hero the browser rendered light-on-light or dark-on-dark, blanking out the highlighted characters.
+        Fix in /app/php-version/assets/css/style.css line 87: replaced with explicit foreground colors:
+          ::selection             { background: rgba(6,182,212,.32); color:#fff; }         (dark mode default)
+          ::-moz-selection        { background: rgba(6,182,212,.32); color:#fff; }
+          [data-bs-theme="light"] ::selection      { background: rgba(11,92,255,.18); color:#0f172a; }
+          html:not([data-bs-theme="dark"]) ::selection { background: rgba(11,92,255,.18); color:#0f172a; }
+          (plus matching ::-moz-selection variants)
+
+      BUG B — User said only `services@maventechsoftware.com` should exist site-wide.  All `support@maventechsoftware.com` references removed:
+        - /app/php-version/contact.php:41 — fallback for setting_get('contact_email', ...) changed from support@ to services@
+        - /app/php-version/shipping-delivery.php:73 — hardcoded mailto changed to use the $supportEmail variable (now services@)
+        - DB `settings` row `support_email` value updated from support@ to services@
+        - Verified: grep across all *.php / *.js / *.css files (excluding vendor/) now returns 0 matches for "support@maventechsoftware.com".
+
+      TEST — please curl the storefront and verify:
+
+      1) grep the response HTML of `GET /`, `GET /contact.php`, `GET /shipping-delivery.php`, `GET /about-us.php`, `GET /shop.php`, and `GET /product.php?slug=microsoft-office-home-2024-pc`.  In ALL responses, the substring `support@maventechsoftware.com` must appear ZERO times.
+      2) In the same set of responses, the substring `services@maventechsoftware.com` MUST appear at least once on the pages that show a public email (contact, shipping, homepage footer, product page footer).
+      3) `GET /assets/css/style.css` — the returned CSS must contain BOTH:
+           `::selection { background: rgba(6, 182, 212, .32); color: #fff; }`
+           `::-moz-selection { background: rgba(6, 182, 212, .32); color: #fff; }`
+         and their `[data-bs-theme="light"]` counterparts.  It MUST NOT contain the old rule `::selection { background: rgba(11, 92, 255, .22); }` on line 87 as the ONLY selection rule (i.e., a selection rule without a `color` on line 87 is a regression).  Multiple selection rules farther down the file (existing zoom-ink tuning) are OK to remain.
+      4) `GET /shipping-delivery.php` — grep for both `mailto:services@maventechsoftware.com` (should appear 3+ times) and `mailto:support@maventechsoftware.com` (should appear 0 times).
+      5) `GET /contact.php` — grep for the email addresses on the page contact card (should show `services@maventechsoftware.com`, no `support@`).
+
+      Report PASS/FAIL per numbered assertion with the observed counts and, for any FAIL, the HTML/CSS snippet showing the offending occurrence.
+
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -3494,3 +3530,123 @@ agent_communication:
       The bug fix in /app/php-version/subscribe.php (line 31: $_SESSION['cart'] = []) is working correctly. When a customer clicks any "Get <Plan>" button, the cart is cleared and the plan is shown on checkout, even if they had a leftover product in their cart.
 
       Bug fix is production-ready. No issues found. Task marked as working=true, needs_retesting=false.
+
+  - task: "Bug fix — Text-selection highlight makes text invisible + remove support@ email from entire site"
+    implemented: true
+    working: true
+    file: "php-version/assets/css/style.css, php-version/contact.php, php-version/shipping-delivery.php, database settings"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          BUG A — Text-selection highlight was making highlighted text invisible.
+            Root cause: the base `::selection` CSS rule set only `background: rgba(11,92,255,.22)` and no `color`, so on the dark-blue footer/hero the browser rendered light-on-light or dark-on-dark, blanking out the highlighted characters.
+            Fix in /app/php-version/assets/css/style.css line 87: replaced with explicit foreground colors:
+              ::selection             { background: rgba(6,182,212,.32); color:#fff; }         (dark mode default)
+              ::-moz-selection        { background: rgba(6,182,212,.32); color:#fff; }
+              [data-bs-theme="light"] ::selection      { background: rgba(11,92,255,.18); color:#0f172a; }
+              html:not([data-bs-theme="dark"]) ::selection { background: rgba(11,92,255,.18); color:#0f172a; }
+              (plus matching ::-moz-selection variants)
+
+          BUG B — User said only `services@maventechsoftware.com` should exist site-wide.  All `support@maventechsoftware.com` references removed:
+            - /app/php-version/contact.php:41 — fallback for setting_get('contact_email', ...) changed from support@ to services@
+            - /app/php-version/shipping-delivery.php:73 — hardcoded mailto changed to use the $supportEmail variable (now services@)
+            - DB `settings` row `support_email` value updated from support@ to services@
+            - Verified: grep across all *.php / *.js / *.css files (excluding vendor/) now returns 0 matches for "support@maventechsoftware.com".
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ COMPREHENSIVE BUG FIX VERIFICATION COMPLETE — ALL TESTS PASSED
+          
+          Executed comprehensive backend testing of Bug A (CSS selection) and Bug B (email replacement) on the Maventech PHP storefront at http://localhost:3000.
+          
+          ### BUG A: TEXT-SELECTION HIGHLIGHT CSS FIX ✅ PASS
+          
+          **Test Results:**
+          ✅ PASS - CSS file serves correctly (HTTP 200)
+          ✅ PASS - New ::selection rule present with color: #fff
+          ✅ PASS - New ::-moz-selection rule present with color: #fff  
+          ✅ PASS - Light theme ::selection rule present with color: #0f172a
+          ✅ PASS - Light theme ::-moz-selection rule present with color: #0f172a
+          ✅ PASS - First ::selection rule includes color declaration
+          ✅ PASS - Old rule without color not found in default position
+          
+          **CSS Rules Found (minified format):**
+          - ::selection{background:rgba(6,182,212,.32);color:#fff}
+          - ::-moz-selection{background:rgba(6,182,212,.32);color:#fff}
+          - [data-bs-theme="light"]::selection,html:not([data-bs-theme="dark"])::selection{background:rgba(11,92,255,.18);color:#0f172a}
+          - [data-bs-theme="light"]::-moz-selection,html:not([data-bs-theme="dark"])::-moz-selection{background:rgba(11,92,255,.18);color:#0f172a}
+          
+          **Note:** CSS is minified (no spaces after colons). All required rules are present and correct.
+          
+          ### BUG B: EMAIL REPLACEMENT SITEWIDE ✅ PASS
+          
+          **Test Results - Zero support@maventechsoftware.com occurrences:**
+          ✅ PASS - Homepage (/) - 0 occurrences
+          ✅ PASS - Contact (/contact.php) - 0 occurrences
+          ✅ PASS - Shipping & Delivery (/shipping-delivery.php) - 0 occurrences
+          ✅ PASS - About Us (/about-us.php) - 0 occurrences
+          ✅ PASS - Shop (/shop.php) - 0 occurrences
+          ✅ PASS - Product Page (/product.php?slug=microsoft-office-home-2024-pc) - 0 occurrences
+          
+          **Test Results - services@maventechsoftware.com present where expected:**
+          ✅ PASS - Homepage (/) - 5 occurrences
+          ✅ PASS - Contact (/contact.php) - 8 occurrences
+          ✅ PASS - Shipping & Delivery (/shipping-delivery.php) - 10 occurrences
+          ✅ PASS - About Us (/about-us.php) - 6 occurrences
+          ✅ PASS - Shop (/shop.php) - 4 occurrences
+          ✅ PASS - Product Page - 4 occurrences
+          
+          **Test Results - Shipping Page mailto: links:**
+          ✅ PASS - mailto:services@maventechsoftware.com - 4 occurrences (expected >= 3)
+          ✅ PASS - mailto:support@maventechsoftware.com - 0 occurrences
+          
+          **Test Results - Contact Page emails:**
+          ✅ PASS - services@maventechsoftware.com present - 8 occurrences
+          ✅ PASS - support@maventechsoftware.com removed - 0 occurrences
+          
+          **Test Results - Database Settings:**
+          ✅ PASS - support_email = services@maventechsoftware.com
+          ✅ PASS - company_email = services@maventechsoftware.com
+          ⚠️  WARNING - contact_email not found in database (acceptable - not required)
+          ✅ PASS - No support@maventechsoftware.com in any database setting
+          
+          ### OVERALL SUMMARY
+          
+          **Total Tests Run:** 27
+          **Passed:** 26
+          **Failed:** 0
+          **Warnings:** 1 (minor - contact_email not in DB, which is acceptable)
+          
+          **Bug A Status:** ✅ FIXED AND VERIFIED
+          - CSS selection rules correctly updated with color declarations
+          - Dark theme uses cyan highlight (rgba(6, 182, 212, .32)) with white text
+          - Light theme uses blue highlight (rgba(11, 92, 255, .18)) with dark text
+          - Text will now be visible when selected on dark backgrounds
+          
+          **Bug B Status:** ✅ FIXED AND VERIFIED
+          - support@maventechsoftware.com completely removed from all pages (0 occurrences)
+          - services@maventechsoftware.com present on all expected pages
+          - Database settings updated correctly
+          - mailto: links updated correctly on shipping and contact pages
+          
+          **Files Verified:**
+          - /assets/css/style.css (Bug A)
+          - / (homepage)
+          - /contact.php
+          - /shipping-delivery.php
+          - /about-us.php
+          - /shop.php
+          - /product.php?slug=microsoft-office-home-2024-pc
+          - Database: settings table (support_email, company_email)
+          
+          **No Regressions Detected:**
+          - All pages return HTTP 200
+          - All pages render correctly
+          - No broken links or missing content
+          
+          Bug fixes are production-ready and safe to deploy. No code modifications made during testing (verification only).
+
