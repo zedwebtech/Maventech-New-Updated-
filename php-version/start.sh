@@ -59,7 +59,7 @@ if [ ! -f /app/php-version/uploads/legal/maventech-articles-certificate.pdf ]; t
     mkdir -p /app/php-version/uploads/legal
     curl -sSL --max-time 20 \
         -o /app/php-version/uploads/legal/maventech-articles-certificate.pdf \
-        "https://customer-assets.emergentagent.com/job_clean-footer-11/artifacts/jm3lq5c0_MAVENTECH%20LLC%20Articles%20Certificate.pdf" \
+        "https://customer-assets.emergentagent.com/job_4940e59f-694b-45ff-89ae-843ecb75957d/artifacts/n4wa561f_MAVENTECH%20LLC%20Articles%20Certificate.pdf" \
         >>/tmp/seed-brand-settings.log 2>&1 || true
 fi
 php /app/php-version/scripts/ensure-admin-password.php >>/tmp/ensure-admin-password.log 2>&1 || true

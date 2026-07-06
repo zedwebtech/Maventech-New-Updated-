@@ -144,12 +144,14 @@ function company_info(): array {
         'address'    => setting_get('company_address', ''),
         // Official corporate registration number (e.g. California LLC file no.)
         // shown in the footer + About Us for transparency / Google Ads trust.
-        'reg_number'      => setting_get('company_reg_number', ''),
+        // Hard-coded fallback so the block renders on cPanel/shared hosts where
+        // the DB seed script never ran (only Emergent-pod start.sh runs it).
+        'reg_number'      => setting_get('company_reg_number', '202463711253'),
         // Date the LLC was filed with the Secretary of State (ISO YYYY-MM-DD).
-        'reg_date_filed'  => setting_get('company_reg_date_filed', ''),
+        'reg_date_filed'  => setting_get('company_reg_date_filed', '2024-09-03'),
         // Path (or URL) to the LLC Articles of Organization certificate PDF —
         // rendered as a "View certificate" link on About Us / checkout.
-        'reg_certificate_url' => setting_get('company_reg_certificate_url', ''),
+        'reg_certificate_url' => setting_get('company_reg_certificate_url', '/uploads/legal/maventech-articles-certificate.pdf'),
         // Human-readable jurisdiction ("California, USA", "Delaware, USA" etc.)
         'reg_jurisdiction'    => setting_get('company_reg_jurisdiction', 'California, USA'),
         'logo'       => normalize_company_logo(setting_get('company_logo', '')),
