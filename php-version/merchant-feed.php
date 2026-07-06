@@ -43,10 +43,28 @@ header('Content-Type: application/xml; charset=UTF-8');
 header('Cache-Control: public, max-age=3600');
 header('X-Robots-Tag: noindex, nofollow'); // the feed itself shouldn't be indexed
 
-$site    = rtrim(site_url(), '/');
+$site    = rtrim(public_base_url(), '/');
 $ci      = company_info();
 $brand   = $ci['name'] ?? (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
 $updated = gmdate('D, d M Y H:i:s') . ' GMT';
+
+/* Canonical-host guard — when Google Merchant Center is registered against
+   a hostname whose SSL cert is BROKEN (e.g. the www.<domain> subdomain
+   isn't covered by the current cert, as happened on maventechsoftware.com
+   where the shared-hosting wildcard *.web-hosting.com does not cover the
+   www.<domain> vhost), GMC's fetcher receives an SSL error, fails to
+   parse anything as XML, and reports "the file format isn't supported"
+   in the merchant's inbox — zero products get updated.
+
+   The code-side mitigation lives here: every URL emitted in the feed
+   (channel <link>, <atom:link href="self">, per-item <g:link>) is now
+   pinned to the canonical bare-domain URL via public_base_url() instead
+   of mirroring whatever Host header the request arrived on. This means
+   that even if Merchant Center is registered against the broken www.
+   host, the moment the user (a) fixes the SSL cert to cover www, OR
+   (b) updates the fetch URL in Merchant Center to the bare domain, the
+   feed's internal URLs are ALREADY correct and no SEO signal is
+   sharded across two hosts. */
 
 /* Return-policy label — binds every <item> to an account-level Return
    Policy configured in Google Merchant Center (Settings → Shipping and

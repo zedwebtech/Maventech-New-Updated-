@@ -6405,3 +6405,261 @@ agent_communication:
       CONCLUSION: The code fix is production-ready and correct. The customer must re-upload the updated 
       codebase to their hosting at maventechsoftware.com for the fix to take effect. Once deployed, the 
       broken GA4 ID will no longer appear in the HTML and the PageSpeed Insights 404 error will be resolved.
+
+##====================================================================================================
+## Bug fix — Google Merchant Center email:
+##   "the file wasn't processed because the file format isn't supported"
+##====================================================================================================
+
+backend:
+  - task: "GMC feed 'file format isn't supported' — canonicalize feed URLs to bare domain (SSL cert on www.<domain> is broken)"
+    implemented: true
+    working: "NA"
+    file: "php-version/merchant-feed.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          BUG REPORT: On July 6, 2026 07:16 EDT, Google Merchant Center emailed the
+          merchant that the scheduled file fetch failed with "the file format isn't
+          supported — no updates have been made to your product data." Account ID
+          5815017210, data source "PRODUCTS SOURCE 1".
+
+          DIAGNOSIS (curl-verified from this container):
+            (a) https://maventechsoftware.com/merchant-feed.xml → HTTP 200,
+                Content-Type application/xml; charset=UTF-8, 37 items,
+                XML starts cleanly with `<?xml version="1.0" encoding="UTF-8"?>`.
+                The bare-domain feed is HEALTHY.
+            (b) https://www.maventechsoftware.com/merchant-feed.xml → SSL handshake
+                FAILS. The server presents a wildcard cert for `*.web-hosting.com`
+                (shared-hosting default) whose subjectAltName does NOT match
+                `www.maventechsoftware.com`. curl's error is verbatim:
+                "SSL: no alternative certificate subject name matches target host
+                name 'www.maventechsoftware.com'".
+            (c) http://www.maventechsoftware.com/merchant-feed.xml → 301 redirect
+                to the https://www.<domain> URL, which then dies at (b).
+            (d) With SSL verification off (`curl -k`), the www vhost DOES serve
+                the XML correctly, proving Apache/PHP work — the issue is purely
+                the SSL cert not covering the www hostname.
+
+          CONCLUSION: The URL registered in Google Merchant Center's data source is
+          almost certainly `https://www.maventechsoftware.com/merchant-feed.xml`
+          (with www). GMC's fetcher trips on the SSL cert mismatch, the response
+          it receives (an SSL error page or hosting placeholder) is HTML — hence
+          "the file format isn't supported".
+
+          CODE-SIDE FIX APPLIED (only fix that CAN be applied from code):
+            - php-version/merchant-feed.php:46  — changed `$site = rtrim(site_url(), '/')`
+              to `$site = rtrim(public_base_url(), '/')`.
+            - Consequence: every URL emitted in the feed (channel <link>,
+              <atom:link href="self">, per-item <g:link>, <g:image_link>,
+              plus the Protection-Hub-plan loop) is now pinned to the canonical
+              bare-domain URL from the admin-configured `site_domain_url`/`main_url`
+              settings, regardless of which Host header the request arrived on.
+              Previously, when GMC fetched via the www host, the feed's internal
+              URLs mirrored the request host (all pointing at the broken www
+              vhost) — sharding SEO signals across two hosts even in the case
+              where GMC eventually did receive the file.
+            - Added a big comment block (lines 51-67) documenting the SSL-cert
+              root cause and pointing future maintainers at the two user-side
+              fixes (fix SSL to cover www, OR change URL in GMC).
+
+          USER-SIDE ACTIONS STILL REQUIRED (cannot fix from code):
+            Option 1 (recommended, one-click): In Google Merchant Center →
+              Data sources → PRODUCTS SOURCE 1 → Edit → change the Fetch URL
+              from `https://www.maventechsoftware.com/merchant-feed.xml`
+              to `https://maventechsoftware.com/merchant-feed.xml` (drop the
+              "www."). Click Fetch now. That URL is verified HTTP 200 +
+              application/xml + 37 items right now.
+            Option 2: In the hosting cPanel (Namecheap shared hosting based on
+              the *.web-hosting.com cert), issue AutoSSL for the www
+              subdomain OR install a wildcard/SAN cert that covers both hosts.
+
+          FILES CHANGED:
+            - php-version/merchant-feed.php (2 edits: comment block + $site line)
+
+          NEEDS_RETESTING CHECKLIST for testing agent:
+            (i)   Static-code check — grep `site_url()` should not appear at the
+                  top of merchant-feed.php; only `public_base_url()` should be
+                  used to build `$site`. Confirm at line ~46.
+            (ii)  Live feed still HTTP 200 + application/xml at bare domain —
+                  curl -sI https://maventechsoftware.com/merchant-feed.xml MUST
+                  return HTTP 200 and Content-Type application/xml.
+            (iii) Live feed body still starts cleanly with `<?xml ...?>` — no
+                  PHP notices, no BOM, no stray whitespace before the opening tag.
+                  curl -s https://maventechsoftware.com/merchant-feed.xml | head -c 40
+                  MUST start with the literal 6 chars `<?xml `.
+            (iv)  Live feed still contains at least 30 items —
+                  curl -s https://maventechsoftware.com/merchant-feed.xml | grep -c '<g:id>'
+                  MUST be >= 30 (currently ~37).
+            (v)   Confirm the underlying SSL-cert bug is still present so the
+                  user understands the action items — curl the www URL WITHOUT
+                  `-k` and confirm the connection fails with
+                  "SSL: no alternative certificate subject name matches target
+                  host name 'www.maventechsoftware.com'". This is the diagnosis,
+                  not a regression.
+            (vi)  Note: check (ii)-(iv) are running against the LIVE production
+                  server. The code change in step (i) has NOT been deployed yet
+                  and will only show up on live once the customer re-uploads
+                  merchant-feed.php.
+
+
+  - task: "GMC feed 'file format isn't supported' — canonicalize feed URLs to bare domain (SSL cert on www.<domain> is broken)"
+    implemented: true
+    working: true
+    file: "php-version/merchant-feed.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          Bug fix — Google Merchant Center email "file format isn't supported" root-caused to
+          SSL cert on www.maventechsoftware.com not covering the www subdomain (server presents
+          *.web-hosting.com wildcard cert whose SAN doesn't match). Applied one code-side fix
+          (merchant-feed.php uses public_base_url() instead of site_url()) that hardens all
+          internal URLs to the canonical bare domain regardless of which host the request came
+          in on. USER MUST ALSO update the fetch URL in Merchant Center to the bare-domain URL
+          (or fix the SSL cert to cover www) — I have no way to change either from code.
+
+          FILES CHANGED:
+            - php-version/merchant-feed.php (2 edits: comment block + $site line)
+
+          NEEDS_RETESTING CHECKLIST for testing agent:
+            (i)   Static-code check — grep `site_url()` should not appear at the
+                  top of merchant-feed.php; only `public_base_url()` should be
+                  used to build `$site`. Confirm at line ~46.
+            (ii)  Live feed still HTTP 200 + application/xml at bare domain —
+                  curl -sI https://maventechsoftware.com/merchant-feed.xml MUST
+                  return HTTP 200 and Content-Type application/xml.
+            (iii) Live feed body still starts cleanly with `<?xml ...?>` — no
+                  PHP notices, no BOM, no stray whitespace before the opening tag.
+                  curl -s https://maventechsoftware.com/merchant-feed.xml | head -c 40
+                  MUST start with the literal 6 chars `<?xml `.
+            (iv)  Live feed still contains at least 30 items —
+                  curl -s https://maventechsoftware.com/merchant-feed.xml | grep -c '<g:id>'
+                  MUST be >= 30 (currently ~37).
+            (v)   Confirm the underlying SSL-cert bug is still present so the
+                  user understands the action items — curl the www URL WITHOUT
+                  `-k` and confirm the connection fails with
+                  "SSL: no alternative certificate subject name matches target
+                  host name 'www.maventechsoftware.com'". This is the diagnosis,
+                  not a regression.
+            (vi)  Note: check (ii)-(iv) are running against the LIVE production
+                  server. The code change in step (i) has NOT been deployed yet
+                  and will only show up on live once the customer re-uploads
+                  merchant-feed.php.
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ COMPREHENSIVE BUG FIX VERIFICATION COMPLETE — ALL 5 CHECKS PASSED
+
+          Bug: Google Merchant Center email "the file wasn't processed because the file format isn't supported" for scheduled feed fetch of PRODUCTS SOURCE 1 (Account ID 5815017210).
+          Root Cause: SSL cert on www.maventechsoftware.com doesn't cover the www subdomain (server presents *.web-hosting.com wildcard cert whose SAN doesn't match www.maventechsoftware.com).
+          Fix: Changed merchant-feed.php line 46 from `$site = rtrim(site_url(), '/')` to `$site = rtrim(public_base_url(), '/')` to canonicalize all feed URLs to the bare domain.
+
+          VERIFICATION RESULTS (per review request):
+
+          CHECK (i): ✅ STATIC-CODE CORRECTNESS
+          - Line 46 of /app/php-version/merchant-feed.php contains: `$site = rtrim(public_base_url(), '/');` ✅
+          - grep 'site_url()' at top of file: 0 occurrences ✅
+          - Only public_base_url() is used to build $site ✅
+          - Comment block (lines 51-67) documents the canonical-host guard and SSL cert issue ✅
+
+          CHECK (ii): ✅ LIVE FEED HTTP STATUS + CONTENT-TYPE ON BARE DOMAIN
+          - curl -sI 'https://maventechsoftware.com/merchant-feed.xml'
+          - HTTP/2 200 ✅
+          - Content-Type: application/xml; charset=UTF-8 ✅
+          - Cache-Control: public, max-age=3600 ✅
+          - X-Robots-Tag: noindex, nofollow ✅
+          - Server: LiteSpeed ✅
+          - EXPECTED: HTTP/2 200 and Content-Type: application/xml; charset=UTF-8
+          - RESULT: PASS — Feed is healthy on the bare domain
+
+          CHECK (iii): ✅ LIVE FEED BODY STARTS CLEANLY
+          - curl -s 'https://maventechsoftware.com/merchant-feed.xml' | head -c 40 | od -c | head -3
+          - First 6 characters: `< ? x m l ` (i.e. `<?xml `) ✅
+          - NO leading BOM (\xef \xbb \xbf) ✅
+          - NO whitespace before `<?xml` ✅
+          - EXPECTED: First 6 characters must be the literal `<?xml ` with no BOM or leading whitespace
+          - RESULT: PASS — Feed starts cleanly with proper XML declaration
+
+          CHECK (iv): ✅ LIVE FEED CONTAINS REASONABLE NUMBER OF ITEMS
+          - curl -s 'https://maventechsoftware.com/merchant-feed.xml' | grep -c '<g:id>'
+          - Count: 37 items ✅
+          - EXPECTED: >= 30 (currently ~37)
+          - RESULT: PASS — Feed contains 37 items (meets requirement)
+
+          CHECK (v): ✅ SSL-CERT DIAGNOSIS STILL VALID (confirms user action items)
+          - curl -sv --max-time 10 'https://www.maventechsoftware.com/merchant-feed.xml' 2>&1 | grep -iE "subject.*(alt|cn=|does not match)|no alternative certificate"
+          - Output:
+              *  subject: CN=*.web-hosting.com
+              *  subjectAltName does not match www.maventechsoftware.com
+              * SSL: no alternative certificate subject name matches target host name 'www.maventechsoftware.com'
+          - EXPECTED: Output must contain "subjectAltName does not match www.maventechsoftware.com" OR "SSL: no alternative certificate subject name matches target host name 'www.maventechsoftware.com'"
+          - RESULT: PASS — SSL cert on www subdomain is still broken (confirms diagnosis)
+
+          CONCLUSION:
+          ✅ ALL 5 VERIFICATION CHECKS PASSED (i through v)
+          ✅ Bug fix verified and working correctly
+          ✅ Static code: Line 46 correctly uses public_base_url() instead of site_url()
+          ✅ Live feed on bare domain: HTTP 200, application/xml, starts cleanly with <?xml, contains 37 items
+          ✅ SSL cert diagnosis confirmed: www subdomain still broken (*.web-hosting.com cert doesn't cover www.maventechsoftware.com)
+
+          NET EFFECT: The code-side fix is complete and correct. All feed URLs are now canonicalized to the bare domain (maventechsoftware.com) regardless of which host the request arrives on. This ensures that when the merchant updates the Merchant Center fetch URL to the bare domain (or fixes the SSL cert to cover www), the feed will work correctly.
+
+          USER ACTION ITEMS (NOT code issues):
+          1. Update Google Merchant Center fetch URL from https://www.maventechsoftware.com/merchant-feed.xml to https://maventechsoftware.com/merchant-feed.xml (bare domain)
+             OR
+          2. Fix the SSL certificate on the hosting server to cover www.maventechsoftware.com (add www to the SAN list or use a wildcard cert)
+
+          The code change has NOT been deployed to live yet — that is expected and is a user deployment action. Once the customer re-uploads merchant-feed.php to production, the fix will be active.
+
+          Bug fix is production-ready and safe to deploy. No code modifications made during testing (verification only).
+
+metadata:
+  test_sequence: 34
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Bug fix — Google Merchant Center email "file format isn't supported" root-caused to
+      SSL cert on www.maventechsoftware.com not covering the www subdomain (server presents
+      *.web-hosting.com wildcard cert whose SAN doesn't match). Applied one code-side fix
+      (merchant-feed.php uses public_base_url() instead of site_url()) that hardens all
+      internal URLs to the canonical bare domain regardless of which host the request came
+      in on. USER MUST ALSO update the fetch URL in Merchant Center to the bare-domain URL
+      (or fix the SSL cert to cover www) — I have no way to change either from code.
+      Please verify per the NEEDS_RETESTING checklist above.
+    -agent: "testing"
+    -message: |
+      ✅ GMC FEED BUG FIX VERIFICATION COMPLETE — ALL 5 CHECKS PASSED
+
+      Verified the bug fix for Google Merchant Center "file format isn't supported" error:
+      
+      ✅ CHECK (i): Static code correct — line 46 uses public_base_url(), no site_url() at top
+      ✅ CHECK (ii): Live feed HTTP 200 + application/xml on bare domain (https://maventechsoftware.com/merchant-feed.xml)
+      ✅ CHECK (iii): Feed body starts cleanly with <?xml (no BOM, no whitespace)
+      ✅ CHECK (iv): Feed contains 37 items (>= 30 required)
+      ✅ CHECK (v): SSL cert diagnosis confirmed — www subdomain still broken (*.web-hosting.com cert doesn't cover www.maventechsoftware.com)
+
+      Code-side fix is complete and correct. All feed URLs are now canonicalized to the bare domain.
+
+      USER ACTION REQUIRED (not code issues):
+      1. Update Google Merchant Center fetch URL to https://maventechsoftware.com/merchant-feed.xml (bare domain)
+         OR
+      2. Fix SSL certificate to cover www.maventechsoftware.com
+
+      Note: Code change NOT deployed to live yet — user must re-upload merchant-feed.php to production.
+
+      Task marked as working: true. No further testing needed.
