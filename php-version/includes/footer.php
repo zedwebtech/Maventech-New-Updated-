@@ -149,6 +149,8 @@
     <!-- Trademark + legal -->
     <hr class="border-secondary my-4">
 
+    <p class="small text-center mx-auto" style="max-width: 820px;">Maventech LLC is an independent marketplace provider of genuine, surplus product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
+
     <div class="d-flex justify-content-center flex-wrap gap-2 small mb-3">
       <?php
       $legal = [
