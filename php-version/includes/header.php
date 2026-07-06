@@ -422,8 +422,8 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
                 'postalCode'      => $addr['postalCode'] ?: null,
                 'addressCountry'  => $addr['addressCountry'] ?: null,
             ]) : null,
-            'slogan'=> 'Genuine software licences. Instant digital delivery.',
-            'description' => 'Independent provider of genuine software licence keys (Microsoft, Bitdefender, Norton, McAfee, Adobe, Autodesk and more) with instant digital delivery to ' . implode(', ', array_column($areaServed, 'name')) . '. Not affiliated with Microsoft Corporation.',
+            'slogan'=> 'Genuine software product keys. Digital delivery by email.',
+            'description' => 'Authorized independent reseller of genuine software product keys (Microsoft, Bitdefender, Norton, McAfee, Adobe, Autodesk and more) with digital delivery by email to ' . implode(', ', array_column($areaServed, 'name')) . '. All trademarks are the property of their respective owners.',
             'brand' => ['@id' => site_url() . '/#brand'],
             // sameAs — Google Ads / Bing Ads trust auditors expect this
             // array to be present and non-empty on the Organization entity.
@@ -480,7 +480,7 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
             '@id'   => site_url() . '/#brand',
             'name'  => $brandName,
             'logo'  => $brandLogoAbs,
-            'slogan'=> 'Genuine software licences. Instant digital delivery.',
+            'slogan'=> 'Genuine software product keys. Digital delivery by email.',
             'url'   => site_url() . '/',
         ]),
         // LocalBusiness — qualifies for AI "near me" answers + Google's
@@ -959,8 +959,8 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
     </div>
   </div>
 </nav>
-<!-- Top promo strip moved INLINE into the trustbar above (next to
-     "Instant Digital Delivery") — no separate floating bar anymore. -->
+<!-- Top promo strip moved INLINE into the trustbar above — no separate
+     floating bar anymore. -->
 
 <!-- Independent-reseller disclosure below the nav removed at user request —
      the top-of-page trust-topbar ("Independent Distributor of Surplus

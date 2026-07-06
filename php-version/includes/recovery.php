@@ -465,7 +465,7 @@ function mv_send_abandoned_cart_email(array $order): bool
     </div>
     <div style="padding:6px 28px 30px;text-align:center;">
       <a href="{$resume}" style="display:inline-block;background:#0B5CFF;color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;">Continue Checkout →</a>
-      <p style="margin:14px 0 0;font-size:12px;color:#64748b;">Your keys are delivered by email within minutes of a successful payment.</p>
+      <p style="margin:14px 0 0;font-size:12px;color:#64748b;">Your product keys are delivered by email after your payment is verified.</p>
     </div>
     <div style="background:#f8fafc;padding:16px 28px;border-top:1px solid #f1f5f9;font-size:12px;color:#64748b;line-height:1.6;text-align:center;">
       Questions? <a href="mailto:{$support}" style="color:#0B5CFF;text-decoration:none;">{$support}</a>

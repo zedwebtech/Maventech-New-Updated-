@@ -55,7 +55,7 @@ if (!$product) {
 // FAQs, recent published reviews.  Kept compact so Haiku stays fast + cheap.
 $currency  = current_currency()['code'] ?? 'USD';
 $available = function_exists('available_keys_count') ? available_keys_count($product['slug']) : 0;
-$stockLine = "In stock — instant digital delivery (most orders within digital delivery; occasionally up to 1 hour).";
+$stockLine = "In stock — digital delivery by email after order verification (typically the same business day; occasionally up to a few hours).";
 
 $faqs = product_faqs($product);
 $faqBlock = '';

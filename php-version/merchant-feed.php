@@ -279,7 +279,7 @@ echo "  <channel>\n";
 echo "    <title>" . feed_xml_esc($feedTitle) . "</title>\n";
 echo "    <link>" . feed_xml_esc($site) . "</link>\n";
 echo "    <atom:link href=\"" . feed_xml_esc($linkRss) . "\" rel=\"self\" type=\"application/rss+xml\"/>\n";
-echo "    <description>Genuine digital license keys delivered instantly by email — Microsoft Office, Windows, Bitdefender, Norton, McAfee, Adobe and more. " . feed_xml_esc($brand) . " is an independent software key provider (not affiliated with Microsoft Corporation).</description>\n";
+echo "    <description>Genuine digital software product keys delivered by email — Microsoft Office, Windows, Bitdefender, Norton, McAfee, Adobe and more. " . feed_xml_esc($brand) . " is an authorized independent reseller of previously-licensed software product keys.</description>\n";
 echo "    <language>en-US</language>\n";
 echo "    <lastBuildDate>" . feed_xml_esc($updated) . "</lastBuildDate>\n";
 
@@ -312,7 +312,7 @@ foreach ($products as $p) {
     $descRaw = trim((string)($p['description'] ?? ''));
     if ($descRaw === '') {
         $descRaw = sprintf(
-            'Genuine %s product key for %s%s. Digital delivery by email once the order is processed. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by %s, an independent software reseller (not affiliated with Microsoft Corporation).',
+            'Genuine %s product key for %s%s. Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by %s, an authorized independent reseller of previously-licensed software product keys.',
             $brandPi,
             $title,
             $p['version'] ? ' ' . $p['version'] : '',

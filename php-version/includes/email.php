@@ -584,7 +584,7 @@ function product_faqs(array $product): array {
     $faqs = [
         [
             'question' => 'How long does delivery take for ' . $name . '?',
-            'answer'   => 'Your ' . $name . ' license key is delivered by email almost instantly — typically within digital delivery of completing payment, often in seconds. The email includes the activation key, the official ' . $brand . ' download link, and step-by-step activation instructions. There is no physical shipping — everything is digital and reaches the email address you provided at checkout.',
+            'answer'   => 'Your ' . $name . ' product key is delivered by email after your order is verified — typically the same business day. The email includes the activation key, the official ' . $brand . ' download link, and step-by-step activation instructions. There is no physical shipping — everything is digital and reaches the email address you provided at checkout.',
         ],
         [
             'question' => 'Is this a genuine ' . $brand . ' license key?',

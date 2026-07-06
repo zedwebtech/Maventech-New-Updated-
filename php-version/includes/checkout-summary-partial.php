@@ -27,7 +27,7 @@ if (!isset($items)) { return; }
   </a>
   <small class="text-secondary d-block">Pay <?= SITE_LEGAL ?></small>
   <div class="receipt-amount fw-bold" data-testid="checkout-amount-banner"><?= format_price($total) ?></div>
-  <small class="text-secondary d-block mb-2"><?= count($items) + ($proAssist ? 1 : 0) ?> item<?= (count($items) + ($proAssist ? 1 : 0)) !== 1 ? 's' : '' ?> · Instant digital delivery</small>
+  <small class="text-secondary d-block mb-2"><?= count($items) + ($proAssist ? 1 : 0) ?> item<?= (count($items) + ($proAssist ? 1 : 0)) !== 1 ? 's' : '' ?> · Digital delivery by email</small>
 </div>
 <hr class="my-2">
 <?php foreach ($items as $i): ?>

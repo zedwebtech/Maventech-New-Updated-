@@ -11,7 +11,7 @@ foreach ($items as $i) {
 }
 include __DIR__ . '/includes/header.php';
 ?>
-<?= render_page_head('Shopping Cart', $items ? cart_count() . ' item(s) in your cart — keys delivered by email within minutes' : '', ['Cart' => null]) ?>
+<?= render_page_head('Shopping Cart', $items ? cart_count() . ' item(s) in your cart — product keys delivered by email after order verification' : '', ['Cart' => null]) ?>
 <div class="container py-4 py-lg-5">
 
   <?php if (!empty($_SESSION['flash_error'])): ?>

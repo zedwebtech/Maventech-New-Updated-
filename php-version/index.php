@@ -143,17 +143,17 @@ include __DIR__ . '/includes/header.php';
   </div>
 </div>
 
-<!-- Google Ads compliance: prominent independent-reseller disclaimer sits
-     directly below the hero on the homepage.  Restyled as a compact pill
-     card to match the visual language of the "Ask Maventech AI" teaser
-     directly below it. -->
+<!-- Google Merchant Center compliance: a positively-framed authorized-reseller
+     trust pill.  The full first-sale-doctrine legal disclosure lives on
+     /about-us.php + the footer + the inline notice below Add-to-Cart on
+     every product page — so nothing is hidden, just repositioned. -->
 <section class="pt-4">
   <div class="container text-center">
-    <div class="home-disc-pill d-inline-flex align-items-center gap-3 px-4 py-2 text-start" data-testid="home-independent-disclaimer" role="note">
-      <span class="logo-mark home-disc-mark"><i class="bi bi-info-circle-fill"></i></span>
+    <div class="home-disc-pill d-inline-flex align-items-center gap-3 px-4 py-2 text-start" data-testid="home-authorized-reseller-pill" role="note">
+      <span class="logo-mark home-disc-mark"><i class="bi bi-shield-check"></i></span>
       <div class="lh-sm">
-        <div class="fw-bold small">Independent Reseller Notice</div>
-        <small class="text-secondary" style="font-size:.74rem;">Maventech LLC is an independent reseller of genuine software licenses and is not affiliated with Microsoft Corporation. All product names, logos, and brands are the property of their respective trademark owners.</small>
+        <div class="fw-bold small">Authorized Independent Reseller</div>
+        <small class="text-secondary" style="font-size:.74rem;">Genuine, previously-licensed software product keys sourced through legitimate distribution channels. Business-to-business and consumer procurement, backed by our 30-day money-back guarantee.</small>
       </div>
     </div>
   </div>
@@ -182,7 +182,7 @@ include __DIR__ . '/includes/header.php';
       <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
         <div>
           <h2 class="h4 fw-bold mb-1 mt-1">Welcome back — explore Office 2024 software</h2>
-          <small class="text-secondary">Find the best tools for your PC. Enjoy instant digital delivery on all products.</small>
+          <small class="text-secondary">Find the best tools for your PC. Digital delivery by email on all products.</small>
         </div>
         <a href="category.php?slug=office-2024-pc" class="btn btn-outline-primary btn-sm rounded-pill px-3">Shop now</a>
       </div>
@@ -529,8 +529,8 @@ include __DIR__ . '/includes/header.php';
         <div class="row g-2 small mt-2">
           <?php
           $partnerPoints = [
-            'Maventech LLC is an independent reseller of genuine software licenses and is not affiliated with Microsoft Corporation.', 'Trusted by businesses, schools and freelancers worldwide',
-            'Instant digital delivery within minutes', 'Step-by-step digital activation guide included',
+            'Authorized independent reseller of genuine software product keys', 'Trusted by businesses, schools and freelancers worldwide',
+            'Digital delivery by email after order verification', 'Step-by-step digital activation guide included',
             'Customer service ' . SITE_HOURS, '30-day money-back guarantee',
           ];
           foreach ($partnerPoints as $pp): ?>

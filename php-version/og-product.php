@@ -166,7 +166,7 @@ if ($fontBold) {
     imagettftext($im, 60, 0, 530, 525, $green, $fontBold, $priceTxt);
 
     // Bottom CTA strip
-    imagettftext($im, 22, 0, 530, 570, $white, $fontBold, 'GENUINE  ·  ONE-TIME PURCHASE  ·  INSTANT DELIVERY');
+    imagettftext($im, 22, 0, 530, 570, $white, $fontBold, 'GENUINE  ·  ONE-TIME PURCHASE  ·  EMAIL DELIVERY');
 } else {
     imagestring($im, 5, 530, 200, $product['name'], $white);
     imagestring($im, 5, 530, 260, '$' . number_format((float)$product['price'], 2), $green);

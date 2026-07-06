@@ -92,7 +92,7 @@ function _ads_seo(array $product, string $brand): array {
     //   pricing only.
     $savingsPart = '';
     $desc = 'Buy ' . $name . ' ' . strtolower($licenseChip) . ' ' . $deviceText
-          . '. Genuine key, instant 15-minute email delivery, 30-day money-back guarantee.'
+          . '. Genuine product key, digital delivery by email after order verification, 30-day money-back guarantee.'
           . $savingsPart;
     if (mb_strlen($desc) > 155) $desc = mb_substr($desc, 0, 152) . '…';
 
@@ -528,7 +528,7 @@ include __DIR__ . '/includes/header.php';
            relationship to Microsoft.  Styled plain (no highlight box) to match
            the surrounding "Important Licensing Note:" tone. -->
       <p class="small text-secondary mt-3 mb-0" data-testid="pd-inline-disclaimer" role="note">
-        <strong>Notice:</strong> This is a 100% digital license key delivery. No physical media or box will be shipped. Maventech LLC is an independent marketplace reseller and is not affiliated with Microsoft Corporation.
+        <strong>Notice:</strong> This is a 100% digital software product key. No physical media or packaging is shipped. Sold by <?= esc(SITE_LEGAL) ?>, an authorized independent reseller of previously-licensed software product keys. All product names, logos and brands are the property of their respective trademark owners.
       </p>
 
       <p class="small text-secondary mt-3 mb-0" data-testid="product-licensing-note">

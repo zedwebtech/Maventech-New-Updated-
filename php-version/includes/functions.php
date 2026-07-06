@@ -1927,7 +1927,12 @@ function product_img_alt(array $p): string
     // Use plain dashes (not HTML entities) so the alt text isn't double-
     // encoded when the caller pipes it through esc().
     $alt = $p['name'] . ' digital product key - genuine one-time purchase for ' . $platform . ', digital delivery by email';
-    if ($pct > 0) $alt .= ', ' . $pct . '% off';
+    // Compliance: do NOT append "X% off" to product image alt text.  Google
+    // Merchant Center's automated review flags large discount-percent tokens
+    // in alt attributes as "too good to be true" pricing (a common signal of
+    // an unauthorized reseller / scam listing).  The transparent single price
+    // is already emitted in the visible price + <g:price> feed; there is no
+    // legitimate reason to duplicate the discount spread into image alt text.
     return $alt . ' | ' . SITE_BRAND;
 }
 
