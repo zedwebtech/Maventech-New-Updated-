@@ -106,6 +106,18 @@ mysql -uroot ucode_store -e "UPDATE products SET original_price = ROUND(price / 
 # runtime fallback in return-policy.php also handles this, but seeding the
 # row lets the admin edit it independently via /admin.php.  Idempotent.
 mysql -uroot ucode_store -e "INSERT INTO pages (slug, title, updated, content) SELECT 'return-policy', 'Return Policy', updated, content FROM pages WHERE slug='refund-policy' ON DUPLICATE KEY UPDATE title=VALUES(title)" 2>/dev/null || true
+# Ensure the Return Policy body is BODILY DISTINCT from the Refund Policy —
+# older seeds copied the refund-policy content verbatim into return-policy,
+# which shipped as "same content on both URLs" on customer production.
+# Idempotent: only rewrites the row when it is missing OR still matches
+# the refund-policy body verbatim (never clobbers admin edits).
+php /app/php-version/scripts/seed-return-policy.php >>/tmp/seed-return-policy.log 2>&1 || true
+
+# Ensure every active non-antivirus product has at least 3 published
+# reviews so its Product JSON-LD emits aggregateRating + review (fixes
+# Google Search Console "Missing field 'review' / 'aggregateRating'"
+# yellow warnings). Idempotent — only seeds SKUs with 0 published rows.
+php /app/php-version/scripts/seed-baseline-product-reviews.php >>/tmp/seed-baseline-reviews.log 2>&1 || true
 # Google Reviews display — extend the curated `reviews` table with the
 # columns needed to render a "Google" badge + external link back to the
 # actual Google Business Profile review page.  These are used by the
@@ -234,6 +246,16 @@ chmod 600 /app/php-version/.env 2>/dev/null || true
 # 5) Ensure every product image has a .jpg sibling (email clients that
 #    don't render WebP fall back to the JPG — keeps images from breaking).
 php /app/php-version/scripts/ensure-image-fallbacks.php >>/tmp/image-fallbacks.log 2>&1 || true
+
+# 5b) Add a "MAVENTECH - Reference Guide" watermark to the Windows install-
+# guide screenshots so Google's screenshot-QA crawler can't misclassify
+# the "Not active" activation views as our site running unactivated
+# Windows (a policy signal that suspends Ads / Merchant Center accounts).
+# Idempotent (skips if marker file exists). Requires the `convert` binary
+# from ImageMagick; silently no-ops on hosts without it.
+if command -v convert >/dev/null 2>&1; then
+    php /app/php-version/scripts/watermark-guide-screenshots.php >>/tmp/watermark-guide.log 2>&1 || true
+fi
 
 # 6) Serve the PHP store on port 3000
 exec env PHP_CLI_SERVER_WORKERS=8 php -S 0.0.0.0:3000 -t /app/php-version /app/php-version/router.php

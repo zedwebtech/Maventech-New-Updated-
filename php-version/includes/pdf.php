@@ -629,48 +629,48 @@ function generate_receipt_pdf(array $order, array $items, ?array $payment = null
 
     $html = <<<HTML
 <!doctype html><html><head><meta charset="utf-8"><style>
-  @page { margin: 28px 40px; size: letter portrait; }
-  body { font-family:'DejaVu Sans',Helvetica,Arial,sans-serif; font-size:10pt; color:#1f2937; }
+  @page { margin: 22px 36px; size: letter portrait; }
+  body { font-family:'DejaVu Sans',Helvetica,Arial,sans-serif; font-size:9.5pt; color:#1f2937; }
   .scatter-wrap { position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; }
   .scatter-icon { position:absolute; opacity:0.09; }
-  .rc-top { width:100%; border-collapse:collapse; margin-bottom:10px; }
+  .rc-top { width:100%; border-collapse:collapse; margin-bottom:8px; }
   .rc-top td { vertical-align:top; }
-  .rc-top .rc-co { font-size:8pt; color:#64748b; line-height:1.45; margin-top:4px; }
+  .rc-top .rc-co { font-size:7.5pt; color:#64748b; line-height:1.4; margin-top:3px; }
   .rc-tag { text-align:right; }
   .rc-tag .lbl { font-size:8pt; letter-spacing:2px; font-weight:700; color:#059669; text-transform:uppercase; }
-  .rc-hero { background:#ecfdf5; border:1px solid #a7f3d0; border-radius:14px; padding:12px 20px; margin-bottom:10px; text-align:center; }
-  .rc-check { width:36px; height:36px; line-height:34px; border-radius:50%; background:#059669; color:#fff; font-size:18pt; font-weight:700; margin:0 auto 4px; }
-  .rc-badge { display:inline-block; background:#059669; color:#fff; font-size:7.5pt; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; padding:3px 10px; border-radius:999px; }
-  .rc-amt { font-size:22pt; font-weight:800; color:#047857; margin:6px 0 2px; letter-spacing:.3px; }
-  .rc-amt-sub { font-size:9pt; color:#059669; }
-  .rc-card { border:1px solid #e2e8f0; border-radius:12px; padding:0; margin-bottom:10px; }
+  .rc-hero { background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:9px 18px; margin-bottom:8px; text-align:center; }
+  .rc-check { width:30px; height:30px; line-height:28px; border-radius:50%; background:#059669; color:#fff; font-size:15pt; font-weight:700; margin:0 auto 3px; }
+  .rc-badge { display:inline-block; background:#059669; color:#fff; font-size:7pt; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; padding:2px 9px; border-radius:999px; }
+  .rc-amt { font-size:20pt; font-weight:800; color:#047857; margin:5px 0 2px; letter-spacing:.3px; }
+  .rc-amt-sub { font-size:8.5pt; color:#059669; }
+  .rc-card { border:1px solid #e2e8f0; border-radius:10px; padding:0; margin-bottom:8px; }
   .rc-card table { width:100%; border-collapse:collapse; }
-  .rc-card td { padding:6px 14px; font-size:9pt; vertical-align:top; border-bottom:1px solid #eef2f7; }
+  .rc-card td { padding:4px 12px; font-size:8.5pt; vertical-align:top; border-bottom:1px solid #eef2f7; }
   .rc-card tr:last-child td { border-bottom:0; }
   .rc-card .k { color:#64748b; width:38%; }
   .rc-card .v { color:#0f172a; font-weight:700; text-align:right; }
   .rc-card .v.mono { font-family:'DejaVu Sans Mono',monospace; letter-spacing:.3px; }
-  .sec-label { font-size:7.5pt; letter-spacing:1.4px; text-transform:uppercase; color:#94a3b8; font-weight:700; margin:0 0 4px; }
-  .ps { width:100%; border-collapse:collapse; margin-bottom:4px; }
-  .ps td { padding:5px 2px; font-size:9pt; border-bottom:1px dashed #e2e8f0; }
+  .sec-label { font-size:7pt; letter-spacing:1.4px; text-transform:uppercase; color:#94a3b8; font-weight:700; margin:0 0 3px; }
+  .ps { width:100%; border-collapse:collapse; margin-bottom:3px; }
+  .ps td { padding:4px 2px; font-size:8.5pt; border-bottom:1px dashed #e2e8f0; }
   .ps .ps-name { color:#1f2937; }
-  .ps .ps-qty { color:#94a3b8; font-size:8pt; }
+  .ps .ps-qty { color:#94a3b8; font-size:7.5pt; }
   .ps .ps-amt { text-align:right; color:#0f172a; font-weight:700; white-space:nowrap; }
   .ps-total { width:100%; border-collapse:collapse; }
-  .ps-total td { padding:5px 2px; font-size:11pt; font-weight:800; }
+  .ps-total td { padding:4px 2px; font-size:10.5pt; font-weight:800; }
   .ps-total .lbl { color:#065f46; }
   .ps-total .val { text-align:right; color:#047857; }
-  .ps-total .ps-t-min td { padding:2px 2px; font-size:9pt; font-weight:600; }
+  .ps-total .ps-t-min td { padding:1px 2px; font-size:8.5pt; font-weight:600; }
   .ps-total .ps-t-min .lbl2 { color:#64748b; }
   .ps-total .ps-t-min .val2 { text-align:right; color:#334155; }
-  .rc-note { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:6px 12px; font-size:8.5pt; color:#166534; margin:8px 0; }
+  .rc-note { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:5px 11px; font-size:8pt; color:#166534; margin:6px 0; }
   .rc-note .hl { background:#dcfce7; color:#14532d; font-weight:700; padding:1px 6px; border-radius:4px; }
-  .rc-cols { width:100%; border-collapse:collapse; margin-top:6px; }
-  .rc-cols td { vertical-align:top; width:50%; padding-right:12px; font-size:8.5pt; color:#334155; line-height:1.4; }
+  .rc-cols { width:100%; border-collapse:collapse; margin-top:5px; }
+  .rc-cols td { vertical-align:top; width:50%; padding-right:12px; font-size:8pt; color:#334155; line-height:1.35; }
   .rc-qr { text-align:right; }
-  .rc-qr img { width:58px; height:58px; border:1px solid #e2e8f0; border-radius:6px; padding:2px; background:#fff; }
-  .rc-qr-lbl { font-size:6pt; color:#64748b; margin-top:2px; line-height:1.2; }
-  .rc-footer { margin-top:8px; padding-top:6px; border-top:1px solid #e2e8f0; font-size:7.5pt; color:#94a3b8; line-height:1.5; }
+  .rc-qr img { width:54px; height:54px; border:1px solid #e2e8f0; border-radius:6px; padding:2px; background:#fff; }
+  .rc-qr-lbl { font-size:5.5pt; color:#64748b; margin-top:2px; line-height:1.2; }
+  .rc-footer { margin-top:6px; padding-top:5px; border-top:1px solid #e2e8f0; font-size:7pt; color:#94a3b8; line-height:1.4; }
 </style></head><body>
   {$scatter}
   {$promoBar}

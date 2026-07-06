@@ -30,6 +30,40 @@ if (!isset($items)) { return; }
   <small class="text-secondary d-block mb-2"><?= count($items) + ($proAssist ? 1 : 0) ?> item<?= (count($items) + ($proAssist ? 1 : 0)) !== 1 ? 's' : '' ?> · Digital delivery by email</small>
 </div>
 <hr class="my-2">
+<?php
+/* --- Protection Hub badge (rendered when a `sub-*` plan is in the cart) ---
+ * Purpose: give the customer a large, visible confirmation that their
+ * purchase includes an active Protection Hub subscription (shield / medal
+ * icon + plan name + benefits chip).  The exact same visual is mirrored in
+ * the delivery email hero (see build_protection_hub_hero_email() in
+ * includes/email.php) so the badge the customer sees at checkout matches
+ * what lands in their inbox after payment. */
+$_planItem = null;
+foreach ($items as $__it) {
+    if (strpos((string)$__it['slug'], 'sub-') === 0) { $_planItem = $__it; break; }
+}
+if ($_planItem):
+    $_planImg = $_planItem['image'] ?: '/assets/images/subscriptions/pro-shield.png';
+?>
+  <div class="protection-hub-badge d-flex align-items-center gap-3 p-3 mb-3 rounded-3 position-relative overflow-hidden"
+       style="background:linear-gradient(135deg,#eef2ff 0%,#dbeafe 60%,#e0e7ff 100%);border:1px solid #a5b4fc;"
+       data-testid="checkout-protection-hub-badge">
+    <span aria-hidden="true" style="position:absolute;top:-24px;right:-18px;width:110px;height:110px;background:radial-gradient(circle,rgba(59,130,246,.28) 0%,rgba(59,130,246,0) 70%);"></span>
+    <img src="<?= esc($_planImg) ?>"
+         onerror="this.onerror=null;this.src='/assets/images/subscriptions/pro-shield.png';"
+         alt="<?= esc($_planItem['name']) ?> — Protection Hub | <?= SITE_BRAND ?>"
+         style="width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(30,64,175,.25));flex-shrink:0;">
+    <div class="flex-grow-1" style="position:relative;">
+      <div style="font-size:.66rem;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#3730a3;">Maventech Protection Hub</div>
+      <div class="fw-bold" style="color:#1e293b;font-size:.95rem;line-height:1.2;"><?= esc($_planItem['name']) ?></div>
+      <div class="d-flex flex-wrap gap-1 mt-1">
+        <span class="badge rounded-pill" style="background:#1e40af;color:#fff;font-size:.62rem;font-weight:600;letter-spacing:.3px;"><i class="bi bi-shield-check me-1"></i>Priority support</span>
+        <span class="badge rounded-pill" style="background:#0f766e;color:#fff;font-size:.62rem;font-weight:600;letter-spacing:.3px;"><i class="bi bi-lightning-charge-fill me-1"></i>Faster resolution</span>
+        <span class="badge rounded-pill" style="background:#7c3aed;color:#fff;font-size:.62rem;font-weight:600;letter-spacing:.3px;"><i class="bi bi-patch-check-fill me-1"></i>Genuine keys guarantee</span>
+      </div>
+    </div>
+  </div>
+<?php endif; ?>
 <?php foreach ($items as $i): ?>
   <?php $isPlanRow = (strpos((string)$i['slug'], 'sub-') === 0); ?>
   <div class="d-flex gap-2 mb-2 align-items-center" data-testid="summary-item-<?= esc($i['slug']) ?>">

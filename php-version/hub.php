@@ -169,9 +169,17 @@ foreach (($topic['videos'] ?? []) as $v) {
 }
 
 // Mentions list (Google graph edge) — link every aggregated blog post + product to the hub.
+// NOTE: we intentionally use @type=Thing (not Product) for the product references.
+// A Product entry inside a hub page must satisfy Google's Product Rich Result
+// spec (offers/review/aggregateRating) — which the summary rows here don't.
+// Emitting them as Product produced a "Either 'offers', 'review', or
+// 'aggregateRating' should be specified" critical error in Google Search Console
+// on /hub/windows (4 items). Thing is a bare reference and is valid on its own.
+// The real Product JSON-LD (with offers/aggregateRating/review) still lives on
+// the actual /product.php?slug=... page for each SKU.
 $mentionsArr = [];
 foreach (array_slice($hubProducts, 0, 12) as $p) {
-    $mentionsArr[] = ['@type' => 'Product', 'name' => $p['name'], 'url' => site_url() . '/product.php?slug=' . urlencode($p['slug'])];
+    $mentionsArr[] = ['@type' => 'Thing', 'name' => $p['name'], 'url' => site_url() . '/product.php?slug=' . urlencode($p['slug'])];
 }
 foreach (array_slice($hubPosts, 0, 6) as $bp) {
     $mentionsArr[] = ['@type' => 'Article', 'name' => $bp['title'], 'url' => site_url() . '/blog-post.php?id=' . urlencode((string)$bp['id'])];

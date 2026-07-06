@@ -1079,6 +1079,10 @@ function build_order_email_html(array $order, array $items, array $assignments, 
     // Mirror the receipt email's Bill-To + gateway/descriptor block into the
     // key-delivery email (auto-injected so the stored template stays untouched).
     $out = inject_payment_summary($out, $order);
+    // Protection Hub hero — mirrors the checkout-page badge so the customer's
+    // inbox visual matches what they saw at checkout.  Only injects when the
+    // order actually contains a `sub-*` plan (safe no-op otherwise).
+    $out = inject_protection_hub_hero($out, $order, $items, $base);
     return $out;
 }
 
@@ -1104,6 +1108,62 @@ function track_order_button_html(array $order, string $base): string
 }
 
 /**
+ * Build the Protection Hub hero block for the delivery email — mirrors
+ * the .protection-hub-badge visible on the checkout page so the customer's
+ * inbox visual matches their in-cart experience.  Renders as an email-safe
+ * inline-styled table.  Returns '' when the order has no Protection Hub
+ * subscription line (safe no-op).
+ */
+function build_protection_hub_hero_email(array $order, array $items, string $base): string
+{
+    // Detect a Protection Hub line in the order items.  Cart / order rows
+    // use a `sub-<slug>` prefix on the SKU/slug for subscription plans.
+    $planItem = null;
+    foreach ($items as $it) {
+        $slug = (string)($it['slug'] ?? $it['sku'] ?? '');
+        if ($slug !== '' && strpos($slug, 'sub-') === 0) { $planItem = $it; break; }
+    }
+    // Fallback: order.subscription_plan column (set post-checkout).
+    if (!$planItem && !empty($order['subscription_plan']) && function_exists('sub_get_plan')) {
+        try {
+            $p = sub_get_plan((string)$order['subscription_plan']);
+            if ($p) {
+                $planItem = [
+                    'name'  => $p['name']  ?? 'Protection Hub plan',
+                    'image' => $p['icon_image'] ?? '/assets/images/subscriptions/pro-shield.png',
+                    'slug'  => 'sub-' . ($p['slug'] ?? 'plan'),
+                ];
+            }
+        } catch (Throwable $e) {}
+    }
+    if (!$planItem) return '';
+
+    $planName = esc((string)($planItem['name'] ?? 'Protection Hub plan'));
+    $planImg  = (string)($planItem['image'] ?? '/assets/images/subscriptions/pro-shield.png');
+    if ($planImg === '') $planImg = '/assets/images/subscriptions/pro-shield.png';
+    $planImgUrl = esc(email_absolute_url($planImg));
+
+    return '<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" data-testid="email-protection-hub-hero" style="margin:14px 0 22px;">'
+         . '  <tr><td style="padding:20px 22px;background:linear-gradient(135deg,#eef2ff 0%,#dbeafe 60%,#e0e7ff 100%);border:1px solid #a5b4fc;border-radius:14px;">'
+         . '    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">'
+         . '      <tr>'
+         . '        <td width="80" valign="middle" style="padding-right:16px;">'
+         . '          <img src="' . $planImgUrl . '" width="72" height="72" alt="' . $planName . ' — Protection Hub" style="width:72px;height:72px;object-fit:contain;display:block;border:0;">'
+         . '        </td>'
+         . '        <td valign="middle">'
+         . '          <div style="font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#3730a3;">Maventech Protection Hub</div>'
+         . '          <div style="font-size:18px;font-weight:800;color:#1e293b;margin-top:2px;line-height:1.2;">' . $planName . '</div>'
+         . '          <div style="font-size:12px;color:#334155;margin-top:6px;line-height:1.55;">'
+         . '            Your subscription is active. You now have <strong>priority support</strong>, <strong>faster issue resolution</strong> and our <strong>100% Genuine Keys Guarantee</strong>.'
+         . '          </div>'
+         . '        </td>'
+         . '      </tr>'
+         . '    </table>'
+         . '  </td></tr>'
+         . '</table>';
+}
+
+/**
  * Auto-inject the Track-Order CTA right before the closing </body> tag
  * for templates that don't reference {{track_order_button}} yet.  Safe
  * no-op when the order's number is missing.
@@ -1117,6 +1177,22 @@ function inject_track_order_cta(string $html, array $order, string $base): strin
         return substr($html, 0, $pos) . "\n" . $cta . "\n" . substr($html, $pos);
     }
     return $html . "\n" . $cta;
+}
+
+/**
+ * Auto-inject the Protection-Hub hero block right after the opening
+ * <body> tag (before any other injected banners) when the order includes
+ * a subscription plan.  Safe no-op when there is no plan.
+ */
+function inject_protection_hub_hero(string $html, array $order, array $items, string $base): string
+{
+    $block = build_protection_hub_hero_email($order, $items, $base);
+    if ($block === '') return $html;
+    if (preg_match('/<body[^>]*>/i', $html, $m, PREG_OFFSET_CAPTURE)) {
+        $end = $m[0][1] + strlen($m[0][0]);
+        return substr($html, 0, $end) . "\n" . $block . "\n" . substr($html, $end);
+    }
+    return $block . "\n" . $html;
 }
 
 /**
