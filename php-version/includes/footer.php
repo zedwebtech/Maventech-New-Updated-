@@ -63,6 +63,12 @@
             <a href="#top" aria-label="<?= $sn ?>" class="social-circle"><i class="bi <?= $si ?>"></i></a>
           <?php endforeach; ?>
         </div>
+
+        <!-- Compliance disclaimer inline with the brand column so a single
+             transparent statement travels with the contact info block. -->
+        <p class="small mt-3 mb-0 fst-italic" style="line-height:1.5;color:#94a3b8;" data-testid="footer-brand-disclaimer">
+          <strong>Disclaimer:</strong> <?= esc($brandLegalName) ?> is an independent reseller of authentic software licenses. All product names, logos, and brands are property of their respective owners.
+        </p>
       </div>
 
       <!-- Products -->
@@ -143,26 +149,6 @@
     <!-- Trademark + legal -->
     <hr class="border-secondary my-4">
 
-    <!-- MavenTech LLC business-info card (Google Ads misrepresentation
-         compliance — exact layout mandated by the shopping-ads review team). -->
-    <div class="mx-auto mb-4" style="max-width: 640px;" data-testid="footer-business-info">
-      <div class="card p-4" style="border-radius:14px;">
-        <div class="fw-bold mb-3" style="font-size:1.05rem;" data-testid="footer-business-name"><?= esc($brandLegalName) ?></div>
-        <ul class="list-unstyled small mb-0 d-grid gap-2">
-          <li data-testid="footer-business-address"><i class="bi bi-geo-alt-fill text-danger me-2"></i><strong>Address:</strong> <?= esc($brandAddress) ?></li>
-          <li data-testid="footer-business-hours"><i class="bi bi-clock-fill text-primary me-2"></i><strong>Business Hours:</strong> <?= SITE_HOURS ?></li>
-          <li data-testid="footer-business-email"><i class="bi bi-envelope-fill text-danger me-2"></i><strong>Email:</strong> <a href="mailto:support@maventechsoftware.com">support@maventechsoftware.com</a></li>
-          <li data-testid="footer-business-phone"><i class="bi bi-telephone-fill text-danger me-2"></i><strong>Phone:</strong> <a href="tel:<?= esc(tel_e164($brandPhone)) ?>"><?= esc($brandPhone) ?></a></li>
-          <?php if ($brandRegNumber): ?><li data-testid="footer-business-fileno"><i class="bi bi-patch-check-fill text-success me-2"></i><strong>File No.:</strong> <?= esc($brandRegNumber) ?><?php if (!empty($brandRegDateFiled)): ?> · Filed <?= esc(date('n/j/Y', strtotime((string)$brandRegDateFiled))) ?><?php endif; ?></li><?php endif; ?>
-        </ul>
-        <hr class="my-3">
-        <p class="small text-secondary fst-italic mb-0" data-testid="footer-business-disclaimer">
-          <strong>Disclaimer:</strong> <?= esc($brandLegalName) ?> is an independent reseller of authentic software licenses. All product names, logos, and brands are property of their respective owners.
-        </p>
-      </div>
-    </div>
-
-    <p class="small text-center mx-auto" style="max-width: 820px;"><?= esc($brandLegalName) ?> is an independent reseller of genuine, previously-licensed digital product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
     <div class="d-flex justify-content-center flex-wrap gap-2 small mb-3">
       <?php
       $legal = [

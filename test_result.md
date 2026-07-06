@@ -3412,7 +3412,8 @@ frontend:
           Bug fix is production-ready and safe to deploy. No code modifications made during testing (verification only).
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Footer duplicate business-info card removed; disclaimer moved into newsletter column"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -3420,9 +3421,32 @@ test_plan:
 agent_communication:
     -agent: "main"
     -message: |
-      Please verify the REGRESSION fix on the Maventech PHP storefront preview URL (http://localhost:3000 inside this pod).
+      User reported the footer showed the business-info block TWICE — once in the "Subscribe for Deals" newsletter column and again in a big white card at the bottom.  They want ONLY the newsletter-column version, with the disclaimer appended to it, and the white card removed entirely.
 
-      Scenario: user reported that clicking any "Get <Plan>" button on /protection-hub.php (or the open-arrow beside a plan's Shareable payment link inside Admin → Subscription Plans) landed on /checkout.php showing a leftover Microsoft Office 2024 Professional Plus SKU at $209.99 instead of the chosen Protection Hub plan.
+      Fix in /app/php-version/includes/footer.php:
+      1) The standalone "MavenTech LLC" white card that sat above the copyright strip is DELETED.
+      2) The compliance disclaimer paragraph is now inline in the newsletter column, immediately below the social-icon row (data-testid="footer-brand-disclaimer").
+      3) The long duplicate trademark paragraph that used to render in the center strip is also removed.
+      4) The pre-existing newsletter column still contains phone, services@maventechsoftware.com email, address, "Maventech LLC · File No. 202463711253 · Filed 9/3/2024", View on Google Maps button, business hours, social icons — order preserved, now followed by the new disclaimer.
+
+      TEST — hit http://localhost:3000 in a fresh browser context and verify on / (homepage) plus spot-check /shop.php and /about-us.php:
+
+      1) The newsletter column (leftmost footer column, "Subscribe for Deals" heading) contains in order:
+         a) phone (1-805-823-9961)
+         b) email services@maventechsoftware.com  (MUST be services@, not support@)
+         c) address 135 CAROLINA ST APT G2, VALLEJO, CA 94590
+         d) "Maventech LLC · File No. 202463711253 · Filed 9/3/2024" line ([data-testid="footer-reg-number"])
+         e) "View on Google Maps" button
+         f) "Mon-Sat, 9 AM - 6 PM EST" hours
+         g) Social icons row
+         h) Disclaimer paragraph starting "Disclaimer: Maventech LLC is an independent reseller of authentic software licenses..." ([data-testid="footer-brand-disclaimer"])
+      2) The BIG WHITE CARD that used to appear at the bottom is GONE.  Verify no element with data-testid="footer-business-info" / "footer-business-name" / "footer-business-email" / "footer-business-phone" / "footer-business-address" / "footer-business-hours" / "footer-business-fileno" / "footer-business-disclaimer" exists in the DOM.
+      3) The center-aligned long trademark paragraph containing "previously-licensed digital product keys" is GONE (grep the rendered homepage HTML — 0 matches expected).
+      4) The "Privacy Policy | Terms of Service | ... | Sitemap" link strip and the "© 2026 Maventech LLC. All rights reserved. · File No. 202463711253" copyright line still render at the bottom.
+      5) The "Secure Payments" band with SSL badges + payment-provider logos still renders between the 4-column grid and the trademark hr.
+
+      Report PASS/FAIL per assertion with observed testids / HTML snippets.  If any FAIL, capture the offending footer section.
+
 
       Fix applied in /app/php-version/subscribe.php: before writing $_SESSION['sub_plan'], the script now wipes $_SESSION['cart'] = [].  This makes the plan click authoritative — the checkout page renders the plan even if there was a leftover product in the cart.
 
