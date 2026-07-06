@@ -85,7 +85,7 @@ $groups = [
     ['icon' => 'bi-file-text-fill', 'title' => 'Legal & Policies', 'links' => [
         ['Privacy Policy', 'page.php?slug=privacy-policy'],
         ['Terms of Service', 'page.php?slug=terms-of-service'],
-        ['Refund Policy', 'page.php?slug=refund-policy'],
+        ['Refund Policy', 'refund-policy.php'],
         ['Return Policy', 'return-policy.php'],
         ['Shipping & Delivery', 'page.php?slug=shipping-delivery'],
         ['Payment Policy', 'page.php?slug=payment-policy'],

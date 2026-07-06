@@ -53,6 +53,7 @@ foreach ([
     ['/press-kit',         '0.6', 'monthly'],
     ['/support.php',       '0.6', 'monthly'],
     ['/returns.php',       '0.5', 'monthly'],
+    ['/refund-policy.php', '0.6', 'monthly'],
     ['/return-policy.php', '0.6', 'monthly'],
     ['/sitemap.php',       '0.4', 'monthly'],
     ['/track-order.php',   '0.5', 'monthly'],

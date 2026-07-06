@@ -17,11 +17,12 @@
  */
 require_once __DIR__ . '/includes/functions.php';
 
-// Fetch the canonical refund policy body from the pages table so this URL
-// stays in perfect sync with /page.php?slug=refund-policy — the same
-// content, just at a cleaner path.
+// Fetch the canonical Return Policy body from the pages table (slug =
+// return-policy — process-focused legal copy, distinct from the Refund
+// Policy which is money-focused).  This lets an admin edit the copy in
+// the /admin.php CMS editor without touching PHP.
 $stmt = db()->prepare('SELECT title, content, updated FROM pages WHERE slug = ?');
-$stmt->execute(['refund-policy']);
+$stmt->execute(['return-policy']);
 $policy = $stmt->fetch();
 
 $pageTitle = 'Return Policy | ' . SITE_BRAND;

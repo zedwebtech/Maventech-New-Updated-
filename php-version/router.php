@@ -262,8 +262,10 @@ $__legacy_301 = [
     '#^/microsoft/?$#i'                                        => ['type' => 'brand',    'slug' => 'microsoft'],
     '#^/bitdefender/?$#i'                                      => ['type' => 'brand',    'slug' => 'bitdefender'],
     '#^/mcafee/?$#i'                                           => ['type' => 'brand',    'slug' => 'mcafee'],
-    // Old policy-page slugs from WordPress
-    '#^/refund-policy/?$#i'                                    => ['type' => 'page',     'slug' => 'returns-refunds'],
+    // Legacy policy-page slugs from WordPress → now served at clean URLs.
+    // /refund-policy and /return-policy resolve directly to the modern
+    // standalone files (no 301 needed — cleaner UX).  We add explicit
+    // suffix-less handlers that rewrite the path to the .php file.
     '#^/privacy-policy/?$#i'                                   => ['type' => 'page',     'slug' => 'privacy-policy'],
     '#^/terms(-of-service)?/?$#i'                              => ['type' => 'page',     'slug' => 'terms-of-service'],
     '#^/cookie-policy/?$#i'                                    => ['type' => 'page',     'slug' => 'cookie-policy'],
@@ -345,6 +347,18 @@ if ($path === '/' || $path === '/index.php') {
 
 if ($path === '/sitemap.xml') {
     require __DIR__ . '/sitemap-xml.php';
+    return true;
+}
+// Clean-URL sibling paths for the two dedicated policy pages so both
+// /refund-policy and /refund-policy.php resolve to the same PHP file (same
+// for return-policy).  Rendered directly (no 301) so the user's chosen URL
+// stays put in their address bar and search-engine indexes.
+if ($path === '/refund-policy' || $path === '/refund-policy/') {
+    require __DIR__ . '/refund-policy.php';
+    return true;
+}
+if ($path === '/return-policy' || $path === '/return-policy/') {
+    require __DIR__ . '/return-policy.php';
     return true;
 }
 if ($path === '/merchant-feed.xml'

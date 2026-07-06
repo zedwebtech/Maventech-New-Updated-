@@ -161,7 +161,7 @@
       <?php
       $legal = [
           ['Privacy Policy', 'page.php?slug=privacy-policy'], ['Terms of Service', 'page.php?slug=terms-of-service'],
-          ['Refund Policy', 'page.php?slug=refund-policy'], ['Return Policy', 'return-policy.php'],
+          ['Refund Policy', 'refund-policy.php'], ['Return Policy', 'return-policy.php'],
           ['Shipping & Delivery', 'shipping-delivery.php'],
           ['Payment Policy', 'page.php?slug=payment-policy'], ['Cookie Policy', 'page.php?slug=cookie-policy'],
           ['Do Not Sell My Info', 'page.php?slug=do-not-sell'], ['Legal Disclaimer', 'page.php?slug=disclaimer'], ['Sitemap', 'sitemap.php'],

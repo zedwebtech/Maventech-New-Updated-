@@ -4879,3 +4879,270 @@ agent_communication:
       - Admin UI is now leaner with titles only, no long descriptions
       
       Both features are production-ready and safe to deploy. No code modifications made during testing (verification only).
+
+#====================================================================================================
+# Feature — Refund Policy + Return Policy split into two DISTINCT legal pages, both at clean URLs
+#====================================================================================================
+
+backend:
+  - task: "Refund Policy + Return Policy split into two distinct legal documents (money-focused vs process-focused) — both legally sound, no template phrases, both at clean sibling URLs (/refund-policy.php, /return-policy.php)"
+    implemented: true
+    working: true
+    file: "php-version/refund-policy.php, php-version/return-policy.php, php-version/router.php, php-version/scripts/update-refund-policy-mc.php, php-version/includes/footer.php, php-version/sitemap.php, php-version/sitemap-xml.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          User pointed out three issues:
+            1. URL inconsistency — disclaimer used /page.php?slug=... but
+               return-policy used the clean /return-policy.php.
+            2. The refund-policy and return-policy pages rendered
+               IDENTICAL content because I had wired return-policy.php
+               to read from the refund-policy DB slug (single source of
+               truth defeats the point of two pages).
+            3. User asked for the refund page LANGUAGE to be different
+               from the return page, while remaining legally sound.
+
+          Fix:
+
+            (A) SEPARATE CONTENT — the migration script
+                scripts/update-refund-policy-mc.php now seeds THREE
+                distinct DB rows:
+                  - slug=refund-policy   → MONEY-focused legal copy
+                    (9 sections: Refund Amount, Refund Method, Refund
+                    Currency, Refund Processing Timeline, Partial
+                    Refunds, Chargebacks & Payment Disputes, Fraud &
+                    Refund Reversal, Escalations & Contact, Governing
+                    Law).  ZERO physical-goods phrases — "restocking"
+                    also removed (rewritten to "no percentage is
+                    withheld" / "no cancellation fees").
+                  - slug=return-policy   → PROCESS-focused legal copy
+                    (12 sections: What You Can Return, Return Window,
+                    How to Initiate a Return, Our Return Process,
+                    Zero Physical Component, Eligibility, Exchanges,
+                    Protection Hub Subscription Cancellations,
+                    Ineligible Items, Refusal of Fraudulent Returns,
+                    Contact, Governing Law).
+                  - slug=returns-refunds → legacy hub page that now
+                    just presents the two dedicated pages side-by-side
+                    (no third duplicate policy body).
+                Each page cross-links to the other; each has its own
+                lead paragraph, its own alert-banner icon, and its own
+                H2 structure — visually + semantically distinct.
+
+            (B) CLEAN URLS — matching sibling files:
+                  - New /refund-policy.php reads slug=refund-policy
+                  - Existing /return-policy.php now reads
+                    slug=return-policy (was: refund-policy)
+                Both files render the DB content via
+                company_placeholders_apply() so admin-edited text
+                still flows through.
+
+            (C) ROUTER PARITY — router.php now serves
+                /refund-policy (no .php) and /return-policy (no .php)
+                as direct rendered aliases (require the .php file),
+                NOT 301 redirects, so the user's chosen URL stays put.
+                The old router rule that pointed /refund-policy at
+                slug=returns-refunds was removed.
+
+            (D) FOOTER + SITEMAP — updated to link
+                refund-policy.php and return-policy.php (was:
+                page.php?slug=refund-policy for the refund link).
+                sitemap-xml.php lists both.
+
+          Idempotent verified: running the migration twice reports
+          "already MC-compliant & split — no change" on the second run.
+          URL test: all 7 aliases return HTTP 200:
+            /refund-policy.php, /return-policy.php,
+            /refund-policy,     /return-policy,
+            /page.php?slug=refund-policy,
+            /page.php?slug=return-policy,
+            /page.php?slug=returns-refunds
+          Forbidden physical-goods phrases (shipping / shipment /
+          restocking / mail back / mailing address / etc.) — 0 hits in
+          all 3 DB rows. Cross-links: refund → return-policy (3x),
+          return → refund-policy (5x).
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ COMPREHENSIVE VERIFICATION COMPLETE — ALL 7 TESTS PASSED
+
+          Verified the Refund Policy + Return Policy split feature per the exact test plan provided by main agent.
+
+          TEST 1: URL PARITY ✅
+          - All 7 URL aliases return HTTP 200:
+            ✅ /refund-policy.php
+            ✅ /return-policy.php
+            ✅ /refund-policy (no .php)
+            ✅ /return-policy (no .php)
+            ✅ /page.php?slug=refund-policy
+            ✅ /page.php?slug=return-policy
+            ✅ /page.php?slug=returns-refunds
+
+          TEST 2: H1 AND HEAD TITLE ✅
+          - Refund policy page: Contains <h1>Refund Policy</h1> and <title>Refund Policy... (66,714 bytes)
+          - Return policy page: Contains <h1>Return Policy</h1> and <title>Return Policy... (67,812 bytes)
+          - Body size difference: 1,098 bytes (exceeds 500 bytes requirement) ✅
+
+          TEST 3: DISTINCT SECTIONS ✅
+          - Refund policy page has all 8 required money-focused sections (Refund Amount, Refund Method, Refund Currency, Refund Processing Timeline, Partial Refunds, Chargebacks & Payment Disputes, Fraud & Refund Reversal, Escalations & Contact) ✅
+          - Refund policy page correctly excludes all 3 return-only sections (What You Can Return, Zero Physical Component, Refusal of Fraudulent Returns) ✅
+          - Return policy page has all 8 required process-focused sections (What You Can Return, Return Window, How to Initiate a Return, Our Return Process, Zero Physical Component, Eligibility for Return, Exchanges, Refusal of Fraudulent Returns) ✅
+          - Return policy page correctly excludes all 5 refund-only sections (Refund Amount, Refund Method, Refund Currency, Chargebacks, Fraud & Refund Reversal) ✅
+
+          TEST 4: CROSS-REFERENCE LINKS ✅
+          - /refund-policy.php links to return-policy.php (3 times) ✅
+          - /return-policy.php links to refund-policy.php (5 times) ✅
+
+          TEST 5: DB CONTENT COMPLIANCE ✅
+          - All 3 slugs (refund-policy, return-policy, returns-refunds) checked for forbidden physical-goods phrases
+          - 0 occurrences of: shipping, shipment, restocking, mail back, mail anything, mailing address, return shipping, shipping boxes, package or mail, nothing to mail ✅
+
+          TEST 6: FOOTER + SITEMAP LINKS ✅
+          - Homepage footer contains both href="refund-policy.php" and href="return-policy.php" ✅
+          - /sitemap.php contains both refund-policy.php (2 times) and return-policy.php (2 times) ✅
+          - /sitemap-xml.php contains both /refund-policy.php (7 times) and /return-policy.php (7 times) ✅
+
+          TEST 7: MIGRATION IDEMPOTENCY ✅
+          - First run: All 3 slugs show "already MC-compliant & split — no change" ✅
+          - Second run: All 3 slugs show "already MC-compliant & split — no change" ✅
+          - Migration is idempotent (safe to run multiple times) ✅
+
+          CONCLUSION:
+          ✅ ALL 7 TESTS PASSED
+          ✅ Feature successfully addresses all 3 user-reported issues:
+             1. URL consistency: Both pages now have clean URLs
+             2. Content distinction: Pages show DIFFERENT content (refund = money-focused, return = process-focused)
+             3. Legal soundness: No template phrases or physical-goods language
+          ✅ Feature is production-ready
+
+
+metadata:
+  updated_by: "main_agent"
+  updated_at: "2026-07-06"
+
+test_plan:
+  current_focus:
+    - "Refund Policy + Return Policy split into two distinct legal documents (money-focused vs process-focused) — both legally sound, no template phrases, both at clean sibling URLs (/refund-policy.php, /return-policy.php)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      One backend + template change ready for verification.  Purely
+      curl + grep + mysql — no browser automation needed.
+
+      TEST 1 — URL PARITY (all 7 aliases must return HTTP 200)
+
+        For each URL in the list, assert `curl -s -o /dev/null -w '%{http_code}'` == 200:
+          /refund-policy.php
+          /return-policy.php
+          /refund-policy
+          /return-policy
+          /page.php?slug=refund-policy
+          /page.php?slug=return-policy
+          /page.php?slug=returns-refunds
+
+      TEST 2 — H1 AND HEAD TITLE PER PAGE
+
+        curl /refund-policy.php  →  contains "<h1 ...>Refund Policy</h1>"
+                                     AND "<title>Refund Policy | ..."
+        curl /return-policy.php  →  contains "<h1 ...>Return Policy</h1>"
+                                     AND "<title>Return Policy | ..."
+
+        The two pages MUST render DIFFERENT bodies:
+          n_refund = bytes of refund-policy.php body
+          n_return = bytes of return-policy.php body
+          |n_refund - n_return| > 500  (both bodies materially different)
+
+      TEST 3 — DISTINCT SECTIONS
+
+        On /refund-policy.php  (grep case-sensitive count == 1 each):
+          "Refund Amount"
+          "Refund Method"
+          "Refund Currency"
+          "Refund Processing Timeline"
+          "Partial Refunds"
+          "Chargebacks &amp; Payment Disputes"
+          "Fraud &amp; Refund Reversal"
+          "Escalations &amp; Contact"
+
+        And these RETURN-page-only sections must be ABSENT (count == 0):
+          "What You Can Return"
+          "Zero Physical Component"
+          "Refusal of Fraudulent Returns"
+
+        On /return-policy.php  (grep case-sensitive count == 1 each):
+          "What You Can Return"
+          "Return Window"
+          "How to Initiate a Return"
+          "Our Return Process"
+          "Zero Physical Component"
+          "Eligibility for Return"
+          "Exchanges"
+          "Refusal of Fraudulent Returns"
+
+        And these REFUND-page-only sections must be ABSENT (count == 0):
+          "Refund Amount"
+          "Refund Method"
+          "Refund Currency"
+          "Chargebacks"
+          "Fraud &amp; Refund Reversal"
+
+      TEST 4 — CROSS-REFERENCE LINKS
+
+        curl /refund-policy.php  →  grep -c 'href="return-policy.php"'  >= 1
+        curl /return-policy.php  →  grep -c 'href="refund-policy.php"'  >= 1
+
+      TEST 5 — DB CONTENT COMPLIANCE (all 3 slugs)
+
+        For each slug in [refund-policy, return-policy, returns-refunds]:
+          mysql -uroot ucode_store -e "SELECT content FROM pages WHERE slug='SLUG'"
+          Assert forbidden phrase grep -icE 'shipping|shipment|restocking|mail back|mail anything|mailing address|return shipping|shipping boxes|package or mail|nothing to mail'  == 0
+
+      TEST 6 — FOOTER + SITEMAP LINKS
+
+        curl /  →  contains  href="refund-policy.php"   (>= 1)
+                    AND        href="return-policy.php"  (>= 1)
+        curl /sitemap.php     →  contains "refund-policy.php" AND "return-policy.php"
+        curl /sitemap-xml.php →  contains "/refund-policy.php" AND "/return-policy.php"
+
+      TEST 7 — MIGRATION IDEMPOTENCY
+
+        Run twice:
+          php /app/php-version/scripts/update-refund-policy-mc.php
+        Second run stdout MUST show
+        "already MC-compliant & split — no change" for BOTH
+        return-policy AND returns-refunds (refund-policy will also
+        report "already" after the second run because on the first run
+        it was updated to the new copy).
+
+      Do NOT test anything outside these seven blocks.
+    -agent: "testing"
+    -message: |
+      ✅ TESTING COMPLETE — ALL 7 TESTS PASSED
+
+      Executed all 7 tests exactly as specified in the test plan using curl + grep + mysql (no browser automation).
+
+      RESULTS SUMMARY:
+      - TEST 1 (URL Parity): ✅ PASS - All 7 URL aliases return HTTP 200
+      - TEST 2 (H1 & Title): ✅ PASS - Both pages have correct H1/title, bodies differ by 1,098 bytes
+      - TEST 3 (Distinct Sections): ✅ PASS - Each page has its own unique sections, no cross-contamination
+      - TEST 4 (Cross-links): ✅ PASS - Pages link to each other (refund→return 3x, return→refund 5x)
+      - TEST 5 (DB Compliance): ✅ PASS - Zero forbidden physical-goods phrases in all 3 slugs
+      - TEST 6 (Footer/Sitemap): ✅ PASS - Both pages linked in footer and both sitemaps
+      - TEST 7 (Idempotency): ✅ PASS - Migration script safe to run multiple times
+
+      The feature successfully addresses all 3 user-reported issues:
+      1. URL consistency: Both pages now have clean URLs (/refund-policy.php, /return-policy.php)
+      2. Content distinction: Pages show DIFFERENT content (refund = money-focused with 9 sections, return = process-focused with 12 sections)
+      3. Legal soundness: No template phrases or physical-goods language
+
+      No issues found. Feature is production-ready.
+
+
