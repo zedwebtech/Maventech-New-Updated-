@@ -425,51 +425,34 @@ foreach ($products as $p) {
     /* Return policy — binds this product to the account-level Return
        Policy configured in Google Merchant Center (Settings → Shipping
        and returns → Return policies).  The customer-facing policy is
-       published at /return-policy.php (clean URL, process-focused) — the
-       companion /refund-policy.php covers refund amounts, method &
-       timeline. 30-day money-back guarantee, no questions asked,
+       published at /return-policy.php (clean URL, process-focused) —
+       the companion /refund-policy.php covers refund amounts, method
+       & timeline. 30-day money-back guarantee, no questions asked,
        digital process (no physical return required).
 
-       Emits THREE overlapping signals so Merchant Center's dashboard
-       reports products as "actively covered by policy" AND explicitly
-       flags returns as FREE (no shipping cost to the customer) — which
-       resolves the "customer responsibility for return costs"
-       contradiction Google's policy bots raise on digital-only feeds:
+       ONLY <g:return_policy_label> is a valid ITEM-LEVEL attribute in
+       the Google Shopping product feed. It binds this item to the
+       account-level Return Policy configured in Merchant Center
+       (Settings → Shipping and returns → Return policies) with a
+       matching label. Google spec ref:
+       support.google.com/merchants/answer/14011730
 
-         1. <g:return_policy_label>   — top-level attribute, binds the
-            item to the merchant's saved account-level policy by its
-            exact label.  This is what the Merchant Center "Products"
-            column reads when it shows N products covered by policy.
-            Google spec ref: support.google.com/merchants/answer/14011730
+       PREVIOUSLY this block also emitted inline <g:return_policy>
+       (with nested <g:country>/<g:policy> sub-elements) and
+       <g:return_shipping_fee>. Those two blocks are NOT recognised at
+       item-level in the current product feed spec — they belong in a
+       separate "Return policies" feed. Google Merchant Center was
+       reporting all three (`return shipping fee`, `return policy`,
+       `policy`=30) as UNRECOGNIZED ATTRIBUTES. The <g:policy>30</g:policy>
+       nested sub-element in particular was being flattened and read as
+       a bogus top-level attribute. Removing both blocks eliminates the
+       "3 unrecognized attributes" report while keeping the valid,
+       account-level binding via <g:return_policy_label>.
 
-         2. <g:return_policy> block   — self-contained inline fallback
-            (country + policy days) so the item ALWAYS carries a valid
-            30-day return signal even if the merchant hasn't finished
-            configuring the account-level policy yet.  We intentionally
-            OMIT the <g:label> sub-attribute inside this block so it
-            doesn't compete with the top-level label attribute above.
-
-         3. <g:return_shipping_fee>   — declares returns are FREE
-            (customer pays $0.00 to return).  Digital keys have no
-            physical return, so return-shipping cost is definitionally
-            zero — emitting this explicitly counters the "customer
-            responsibility for return costs" flag on the Merchant
-            Center dashboard's Return-Policy page.
-
-       If the admin blanks the label in Admin → SEO, all three blocks
-       are omitted so the account-level default takes over transparently. */
+       If the admin blanks the label in Admin → SEO, the tag is omitted
+       so the account-level default takes over transparently. */
     if ($returnPolicyLabel !== '') {
         echo "      <g:return_policy_label>" . feed_xml_esc($returnPolicyLabel) . "</g:return_policy_label>\n";
-        echo "      <g:return_policy>\n";
-        echo "        <g:country>" . $country . "</g:country>\n";
-        echo "        <g:policy>" . $returnPolicyDays . "</g:policy>\n";
-        echo "      </g:return_policy>\n";
-        // Free returns — digital licence keys carry no physical return
-        // shipment, so the cost to return is $0.  This is the signal
-        // that resolves Google's "customer pays return costs" contradiction.
-        echo "      <g:return_shipping_fee>\n";
-        echo "        <g:type>free</g:type>\n";
-        echo "      </g:return_shipping_fee>\n";
     }
 
     /* <g:free_shipping_threshold> was previously emitted as a scalar
@@ -557,17 +540,13 @@ foreach ($hubPlans as $plan) {
         // Same 30-day money-back guarantee applies to subscription plans —
         // bind the plan to the merchant's account-level return policy so
         // the Merchant Center dashboard reports plans as "actively covered".
-        // Emits the FREE return-shipping-fee too so digital plans clear
-        // the "customer pays return costs" contradiction check.
+        // Only <g:return_policy_label> is a valid ITEM-level attribute; the
+        // inline <g:return_policy> and <g:return_shipping_fee> blocks are
+        // NOT recognised in the product feed spec (they belong in a
+        // dedicated returns feed) and were being reported as
+        // "unrecognized attributes" in Merchant Center.
         if ($returnPolicyLabel !== '') {
             echo "      <g:return_policy_label>" . feed_xml_esc($returnPolicyLabel) . "</g:return_policy_label>\n";
-            echo "      <g:return_policy>\n";
-            echo "        <g:country>{$countryC}</g:country>\n";
-            echo "        <g:policy>{$returnPolicyDays}</g:policy>\n";
-            echo "      </g:return_policy>\n";
-            echo "      <g:return_shipping_fee>\n";
-            echo "        <g:type>free</g:type>\n";
-            echo "      </g:return_shipping_fee>\n";
         }
         echo "      <g:custom_label_0>" . feed_xml_esc($brand) . "</g:custom_label_0>\n";
         echo "      <g:custom_label_1>" . feed_xml_esc($regCode) . "</g:custom_label_1>\n";

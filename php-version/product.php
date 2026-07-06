@@ -283,7 +283,8 @@ if (function_exists('is_valid_global_gtin') && is_valid_global_gtin($rawGtin)) {
 }
 // Star ratings / review counts — sourced from real published customer
 // reviews via product_review_stats() / product_reviews().  When the
-// product has at least one published review, attach Google's
+// product has at least one published review WITH A COMMENT (so we
+// have a full review row to attach), attach Google's
 // AggregateRating + Review schema so the SERP listing shows the gold
 // star strip + "(N reviews)" rich snippet — typically a 15-30 % CTR
 // lift over a plain blue link. The list of `review` items we attach is
@@ -291,9 +292,18 @@ if (function_exists('is_valid_global_gtin') && is_valid_global_gtin($rawGtin)) {
 // block lower on the page (Google requires schema reviews to be backed
 // by content visible on the same page; otherwise the rich snippet can
 // be flagged as review-stuffing).
+//
+// IMPORTANT: emit BOTH `aggregateRating` and `review` together, or
+// NEITHER.  Previously we emitted aggregateRating whenever count > 0,
+// even when the review rows came back empty (product_review_stats
+// counts rating-only rows; product_reviews requires a non-empty
+// comment).  That mismatch produced JSON-LD with aggregateRating but
+// no `review` array, which Google flagged as "Missing field review"
+// under Product snippets → Validation failed.  Gating on the actual
+// rows fixes that class of failure at the source.
 $_reviewStats = product_review_stats($product['slug']);
 $_reviewRows  = $_reviewStats['count'] > 0 ? product_reviews($product['slug'], 5) : [];
-if ($_reviewStats['count'] > 0) {
+if ($_reviewStats['count'] > 0 && !empty($_reviewRows)) {
     $jsonLd['aggregateRating'] = [
         '@type'       => 'AggregateRating',
         'ratingValue' => number_format($_reviewStats['avg'], 1, '.', ''),
@@ -301,22 +311,20 @@ if ($_reviewStats['count'] > 0) {
         'bestRating'  => '5',
         'worstRating' => '1',
     ];
-    if ($_reviewRows) {
-        $jsonLd['review'] = array_map(function (array $r) {
-            return [
-                '@type'         => 'Review',
-                'author'        => ['@type' => 'Person', 'name' => $r['name']],
-                'datePublished' => $r['date'],
-                'reviewBody'    => $r['comment'],
-                'reviewRating'  => [
-                    '@type'       => 'Rating',
-                    'ratingValue' => (string)$r['rating'],
-                    'bestRating'  => '5',
-                    'worstRating' => '1',
-                ],
-            ];
-        }, $_reviewRows);
-    }
+    $jsonLd['review'] = array_map(function (array $r) {
+        return [
+            '@type'         => 'Review',
+            'author'        => ['@type' => 'Person', 'name' => $r['name']],
+            'datePublished' => $r['date'],
+            'reviewBody'    => $r['comment'],
+            'reviewRating'  => [
+                '@type'       => 'Rating',
+                'ratingValue' => (string)$r['rating'],
+                'bestRating'  => '5',
+                'worstRating' => '1',
+            ],
+        ];
+    }, $_reviewRows);
 }
 // Inject the long-tail keyword library + edition/year/license-type as
 // structured `additionalProperty` items.  AI search engines (ChatGPT,
