@@ -233,11 +233,11 @@ include __DIR__ . '/includes/header.php';
 </section>
 
 <!-- Categories: one-line scrollable browse bar -->
-<section class="py-4">
+<section class="py-4 browse-strip">
   <div class="container">
-    <div class="d-flex align-items-center gap-2">
-      <span class="small fw-semibold text-secondary flex-shrink-0">Browse:</span>
-      <div class="overflow-auto flex-grow-1" style="scrollbar-width:thin; min-width:0;" data-testid="browse-toggle-bar">
+    <div class="d-flex align-items-center gap-3">
+      <span class="browse-label flex-shrink-0"><i class="bi bi-compass me-1"></i>Browse</span>
+      <div class="overflow-auto flex-grow-1 browse-scroll" style="scrollbar-width:thin; min-width:0;" data-testid="browse-toggle-bar">
         <div class="d-flex gap-2 pb-2" style="width:max-content;">
           <?php
           $chips = [

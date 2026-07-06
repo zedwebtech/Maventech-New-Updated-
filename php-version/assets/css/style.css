@@ -2599,23 +2599,69 @@ section p, section li, .accordion-body { font-weight: 400; }
   box-shadow: 0 8px 20px rgba(15, 23, 42, .22);
 }
 
-/* Category chips & browse pills */
-.cat-chip {
-  border: 1.5px solid rgba(15, 23, 42, .14) !important;
+/* Category chips & browse pills — elegant watermark style */
+.browse-strip { position: relative; }
+.browse-strip::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 10% 50%, rgba(11, 92, 255, .04), transparent 50%);
+  pointer-events: none;
+}
+.browse-label {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--uc-blue, #0B5CFF);
+  padding: .3rem .7rem;
   border-radius: 999px;
-  padding: .35rem .9rem;
-  color: #0f172a;
-  background: #fff;
+  background: rgba(11, 92, 255, .07);
+  border: 1px solid rgba(11, 92, 255, .16);
+  display: inline-flex;
+  align-items: center;
+}
+[data-bs-theme="dark"] .browse-label {
+  color: #67e8f9;
+  background: rgba(6, 182, 212, .10);
+  border-color: rgba(103, 232, 249, .22);
+}
+/* Hide the scroll-thumb "square box" — replace with a subtle themed lane */
+.browse-scroll::-webkit-scrollbar { height: 4px; }
+.browse-scroll::-webkit-scrollbar-track { background: transparent; }
+.browse-scroll::-webkit-scrollbar-thumb {
+  background: rgba(11, 92, 255, .18);
+  border-radius: 999px;
+}
+[data-bs-theme="dark"] .browse-scroll::-webkit-scrollbar-thumb {
+  background: rgba(103, 232, 249, .22);
+}
+
+.cat-chip {
+  border: 1px solid rgba(15, 23, 42, .10) !important;
+  border-radius: 999px;
+  padding: .42rem 1.05rem;
+  color: #334155;
+  background: transparent;
   font-weight: 500;
   font-size: .82rem;
-  transition: border-color .15s ease, background .15s ease, color .15s ease;
+  letter-spacing: .01em;
+  transition: border-color .18s ease, background .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease;
   text-decoration: none;
   white-space: nowrap;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 .cat-chip:hover {
-  border-color: #0f172a !important;
-  background: #0f172a;
-  color: #fff;
+  border-color: var(--uc-blue, #0B5CFF) !important;
+  background: rgba(11, 92, 255, .08);
+  color: var(--uc-blue, #0B5CFF);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(11, 92, 255, .12);
+}
+.cat-chip:focus-visible {
+  outline: none;
+  border-color: var(--uc-blue, #0B5CFF) !important;
+  box-shadow: 0 0 0 3px rgba(11, 92, 255, .18);
 }
 
 /* Accordion items get the PayPal outline */
@@ -2647,10 +2693,27 @@ section p, section li, .accordion-body { font-weight: 400; }
 [data-bs-theme="dark"] .spotlight-card,
 [data-bs-theme="dark"] .side-product-row,
 [data-bs-theme="dark"] .accordion-item,
-[data-bs-theme="dark"] [data-testid="welcome-back-strip"],
-[data-bs-theme="dark"] .cat-chip {
+[data-bs-theme="dark"] [data-testid="welcome-back-strip"] {
   border-color: rgba(255, 255, 255, .14) !important;
   background-color: rgba(255, 255, 255, .02) !important;
+}
+
+/* Dark-mode chips — subtle watermark tint that matches the brand cyan/blue */
+[data-bs-theme="dark"] .cat-chip {
+  border: 1px solid rgba(103, 232, 249, .18) !important;
+  background: linear-gradient(135deg, rgba(6, 182, 212, .05), rgba(11, 92, 255, .05)) !important;
+  color: rgba(255, 255, 255, .78) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .02);
+}
+[data-bs-theme="dark"] .cat-chip:hover {
+  border-color: rgba(103, 232, 249, .55) !important;
+  background: linear-gradient(135deg, rgba(6, 182, 212, .16), rgba(11, 92, 255, .14)) !important;
+  color: #67e8f9 !important;
+  box-shadow: 0 6px 18px rgba(6, 182, 212, .18), inset 0 0 0 1px rgba(103, 232, 249, .18);
+}
+[data-bs-theme="dark"] .cat-chip:focus-visible {
+  border-color: rgba(103, 232, 249, .75) !important;
+  box-shadow: 0 0 0 3px rgba(103, 232, 249, .22) !important;
 }
 [data-bs-theme="dark"] .card:hover,
 [data-bs-theme="dark"] .product-card:hover {
