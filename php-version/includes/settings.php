@@ -144,7 +144,14 @@ function company_info(): array {
         'address'    => setting_get('company_address', ''),
         // Official corporate registration number (e.g. California LLC file no.)
         // shown in the footer + About Us for transparency / Google Ads trust.
-        'reg_number' => setting_get('company_reg_number', ''),
+        'reg_number'      => setting_get('company_reg_number', ''),
+        // Date the LLC was filed with the Secretary of State (ISO YYYY-MM-DD).
+        'reg_date_filed'  => setting_get('company_reg_date_filed', ''),
+        // Path (or URL) to the LLC Articles of Organization certificate PDF —
+        // rendered as a "View certificate" link on About Us / checkout.
+        'reg_certificate_url' => setting_get('company_reg_certificate_url', ''),
+        // Human-readable jurisdiction ("California, USA", "Delaware, USA" etc.)
+        'reg_jurisdiction'    => setting_get('company_reg_jurisdiction', 'California, USA'),
         'logo'       => normalize_company_logo(setting_get('company_logo', '')),
         // Prefix for generated subscription customer IDs (e.g. MVN → MVNUS00001).
         'id_prefix' => strtoupper(preg_replace('/[^A-Za-z0-9]/', '', setting_get('company_id_prefix', 'MVN')) ?: 'MVN'),

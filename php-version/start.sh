@@ -48,6 +48,9 @@ php /app/php-version/scripts/update-disclaimer-fsd.php >>/tmp/update-disclaimer-
 # Ensure the primary admin account can always log in with the well-known
 # password (survives fresh preview-pod reseeds of database.sql). Idempotent.
 php /app/php-version/scripts/ensure-admin-password.php >>/tmp/ensure-admin-password.log 2>&1 || true
+# Sanitize product names for Google Ads compliance (strip "Lifetime License",
+# append " (Digital Key)" to Microsoft-family products).  Idempotent.
+php /app/php-version/scripts/sanitize-product-names.php >>/tmp/sanitize-product-names.log 2>&1 || true
 # Refresh Device Protection Hub plan content ($29/$59/$99/$199 defaults).
 # Admin-customised prices are preserved. Idempotent.
 php /app/php-version/scripts/seed-protection-hub.php >>/tmp/seed-protection-hub.log 2>&1 || true

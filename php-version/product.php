@@ -14,7 +14,7 @@ if (!$product) {
 }
 
 /* SEO: long-tail keyword-rich title.  We prepend the brand, append the
- * platform + the magic words ("Lifetime License Key") so the title
+ * platform + the magic words ("One-Time Purchase Key") so the title
  * itself targets two-to-three additional intent variants. */
 $_pTitleYear = '';
 if (preg_match('/\b(20\d{2})\b/', $product['name'], $_m)) $_pTitleYear = ' ' . $_m[1];
@@ -56,10 +56,10 @@ function _ads_seo(array $product, string $brand): array {
 
     // Licence-type chip — directly mirrors the high-intent query terms.
     $licenseChip = $license === 'subscription' ? '1-Year Subscription'
-                 : ($license === 'lifetime' ? 'Lifetime License Key' : 'Genuine License Key');
+                 : ($license === 'lifetime' ? 'One-Time Purchase Key' : 'Genuine License Key');
     // Human-readable license clause for the digital-key title.
     $licenseClause = $license === 'subscription' ? '1-Year Subscription'
-                   : ($license === 'lifetime' ? 'Lifetime License' : 'Genuine License');
+                   : ($license === 'lifetime' ? 'One-Time Purchase' : 'Genuine License');
 
     // ── Visible H1 (Google Ads compliance: title must explicitly state the
     //   delivery mechanism — "Digital Product Key" not "Box").
@@ -183,7 +183,7 @@ $schemaMpn = substr((string)$product['slug'], 0, 70);
 // with no meta/SEO description never trips "Missing field description".
 $schemaDescription = trim((string)$pageDescription);
 if ($schemaDescription === '') {
-    $schemaDescription = $product['name'] . ' — genuine lifetime license key with instant digital email delivery in 15-30 minutes.';
+    $schemaDescription = $product['name'] . ' — genuine one-time-purchase product key with digital delivery by email.';
 }
 
 $jsonLd = [
@@ -320,7 +320,7 @@ $jsonLd['keywords'] = product_long_tail_keywords($product);
 $_addProps = [
     ['@type' => 'PropertyValue', 'name' => 'License Type',   'value' => 'Lifetime / Perpetual'],
     ['@type' => 'PropertyValue', 'name' => 'Purchase Model', 'value' => 'One-time purchase — no subscription'],
-    ['@type' => 'PropertyValue', 'name' => 'Delivery',       'value' => 'Digital download — email delivery in 15-30 minutes'],
+    ['@type' => 'PropertyValue', 'name' => 'Delivery',       'value' => 'Digital download — digital delivery by email'],
     ['@type' => 'PropertyValue', 'name' => 'Platform',       'value' => $product['platform'] ?: 'Windows'],
 ];
 $_officeMeta = office_edition_meta($product);
@@ -488,7 +488,7 @@ include __DIR__ . '/includes/header.php';
 
       <div class="mb-4">
         <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
-          <span class="surplus-price-label surplus-price-label-lg" data-testid="product-surplus-label">Surplus Volume License</span>
+          <span class="surplus-price-label surplus-price-label-lg" data-testid="product-surplus-label">Direct Price</span>
           <span class="display-6 fw-bold text-primary lh-1" data-testid="product-price"><?= format_price((float)$product['price']) ?></span>
         </div>
         <?php /* Tax transparency line — Google Ads / Bing Ads require the
@@ -501,7 +501,7 @@ include __DIR__ . '/includes/header.php';
         </div>
         <div class="alert alert-info d-flex align-items-start gap-2 mt-3 mb-0 py-2 px-3 small" role="note" data-testid="product-delivery-notice">
           <i class="bi bi-envelope-check-fill mt-1"></i>
-          <span>Digital product keys are delivered instantly via email. Licensing support is strictly limited to key fulfillment.</span>
+          <span>Digital product keys are delivered by email once the order is processed. See our <a href="page.php?slug=shipping-delivery" class="fw-semibold">Shipping &amp; Delivery</a> page for full timing details.</span>
         </div>
       </div>
 
@@ -525,7 +525,7 @@ include __DIR__ . '/includes/header.php';
       </p>
 
       <p class="small text-secondary mt-3 mb-0" data-testid="product-licensing-note">
-        <strong>Important Licensing Note:</strong> This is an authentic, surplus perpetual license key sourced legally through volume distribution clearings. It is not an OEM bundle or a subscription. Support is strictly limited to key delivery and license activation assistance. <?= esc(SITE_BRAND) ?> does not provide official vendor technical support or software troubleshooting.
+        <strong>Important Licensing Note:</strong> This is an authentic, previously-licensed perpetual product key sourced legally through legitimate distribution channels. It is not an OEM bundle or a subscription. Support is strictly limited to key delivery and product-activation assistance. <?= esc(SITE_BRAND) ?> does not provide official vendor technical support or software troubleshooting.
       </p>
 
       <?php if (false): /* Out-of-stock "Notify When Available" removed — every product is always purchasable (backorders are delivered within the hour). */ ?>
@@ -615,7 +615,7 @@ include __DIR__ . '/includes/header.php';
       <?php endif; ?>
 
       <div class="row g-3 small mt-3">
-        <div class="col-sm-6"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Instant email delivery (15-30 min)</div>
+        <div class="col-sm-6"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Digital delivery by email (digital)</div>
         <div class="col-sm-6"><i class="bi bi-patch-check-fill text-success me-2"></i>Genuine Microsoft key</div>
         <div class="col-sm-6"><i class="bi bi-arrow-counterclockwise text-primary me-2"></i>Money-back guarantee</div>
         <div class="col-sm-6"><i class="bi bi-journal-text text-primary me-2"></i>Step-by-step activation guide included</div>
@@ -694,7 +694,7 @@ include __DIR__ . '/includes/header.php';
     </div>
     <div class="tab-pane fade" id="tab-delivery">
       <ol class="small">
-        <li class="mb-2">Complete your purchase — your license key + download link arrive by email within 15-30 minutes.</li>
+        <li class="mb-2">Complete your purchase — your license key + download link arrive by email by email.</li>
         <li class="mb-2">Download the official installer from the link provided.</li>
         <li class="mb-2">Enter your product key when prompted to activate.</li>
         <li>Need help with your order? Our order-fulfillment team can assist with license-key delivery and activation questions: <?= esc(company_phone_for_country()) ?> (<?= SITE_HOURS ?>).</li>

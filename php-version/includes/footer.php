@@ -13,7 +13,7 @@
       </form>
       <div class="d-flex justify-content-center gap-4 flex-wrap small mt-4">
         <span><i class="bi bi-patch-check-fill text-success me-1"></i>Genuine Products</span>
-        <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant Delivery</span>
+        <span><i class="bi bi-shield-check text-primary me-1"></i>30-Day Guarantee</span>
         <span><i class="bi bi-headset text-primary me-1"></i>Expert Support</span>
       </div>
     </div>
@@ -41,7 +41,7 @@
             <?php endif; ?>
           </span>
         </div>
-        <p class="small">Your trusted source for genuine Microsoft Office licenses at competitive prices. Instant email delivery, one-time purchase with no recurring fees, and dedicated order-fulfillment support.</p>
+        <p class="small">Your trusted source for genuine Microsoft Office licenses at competitive prices. Digital delivery by email, one-time purchase with no recurring fees, and dedicated order-fulfillment support.</p>
 
         <div class="small fw-bold text-white mb-2">Subscribe for Deals</div>
         <form class="d-flex gap-2 mb-3" style="max-width: 320px;" onsubmit="subscribeNewsletter(event)">
@@ -52,7 +52,7 @@
         <p class="small mb-1"><i class="bi bi-telephone me-2 text-info"></i><a href="tel:<?= esc(tel_e164($brandPhone)) ?>"><?= esc($brandPhone) ?></a></p>
         <p class="small mb-1"><i class="bi bi-envelope me-2 text-info"></i><a href="mailto:<?= esc($brandEmail) ?>"><?= esc($brandEmail) ?></a></p>
         <p class="small mb-2"><i class="bi bi-geo-alt me-2 text-info"></i><?= esc($brandAddress) ?></p>
-        <?php if ($brandRegNumber): ?><p class="small mb-2" data-testid="footer-reg-number"><i class="bi bi-patch-check me-2 text-info"></i><?= esc($brandLegalName) ?> · California LLC No. <?= esc($brandRegNumber) ?></p><?php endif; ?>
+        <?php if ($brandRegNumber): ?><p class="small mb-2" data-testid="footer-reg-number"><i class="bi bi-patch-check me-2 text-info"></i><?= esc($brandLegalName) ?> · File No. <?= esc($brandRegNumber) ?><?php if (!empty($brandRegDateFiled)): ?> · Filed <?= esc(date('n/j/Y', strtotime((string)$brandRegDateFiled))) ?><?php endif; ?></p><?php endif; ?>
         <a href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($brandAddress) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-light rounded-pill mb-2 gmap-btn" data-testid="footer-gmap-btn">
           <span class="gmap-pin"><i class="bi bi-geo-alt-fill"></i></span>View on Google Maps
         </a>
@@ -142,12 +142,12 @@
 
     <!-- Trademark + legal -->
     <hr class="border-secondary my-4">
-    <p class="small text-center mx-auto" style="max-width: 820px;"><?= esc($brandLegalName) ?> is an independent marketplace provider of genuine, surplus product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
+    <p class="small text-center mx-auto" style="max-width: 820px;"><?= esc($brandLegalName) ?> is an independent reseller of genuine, previously-licensed digital product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
     <div class="d-flex justify-content-center flex-wrap gap-2 small mb-3">
       <?php
       $legal = [
           ['Privacy Policy', 'page.php?slug=privacy-policy'], ['Terms of Service', 'page.php?slug=terms-of-service'],
-          ['Refund Policy', 'page.php?slug=refund-policy'], ['Shipping & Delivery', 'page.php?slug=shipping-delivery'],
+          ['Refund Policy', 'page.php?slug=refund-policy'], ['Shipping & Delivery', 'shipping-delivery.php'],
           ['Payment Policy', 'page.php?slug=payment-policy'], ['Cookie Policy', 'page.php?slug=cookie-policy'],
           ['Do Not Sell My Info', 'page.php?slug=do-not-sell'], ['Legal Disclaimer', 'page.php?slug=disclaimer'], ['Sitemap', 'sitemap.php'],
       ];
@@ -155,7 +155,7 @@
         <a href="<?= $lh ?>"><?= $ll ?></a><?= $idx < count($legal) - 1 ? '<span aria-hidden="true" style="color:#94a3b8;">|</span>' : '' ?>
       <?php endforeach; ?>
     </div>
-    <div class="text-center small">© <?= date('Y') ?> <?= esc($brandLegalName) ?>. All rights reserved.<?php if ($brandRegNumber): ?> · California LLC No. <?= esc($brandRegNumber) ?><?php endif; ?></div>
+    <div class="text-center small">© <?= date('Y') ?> <?= esc($brandLegalName) ?>. All rights reserved.<?php if ($brandRegNumber): ?> · File No. <?= esc($brandRegNumber) ?><?php endif; ?></div>
   </div>
 </footer>
 

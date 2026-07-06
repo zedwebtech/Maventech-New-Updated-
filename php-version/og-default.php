@@ -142,7 +142,7 @@ if ($fontBold) {
     imagettftext($im, $tFs, 0, $colX, 332 + (int)round($tFs * 1.45), $tag, $fontBold, $line2);
 
     // CTA pill (green) — width fitted to its text.
-    $ctaText = 'Instant delivery  -  One-time purchase';
+    $ctaText = 'Digital delivery  -  One-time purchase';
     $ctaFs   = 24.0;
     $cbb     = imagettfbbox($ctaFs, 0, $fontBold, $ctaText);
     $ctaW    = $cbb[2] - $cbb[0];

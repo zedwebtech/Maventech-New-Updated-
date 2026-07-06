@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 $pageTitle = 'About ' . SITE_BRAND . ' | Genuine Software Licenses';
-$pageDescription = SITE_BRAND . ' resells genuine Microsoft Office, Windows and antivirus keys at flat, transparent surplus pricing — independent software key provider with 30-day money-back guarantee.';
+$pageDescription = SITE_BRAND . ' resells genuine Microsoft Office, Windows and antivirus product keys at transparent, competitive prices — independent software reseller with a 30-day money-back guarantee.';
 
 /* AboutPage schema — gives AI search engines and Google a clear,
    citation-friendly snapshot of who we are, what we sell, and why
@@ -23,7 +23,7 @@ $jsonLdAboutPage = [
         'logo'     => site_url() . '/assets/images/badges/microsoft-verified.svg',
         'foundingDate'    => '2024',
         'numberOfEmployees' => ['@type' => 'QuantitativeValue', 'value' => 12],
-        'slogan'     => 'Genuine software, instant delivery, dedicated support.',
+        'slogan'     => 'Genuine software, digital delivery, dedicated support.',
         'description'=> SITE_BRAND . ' has shipped genuine Microsoft, Adobe and antivirus licence keys since 2024. Every key is verified pre-dispatch and backed by a 30-day money-back guarantee.',
         'knowsAbout' => ['Microsoft Office', 'Microsoft 365', 'Windows 11', 'Windows 10', 'Bitdefender', 'McAfee', 'Adobe', 'software licensing', 'digital downloads', 'SaaS subscriptions'],
         'award'   => ['Independent software key provider', '30-day money-back guarantee since 2024'],
@@ -46,7 +46,7 @@ $aboutFaqLd = [
         ['@type' => 'Question', 'name' => 'Is ' . SITE_BRAND . ' affiliated with Microsoft?',
          'acceptedAnswer' => ['@type' => 'Answer', 'text' => SITE_BRAND . ' is an independent provider of genuine software licence keys. We are not affiliated with, endorsed by, or sponsored by Microsoft Corporation. All licences are sourced from authorized software clearing houses and verified before delivery.']],
         ['@type' => 'Question', 'name' => 'How are licence keys delivered?',
-         'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Every licence key is sent by email within 15–30 minutes of payment confirmation. The email includes the activation key, an official download link to the vendor (Microsoft, Bitdefender, Norton, etc.) and a step-by-step installation guide.']],
+         'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Every licence key is sent by email once the order is processed (see Shipping & Delivery for full timing). The email includes the activation key, an official download link to the vendor (Microsoft, Bitdefender, Norton, etc.) and a step-by-step installation guide.']],
         ['@type' => 'Question', 'name' => 'What is your refund policy?',
          'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Every order is covered by a 30-day money-back guarantee. If the key fails to activate or the product is not what you expected, contact support within 30 days for a full refund — no hoops to jump through.']],
         ['@type' => 'Question', 'name' => 'How long has ' . SITE_BRAND . ' been in business?',
@@ -59,21 +59,21 @@ include __DIR__ . '/includes/header.php';
 
 $stats = [
     ['icon' => 'bi-patch-check-fill', 'color' => 'success', 'value' => '100%', 'label' => 'Genuine Products'],
-    ['icon' => 'bi-lightning-charge-fill', 'color' => 'warning', 'value' => '15–30min', 'label' => 'Delivery Time'],
+    ['icon' => 'bi-shield-check',     'color' => 'primary', 'value' => '30-Day', 'label' => 'Money-Back Guarantee'],
     ['icon' => 'bi-star-fill', 'color' => 'info', 'value' => '4.9/5', 'label' => 'Customer Rating'],
 ];
 $checklist = [
-    ['bi-award-fill', 'Independent Provider of Genuine Software Keys'],
-    ['bi-lightning-charge-fill', 'Instant digital delivery within minutes'],
-    ['bi-journal-text', 'Step-by-step digital activation guide included'],
+    ['bi-award-fill', 'Independent reseller of genuine software product keys'],
+    ['bi-envelope-check', 'Digital delivery by email (see Shipping &amp; Delivery)'],
+    ['bi-journal-text', 'Step-by-step activation guide included with every order'],
     ['bi-headset', 'Customer service Mon–Sat, 9 AM–6 PM EST'],
     ['bi-arrow-counterclockwise', '30-day money-back guarantee'],
 ];
 $features = [
-    ['bi-lightning-charge-fill', 'warning', 'Instant Delivery', 'Your authentic license key lands in your inbox within 15–30 minutes of purchase — no waiting, no shipping.'],
-    ['bi-patch-check-fill', 'success', 'Genuine Products', 'Every license is sourced from authorized software clearing houses and verified before delivery.'],
-    ['bi-infinity', 'primary', 'Perpetual License', 'One payment, yours forever. No recurring fees, no subscriptions — the software belongs to you for life.'],
-    ['bi-headset', 'info', 'Order Support', 'Help with your order, license-key delivery, activation and checkout. Product installation follows the official vendor documentation we include.'],
+    ['bi-envelope-check', 'primary', 'Digital Delivery', 'Your product key is delivered by email after the order is processed. See our Shipping &amp; Delivery page for full timing details.'],
+    ['bi-patch-check-fill', 'success', 'Genuine Products', 'Every product key is sourced through legitimate channels and verified before delivery.'],
+    ['bi-infinity', 'primary', 'One-Time Purchase', 'Pay once and keep the software. No recurring fees, no subscription — a perpetual license that belongs to you.'],
+    ['bi-headset', 'info', 'Order Support', 'Help with your order, product-key delivery, activation and checkout. Product installation follows the official vendor documentation we include.'],
     ['bi-lock-fill', 'primary', 'Secure Checkout', 'Shop confidently over SSL-encrypted, PCI-compliant payment processing with trusted providers.'],
     ['bi-arrow-counterclockwise', 'danger', '30-Day Guarantee', 'Not satisfied? Receive a full refund within 30 days — no questions asked, no hoops to jump through.'],
 ];
@@ -164,14 +164,17 @@ $features = [
         <div class="card p-4">
           <div class="row g-3 small company-info-grid">
             <div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-building text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Legal entity</div><div class="fw-semibold"><?= esc($brandLegalName) ?></div></div></div>
-            <?php if ($brandRegNumber): ?><div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-patch-check text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">California LLC No.</div><div class="fw-semibold"><?= esc($brandRegNumber) ?></div></div></div><?php endif; ?>
+            <?php if ($brandRegNumber): ?><div class="col-sm-6 d-flex align-items-start gap-2" data-testid="about-reg-file-no"><i class="bi bi-patch-check text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">File No.</div><div class="fw-semibold"><?= esc($brandRegNumber) ?></div></div></div><?php endif; ?>
+            <?php if ($brandRegDateFiled): ?><div class="col-sm-6 d-flex align-items-start gap-2" data-testid="about-reg-date-filed"><i class="bi bi-calendar-check text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Date filed</div><div class="fw-semibold"><?= esc(date('n/j/Y', strtotime((string)$brandRegDateFiled))) ?></div></div></div><?php endif; ?>
+            <?php if ($brandRegJurisdiction): ?><div class="col-sm-6 d-flex align-items-start gap-2" data-testid="about-reg-jurisdiction"><i class="bi bi-flag text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Jurisdiction</div><div class="fw-semibold"><?= esc($brandRegJurisdiction) ?></div></div></div><?php endif; ?>
             <div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-geo-alt text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Registered address</div><div class="fw-semibold"><?= esc($brandAddress) ?></div></div></div>
             <div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-envelope text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Email</div><div class="fw-semibold"><a href="mailto:<?= esc($brandEmail) ?>"><?= esc($brandEmail) ?></a></div></div></div>
             <div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-telephone text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Phone</div><div class="fw-semibold"><a href="tel:<?= esc(tel_e164($brandPhone)) ?>"><?= esc($brandPhone) ?></a></div></div></div>
             <div class="col-sm-6 d-flex align-items-start gap-2"><i class="bi bi-clock text-primary mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Hours</div><div class="fw-semibold"><?= SITE_HOURS ?></div></div></div>
+            <?php if ($brandRegCertUrl): ?><div class="col-12 d-flex align-items-start gap-2 pt-1" data-testid="about-reg-certificate"><i class="bi bi-file-earmark-pdf text-danger mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Articles of Organization</div><a class="fw-semibold" href="<?= esc($brandRegCertUrl) ?>" target="_blank" rel="noopener" data-testid="about-reg-certificate-link">View certificate (PDF) <i class="bi bi-box-arrow-up-right ms-1"></i></a></div></div><?php endif; ?>
           </div>
           <hr class="my-3">
-          <p class="small text-secondary mb-0"><?= esc($brandLegalName) ?> is an independent marketplace provider of genuine, surplus product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
+          <p class="small text-secondary mb-0"><?= esc($brandLegalName) ?> is an independent reseller of genuine, previously-licensed digital product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
         </div>
       </div>
     </div>
@@ -255,7 +258,7 @@ $features = [
     <div class="rounded-4 text-center text-white p-5 position-relative overflow-hidden" style="background: linear-gradient(135deg, #2563eb, #4338ca);">
       <div class="biz-glow"></div>
       <h2 class="fw-bold">Get Your Microsoft Office License Today</h2>
-      <p class="opacity-75 mx-auto" style="max-width: 560px;">Authentic perpetual licenses with professional support and instant delivery.</p>
+      <p class="opacity-75 mx-auto" style="max-width: 560px;">Authentic perpetual licenses with professional support.</p>
       <div class="d-flex justify-content-center gap-3 flex-wrap small mb-4">
         <span class="biz-chip"><i class="bi bi-patch-check-fill me-1"></i>Genuine Licenses</span>
         <span class="biz-chip"><i class="bi bi-download me-1"></i>Instant Download</span>

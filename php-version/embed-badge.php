@@ -120,7 +120,7 @@ $pctJs   = (int)$topDealPct;
         '<span class="mv-badge__body">' +
           '<span class="mv-badge__brand">' + BRAND + '</span>' +
           '<span class="mv-badge__title">' + headline + '</span>' +
-          '<span class="mv-badge__cta">Genuine licenses · Instant delivery</span>' +
+          '<span class="mv-badge__cta">Genuine licenses · Digital delivery</span>' +
         '</span>' +
         '<span class="mv-badge__arrow" aria-hidden="true">›</span>' +
       '</a>';

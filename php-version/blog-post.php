@@ -274,7 +274,7 @@ include __DIR__ . '/includes/header.php';
     <hr class="my-4">
     <div class="card p-4 text-center">
       <h5 class="fw-bold">Ready to upgrade your software?</h5>
-      <p class="small text-secondary">Genuine Microsoft licenses with instant delivery.</p>
+      <p class="small text-secondary">Genuine Microsoft licenses with digital delivery.</p>
       <a href="shop.php" class="btn btn-primary rounded-pill px-4 mx-auto">Shop Now</a>
     </div>
   <?php else: ?>

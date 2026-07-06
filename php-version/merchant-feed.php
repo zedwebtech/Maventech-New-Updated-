@@ -172,7 +172,7 @@ function _product_highlights(array $p, string $brand): array {
     $platform    = trim((string)($p['platform'] ?? ''));
     $license     = strtolower(trim((string)($p['license_type'] ?? '')));
     $licenseText = $license === 'subscription' ? '1-year subscription'
-                 : ($license === 'lifetime' ? 'Lifetime activation, no recurring fee'
+                 : ($license === 'lifetime' ? 'One-time purchase, no recurring fee'
                                             : 'Genuine perpetual license');
 
     // Apps line — only emitted when DB stores comma-separated apps.
@@ -194,7 +194,7 @@ function _product_highlights(array $p, string $brand): array {
     if ($appsBullet !== '') {
         $out[] = $appsBullet;
     }
-    $out[] = 'Instant digital delivery by email in 15–30 minutes';
+    $out[] = 'Digital delivery by email ';
     if (count($out) < 4) {
         $out[] = '30-day money-back guarantee with certified expert support';
     }
@@ -278,6 +278,13 @@ foreach ($products as $p) {
     $country  = $countryByRegion[$region] ?? 'US';
 
     $price    = number_format((float)$p['price'], 2, '.', '');
+    // Convert USD → regional currency using the same rate table the storefront
+    // renders on the landing page, so Google/Bing feeds never surface a
+    // "Price mismatch" warning when the ad-click LP shows EUR / GBP / CAD.
+    $rate = ($GLOBALS['CURRENCIES'][$currency]['rate'] ?? null);
+    if ($rate && (float)$rate > 0 && $currency !== 'USD') {
+        $price = number_format((float)$p['price'] * (float)$rate, 2, '.', '');
+    }
 
     $title    = trim((string)$p['name']);
     $brandPi  = _brand_from(trim((string)$p['brand']), $title);
@@ -294,7 +301,7 @@ foreach ($products as $p) {
     $descRaw = trim((string)($p['description'] ?? ''));
     if ($descRaw === '') {
         $descRaw = sprintf(
-            'Genuine %s license key for %s%s. Digital delivery by email within seconds of payment confirmation. Lifetime activation, 24/7 support and 30-day money-back guarantee — sold by %s, an independent software reseller (not affiliated with Microsoft Corporation).',
+            'Genuine %s product key for %s%s. Digital delivery by email once the order is processed. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by %s, an independent software reseller (not affiliated with Microsoft Corporation).',
             $brandPi,
             $title,
             $p['version'] ? ' ' . $p['version'] : '',
@@ -396,7 +403,7 @@ foreach ($products as $p) {
         echo "      <g:product_highlight>" . feed_xml_esc($bullet) . "</g:product_highlight>\n";
     }
 
-    // Digital download — instant delivery is always free.
+    // Digital download — digital delivery is always free.
     echo "      <g:shipping>\n";
     echo "        <g:country>"     . $country . "</g:country>\n";
     echo "        <g:service>Digital download (instant by email)</g:service>\n";
@@ -483,14 +490,19 @@ foreach ($hubPlans as $plan) {
         echo "      <g:image_link>" . feed_xml_esc($planImg) . "</g:image_link>\n";
         echo "      <g:condition>new</g:condition>\n";
         echo "      <g:availability>in_stock</g:availability>\n";
-        echo "      <g:price>{$planPrice} {$cur}</g:price>\n";
+        // Convert plan price USD → regional currency to match the landing page.
+        $planRegRate  = ($GLOBALS['CURRENCIES'][$cur]['rate'] ?? null);
+        $planRegPrice = ($planRegRate && (float)$planRegRate > 0 && $cur !== 'USD')
+            ? number_format((float)$plan['price'] * (float)$planRegRate, 2, '.', '')
+            : $planPrice;
+        echo "      <g:price>{$planRegPrice} {$cur}</g:price>\n";
         echo "      <g:brand>" . feed_xml_esc($brand) . "</g:brand>\n";
         echo "      <g:identifier_exists>no</g:identifier_exists>\n";
         echo "      <g:google_product_category>449</g:google_product_category>\n";
         echo "      <g:product_type>Services &gt; Software Support &gt; " . feed_xml_esc($plan['name']) . "</g:product_type>\n";
         echo "      <g:shipping>\n";
         echo "        <g:country>{$countryC}</g:country>\n";
-        echo "        <g:service>Instant email delivery</g:service>\n";
+        echo "        <g:service>Digital delivery by email</g:service>\n";
         echo "        <g:price>0.00 {$cur}</g:price>\n";
         echo "      </g:shipping>\n";
         echo "      <g:custom_label_0>" . feed_xml_esc($brand) . "</g:custom_label_0>\n";

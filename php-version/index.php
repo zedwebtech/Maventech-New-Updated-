@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/seo-content.php';
 $pageTitle = 'Microsoft Office & Windows 11 Keys | ' . SITE_BRAND;
-$pageDescription = 'Buy genuine Microsoft Office 2024, Windows 11 and antivirus keys at flat, transparent surplus pricing. Instant 15-30 minute delivery, lifetime activation.';
+$pageDescription = 'Buy genuine Microsoft Office 2024, Windows 11 and antivirus product keys at transparent, competitive prices. One-time purchase — no subscription — with a 30-day money-back guarantee.';
 $pageKeywords    = marquee_page_keywords('home');
 
 /* ================== SEO + GEO: WebSite + SearchAction schema =====
@@ -55,21 +55,21 @@ include __DIR__ . '/includes/header.php';
   <div class="container">
     <div class="row align-items-center g-4 g-lg-5">
       <div class="col-lg-7">
-        <span class="hero-badge mb-3"><i class="bi bi-lightning-charge-fill me-1"></i>Instant Digital Delivery</span>
+        <span class="hero-badge mb-3"><i class="bi bi-patch-check-fill me-1"></i>Genuine Microsoft Products</span>
         <h1 class="display-4">Genuine Microsoft Office &amp; <span class="accent">Windows 11 License Keys</span></h1>
-        <p class="text-secondary fs-5 mt-3">Genuine Microsoft licences, delivered in minutes.</p>
+        <p class="text-secondary fs-5 mt-3">Genuine Microsoft product keys — one-time purchase, no subscription.</p>
         <ul class="list-unstyled d-grid gap-2 my-4">
-          <li><i class="bi bi-check-circle-fill text-success me-2"></i>Genuine Microsoft License Keys</li>
-          <li><i class="bi bi-check-circle-fill text-success me-2"></i>Perpetual Access — No Subscriptions</li>
-          <li><i class="bi bi-check-circle-fill text-success me-2"></i>Instant Digital Delivery</li>
+          <li><i class="bi bi-check-circle-fill text-success me-2"></i>Genuine Microsoft product keys</li>
+          <li><i class="bi bi-check-circle-fill text-success me-2"></i>Perpetual access — no subscription</li>
+          <li><i class="bi bi-check-circle-fill text-success me-2"></i>30-day money-back guarantee</li>
         </ul>
         <div class="d-flex gap-3 flex-wrap">
           <a href="shop.php" class="btn btn-hero-cta btn-lg rounded-pill px-4" data-testid="hero-shop-now">Shop Now <i class="bi bi-arrow-right"></i></a>
           <a href="category.php?slug=office" class="btn btn-hero-ghost btn-lg rounded-pill px-4">Compare Editions</a>
         </div>
         <div class="d-flex gap-5 mt-5 flex-wrap hero-stats">
-          <div><div class="fs-3 fw-bold">24/7</div><small class="text-secondary">Instant Delivery</small></div>
-          <div><div class="fs-3 fw-bold">15-30min</div><small class="text-secondary">Delivery Time</small></div>
+          <div><div class="fs-3 fw-bold">24/7</div><small class="text-secondary">Order Support</small></div>
+          <div><div class="fs-3 fw-bold">30-Day</div><small class="text-secondary">Money-Back Guarantee</small></div>
         </div>
       </div>
       <div class="col-lg-5">
@@ -122,7 +122,7 @@ include __DIR__ . '/includes/header.php';
               </div>
             </div>
             <a href="shop.php" id="hero-photo-link" class="hero-photo-link" aria-label="Browse all software deals" title="Browse all software deals" data-testid="hero-photo-link"></a>
-            <span class="hero-delivery-pill" data-testid="hero-delivery-pill"><i class="bi bi-lightning-charge-fill"></i>Keys in 15–30 min</span>
+            <span class="hero-delivery-pill" data-testid="hero-delivery-pill"><i class="bi bi-envelope-check"></i>Digital delivery by email</span>
           </div>
         </div>
       </div>
@@ -213,8 +213,8 @@ include __DIR__ . '/includes/header.php';
       <?php
       $tb = [
         ['bi-patch-check-fill', 'Genuine Licenses', '100% Authentic Guarantee'],
-        ['bi-lightning-charge-fill', 'Instant Delivery', '15-30 Minutes'],
-        ['bi-infinity', 'Perpetual License', 'No Subscriptions'],
+        ['bi-envelope-check', 'Digital Delivery', 'By Email'],
+        ['bi-infinity', 'One-Time Purchase', 'No Subscription'],
         ['bi-headset', 'Order Support', SITE_HOURS],
         ['bi-shield-lock-fill', 'SSL Secured', 'Safe Checkout'],
         ['bi-arrow-counterclockwise', '30-Day Guarantee', 'Full Refund'],
@@ -287,11 +287,11 @@ include __DIR__ . '/includes/header.php';
             <div class="col-sm-7">
 <?php /* product rating stars removed per request */ ?>
               <h3 class="h4 fw-bold mb-2"><a href="product.php?slug=<?= esc($feat['slug']) ?>" class="text-decoration-none text-body"><?= esc($feat['name']) ?></a></h3>
-              <p class="small text-secondary mb-3">Genuine one-time purchase with instant email delivery, a step-by-step digital activation guide and a 30-day money-back guarantee.</p>
+              <p class="small text-secondary mb-3">Genuine one-time purchase — no subscription — with a step-by-step activation guide and a 30-day money-back guarantee.</p>
               <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                 <span class="fw-bold text-primary fs-3 lh-1"><?= format_price((float)$feat['price']) ?></span>
               </div>
-              <div class="surplus-price-label mb-3">Surplus Volume License Price</div>
+              <div class="surplus-price-label mb-3">Direct Price</div>
               <div class="d-flex gap-2 flex-wrap">
                 <button class="btn btn-primary rounded-pill px-4 add-to-cart-btn" data-slug="<?= esc($feat['slug']) ?>" data-testid="add-to-cart-<?= esc($feat['slug']) ?>"><i class="bi bi-cart-plus me-1"></i>Add to Cart</button>
                 <a href="product.php?slug=<?= esc($feat['slug']) ?>" class="btn btn-outline-secondary rounded-pill px-4" data-testid="spotlight-view-details">View Details</a>
@@ -397,7 +397,7 @@ include __DIR__ . '/includes/header.php';
       $steps = [
         ['01', 'Choose Your Edition', 'Browse our selection and pick the Microsoft Office edition that fits your needs.'],
         ['02', 'Secure Checkout', 'Complete your purchase through our SSL-secured payment with multiple options.'],
-        ['03', 'Instant Delivery', 'Receive your license key via email within 15-30 minutes of confirmation.'],
+        ['03', 'Digital Delivery', 'Receive your product key by email once the order is processed. See Shipping &amp; Delivery for full timing.'],
         ['04', 'Download & Activate', 'Download directly from Microsoft, enter your key, and start using Office.'],
       ];
       foreach ($steps as [$n, $t, $d]): ?>
@@ -419,7 +419,7 @@ include __DIR__ . '/includes/header.php';
     <h2 class="fw-bold">Trusted by Thousands of Customers</h2>
     <p class="text-secondary">Join satisfied customers who chose authentic Microsoft Office software</p>
     <div class="row g-4 mt-2" data-testid="trusted-stats">
-      <?php foreach ([['2+ Yrs', 'In Business'], ['15-30min', 'Delivery Time'], ['100%', 'Genuine Keys']] as [$v, $l]): ?>
+      <?php foreach ([['2+ Yrs', 'In Business'], ['30-Day', 'Money-Back'], ['100%', 'Genuine Keys']] as [$v, $l]): ?>
         <div class="col-md-4 col-6"><div class="fs-2 fw-bold text-primary"><?= $v ?></div><small class="text-secondary"><?= $l ?></small></div>
       <?php endforeach; ?>
     </div>
@@ -496,9 +496,9 @@ include __DIR__ . '/includes/header.php';
     <div class="row g-4" data-testid="why-choose-grid">
       <?php
       $why = [
-        ['bi-lightning-charge-fill', 'Instant Delivery', 'Receive your authentic license key via email within 15-30 minutes of purchase.'],
+        ['bi-envelope-check', 'Digital Delivery', 'Your product key is delivered by email once the order is processed — see our Shipping &amp; Delivery page.'],
         ['bi-patch-check-fill', 'Genuine Products', 'All licenses are authentic and sourced from authorized software clearing houses.'],
-        ['bi-infinity', 'Perpetual License', 'No recurring fees or subscriptions. One-time purchase — yours to use for as long as you own your device.'],
+        ['bi-infinity', 'One-Time Purchase', 'No recurring fees. Pay once and keep the software — a perpetual license for as long as you own your device.'],
         ['bi-headset', 'Order Support', 'Help with your order, license-key delivery, activation and checkout. Product installation follows the official vendor documentation we include.'],
         ['bi-shield-lock-fill', 'Secure Checkout', 'Shop with confidence using our SSL-encrypted payment processing.'],
         ['bi-arrow-counterclockwise', '30-Day Guarantee', 'Not satisfied? Get a full refund within 30 days, no questions asked.'],
@@ -541,7 +541,7 @@ include __DIR__ . '/includes/header.php';
       </div>
       <div class="col-lg-5">
         <div class="row g-3 text-center">
-          <?php foreach ([['2+ Yrs', 'In Business'], ['15-30min', 'Delivery Time'], ['100%', 'Genuine Keys']] as [$v, $l]): ?>
+          <?php foreach ([['2+ Yrs', 'In Business'], ['30-Day', 'Money-Back'], ['100%', 'Genuine Keys']] as [$v, $l]): ?>
             <div class="col-6"><div class="card p-3 h-100"><div class="fs-3 fw-bold text-primary"><?= $v ?></div><small class="text-secondary"><?= $l ?></small></div></div>
           <?php endforeach; ?>
         </div>
@@ -590,7 +590,7 @@ include __DIR__ . '/includes/header.php';
   <div class="container">
     <div class="rounded-4 text-center text-white p-4" style="background: linear-gradient(120deg, #2a1430 0%, #1b2240 50%, #0e4f5c 100%);" data-testid="cta-band">
       <h2 class="fw-bold">Get Your Microsoft Office License Today</h2>
-      <p class="opacity-75 mx-auto" style="max-width:540px;">Authentic perpetual licenses with professional support and instant delivery.</p>
+      <p class="opacity-75 mx-auto" style="max-width:540px;">Authentic perpetual licenses with professional support.</p>
       <div class="d-flex justify-content-center gap-4 flex-wrap small my-3 opacity-75">
         <span><i class="bi bi-check-circle me-1"></i>Genuine Licenses</span>
         <span><i class="bi bi-download me-1"></i>Instant Download</span>

@@ -135,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $contactFaqs = [
-    ['How long does it take to receive my license key?', 'Your license key and download instructions are delivered by email within 15-30 minutes of purchase — usually just a few minutes.'],
+    ['How long does it take to receive my license key?', 'Your license key and download instructions are delivered by email once the order is processed. Full timing details are on our Shipping & Delivery page.'],
     ['What if my license key doesn\'t work?', 'First make sure the key is entered exactly (no extra spaces, watch 0 vs O). If it still fails, contact our support team with your order number and we\'ll resolve it or replace the key.'],
     ['Do you offer refunds?', 'Yes — we offer a money-back guarantee. See our Refund Policy for full details, or start a request on the Return & Refund page.'],
     ['How do I activate my Microsoft Office license?', 'Download the official installer from setup.office.com, sign in with a Microsoft account, and enter your 25-character product key when prompted. Full steps are in our Activation Help guide.'],
@@ -153,7 +153,7 @@ include __DIR__ . '/includes/header.php';
     <p class="text-secondary mx-auto" style="max-width:620px;">Questions about your order, license-key delivery, or activation? Our order-fulfillment team is ready to help.</p>
     <div class="d-flex justify-content-center gap-4 flex-wrap small mt-3">
       <span><i class="bi bi-patch-check-fill text-success me-1"></i>Genuine Microsoft Licenses</span>
-      <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant Digital Delivery</span>
+      <span><i class="bi bi-shield-check text-primary me-1"></i>Secure Checkout</span>
       <span><i class="bi bi-arrow-counterclockwise text-primary me-1"></i>30-Day Money Back Guarantee</span>
     </div>
   </div>
@@ -193,7 +193,7 @@ include __DIR__ . '/includes/header.php';
   <div class="row g-4">
     <!-- Form -->
     <div class="col-lg-7">
-      <div class="card p-4 p-lg-5">
+      <div class="card p-4 p-lg-5" id="contact-form" data-testid="contact-form">
         <h2 class="h4 fw-bold mb-1">Send Us a Message</h2>
         <p class="text-secondary small mb-4">Fill out the form below and we'll respond as soon as possible.</p>
 
@@ -201,7 +201,7 @@ include __DIR__ . '/includes/header.php';
           <div class="alert alert-success" data-testid="contact-success"><i class="bi bi-check-circle-fill me-2"></i>Thanks! Your message has been received — we'll get back to you within 24 hours.</div>
         <?php else: ?>
           <?php if ($formError): ?><div class="alert alert-danger py-2 small" data-testid="contact-error"><?= esc($formError) ?></div><?php endif; ?>
-          <form method="post">
+          <form method="post" action="contact.php#contact-form" data-testid="contact-form-el" novalidate>
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label small fw-semibold">Full Name *</label>

@@ -37,9 +37,9 @@ function product_long_tail_keywords(array $p): string
         $name . ' product key',
         $name . ' activation key',
         $name . ' digital download',
-        $name . ' lifetime license',
+        $name . ' one-time purchase',
         $name . ' one time purchase no subscription',
-        $name . ' instant email delivery',
+        $name . ' digital delivery by email',
         'genuine ' . $name . ' license',
         'cheap ' . $name . ' license key',
         'discount ' . $name,
@@ -172,10 +172,10 @@ function office_intent_keywords(array $meta): array
     // Universal Microsoft Office high-intent / transactional cluster.
     $universal = [
         // Broad / commercial intent
-        'buy Microsoft Office lifetime license',
+        'buy Microsoft Office one-time purchase',
         'cheap Microsoft Office product key',
         'download Office Professional Plus legal copy',
-        'Microsoft Office digital download instant delivery',
+        'Microsoft Office digital download digital delivery',
         'original Microsoft Office activation key',
         'Office for Windows PC full version',
         'Microsoft Office one time purchase',
@@ -196,21 +196,21 @@ function office_intent_keywords(array $meta): array
             'Microsoft Office Home Business 2024 key Windows',
             // Phrase match
             'Microsoft Office 2024 Professional Plus product key',
-            'buy Office 2024 lifetime license Windows',
+            'buy Office 2024 one-time purchase Windows',
             'Microsoft Office Home 2024 PC download',
             'Office Home and Business 2024 key',
             'latest Microsoft Office 2024 for Windows',
             'purchase Office 2024 Pro Plus genuine code',
             // Exact match
             'Microsoft Office 2024 Professional Plus',
-            'Office 2024 Professional Plus lifetime license',
+            'Office 2024 Professional Plus one-time purchase',
             'Microsoft Office Home 2024',
             'Microsoft Office Home & Business 2024',
             'Office 2024 product key',
-            'Microsoft Office 2024 Professional Plus lifetime license Windows PC',
+            'Microsoft Office 2024 Professional Plus one-time purchase Windows PC',
             'Microsoft Office Home 2024 (PC)',
             'Microsoft Office Home & Business 2024 (PC)',
-            'buy Office 2024 lifetime license Windows PC',
+            'buy Office 2024 one-time purchase Windows PC',
         ],
         '2021' => [
             // Broad match
@@ -270,7 +270,7 @@ function office_intent_keywords(array $meta): array
 
     // Edition-specific tail variants (helps standalone Word/Excel SKUs too).
     if ($ed !== '' && $year !== '') {
-        $out[] = 'Microsoft ' . $ed . ' ' . $year . ' lifetime license';
+        $out[] = 'Microsoft ' . $ed . ' ' . $year . ' one-time purchase';
         $out[] = 'buy Microsoft ' . $ed . ' ' . $year . ' product key';
         $out[] = 'Microsoft ' . $ed . ' ' . $year . ' digital download';
     }
@@ -282,26 +282,26 @@ function office_intent_keywords(array $meta): array
     if (($meta['platform'] ?? '') === 'Mac') {
         $out = array_merge($out, [
             // Broad / commercial intent (Mac)
-            'buy Office Mac lifetime license no subscription',
+            'buy Office Mac one-time purchase no subscription',
             'cheap Microsoft Office Mac product key',
-            'Microsoft Office for Mac digital download instant delivery',
+            'Microsoft Office for Mac digital download digital delivery',
             'Microsoft Office Mac one time purchase',
             'genuine Microsoft Office Mac activation key',
             // Phrase match (Mac)
             'Microsoft Office Home & Business 2024 Mac',
             'Office 2021 Home & Student Mac',
-            'Microsoft Word 2021 Mac lifetime license',
-            'Microsoft Excel 2021 Mac lifetime license',
+            'Microsoft Word 2021 Mac one-time purchase',
+            'Microsoft Excel 2021 Mac one-time purchase',
             'Microsoft Office Home and Business 2019 Mac',
         ]);
         if ($year !== '') {
             $out[] = 'Microsoft Office ' . $year . ' for Mac';
-            $out[] = 'Office ' . $year . ' Mac lifetime license';
+            $out[] = 'Office ' . $year . ' Mac one-time purchase';
             $out[] = 'buy Office ' . $year . ' Mac product key';
         }
         if ($ed !== '' && $year !== '') {
             $out[] = 'Microsoft Office ' . $ed . ' ' . $year . ' (Mac)';
-            $out[] = 'Microsoft Office ' . $ed . ' ' . $year . ' Mac lifetime license';
+            $out[] = 'Microsoft Office ' . $ed . ' ' . $year . ' Mac one-time purchase';
         }
     }
 
@@ -355,7 +355,7 @@ function windows_intent_keywords(array $meta): array
         'buy original Windows 11 Pro product key',
         'buy genuine Windows 10 license key',
         'cheap Windows OEM product key',
-        'Windows retail license instant delivery',
+        'Windows retail license digital delivery',
         'Windows one-time purchase product key',
         'Windows lifetime activation key',
         'Windows digital license download',
@@ -395,7 +395,7 @@ function windows_intent_keywords(array $meta): array
     if ($v !== '' && isset($versionLib[$v])) $out = array_merge($out, $versionLib[$v]);
     if ($ed !== '' && $v !== '') {
         $out[] = 'Windows ' . $v . ' ' . $ed;
-        $out[] = 'Windows ' . $v . ' ' . $ed . ' lifetime license';
+        $out[] = 'Windows ' . $v . ' ' . $ed . ' one-time purchase';
         $out[] = 'Windows ' . $v . ' ' . $ed . ' OEM key';
         $out[] = 'Windows ' . $v . ' ' . $ed . ' retail key';
         $out[] = 'buy Windows ' . $v . ' ' . $ed . ' product key';
@@ -438,9 +438,9 @@ function project_visio_intent_keywords(array $meta): array
     $ed   = $meta['edition'];
 
     $base = [
-        'buy Microsoft ' . $k . ' lifetime license',
+        'buy Microsoft ' . $k . ' one-time purchase',
         'cheap Microsoft ' . $k . ' product key',
-        'Microsoft ' . $k . ' digital download instant delivery',
+        'Microsoft ' . $k . ' digital download digital delivery',
         'genuine Microsoft ' . $k . ' activation key',
         'Microsoft ' . $k . ' one-time purchase Windows PC',
         'Microsoft ' . $k . ' for Windows 11',
@@ -454,7 +454,7 @@ function project_visio_intent_keywords(array $meta): array
             'MS Project Professional 2021 PC',
             'Microsoft Project 2019 Professional Windows',
             'Microsoft Project Professional product key',
-            'project management software lifetime license Windows',
+            'project management software one-time purchase Windows',
         ]);
     } else {
         $base = array_merge($base, [
@@ -462,12 +462,12 @@ function project_visio_intent_keywords(array $meta): array
             'MS Visio Professional 2021 Windows PC',
             'Microsoft Visio 2019 Professional PC',
             'Microsoft Visio Professional product key',
-            'diagram software lifetime license Windows',
+            'diagram software one-time purchase Windows',
         ]);
     }
     if ($year !== '') {
         $base[] = 'Microsoft ' . $k . ' ' . $year . ' Professional PC';
-        $base[] = 'Microsoft ' . $k . ' ' . $year . ' lifetime license Windows';
+        $base[] = 'Microsoft ' . $k . ' ' . $year . ' one-time purchase Windows';
         $base[] = 'buy Microsoft ' . $k . ' ' . $year . ' product key';
         $base[] = 'Microsoft ' . $k . ' ' . $year . ' Windows PC digital download';
     }
@@ -569,7 +569,7 @@ function antivirus_intent_keywords(array $meta): array
     if ($dur !== '') $out[] = $b . ' ' . $dur . ' subscription product key';
     if ($dev !== '' && $dur !== '') {
         $out[] = $b . ' ' . $dev . ' ' . $dur . ' digital download';
-        $out[] = 'buy ' . $b . ' ' . $dev . ' ' . $dur . ' instant delivery';
+        $out[] = 'buy ' . $b . ' ' . $dev . ' ' . $dur . ' digital delivery';
     }
     return array_values(array_unique(array_filter($out)));
 }
@@ -618,7 +618,7 @@ function product_seo_copy(array $p): string
     $h .= '<p class="text-secondary">Looking for the most reliable place to <strong>buy ' . $name . ' online</strong>? You are in the right place. ';
     $h .= esc(SITE_BRAND) . ' delivers a <strong>genuine ' . $brand . ' license key</strong> for ' . $name . ' at ' . esc($price) . ' &mdash; ';
     $h .= 'a one-time purchase with a <strong>lifetime activation</strong>, no monthly fees and no surprise renewals. ';
-    $h .= 'Your key arrives by email in 15&ndash;30 minutes, ready to activate directly inside the official ' . $brand . ' installer.</p>';
+    $h .= 'Your key arrives by email by email, ready to activate directly inside the official ' . $brand . ' installer.</p>';
 
     $h .= '<h3 class="fw-bold h5 mt-4 mb-2">' . $name . ' &mdash; quick facts</h3>';
     $h .= '<ul class="pd-seo-facts small text-secondary mb-4">';
@@ -631,7 +631,7 @@ function product_seo_copy(array $p): string
 
     $h .= '<h3 class="fw-bold h5 mt-4 mb-2">How to activate ' . $name . ' after purchase</h3>';
     $h .= '<ol class="small text-secondary mb-4">';
-    $h .= '<li>Complete checkout &mdash; your ' . $name . ' license key + official ' . $brand . ' download link arrive by email within 15&ndash;30 minutes.</li>';
+    $h .= '<li>Complete checkout &mdash; your ' . $name . ' license key + official ' . $brand . ' download link arrive by email withby email.</li>';
     $h .= '<li>Download the genuine installer from the link in the email (or directly from the ' . $brand . ' website).</li>';
     $h .= '<li>Run the installer and sign in to your ' . $brand . ' account.</li>';
     $h .= '<li>Paste the activation key when prompted &mdash; activation completes in seconds.</li>';
@@ -642,13 +642,13 @@ function product_seo_copy(array $p): string
     $h .= '<p class="text-secondary mb-4">Yes &mdash; this listing is the perpetual licence. Pay once at ' . esc($price) . ', activate on your ' . $platform . ' device, and use ' . $name . ' for as long as you own the device. There are no monthly fees, no renewals and no surprise charges. If you need to move the licence to a new computer, our support team helps you transfer it free of charge.</p>';
 
     $h .= '<h3 class="fw-bold h5 mt-4 mb-2">Best price for ' . $name . ' in ' . date('Y') . '</h3>';
-    $h .= '<p class="text-secondary mb-0">' . esc(SITE_BRAND) . ' sources genuine, surplus ' . $name . ' licences through legitimate volume-licensing channels, which is how we can offer a flat, transparent price of ' . esc($price) . '. ';
+    $h .= '<p class="text-secondary mb-0">' . esc(SITE_BRAND) . ' sources genuine, previously-licensed ' . $name . ' licences through legitimate volume-licensing channels, which is how we can offer a flat, transparent price of ' . esc($price) . '. ';
     $h .= 'Every key is verified pre-dispatch, every payment is encrypted, and every order is protected by our 30-day money-back guarantee. ';
     $h .= 'Compare us with any other reseller on price, delivery speed and support quality &mdash; we are confident you will buy here.</p>';
 
     // Microsoft Office intent block — only renders for Office products.
     // Naturally weaves the highest-volume transactional phrases (lifetime
-    // license, product key, instant delivery, one-time purchase, no
+    // license, product key, digital delivery, one-time purchase, no
     // subscription) into a paragraph crawlers and AI models can quote.
     $officeMeta = office_edition_meta($p);
     if (!empty($officeMeta['is_office'])) {
@@ -657,13 +657,13 @@ function product_seo_copy(array $p): string
         $yearTxt = $year !== '' ? ('Office ' . esc($year)) : 'Microsoft Office';
         $edTxt   = $ed !== ''   ? (' ' . esc($ed)) : '';
 
-        $h .= '<h3 class="fw-bold h5 mt-5 mb-2">' . $yearTxt . $edTxt . ' &mdash; lifetime license, product key &amp; instant download</h3>';
-        $h .= '<p class="text-secondary mb-3">Searching for a <strong>' . $yearTxt . $edTxt . ' product key</strong>, a <strong>lifetime license</strong> or a <strong>genuine activation code</strong> for your ' . $platform . ' PC? This is the right listing. ';
-        $h .= 'Pay once, no monthly subscription, no recurring fees &mdash; just a <strong>one-time purchase</strong> of ' . $name . ' delivered as a digital download by email in 15&ndash;30 minutes. ';
+        $h .= '<h3 class="fw-bold h5 mt-5 mb-2">' . $yearTxt . $edTxt . ' &mdash; one-time purchase, product key &amp; instant download</h3>';
+        $h .= '<p class="text-secondary mb-3">Searching for a <strong>' . $yearTxt . $edTxt . ' product key</strong>, a <strong>one-time purchase</strong> or a <strong>genuine activation code</strong> for your ' . $platform . ' PC? This is the right listing. ';
+        $h .= 'Pay once, no monthly subscription, no recurring fees &mdash; just a <strong>one-time purchase</strong> of ' . $name . ' delivered as a digital download by email by email. ';
         $h .= 'The key activates the official ' . esc($brand) . ' installer downloaded directly from Microsoft, so you get the <strong>full version of ' . $yearTxt . $edTxt . '</strong> with every Word, Excel, PowerPoint and Outlook update included for the life of the licence.</p>';
 
         if ($year === '2024') {
-            $h .= '<p class="text-secondary mb-3"><strong>Why Office 2024?</strong> The newest perpetual release of Microsoft Office for Windows 11 and Windows 10 PCs &mdash; faster start-up, refreshed ribbon, native ARM64 support and the latest Word, Excel and PowerPoint features. Best buy for shoppers asking "<em>Microsoft Office 2024 Professional Plus product key</em>", "<em>buy Office 2024 lifetime license Windows</em>" or "<em>latest Microsoft Office 2024 for Windows</em>".</p>';
+            $h .= '<p class="text-secondary mb-3"><strong>Why Office 2024?</strong> The newest perpetual release of Microsoft Office for Windows 11 and Windows 10 PCs &mdash; faster start-up, refreshed ribbon, native ARM64 support and the latest Word, Excel and PowerPoint features. Best buy for shoppers asking "<em>Microsoft Office 2024 Professional Plus product key</em>", "<em>buy Office 2024 one-time purchase Windows</em>" or "<em>latest Microsoft Office 2024 for Windows</em>".</p>';
         } elseif ($year === '2021') {
             $h .= '<p class="text-secondary mb-3"><strong>Why Office 2021?</strong> Still the value champion in 2026 &mdash; same core apps as the cloud subscription, but a true <em>one-time purchase</em>. Perfect for shoppers searching "<em>Microsoft Office 2021 Professional Plus download</em>", "<em>Office 2021 Home and Business Windows PC</em>" or "<em>standalone Microsoft Word 2021 product key</em>".</p>';
         } elseif ($year === '2019') {
@@ -682,9 +682,9 @@ function product_seo_copy(array $p): string
         $vTxt   = $v  !== '' ? ('Windows ' . esc($v)) : 'Windows';
         $edTxt  = $ed !== '' ? (' ' . esc($ed)) : '';
 
-        $h .= '<h3 class="fw-bold h5 mt-5 mb-2">' . $vTxt . $edTxt . ' &mdash; genuine product key, lifetime activation &amp; instant digital delivery</h3>';
+        $h .= '<h3 class="fw-bold h5 mt-5 mb-2">' . $vTxt . $edTxt . ' &mdash; genuine product key, lifetime activation &amp; digital delivery</h3>';
         $h .= '<p class="text-secondary mb-3">Shopping for a <strong>' . $vTxt . $edTxt . ' product key</strong>, a <strong>retail license</strong> or an <strong>OEM activation code</strong> for your PC build? This listing ships you exactly that. ';
-        $h .= 'Pay once at ' . esc($price) . ', receive the 25-character genuine activation code by email in 15&ndash;30 minutes, run the official Microsoft Media Creation Tool, paste the key, and your machine is fully activated &mdash; tied to your hardware, not to a subscription.</p>';
+        $h .= 'Pay once at ' . esc($price) . ', receive the 25-character genuine activation code by email by email, run the official Microsoft Media Creation Tool, paste the key, and your machine is fully activated &mdash; tied to your hardware, not to a subscription.</p>';
 
         if ($v === '11') {
             $h .= '<p class="text-secondary mb-3"><strong>Why Windows 11' . $edTxt . '?</strong> The latest perpetual Microsoft OS &mdash; redesigned Start menu, Snap Layouts, native Microsoft Store, DirectStorage gaming and full Copilot integration. Best buy for shoppers searching "<em>buy original Windows 11 Pro product key</em>", "<em>Windows 11 Home activation key</em>" or "<em>Windows 11 Pro 64-bit retail key</em>".</p>';
@@ -707,11 +707,11 @@ function product_seo_copy(array $p): string
         $yTxt  = $year !== '' ? (' ' . esc($year)) : '';
         $edTxt = $ed   !== '' ? (' ' . esc($ed))   : '';
 
-        $h .= '<h3 class="fw-bold h5 mt-5 mb-2">Microsoft ' . $kind . $yTxt . $edTxt . ' &mdash; lifetime license &amp; instant product key</h3>';
+        $h .= '<h3 class="fw-bold h5 mt-5 mb-2">Microsoft ' . $kind . $yTxt . $edTxt . ' &mdash; one-time purchase &amp; instant product key</h3>';
         if ($kind === 'Project') {
-            $h .= '<p class="text-secondary mb-3">The professional grade tool millions of project managers, PMOs and construction teams depend on for Gantt charts, resource levelling, baseline tracking and earned-value analysis. This listing is a <strong>one-time purchase perpetual license</strong> for Microsoft Project' . $yTxt . $edTxt . ' on Windows PC &mdash; no monthly fee, no Microsoft Project Online subscription required. Matches intent for "<em>Microsoft Project ' . ($year ?: '2024') . ' Professional PC</em>", "<em>MS Project Professional product key</em>" and "<em>project management software lifetime license Windows</em>".</p>';
+            $h .= '<p class="text-secondary mb-3">The professional grade tool millions of project managers, PMOs and construction teams depend on for Gantt charts, resource levelling, baseline tracking and earned-value analysis. This listing is a <strong>one-time purchase perpetual license</strong> for Microsoft Project' . $yTxt . $edTxt . ' on Windows PC &mdash; no monthly fee, no Microsoft Project Online subscription required. Matches intent for "<em>Microsoft Project ' . ($year ?: '2024') . ' Professional PC</em>", "<em>MS Project Professional product key</em>" and "<em>project management software one-time purchase Windows</em>".</p>';
         } else {
-            $h .= '<p class="text-secondary mb-3">The industry-standard diagramming app trusted by IT architects, network engineers and BPMN teams. This listing is a <strong>one-time purchase perpetual license</strong> for Microsoft Visio' . $yTxt . $edTxt . ' on Windows PC &mdash; full template library (network, floor plan, UML, ERD, BPMN, AWS / Azure shapes) without a Visio Plan 1 or Plan 2 subscription. Matches "<em>Microsoft Visio ' . ($year ?: '2024') . ' Professional Windows PC</em>", "<em>MS Visio Professional product key</em>" and "<em>diagram software lifetime license Windows</em>".</p>';
+            $h .= '<p class="text-secondary mb-3">The industry-standard diagramming app trusted by IT architects, network engineers and BPMN teams. This listing is a <strong>one-time purchase perpetual license</strong> for Microsoft Visio' . $yTxt . $edTxt . ' on Windows PC &mdash; full template library (network, floor plan, UML, ERD, BPMN, AWS / Azure shapes) without a Visio Plan 1 or Plan 2 subscription. Matches "<em>Microsoft Visio ' . ($year ?: '2024') . ' Professional Windows PC</em>", "<em>MS Visio Professional product key</em>" and "<em>diagram software one-time purchase Windows</em>".</p>';
         }
         $h .= '<h3 class="fw-bold h5 mt-4 mb-2">Installs alongside Office</h3>';
         $h .= '<p class="text-secondary mb-3">Microsoft ' . $kind . $yTxt . ' installs as a standalone app on the same Windows PC where your Office 365 / Office 2021 / Office 2024 already runs &mdash; they do not conflict. Activation uses your Microsoft account so you keep the licence when you change PCs (subject to Microsoft\'s standard reactivation flow).</p>';
@@ -726,8 +726,8 @@ function product_seo_copy(array $p): string
         $plt  = $avMeta['platform'];
         $covT = ($dev !== '' || $dur !== '') ? (' &mdash; ' . trim($dev . ($dev && $dur ? ', ' : '') . $dur)) : '';
 
-        $h .= '<h3 class="fw-bold h5 mt-5 mb-2">' . esc($b) . ' security' . $covT . ' &mdash; genuine subscription key, instant email delivery</h3>';
-        $h .= '<p class="text-secondary mb-3">Searching for a <strong>genuine ' . esc($b) . ' activation code</strong> or a <strong>cheaper-than-RRP renewal key</strong>? This is the right listing. Pay once at ' . esc($price) . ', receive the activation key by email in 15&ndash;30 minutes, sign in to your ' . esc($b) . ' Central / My Account dashboard, paste the code, and your ' . esc($plt) . ' device(s) are protected immediately &mdash; real-time malware shield, ransomware blocker, anti-phishing, web threat prevention and (where included) VPN + identity-theft monitoring.</p>';
+        $h .= '<h3 class="fw-bold h5 mt-5 mb-2">' . esc($b) . ' security' . $covT . ' &mdash; genuine subscription key, digital delivery by email</h3>';
+        $h .= '<p class="text-secondary mb-3">Searching for a <strong>genuine ' . esc($b) . ' activation code</strong> or a <strong>cheaper-than-RRP renewal key</strong>? This is the right listing. Pay once at ' . esc($price) . ', receive the activation key by email by email, sign in to your ' . esc($b) . ' Central / My Account dashboard, paste the code, and your ' . esc($plt) . ' device(s) are protected immediately &mdash; real-time malware shield, ransomware blocker, anti-phishing, web threat prevention and (where included) VPN + identity-theft monitoring.</p>';
 
         if (stripos($b, 'Bitdefender') !== false) {
             $h .= '<p class="text-secondary mb-3">Bitdefender consistently tops AV-Comparatives and AV-Test rankings for 0-day malware detection with the lowest CPU footprint in the category. Matches "<em>cheap Bitdefender antivirus ' . esc($plt) . ' VPN license</em>", "<em>Bitdefender Premium VPN unlimited devices</em>" and "<em>Bitdefender Small Office Security 5 devices 1 year</em>".</p>';
@@ -763,7 +763,7 @@ function product_howto_jsonld(array $p): array
         'tool'        => ['Your ' . $brand . ' licence key', 'Internet connection', 'Your ' . ($p['platform'] ?: 'Windows') . ' device'],
         'step'        => [
             ['@type' => 'HowToStep', 'position' => 1, 'name' => 'Receive your licence key',
-             'text' => 'Your ' . $name . ' licence key arrives by email within 15-30 minutes of completing checkout, along with the official ' . $brand . ' download link.'],
+             'text' => 'Your ' . $name . ' licence key arrives by email withby email of completing checkout, along with the official ' . $brand . ' download link.'],
             ['@type' => 'HowToStep', 'position' => 2, 'name' => 'Download the official installer',
              'text' => 'Click the download link in the email or visit the official ' . $brand . ' website to download the genuine installer for ' . ($p['platform'] ?: 'Windows') . '.'],
             ['@type' => 'HowToStep', 'position' => 3, 'name' => 'Install the software',
@@ -806,7 +806,7 @@ function product_ai_summary_jsonld(array $p): array
     $body .= 'The licence is genuine, activates directly inside the official ' . $brand . ' software on ' . $platform . ', and remains valid for the life of the device — there is no monthly subscription and no automatic re-billing. ';
     $body .= 'Ideal for shoppers searching for "buy ' . strtolower($name) . ' lifetime", "' . strtolower($name) . ' product key", "' . strtolower($name) . ' one-time purchase no subscription" or "' . $brand . ' independent reseller". ';
     $body .= "\n\n";
-    $body .= 'After checkout the activation key arrives by email within 15-30 minutes, alongside the official ' . $brand . ' download link and step-by-step activation instructions. ';
+    $body .= 'After checkout the activation key arrives by email withby email, alongside the official ' . $brand . ' download link and step-by-step activation instructions. ';
     $body .= 'Activation completes in under five minutes; help is available six days a week via live chat, email and phone. ';
     $body .= 'Every order is backed by a 30-day money-back guarantee and protected by encrypted payment processing. ';
 
@@ -953,15 +953,15 @@ function category_intro_seo(string $slug, string $title): string
     $isWindows   = (strpos($slug, 'windows') !== false);
 
     if ($isAntivirus) {
-        return 'Compare and buy genuine ' . esc($title) . ' licences below &mdash; full antivirus, anti-malware and ransomware protection at competitive, flat surplus pricing, with instant email delivery and 30-day money-back peace of mind. Every key is sourced through legitimate volume-licensing channels and activates inside the official ' . esc($title) . ' installer.';
+        return 'Compare and buy genuine ' . esc($title) . ' product keys below &mdash; full antivirus, anti-malware and ransomware protection at competitive prices, with digital delivery by email and 30-day money-back peace of mind. Every key is sourced through legitimate licensing channels and activates inside the official ' . esc($title) . ' installer.';
     }
     if ($isOffice) {
-        return 'Shop ' . esc($title) . ' &mdash; a one-time purchase that gives you a lifetime licence for Word, Excel, PowerPoint and the rest of the Office apps. No monthly Microsoft 365 fees, no renewals, no surprise charges. Pay once, install on your device, and use it for as long as you own the computer. Backed by our 30-day money-back guarantee.';
+        return 'Shop ' . esc($title) . ' &mdash; a one-time purchase that gives you a one-time-purchase licence for Word, Excel, PowerPoint and the rest of the Office apps. No monthly Microsoft 365 fees, no renewals, no surprise charges. Pay once, install on your device, and use it for as long as you own the computer. Backed by our 30-day money-back guarantee.';
     }
     if ($isWindows) {
-        return 'Activate your PC with a genuine ' . esc($title) . ' product key in minutes. Buy the perpetual licence below and pay once &mdash; never a subscription. Instant email delivery, free upgrade-style updates within the version and round-the-clock activation support.';
+        return 'Activate your PC with a genuine ' . esc($title) . ' product key in minutes. Buy the perpetual licence below and pay once &mdash; never a subscription. Digital delivery by email, free upgrade-style updates within the version and round-the-clock activation support.';
     }
-    return 'Explore the full range of ' . esc($title) . ' below. Every licence is a perpetual one-time purchase with instant email delivery, a step-by-step digital activation guide and a 30-day money-back guarantee. Flat, transparent surplus volume-license pricing.';
+    return 'Explore the full range of ' . esc($title) . ' below. Every licence is a perpetual one-time purchase with digital delivery by email, a step-by-step digital activation guide and a 30-day money-back guarantee. Flat, transparent transparent, competitive pricing.';
 }
 
 /* ------------------------------------------------------------------
@@ -977,11 +977,11 @@ function category_long_tail_keywords(string $title, string $platform = ''): stri
         $title . ' license key',
         $title . ' product key',
         $title . ' activation key',
-        $title . ' lifetime license',
+        $title . ' one-time purchase',
         $title . ' one time purchase',
         $title . ' download',
         $title . ' digital download',
-        $title . ' instant delivery',
+        $title . ' digital delivery',
         $title . ' no subscription',
         $title . ' best price',
         $title . ' discount',
@@ -1025,7 +1025,7 @@ function category_faqs(string $slug, string $title): array
         ],
         [
             'question' => 'How quickly will I receive my ' . $title . ' license key?',
-            'answer'   => 'Your ' . $title . ' licence key is delivered by email within 15-30 minutes of completing payment &mdash; often in seconds. The email contains the activation key, the official ' . $brand . ' download link and step-by-step activation instructions. There is no physical shipping; everything is digital.',
+            'answer'   => 'Your ' . $title . ' licence key is delivered by email withby email of completing payment &mdash; often in seconds. The email contains the activation key, the official ' . $brand . ' download link and step-by-step activation instructions. There is no physical shipping; everything is digital.',
         ],
         [
             'question' => 'Is ' . $title . ' a one-time purchase or a subscription?',
@@ -1072,7 +1072,7 @@ function category_faqs(string $slug, string $title): array
         $yearTxt = $year !== '' ? ' ' . $year : '';
         $faqs[] = [
             'question' => 'Which Microsoft Office' . $yearTxt . ' edition should I pick: Home & Student, Home & Business or Professional Plus?',
-            'answer'   => 'Choose <strong>Home &amp; Student</strong> if you mainly write documents (Word), crunch spreadsheets (Excel) and build presentations (PowerPoint) &mdash; it is the cheapest one-time-purchase tier. Pick <strong>Home &amp; Business</strong> if you also send email from Outlook for a side business or consulting work &mdash; same three apps plus Outlook. Power users who need <strong>Publisher, Access, Skype for Business or Teams Classic</strong> should pick <strong>Professional Plus</strong>. All three editions on this page are perpetual lifetime licences &mdash; no Microsoft 365 subscription required.',
+            'answer'   => 'Choose <strong>Home &amp; Student</strong> if you mainly write documents (Word), crunch spreadsheets (Excel) and build presentations (PowerPoint) &mdash; it is the cheapest one-time-purchase tier. Pick <strong>Home &amp; Business</strong> if you also send email from Outlook for a side business or consulting work &mdash; same three apps plus Outlook. Power users who need <strong>Publisher, Access, Skype for Business or Teams Classic</strong> should pick <strong>Professional Plus</strong>. All three editions on this page are perpetual one-time-purchase licences &mdash; no Microsoft 365 subscription required.',
         ];
         if ($year !== '') {
             $faqs[] = [
@@ -1144,7 +1144,7 @@ function marquee_page_keywords(string $kind = 'index'): string
     // the per-product long-tail variants).
     $kw[] = SITE_BRAND . ' genuine software licenses';
     $kw[] = 'buy Microsoft Office product key';
-    $kw[] = 'Microsoft Office lifetime license';
+    $kw[] = 'Microsoft Office one-time purchase';
     $kw[] = 'Microsoft Office one-time purchase';
     $kw[] = 'Windows 11 Pro product key';
     $kw[] = 'Windows 10 Pro product key';
@@ -1155,7 +1155,7 @@ function marquee_page_keywords(string $kind = 'index'): string
     $kw[] = 'Norton 360 activation code';
     $kw[] = 'cheap genuine software license';
     $kw[] = 'digital download Microsoft software';
-    $kw[] = 'instant delivery software keys';
+    $kw[] = 'digital delivery software keys';
     $kw[] = 'no subscription software license';
     $kw[] = 'lifetime activation Microsoft software';
     $kw[] = 'independent Microsoft software reseller';
@@ -1236,7 +1236,7 @@ function blog_post_long_tail_keywords(array $post): string
                 $kw[] = (string)$prod['name'] . ' license';
                 $kw[] = (string)$prod['name'] . ' product key';
                 $kw[] = 'buy ' . (string)$prod['name'];
-                if (!empty($prod['brand']))    $kw[] = (string)$prod['brand'] . ' lifetime license';
+                if (!empty($prod['brand']))    $kw[] = (string)$prod['brand'] . ' one-time purchase';
                 if (!empty($prod['category'])) $kw[] = (string)$prod['category'] . ' product key';
                 // Use the category-aware intent dispatcher to surface
                 // Office / Windows / Project-Visio / Antivirus libraries.
@@ -1248,7 +1248,7 @@ function blog_post_long_tail_keywords(array $post): string
     // Detect intent clusters straight from the title (works even when
     // there is no linked product).
     $titleLc = strtolower($title);
-    if (strpos($titleLc, 'office')  !== false) $kw[] = 'Microsoft Office lifetime license';
+    if (strpos($titleLc, 'office')  !== false) $kw[] = 'Microsoft Office one-time purchase';
     if (strpos($titleLc, 'windows') !== false) $kw[] = 'Windows product key';
     if (strpos($titleLc, 'project') !== false) $kw[] = 'Microsoft Project Professional product key';
     if (strpos($titleLc, 'visio')   !== false) $kw[] = 'Microsoft Visio Professional product key';
@@ -1257,7 +1257,7 @@ function blog_post_long_tail_keywords(array $post): string
     }
     if (preg_match('/\b(2024|2021|2019)\b/', $titleLc, $ym)) {
         $kw[] = 'Microsoft Office ' . $ym[1] . ' product key';
-        $kw[] = 'buy Office ' . $ym[1] . ' lifetime license';
+        $kw[] = 'buy Office ' . $ym[1] . ' one-time purchase';
     }
 
     // H2 / H3 headings from the body — they tend to be high-intent
@@ -1411,12 +1411,12 @@ function category_buying_guide_html(string $slug, string $title, int $productCou
     }
 
     $h .= '<h3 class="fw-bold h5 mt-4 mb-2">Delivery, activation &amp; support &mdash; what to expect</h3>';
-    $h .= '<p class="text-secondary"><strong>Delivery:</strong> ' . esc($title) . ' licence keys arrive by email within 15-30 minutes of completing payment, with the activation key, the official download link and step-by-step activation instructions.<br>';
+    $h .= '<p class="text-secondary"><strong>Delivery:</strong> ' . esc($title) . ' licence keys arrive by email withby email of completing payment, with the activation key, the official download link and step-by-step activation instructions.<br>';
     $h .= '<strong>Activation:</strong> The keys are activated directly inside the official ' . esc($title) . ' software &mdash; never through third-party loaders, cracks or modified installers.<br>';
     $h .= '<strong>Support:</strong> Live chat, email and phone support is available six days a week. Our specialists handle activation, transfers, downgrades and replacement keys at no extra charge.</p>';
 
     $h .= '<h3 class="fw-bold h5 mt-4 mb-2">Lowest verified prices on ' . esc($title) . ' in ' . $year . '</h3>';
-    $h .= '<p class="text-secondary mb-0">' . esc(SITE_BRAND) . ' sources genuine, surplus ' . esc($title) . ' licences through legitimate volume-licensing clearings, which is how we can offer <strong>flat, transparent pricing</strong>. ';
+    $h .= '<p class="text-secondary mb-0">' . esc(SITE_BRAND) . ' sources genuine, previously-licensed ' . esc($title) . ' licences through legitimate volume-licensing clearings, which is how we can offer <strong>flat, transparent pricing</strong>. ';
     $h .= 'Every licence is paid for upfront, fully transferable and protected by our 30-day money-back guarantee. ';
     $h .= 'If you find ' . esc($title) . ' cheaper at another verified reseller, we will match the price &mdash; just send us the link.</p>';
     $h .= '</section>';
@@ -1507,7 +1507,7 @@ function related_category_links(string $currentSlug): array
     $isAv     = (strpos($currentSlug, 'bitdefender') !== false || strpos($currentSlug, 'mcafee') !== false || $currentSlug === 'antivirus');
 
     $all = [
-        ['slug' => 'office-pc',       'anchor' => 'Microsoft Office for PC &mdash; lifetime licence keys'],
+        ['slug' => 'office-pc',       'anchor' => 'Microsoft Office for PC &mdash; one-time-purchase product keys'],
         ['slug' => 'office-mac',      'anchor' => 'Microsoft Office for Mac &mdash; perpetual licence'],
         ['slug' => 'office-2024-pc',  'anchor' => 'Buy Microsoft Office 2024 for Windows'],
         ['slug' => 'office-2021-pc',  'anchor' => 'Microsoft Office 2021 product key &mdash; one-time purchase'],
@@ -1646,11 +1646,11 @@ function product_paa_faqs(array $p): array
     return [
         [
             'question' => 'Where is the cheapest place to buy ' . $name . '?',
-            'answer'   => esc(SITE_BRAND) . ' sells ' . esc($name) . ' at a flat, transparent price of ' . esc($price) . '. We source genuine, surplus licences through legitimate volume-licensing channels, guaranteeing every key is genuine, activates inside the official ' . esc($brand) . ' installer, and ships with a 30-day money-back protection.',
+            'answer'   => esc(SITE_BRAND) . ' sells ' . esc($name) . ' at a flat, transparent price of ' . esc($price) . '. We source genuine, previously-licensed licences through legitimate volume-licensing channels, guaranteeing every key is genuine, activates inside the official ' . esc($brand) . ' installer, and ships with a 30-day money-back protection.',
         ],
         [
             'question' => 'How long does ' . $name . ' delivery take?',
-            'answer'   => 'Your ' . esc($name) . ' licence key arrives by email within 15&ndash;30 minutes of completing payment &mdash; often in seconds. The email contains the activation key, the official ' . esc($brand) . ' download link and step-by-step instructions. There is no physical shipping; everything is digital.',
+            'answer'   => 'Your ' . esc($name) . ' licence key arrives by email withby email of completing payment &mdash; often in seconds. The email contains the activation key, the official ' . esc($brand) . ' download link and step-by-step instructions. There is no physical shipping; everything is digital.',
         ],
         [
             'question' => 'Will ' . $name . ' work on my ' . esc($platform) . ' device?',
@@ -1715,11 +1715,11 @@ function _topic_hub_default_seeds(): array
         [
             'slug'       => 'microsoft-office',
             'title'      => 'Microsoft Office — the complete buying guide',
-            'headline'   => 'Microsoft Office is a one-time-purchase office suite (Word, Excel, PowerPoint, Outlook, Publisher, Access) sold by ' . $brand . ' at flat, transparent surplus pricing. Every licence is genuine, lifetime, activates inside the official Microsoft installer, delivered by email in 15-30 minutes, and protected by a 30-day money-back guarantee.',
+            'headline'   => 'Microsoft Office is a one-time-purchase office suite (Word, Excel, PowerPoint, Outlook, Publisher, Access) sold by ' . $brand . ' at transparent, competitive pricing. Every licence is genuine, lifetime, activates inside the official Microsoft installer, delivered by email, and protected by a 30-day money-back guarantee.',
             'audience'   => 'home users, students, freelancers and small-business owners choosing between Office 2024, 2021 and 2019 on Windows or Mac',
             'categories' => ['office-pc','office-mac','office-2024-pc','office-2021-pc','office-2019-pc','office-2024-mac','office-2021-mac','office-2019-mac','apps','microsoft-project','microsoft-visio'],
             'blogTags'   => ['%office%','%word%','%excel%','%powerpoint%','%outlook%','%microsoft 365%','%publisher%'],
-            'keywords'   => 'Microsoft Office, Office 2024, Office 2021, Office 2019, Office for Mac, Office for PC, Office lifetime license, Office one time purchase, buy Microsoft Office key, Microsoft Office product key, Office Home and Student, Office Home and Business, Office Professional Plus, Microsoft Project, Microsoft Visio',
+            'keywords'   => 'Microsoft Office, Office 2024, Office 2021, Office 2019, Office for Mac, Office for PC, Office one-time purchase, Office one time purchase, buy Microsoft Office key, Microsoft Office product key, Office Home and Student, Office Home and Business, Office Professional Plus, Microsoft Project, Microsoft Visio',
             'aboutLink'  => 'category.php?slug=apps',
             'color'      => '#dc2626',
             'videos'     => [],
@@ -1727,7 +1727,7 @@ function _topic_hub_default_seeds(): array
         [
             'slug'       => 'windows',
             'title'      => 'Microsoft Windows — Windows 11, 10 and Pro buying guide',
-            'headline'   => 'Microsoft Windows is the world\'s most-used desktop operating system. ' . $brand . ' sells genuine Windows 11 and Windows 10 product keys (Home, Pro and Education) at flat, transparent surplus pricing. Pay once, activate inside the official Windows setup, and keep the licence for life — instant email delivery and 30-day guarantee.',
+            'headline'   => 'Microsoft Windows is the world\'s most-used desktop operating system. ' . $brand . ' sells genuine Windows 11 and Windows 10 product keys (Home, Pro and Education) at transparent, competitive pricing. Pay once, activate inside the official Windows setup, and keep the licence for life — digital delivery by email and 30-day guarantee.',
             'audience'   => 'self-builders, IT teams and home upgraders looking for a genuine Windows 11 Pro or Windows 10 product key',
             'categories' => ['windows-11','windows-10','windows','os'],
             'blogTags'   => ['%windows 11%','%windows 10%','%windows%'],
@@ -1739,7 +1739,7 @@ function _topic_hub_default_seeds(): array
         [
             'slug'       => 'antivirus',
             'title'      => 'Antivirus software — Bitdefender, McAfee & internet-security buying guide',
-            'headline'   => 'Modern antivirus software protects every device in your household from malware, ransomware and identity theft. ' . $brand . ' carries genuine Bitdefender and McAfee licences for 1, 3, 5 and 10 devices at flat, transparent surplus pricing. Activates inside the official vendor installer, delivered by email, with our 30-day money-back guarantee.',
+            'headline'   => 'Modern antivirus software protects every device in your household from malware, ransomware and identity theft. ' . $brand . ' carries genuine Bitdefender and McAfee licences for 1, 3, 5 and 10 devices at transparent, competitive pricing. Activates inside the official vendor installer, delivered by email, with our 30-day money-back guarantee.',
             'audience'   => 'home users, families and small businesses choosing between Bitdefender Total Security, McAfee Total Protection and other paid antivirus suites',
             'categories' => ['antivirus','bitdefender','mcafee','internet-security'],
             'blogTags'   => ['%bitdefender%','%mcafee%','%antivirus%','%malware%','%ransomware%','%internet security%'],
@@ -1879,7 +1879,7 @@ function topic_hub_ai_polish(string $categorySlug, string $brand): ?array
             . "  \"audience\": \"<one sentence describing who the page is for>\",\n"
             . "  \"keywords\": \"<10 to 15 comma-separated SEO keyword phrases ranging from short-tail to long-tail — include 'buy', 'license key', 'lifetime activation', 'best deals' variants>\"\n"
             . "}\n\n"
-            . "RULES:\n- Plain text only, no markdown, no emoji, no asterisks.\n- Never invent product names that don't exist (talk about the category, not specific SKUs).\n- Never mention prices or discount percentages.\n- The headline must include the phrases 'genuine licence' (or 'genuine licences'), 'instant email delivery', and one trust signal.";
+            . "RULES:\n- Plain text only, no markdown, no emoji, no asterisks.\n- Never invent product names that don't exist (talk about the category, not specific SKUs).\n- Never mention prices or discount percentages.\n- The headline must include the phrases 'genuine licence' (or 'genuine licences'), 'digital delivery by email', and one trust signal.";
 
     $body = json_encode([
         'model' => 'gpt-4o-mini',
@@ -1978,7 +1978,7 @@ function topic_hubs_auto_generate(int $minProducts = 2): array
             $aiPolished[] = $slugCat;
         } else {
             $hubTitle = $catTitle . ' — buying guide & best picks';
-            $headline = $catTitle . ' products are available at ' . $brand . ' with genuine licences, lifetime activation and instant email delivery. Compare the most popular ' . $catTitle . ' titles, read editorial guides, and get answers to common buyer questions on one page.';
+            $headline = $catTitle . ' products are available at ' . $brand . ' with genuine licences, lifetime activation and digital delivery by email. Compare the most popular ' . $catTitle . ' titles, read editorial guides, and get answers to common buyer questions on one page.';
             $audience = 'shoppers comparing ' . $catTitle . ' options before they buy';
             $keywords = $catTitle . ', buy ' . $catTitle . ', ' . $catTitle . ' license key, best ' . $catTitle . ' deals, ' . $catTitle . ' product key, ' . $catTitle . ' lifetime activation';
         }

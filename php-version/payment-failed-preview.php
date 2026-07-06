@@ -214,8 +214,8 @@ function mv_render_payment_failed_email(array $order, string $code, string $msg,
     } catch (Throwable $e) { /* ignore */ }
     if (!$items) {
         $items = [
-            ['name' => 'Microsoft Office Professional Plus 2024 — Lifetime License (Windows)', 'price' => 89.99, 'qty' => 1],
-            ['name' => 'Windows 11 Pro — Lifetime License',                                    'price' => 59.99, 'qty' => 1],
+            ['name' => 'Microsoft Office Professional Plus 2024 (Digital Key)', 'price' => 89.99, 'qty' => 1],
+            ['name' => 'Windows 11 Pro (Digital Key)',                                    'price' => 59.99, 'qty' => 1],
         ];
     }
 

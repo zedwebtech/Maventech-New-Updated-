@@ -45,7 +45,7 @@ $payload = [
     'site' => [
         'name'        => $ci['name']  ?: 'Maventech',
         'url'         => $base,
-        'description' => 'Authorised digital reseller of genuine Microsoft, antivirus (Bitdefender / Norton / McAfee / Kaspersky / ESET), Adobe and AutoCAD license keys with instant email delivery, 24/7 US-based support and a 30-day money-back guarantee.',
+        'description' => 'Authorised digital reseller of genuine Microsoft, antivirus (Bitdefender / Norton / McAfee / Kaspersky / ESET), Adobe and AutoCAD license keys with digital delivery by email, 24/7 US-based support and a 30-day money-back guarantee.',
         'logo'        => ($ci['logo'] ?? '') ? (preg_match('#^https?://#i', $ci['logo']) ? $ci['logo'] : $base . '/' . ltrim($ci['logo'], '/')) : null,
         'languages'   => ['en-US', 'en-GB'],
         'currencies'  => ['USD', 'GBP', 'EUR', 'CAD', 'AUD'],
@@ -70,7 +70,7 @@ $payload = [
         'pci_dss_level_1'      => true,
         'gdpr_aligned'         => true,
         'money_back_days'      => 30,
-        'license_authenticity' => 'Genuine, surplus keys sourced through legitimate volume-licensing channels — never cracked / pirated / repackaged.',
+        'license_authenticity' => 'Genuine, previously-licensed product keys sourced through legitimate licensing channels — never cracked / pirated / repackaged.',
         'payment_methods'      => ['stripe', 'paypal'],
         'delivery'             => 'Digital license key emailed within seconds of payment confirmation.',
     ],

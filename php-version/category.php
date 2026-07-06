@@ -28,7 +28,7 @@ $year = date('Y');
 /* SEO: tight 50-60 char title and 120-160 char description.
  * Example: "Microsoft Office 2024 License Keys (2026) | Maventech" */
 $pageTitle       = $title . ' License Keys (' . $year . ') | ' . SITE_BRAND;
-$pageDescription = 'Buy genuine ' . $title . ' keys at flat, transparent surplus pricing — lifetime activation, no subscription, instant 15-30 min delivery from ' . SITE_BRAND . '.';
+$pageDescription = 'Buy genuine ' . $title . ' product keys at transparent, competitive prices from ' . SITE_BRAND . ' — one-time purchase, no subscription, 30-day money-back guarantee.';
 $pageKeywords    = category_long_tail_keywords($title, $platform);
 
 $products = get_products($cats, $platform, $sort);
@@ -70,7 +70,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 <?= render_page_head(
         $title . ' License Keys',
-        count($products) . ' genuine ' . $title . ' license keys — one-time purchase, no subscription, delivered in 15-30 minutes',
+        count($products) . ' genuine ' . $title . ' license keys — one-time purchase, no subscription, delivered in digital delivery',
         ['Shop' => 'shop.php', $title => null],
         'category-title',
         [
@@ -134,7 +134,7 @@ include __DIR__ . '/includes/header.php';
   <div class="mt-4 mb-3">
     <?= render_aeo_answer(
           'What does ' . esc($title) . ' cost on ' . esc(SITE_BRAND) . '?',
-          esc(SITE_BRAND) . ' offers genuine <strong>' . esc($title) . '</strong> licence keys starting at ' . (count($products) ? esc(format_price((float)min(array_column($products, 'price')))) : '$24') . ' &mdash; flat, transparent surplus volume-license pricing. Each key is a perpetual one-time purchase (no subscription), delivered by email in 15&ndash;30 minutes, activates inside the official software, and is protected by a 30-day money-back guarantee.',
+          esc(SITE_BRAND) . ' offers genuine <strong>' . esc($title) . '</strong> product keys starting at ' . (count($products) ? esc(format_price((float)min(array_column($products, 'price')))) : '$24') . ' &mdash; transparent, competitive pricing. Each key is a perpetual one-time purchase (no subscription), delivered by email, activates inside the official software, and is protected by a 30-day money-back guarantee.',
           'category-quick-answer'
       ) ?>
   </div>

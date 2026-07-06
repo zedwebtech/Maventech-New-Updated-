@@ -202,7 +202,7 @@ include __DIR__ . '/includes/header.php';
 
   <div class="rounded-4 text-center text-white p-5 mt-5" style="background: linear-gradient(135deg, #2563eb, #4338ca);">
     <h2 class="fw-bold h3">Join Our Happy Customers</h2>
-    <p class="opacity-75">Genuine licenses, instant delivery, and support that actually helps.</p>
+    <p class="opacity-75">Genuine licenses, digital delivery, and support that actually helps.</p>
     <a href="shop.php" class="btn btn-light rounded-pill px-4 fw-semibold">Browse Products</a>
   </div>
 </div>

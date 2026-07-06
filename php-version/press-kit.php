@@ -122,7 +122,7 @@ include __DIR__ . '/includes/header.php';
     <div class="card">
       <div class="card-body">
 <pre class="mb-0" style="white-space:pre-wrap;font-family:inherit;font-size:.92rem;line-height:1.55;" data-testid="boilerplate-text"><?= esc($brand) ?> is an independent digital retailer of genuine Microsoft, Bitdefender, Norton, McAfee, Adobe and Autodesk license keys.
-Every key is delivered to the customer's inbox within 15-30 minutes of purchase, activates online and is a one-time
+Every key is delivered to the customer's inbox with of purchase, activates online and is a one-time
 purchase — no recurring subscription.  Built for small businesses, IT teams and home users in the US, UK, Canada
 and Australia, <?= esc($brand) ?> backs every order with 24/7 support and a 30-day money-back guarantee.  <?= esc($brand) ?>
 is not affiliated with, endorsed by or sponsored by Microsoft Corporation; all trademarks belong to their respective owners.</pre>

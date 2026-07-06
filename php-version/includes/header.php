@@ -26,13 +26,16 @@ $brandEmail = $co['email'] ?: (defined('SITE_EMAIL') ? SITE_EMAIL : '');
 $brandPhone = company_phone_for_country() ?: (defined('SITE_PHONE') ? SITE_PHONE : '');
 $brandLogo  = $co['logo']  ?: '';
 $brandAddress = $co['address'] ?: (defined('SITE_ADDRESS') ? SITE_ADDRESS : '');
-$brandRegNumber = $co['reg_number'] ?? '';
+$brandRegNumber      = $co['reg_number'] ?? '';
+$brandRegDateFiled   = $co['reg_date_filed'] ?? '';
+$brandRegCertUrl     = $co['reg_certificate_url'] ?? '';
+$brandRegJurisdiction = $co['reg_jurisdiction'] ?? 'California, USA';
 $pageTitle = $pageTitle ?? ($brandName . ' | Genuine Microsoft Software Keys');
 $cur = current_currency();
 $checkoutHeader = $checkoutHeader ?? false;
 
 /* ---- SEO defaults (pages may override before including this header) ---- */
-$pageDescription = $pageDescription ?? 'Buy genuine Microsoft Office, Windows 11 & antivirus license keys at flat, transparent surplus pricing. Instant delivery, lifetime activation, 24/7 US order support.';
+$pageDescription = $pageDescription ?? 'Buy genuine Microsoft Office, Windows 11 & antivirus product keys at transparent, competitive prices from ' . (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech') . ' — one-time purchase, no subscription, 30-day money-back guarantee.';
 /* Auto-clamp every page title (50-60 chars) and description (120-160 chars)
    so admin-edited copy can never blow past Google's SERP cut-off. */
 $pageTitle       = seo_clamp_title($pageTitle, 60);
@@ -722,7 +725,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
   <div class="container d-flex justify-content-between align-items-center">
     <div class="d-flex gap-3 align-items-center flex-wrap">
       <span><i class="bi bi-patch-check-fill text-success me-1"></i>Genuine Microsoft Products</span>
-      <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant Digital Delivery</span>
+      <span><i class="bi bi-shield-check text-primary me-1"></i>30-Day Money-Back Guarantee</span>
       <!-- Inline promo strip: admin-toggleable (Company Info → Show promo bar). -->
       <?php if ($_promoBarOn): ?>
       <span class="trustbar-deal d-inline-flex align-items-center gap-2" data-testid="trustbar-deal">

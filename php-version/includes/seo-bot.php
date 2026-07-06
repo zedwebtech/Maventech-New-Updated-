@@ -806,7 +806,7 @@ Autodesk, etc.).  For the product below, return STRICT JSON with exactly two key
 
   meta_description: a single-sentence SEO meta description, 140-160 characters,
                     natural English, no quotation marks, no emoji, includes
-                    brand + edition + key benefit + 'instant delivery'.
+                    brand + edition + key benefit + 'digital delivery'.
   ai_summary:       2-3 short sentences (max 400 chars) optimised for AI search
                     engines (ChatGPT / Perplexity / Bing Chat) — answer the
                     question "what is {product} and who should buy it".
@@ -1216,7 +1216,7 @@ Follow the llmstxt.org spec STRICTLY:
   - Start with `# {brand}` (H1).
   - Then a `> blockquote` paragraph (3-4 sentences) summarizing what the
     site sells, who it's for, and the trust signals (genuine keys,
-    instant delivery, 24/7 support, 30-day money back).
+    digital delivery, 24/7 support, 30-day money back).
   - Then 5-8 `## Section` headers covering:
        * "Key facts" — bullet list of business model, payment, delivery,
          support, returns, regions served.
@@ -1407,10 +1407,10 @@ function _seo_generate_one_blog_post(PDO $pdo, string $apiKey, string $baseUrl, 
 
     // Region-specific copy hints — currency, locale, delivery wording.
     $regionContext = [
-        'US' => ['country' => 'United States',  'currency' => 'USD ($)', 'locale' => 'American English', 'delivery' => 'instant digital delivery to any US address'],
-        'UK' => ['country' => 'United Kingdom', 'currency' => 'GBP (£)', 'locale' => 'British English',  'delivery' => 'instant digital delivery across the UK including Northern Ireland'],
-        'AU' => ['country' => 'Australia',      'currency' => 'AUD (A$)', 'locale' => 'Australian English', 'delivery' => 'instant digital delivery to anywhere in Australia and NZ'],
-        'CA' => ['country' => 'Canada',         'currency' => 'CAD (C$)', 'locale' => 'Canadian English (with bilingual support)', 'delivery' => 'instant digital delivery coast-to-coast across Canada'],
+        'US' => ['country' => 'United States',  'currency' => 'USD ($)', 'locale' => 'American English', 'delivery' => 'digital delivery to any US address'],
+        'UK' => ['country' => 'United Kingdom', 'currency' => 'GBP (£)', 'locale' => 'British English',  'delivery' => 'digital delivery across the UK including Northern Ireland'],
+        'AU' => ['country' => 'Australia',      'currency' => 'AUD (A$)', 'locale' => 'Australian English', 'delivery' => 'digital delivery to anywhere in Australia and NZ'],
+        'CA' => ['country' => 'Canada',         'currency' => 'CAD (C$)', 'locale' => 'Canadian English (with bilingual support)', 'delivery' => 'digital delivery coast-to-coast across Canada'],
     ];
     $rc = $regionContext[$targetRegion] ?? $regionContext['US'];
 
@@ -1432,7 +1432,7 @@ Return STRICT JSON with EXACTLY these keys (no markdown, no code fences):
                state the answer in the FIRST sentence, (b) name the product
                by full title, (c) mention {$rc['country']} or {$rc['currency']}
                naturally, and (d) end with one trust signal (genuine, 30-day
-               guarantee, instant email delivery).
+               guarantee, digital delivery by email).
   read_time:   A short string like "5 min read".
   content_html: Body HTML, 450-700 words. Use ONLY these tags: <p>, <h2>,
                 <ul>, <li>, <strong>, <em>, <a>. NO inline styles, NO

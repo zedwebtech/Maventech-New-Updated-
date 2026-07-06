@@ -20,9 +20,9 @@ if (strpos($content, 'First Sale Doctrine') !== false) {
 
 $block = "\n\n" .
 '<h2><i class="bi bi-scale text-primary me-2"></i>Legal Basis for Resale (First Sale Doctrine)</h2>' . "\n" .
-'<p>Maventech LLC operates as an <strong>independent distributor of surplus volume licenses</strong>. The legal right to resell these genuine, previously-licensed software product keys is grounded in the <strong>First Sale Doctrine</strong> (17 U.S.C. &sect; 109 in the United States) and its equivalents in other jurisdictions, including <em>UsedSoft GmbH v. Oracle International Corp.</em> (Court of Justice of the European Union, C-128/11, 2012), which affirmed that the lawful acquirer of a downloaded software copy may resell that copy once the original licensor&rsquo;s distribution right has been exhausted.</p>' . "\n" .
+'<p>Maventech LLC operates as an <strong>independent reseller of previously-licensed digital software</strong>. The legal right to resell these genuine, previously-licensed software product keys is grounded in the <strong>First Sale Doctrine</strong> (17 U.S.C. &sect; 109 in the United States) and its equivalents in other jurisdictions, including <em>UsedSoft GmbH v. Oracle International Corp.</em> (Court of Justice of the European Union, C-128/11, 2012), which affirmed that the lawful acquirer of a downloaded software copy may resell that copy once the original licensor&rsquo;s distribution right has been exhausted.</p>' . "\n" .
 '<ul>' . "\n" .
-'<li>All license keys we distribute originate from lawful volume-licensing channels and enterprise asset liquidations.</li>' . "\n" .
+'<li>All license keys we distribute originate from lawful licensing channels and enterprise asset liquidations.</li>' . "\n" .
 '<li>Each key is verified as genuine and unactivated prior to delivery.</li>' . "\n" .
 '<li>We do not manufacture, sublicense, or issue new licenses &mdash; we transfer existing, already-sold licenses in accordance with applicable exhaustion / first-sale principles.</li>' . "\n" .
 '<li>Maventech LLC is an independent reseller and is <strong>not affiliated with, endorsed by, or sponsored by</strong> Microsoft Corporation or any other trademark owner referenced on this site.</li>' . "\n" .

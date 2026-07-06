@@ -1916,12 +1916,12 @@ function product_img_alt(array $p): string
     // Build a descriptive alt that names the SKU + license type + delivery,
     // so Google Images, Bing Visual Search and AI multimodal models can
     // surface the listing for "Microsoft Office 2024 Professional Plus
-    // digital product key", "Office 2021 lifetime license key" etc.
+    // digital product key", "Office 2021 one-time purchase" etc.
     // Google Ads compliance — do NOT use the word "box" in software product
     // listings (these are 100% digital keys, no physical media).
     // Use plain dashes (not HTML entities) so the alt text isn't double-
     // encoded when the caller pipes it through esc().
-    $alt = $p['name'] . ' digital product key - genuine one-time purchase for ' . $platform . ', instant email delivery';
+    $alt = $p['name'] . ' digital product key - genuine one-time purchase for ' . $platform . ', digital delivery by email';
     if ($pct > 0) $alt .= ', ' . $pct . '% off';
     return $alt . ' | ' . SITE_BRAND;
 }
@@ -1936,9 +1936,8 @@ function product_keywords(array $p): string
         $name,                              // exact
         'buy ' . $name,                     // phrase
         $name . ' product key',
-        $name . ' lifetime license',
-        $name . ' license key',
-        $name . ' instant delivery',
+        $name . ' one-time purchase',
+        $name . ' digital key',
         $name . ' no subscription',
         $name . ' digital download',
         $base . ' for ' . $platform,        // broad
@@ -2262,7 +2261,7 @@ function render_product_row(array $p): string
         ? '<p class="shop-row-teaser small text-secondary mb-1" data-testid="row-teaser-' . esc($p['slug']) . '">' . esc($teaser) . '</p>'
         : '';
     // Compliance: no strike-through "was" price or % discount badges. A single
-    // flat "Surplus Volume License Price" is shown instead.
+    // flat "Direct Price" is shown instead.
     $orig = '';
     $save = '';
     $badge = $p['badge'] ? '<span class="badge text-bg-primary">' . esc($p['badge']) . '</span>' : '';
@@ -2285,7 +2284,7 @@ function render_product_row(array $p): string
           ' . render_product_rating($p['slug'], 'row') . '
           ' . $teaserHtml . '
           <div class="d-flex flex-wrap gap-3 gap-y-2 small text-secondary align-items-center">
-            <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant email delivery</span>
+            <span><i class="bi bi-envelope-check text-primary me-1"></i>Digital delivery by email</span>
             <span><i class="bi bi-infinity text-primary me-1"></i>One-time purchase</span>
             <span class="d-none d-md-inline"><i class="bi bi-journal-text text-primary me-1"></i>Step-by-step activation guide</span>
             ' . dd_delivery_badge('sm') . '
@@ -2293,7 +2292,7 @@ function render_product_row(array $p): string
         </div>
         <div class="shop-row-buy text-sm-end flex-shrink-0">
           ' . $orig . '
-          <div class="mb-1"><span class="surplus-price-label" data-testid="row-surplus-label-' . esc($p['slug']) . '">Surplus Volume License</span></div>
+          <div class="mb-1"><span class="surplus-price-label" data-testid="row-surplus-label-' . esc($p['slug']) . '">Direct Price</span></div>
           <div class="fw-bold text-primary fs-4 lh-1 mb-1">' . format_price((float)$p['price']) . '</div>
           <div class="mb-2"><span class="badge rounded-pill text-secondary bg-body-tertiary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="row-currency-' . esc($p['slug']) . '">Prices in ' . esc($curCode) . '</span></div>
           <div class="mb-2">' . render_stock_pill($p['slug']) . '</div>
@@ -2338,10 +2337,10 @@ function render_product_card(array $p): string
         <a href="product.php?slug=' . esc($p['slug']) . '" class="text-decoration-none text-body fw-semibold product-title mb-1">' . esc($p['name']) . '</a>
         ' . $teaserHtml . '
         <div class="mb-2">' . $stockPill . '</div>
-        <small class="text-secondary pc-meta mb-1"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant email delivery · One-time purchase</small>
+        <small class="text-secondary pc-meta mb-1"><i class="bi bi-envelope-check text-primary me-1"></i>Digital delivery by email · One-time purchase</small>
         <div class="mb-2">' . dd_delivery_badge('sm') . '</div>
         <div class="pc-price-row d-flex flex-column gap-1 mt-auto pt-2">
-          <span class="surplus-price-label align-self-start" data-testid="card-surplus-label-' . esc($p['slug']) . '">Surplus Volume License</span>
+          <span class="surplus-price-label align-self-start" data-testid="card-surplus-label-' . esc($p['slug']) . '">Direct Price</span>
           <div class="lh-1 d-flex align-items-baseline gap-2"><span class="fw-bold text-primary fs-5">' . format_price((float)$p['price']) . '</span>' . $orig . '<span class="text-secondary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="card-currency-' . esc($p['slug']) . '">' . esc($curCode) . '</span></div>
         </div>
         <div class="pc-btn-row d-flex gap-2 pt-2">

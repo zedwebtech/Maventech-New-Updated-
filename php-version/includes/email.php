@@ -219,12 +219,12 @@ function default_lead_followup_template(): string {
           <td style="padding:14px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;width:33%;text-align:center;">
             <div style="font-size:22px;">&#10003;</div>
             <div style="font-weight:700;color:#065f46;font-size:13px;margin-top:4px;">100% Genuine</div>
-            <div style="font-size:11.5px;color:#475569;margin-top:2px;">Genuine surplus licences</div>
+            <div style="font-size:11.5px;color:#475569;margin-top:2px;">Genuine, previously-licensed product keys</div>
           </td>
           <td style="width:8px;"></td>
           <td style="padding:14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;width:33%;text-align:center;">
             <div style="font-size:22px;">&#9889;</div>
-            <div style="font-weight:700;color:#1e40af;font-size:13px;margin-top:4px;">Instant Delivery</div>
+            <div style="font-weight:700;color:#1e40af;font-size:13px;margin-top:4px;">Digital Delivery</div>
             <div style="font-size:11.5px;color:#475569;margin-top:2px;">Email within 15&ndash;30 minutes</div>
           </td>
           <td style="width:8px;"></td>
@@ -584,7 +584,7 @@ function product_faqs(array $product): array {
     $faqs = [
         [
             'question' => 'How long does delivery take for ' . $name . '?',
-            'answer'   => 'Your ' . $name . ' license key is delivered by email almost instantly — typically within 15-30 minutes of completing payment, often in seconds. The email includes the activation key, the official ' . $brand . ' download link, and step-by-step activation instructions. There is no physical shipping — everything is digital and reaches the email address you provided at checkout.',
+            'answer'   => 'Your ' . $name . ' license key is delivered by email almost instantly — typically within digital delivery of completing payment, often in seconds. The email includes the activation key, the official ' . $brand . ' download link, and step-by-step activation instructions. There is no physical shipping — everything is digital and reaches the email address you provided at checkout.',
         ],
         [
             'question' => 'Is this a genuine ' . $brand . ' license key?',
