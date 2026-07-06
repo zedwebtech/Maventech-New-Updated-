@@ -47,6 +47,21 @@ php /app/php-version/scripts/seed-manual-urls.php >>/tmp/seed-manual-urls.log 2>
 php /app/php-version/scripts/update-disclaimer-fsd.php >>/tmp/update-disclaimer-fsd.log 2>&1 || true
 # Ensure the primary admin account can always log in with the well-known
 # password (survives fresh preview-pod reseeds of database.sql). Idempotent.
+# Seed brand / company transparency settings (File No., Filed date, cert URL,
+# address, hours) so the About Us + footer always render the compliance block.
+# Idempotent — will not clobber admin-customized values.
+php /app/php-version/scripts/seed-brand-settings.php >>/tmp/seed-brand-settings.log 2>&1 || true
+# Ensure the LLC Articles of Organization PDF is present for the About Us
+# "View certificate" link.  If the pod was reset, re-fetch it from the
+# customer-assets bucket.  Silent failure — the About Us block gracefully
+# hides the link when the file is missing.
+if [ ! -f /app/php-version/uploads/legal/maventech-articles-certificate.pdf ]; then
+    mkdir -p /app/php-version/uploads/legal
+    curl -sSL --max-time 20 \
+        -o /app/php-version/uploads/legal/maventech-articles-certificate.pdf \
+        "https://customer-assets.emergentagent.com/job_clean-footer-11/artifacts/jm3lq5c0_MAVENTECH%20LLC%20Articles%20Certificate.pdf" \
+        >>/tmp/seed-brand-settings.log 2>&1 || true
+fi
 php /app/php-version/scripts/ensure-admin-password.php >>/tmp/ensure-admin-password.log 2>&1 || true
 # Sanitize product names for Google Ads compliance (strip "Lifetime License",
 # append " (Digital Key)" to Microsoft-family products).  Idempotent.
