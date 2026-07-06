@@ -227,9 +227,14 @@ function apply_company_branding(string $html): string
                 if ($defTel !== $newTel && strlen($defTel) > 1) $map[$defTel] = $newTel;
             }
             if ($email !== '') {
-                foreach (['services@maventechsoftware.com', 'support@maventechsoftware.com',
-                          'sales@maventechsoftware.com', 'info@maventechsoftware.com', $defEmail] as $de) {
-                    if ($de !== '' && $de !== $email) $map[$de] = $email;
+                // Only rewrite the SITE_EMAIL compile-time default → the
+                // admin-configured public email.  We must NOT clobber other
+                // domain inboxes like support@, sales@, info@ — those are
+                // legitimate distinct addresses (e.g. support@ is the
+                // customer-support inbox rendered in the site-wide footer
+                // and Shipping & Delivery page).
+                if ($defEmail !== '' && $defEmail !== $email) {
+                    $map[$defEmail] = $email;
                 }
             }
         } catch (Throwable $e) { $map = []; }

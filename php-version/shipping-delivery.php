@@ -12,6 +12,10 @@ require_once __DIR__ . '/includes/functions.php';
 $pageTitle       = 'Shipping & Delivery | ' . SITE_BRAND;
 $pageDescription = 'How ' . SITE_BRAND . ' delivers digital product keys, expected timing, order tracking, and what to do if a key does not arrive.';
 
+// Public-facing customer-support inbox (separate from internal admin email).
+$supportEmail = trim((string)setting_get('support_email', SITE_EMAIL));
+if ($supportEmail === '') $supportEmail = SITE_EMAIL;
+
 /* Rich JSON-LD so the page can appear as a policy sitelink / snippet. */
 $jsonLdShippingPage = [
     '@context'   => 'https://schema.org',
@@ -55,6 +59,21 @@ include __DIR__ . '/includes/header.php';
     <div class="row g-4 justify-content-center">
 
       <div class="col-lg-8">
+        <!-- Official policy statement (Google Ads compliance) - matches
+             the exact wording required by the shopping-ads review team. -->
+        <div class="card p-4 p-md-5 mb-4" data-testid="shipping-policy-statement" style="border-left:4px solid #0B5CFF;">
+          <h2 class="h5 fw-bold mb-3"><i class="bi bi-shield-check text-primary me-2"></i>Shipping &amp; Delivery Policy</h2>
+          <p class="text-secondary small">
+            Welcome to <strong>MavenTech LLC</strong>. All products offered on our website are distributed via digital delivery. We do not ship physical parcels or boxed software to your address.
+          </p>
+          <ul class="text-secondary small mb-0">
+            <li><strong>Delivery Method:</strong> Digital download links and official license keys are sent directly to the email address provided at checkout.</li>
+            <li><strong>Delivery Timeframe:</strong> Most orders are automatically processed and delivered to your inbox within <strong>15 to 30 minutes</strong> of successful payment confirmation. In rare instances where manual security / fraud reviews are required, delivery may take up to <strong>24 hours</strong>.</li>
+            <li><strong>Shipping Fees:</strong> Digital delivery is <strong>100% free of charge ($0.00) worldwide</strong>.</li>
+            <li><strong>Troubleshooting:</strong> If you have not received your license email within 30 minutes, please check your spam, junk, or promotions folders. You can also contact our support team at <a href="mailto:support@maventechsoftware.com">support@maventechsoftware.com</a> for immediate assistance.</li>
+          </ul>
+        </div>
+
         <div class="card p-4 p-md-5">
 
           <!-- 1. What you receive -->
@@ -120,7 +139,7 @@ include __DIR__ . '/includes/header.php';
           </h2>
           <ol class="text-secondary small">
             <li>Check the <strong>inbox</strong> of the email you entered at checkout.  The subject line will start with your order number (e.g., <code>MVT-XXXXXXXX</code>).</li>
-            <li>Check the <strong>Spam / Junk / Promotions</strong> folder.  Whitelisting <a href="mailto:<?= esc(SITE_EMAIL) ?>"><?= esc(SITE_EMAIL) ?></a> stops this happening on the next order.</li>
+            <li>Check the <strong>Spam / Junk / Promotions</strong> folder.  Whitelisting <a href="mailto:<?= esc($supportEmail) ?>"><?= esc($supportEmail) ?></a> stops this happening on the next order.</li>
             <li>Log in to <a href="account.php">your account</a> and open <strong>Order History</strong> — a copy of every delivered key is stored securely there.</li>
             <li>Use the <a href="track-order.php">Track Order</a> page (order number + email) to re-download the delivery email at any time.</li>
           </ol>
@@ -132,7 +151,7 @@ include __DIR__ . '/includes/header.php';
             <i class="bi bi-life-preserver text-primary me-2"></i>My key didn't arrive
           </h2>
           <p class="text-secondary small">
-            If the tracker above says <em>Delivered</em> but you can't find the email, contact <a href="mailto:<?= esc(SITE_EMAIL) ?>"><?= esc(SITE_EMAIL) ?></a> from the same email address you used at checkout.  Include your order number.  Our support team will resend the key within one business day.
+            If the tracker above says <em>Delivered</em> but you can't find the email, contact <a href="mailto:<?= esc($supportEmail) ?>"><?= esc($supportEmail) ?></a> from the same email address you used at checkout.  Include your order number.  Our support team will resend the key within one business day.
           </p>
           <p class="text-secondary small mb-0">
             If the tracker still shows <em>Processing</em> after 2 business days, please reach out — most delays are payment-verification issues that we can resolve in a few minutes.
