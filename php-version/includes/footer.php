@@ -103,7 +103,7 @@
           <li><a href="page.php?slug=activation-help">Activation Help</a></li>
           <li><a href="page.php?slug=faqs">FAQs</a></li>
           <li><a href="contact.php">Contact Us</a></li>
-          <li><a href="returns.php">Returns &amp; Refunds</a></li>
+          <li><a href="return-policy.php">Return Policy</a></li>
           <li><a href="protection-hub.php" data-testid="footer-protection-hub"><i class="bi bi-shield-shaded me-1"></i>Protection Hub</a></li>
         </ul>
       </div>

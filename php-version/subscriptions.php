@@ -314,7 +314,7 @@ html[data-bs-theme="dark"] .ph-price-row .price {
         ],
         [
           'q' => 'What is your refund policy?',
-          'a' => 'Every plan is backed by our <strong>30-day money-back guarantee</strong>. If you have not consumed a service session and are not satisfied, email us within 30 days of purchase and we will refund your payment in full. See our <a href="returns.php" class="text-decoration-none">Refund Policy</a> for full details.',
+          'a' => 'Every plan is backed by our <strong>30-day money-back guarantee</strong>. If you have not consumed a service session and are not satisfied, email us within 30 days of purchase and we will refund your payment in full. See our <a href="return-policy.php" class="text-decoration-none">Return Policy</a> for full details.',
         ],
         [
           'q' => 'Is Maventech affiliated with Microsoft?',

@@ -203,7 +203,7 @@ $features = [
       <?php
       $trustRows = [
         ['bi-shield-check',   'Independent reseller — not Microsoft', 'Microsoft® is a trademark of Microsoft Corporation. We are independent of, and not affiliated with, Microsoft Corporation.', 'page.php?slug=disclaimer'],
-        ['bi-arrow-counterclockwise', '30-day money-back guarantee', 'Refund any licence within 30 days of purchase — full amount, no questions asked.',         'page.php?slug=refund-policy'],
+        ['bi-arrow-counterclockwise', '30-day money-back guarantee', 'Refund any licence within 30 days of purchase — full amount, no questions asked.',         'return-policy.php'],
         ['bi-clock-history',  'Founded 2024 · California LLC', 'MavenTech LLC was formed in California on September 3, 2024 (LLC No. 202463711253) and has shipped genuine licences ever since.',         'page.php?slug=terms-of-service'],
         ['bi-lock-fill',      'PCI-DSS-secured checkout',                'Payments processed by Stripe & PayPal; we never see or store full card numbers.',             'page.php?slug=payment-policy'],
         ['bi-eye-slash-fill', 'GDPR + CCPA-aware data handling',         'Customer data is collected for fulfilment only and never sold to third parties.',              'page.php?slug=privacy-policy'],

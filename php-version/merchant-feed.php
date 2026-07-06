@@ -425,9 +425,10 @@ foreach ($products as $p) {
     /* Return policy — binds this product to the account-level Return
        Policy configured in Google Merchant Center (Settings → Shipping
        and returns → Return policies).  The customer-facing policy is
-       documented at /page.php?slug=refund-policy — 30-day money-back
-       guarantee, no questions asked, digital process (no physical
-       return required).
+       published at /return-policy.php (clean URL, process-focused) — the
+       companion /refund-policy.php covers refund amounts, method &
+       timeline. 30-day money-back guarantee, no questions asked,
+       digital process (no physical return required).
 
        Emits THREE overlapping signals so Merchant Center's dashboard
        reports products as "actively covered by policy" AND explicitly

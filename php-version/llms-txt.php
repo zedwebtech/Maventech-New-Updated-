@@ -122,7 +122,9 @@ ksort($byCat);
 - [Why Choose Us](/why-choose-us.php) — value props
 - [Contact](/contact.php) — phone / email / chat / address
 - [Support](/support.php) — help center
-- [Returns](/returns.php) — refund policy
+- [Returns](/returns.php) — refund request form
+- [Return Policy](/return-policy.php) — process & eligibility
+- [Refund Policy](/refund-policy.php) — refund amount, method & timeline
 - [HTML Sitemap](/sitemap.php) — human-readable site map
 - [XML Sitemap](/sitemap.xml) — machine-readable for crawlers
 - [Product feed](/merchant-feed.xml) — Google Merchant Center / Bing Shopping (RSS 2.0)

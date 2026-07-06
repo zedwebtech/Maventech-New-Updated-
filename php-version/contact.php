@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $contactFaqs = [
     ['How long does it take to receive my license key?', 'Your license key and download instructions are delivered by email once the order is processed. Full timing details are on our Shipping & Delivery page.'],
     ['What if my license key doesn\'t work?', 'First make sure the key is entered exactly (no extra spaces, watch 0 vs O). If it still fails, contact our support team with your order number and we\'ll resolve it or replace the key.'],
-    ['Do you offer refunds?', 'Yes — we offer a money-back guarantee. See our Refund Policy for full details, or start a request on the Return & Refund page.'],
+    ['Do you offer refunds?', 'Yes — we offer a 30-day money-back guarantee. See our <a href="return-policy.php" class="text-decoration-none">Return Policy</a> for the return process, or the <a href="refund-policy.php" class="text-decoration-none">Refund Policy</a> for refund amounts, methods and timing. Start a request on the <a href="returns.php" class="text-decoration-none">Return &amp; Refund</a> page.'],
     ['How do I activate my Microsoft Office license?', 'Download the official installer from setup.office.com, sign in with a Microsoft account, and enter your 25-character product key when prompted. Full steps are in our Activation Help guide.'],
     ['Can I use my license on multiple devices?', 'Most licenses are valid for 1 PC or Mac unless the product states otherwise. Buying for a team? Ask us about volume licensing.'],
 ];

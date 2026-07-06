@@ -5146,3 +5146,163 @@ agent_communication:
       No issues found. Feature is production-ready.
 
 
+
+#====================================================================================================
+# Feature — Wire everything site-wide to /return-policy.php (canonical policy URL)
+#====================================================================================================
+
+backend:
+  - task: "Every policy reference across the site + JSON-LD structured data now points at /return-policy.php (the canonical clean-URL Return Policy)"
+    implemented: true
+    working: "NA"
+    file: "php-version/product.php, php-version/about-us.php, php-version/returns.php, php-version/shipping-delivery.php, php-version/subscriptions.php, php-version/contact.php, php-version/llms-txt.php, php-version/ai-txt.php, php-version/includes/footer.php, php-version/sitemap.php, php-version/merchant-feed.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          User asked: "make sure everything is connected to
+          return-policy.php URL". Audited every mention of the previous
+          policy URLs across the codebase and replaced them so every
+          "Return Policy" reference points at /return-policy.php while
+          every "Refund Policy" reference points at /refund-policy.php
+          (both are the clean sibling URLs; both are stable).
+
+          Changes applied:
+
+          1. JSON-LD structured data (MOST IMPORTANT for Google
+             Merchant Center):
+             product.php  — hasMerchantReturnPolicy.merchantReturnLink
+             now = site_url() . '/return-policy.php' (was
+             /page.php?slug=refund-policy).  Verified via 3 sample
+             product URLs.
+
+          2. Support-nav column on the site-wide footer:
+             includes/footer.php line 106 —
+             was <a href="returns.php">Returns &amp; Refunds</a>
+             now <a href="return-policy.php">Return Policy</a>.
+             (The legal-links nav further down already listed both.)
+
+          3. On-page cross-links:
+             about-us.php    — "30-day money-back guarantee" tile now
+                                points to return-policy.php (3 links).
+             contact.php     — FAQ answer now links to BOTH Return
+                                Policy + Refund Policy + the refund
+                                request form (3 links).
+             returns.php     — footer note under the request form
+                                now shows BOTH policy links (3 links).
+             shipping-delivery.php — replacement-key clause now
+                                points to return-policy.php.
+             subscriptions.php — plan FAQ now links to
+                                /return-policy.php.
+
+          4. AI/LLM crawler manifests:
+             llms-txt.php  — Returns line split into three explicit
+                              entries: /returns.php (form), /return-
+                              policy.php (process), /refund-policy.php
+                              (refund amount, method, timeline).
+             ai-txt.php    — added Allow: /return-policy.php and
+                              Allow: /refund-policy.php next to the
+                              pre-existing Allow: /returns.php.
+
+          5. sitemap.php (HTML sitemap page):
+             "Returns & Refunds → returns.php" → renamed to
+             "Return & Refund Request Form → returns.php" (to make
+             clear the /returns.php URL is the FORM, not the policy).
+             Legal & Policies section already listed Refund + Return.
+
+          6. merchant-feed.php — updated inline comment to reference
+             /return-policy.php (cosmetic; no XML change).
+
+          Verified locally:
+          - All 7 URL aliases (/return-policy.php, /return-policy,
+            /refund-policy.php, /refund-policy, /returns.php,
+            /page.php?slug=refund-policy, /page.php?slug=return-policy)
+            return HTTP 200.
+          - 3 sample product pages all emit
+            merchantReturnLink=/return-policy.php in their JSON-LD.
+          - /index.php now shows 0 old ?slug=refund-policy links
+            (was 1), 0 old ?slug=returns-refunds links (was ≥1),
+            2 return-policy.php links and 1 refund-policy.php link.
+          - Cross-page count of return-policy.php link:
+              /about-us.php:3, /contact.php:3, /returns.php:3,
+              /shipping-delivery.php:3, /index.php:2
+
+metadata:
+  updated_by: "main_agent"
+  updated_at: "2026-07-06"
+
+test_plan:
+  current_focus:
+    - "Every policy reference across the site + JSON-LD structured data now points at /return-policy.php (the canonical clean-URL Return Policy)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Backend + template change ready for verification.  Curl + grep
+      + mysql only — no browser automation.
+
+      TEST 1 — JSON-LD merchantReturnLink on product pages
+
+        Fetch three product pages (any three product slugs):
+          mysql -uroot -N ucode_store -e "SELECT slug FROM products LIMIT 3"
+        For each slug:
+          curl -s "http://localhost:3000/product.php?slug=<slug>" |
+            grep -oE '"merchantReturnLink":"[^"]+"'
+        Assert EVERY match ends with "/return-policy.php".  NO product
+        may emit /page.php?slug=refund-policy in this attribute.
+
+      TEST 2 — URL parity (all 7 aliases still 200)
+
+        For each URL:
+          /return-policy.php, /return-policy, /refund-policy.php,
+          /refund-policy, /returns.php, /page.php?slug=refund-policy,
+          /page.php?slug=return-policy
+        Assert HTTP 200.
+
+      TEST 3 — Homepage has ZERO legacy URLs
+
+        curl -sL http://localhost:3000/index.php > /tmp/i.html
+        Assert:
+          grep -c 'slug=refund-policy'   /tmp/i.html == 0
+          grep -c 'slug=returns-refunds' /tmp/i.html == 0
+          grep -c 'href="returns.php"'   /tmp/i.html == 0  (the old
+                    "Returns & Refunds" nav entry that pointed at the
+                    form is now labelled "Return Policy" pointing at
+                    return-policy.php)
+          grep -c 'return-policy.php' /tmp/i.html >= 1
+          grep -c 'refund-policy.php' /tmp/i.html >= 1
+
+      TEST 4 — Cross-page /return-policy.php link counts
+
+        For each page in [/about-us.php, /contact.php, /returns.php,
+        /shipping-delivery.php]:
+          curl -sL "http://localhost:3000/PAGE" | grep -c 'return-policy.php'
+          Assert >= 1  (each page cross-links to the return policy).
+        For /shipping-delivery.php ALSO assert:
+          curl -sL http://localhost:3000/shipping-delivery.php | grep -c 'href="returns.php">Returns'  ==  0
+          (the old "Returns & Refunds" link text is gone; it now says
+           "Return Policy").
+
+      TEST 5 — AI crawler manifests
+
+        curl -s http://localhost:3000/llms.txt | grep -c '/return-policy.php' >= 1
+        curl -s http://localhost:3000/llms.txt | grep -c '/refund-policy.php' >= 1
+        curl -s http://localhost:3000/ai.txt    | grep -c '/return-policy.php' >= 1
+        curl -s http://localhost:3000/ai.txt    | grep -c '/refund-policy.php' >= 1
+
+      TEST 6 — Merchant feed is not regressed
+
+        curl -s http://localhost:3000/merchant-feed.xml -o /tmp/feed.xml
+        xmllint --noout /tmp/feed.xml   (must exit 0)
+        grep -c '<g:return_policy_label>' /tmp/feed.xml >= 1
+        grep -c '<g:return_shipping_fee>' /tmp/feed.xml >= 1
+        grep -c '<g:type>free</g:type>'    /tmp/feed.xml >= 1
+
+      Do NOT test anything outside these six blocks.
+

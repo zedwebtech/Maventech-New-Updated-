@@ -64,7 +64,7 @@ $groups = [
         ['Activation Help', 'page.php?slug=activation-help'],
         ['FAQs', 'page.php?slug=faqs'],
         ['Track Order & Receipts', 'track-order.php'],
-        ['Returns & Refunds', 'returns.php'],
+        ['Return & Refund Request Form', 'returns.php'],
         ['Contact Us', 'contact.php'],
     ]],
     ['icon' => 'bi-person-circle', 'title' => 'Your Account', 'links' => [

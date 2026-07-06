@@ -174,7 +174,7 @@ include __DIR__ . '/includes/header.php';
             <i class="bi bi-arrow-counterclockwise text-primary me-2"></i>Refunds &amp; the 30-day guarantee
           </h2>
           <p class="text-secondary small mb-0">
-            If your key fails to activate for any reason our support team will replace it free of charge.  If replacement isn't possible you receive a full refund under our 30-day money-back guarantee — see the <a href="returns.php">Returns &amp; Refunds</a> page for the full policy.
+            If your key fails to activate for any reason our support team will replace it free of charge.  If replacement isn't possible you receive a full refund under our 30-day money-back guarantee — see the <a href="return-policy.php">Return Policy</a> page for the full policy.
           </p>
 
         </div>

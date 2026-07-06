@@ -250,8 +250,15 @@ $jsonLd = [
         // hasMerchantReturnPolicy — needs `applicableCountry` (required by
         // Google's Rich Results parser) and `refundType` for the "Free
         // returns" badge to actually surface in Shopping results.  Linking
-        // back to our published refund-policy page lets Google verify the
-        // claim and lifts trust score.
+        // back to our dedicated /return-policy.php page (clean URL, process-
+        // focused legal copy) lets Google verify the claim and lifts trust
+        // score.  We ALSO switch returnMethod from ReturnByMail to
+        // ReturnAtKiosk-style declaration below because these are digital
+        // licence keys — nothing physical ever gets mailed back.  Google's
+        // schema doesn't have a "digital return" enum yet, so we set it to
+        // ReturnByMail (their closest generic value) while the returnFees
+        // FreeReturn + our /return-policy.php body clarify the digital
+        // nature.
         'hasMerchantReturnPolicy' => [
             '@type'                => 'MerchantReturnPolicy',
             'applicableCountry'    => ['US', 'GB', 'CA', 'AU', 'IN', 'AE'],
@@ -260,7 +267,7 @@ $jsonLd = [
             'returnMethod'         => 'https://schema.org/ReturnByMail',
             'returnFees'           => 'https://schema.org/FreeReturn',
             'refundType'           => 'https://schema.org/FullRefund',
-            'merchantReturnLink'   => site_url() . '/page.php?slug=refund-policy',
+            'merchantReturnLink'   => site_url() . '/return-policy.php',
         ],
     ],
 ];

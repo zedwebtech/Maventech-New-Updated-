@@ -42,6 +42,8 @@ Allow: /about-us.php
 Allow: /contact.php
 Allow: /support.php
 Allow: /returns.php
+Allow: /return-policy.php
+Allow: /refund-policy.php
 Allow: /page.php
 Allow: /sitemap.xml
 Allow: /sitemap.php

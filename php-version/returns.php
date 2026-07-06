@@ -109,7 +109,7 @@ include __DIR__ . '/includes/header.php';
   <?php endforeach; ?>
 
   <div class="text-center small text-secondary mt-4">
-    Questions about refunds? Read our <a href="page.php?slug=refund-policy" class="fw-semibold text-decoration-none">Refund Policy</a>
+    Questions about refunds? Read our <a href="return-policy.php" class="fw-semibold text-decoration-none">Return Policy</a> or <a href="refund-policy.php" class="fw-semibold text-decoration-none">Refund Policy</a>
     or call <a href="tel:<?= esc(tel_e164(company_phone_for_country())) ?>" class="fw-semibold text-decoration-none"><?= esc(company_phone_for_country()) ?></a> (<?= SITE_HOURS ?>).
   </div>
 </div>
