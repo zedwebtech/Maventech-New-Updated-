@@ -34,18 +34,16 @@ header('Cache-Control: public, max-age=3600'); // 1h CDN cache
 $site = rtrim(site_url(), '/');
 $brand = function_exists('company_info') ? (company_info()['name'] ?? 'Maventech') : 'Maventech';
 
-/* Pull the freshest deal info so the badge reflects current promo % off. */
-$topDealPct = 0;
-try {
-    $row = db()->query("SELECT MAX(ROUND(100*(original_price - price)/original_price)) AS pct
-                        FROM products WHERE original_price IS NOT NULL AND original_price > price")->fetch();
-    if ($row && $row['pct']) $topDealPct = (int)$row['pct'];
-} catch (Throwable $e) {}
+/* Note: the previous version of this widget queried the products table for
+ * the MAX discount % (original_price vs price) and rendered "Save up to 81%
+ * on genuine software" in the badge headline.  Google Merchant Center's
+ * automated review flags large discount-percent claims as too-good-to-be-
+ * true pricing, so we no longer emit ANY percentage in the badge — a neutral
+ * corporate-procurement headline is used instead. */
 
 /* Inject site + brand into JS template literals via json_encode for safety. */
 $siteJs  = json_encode($site,  JSON_UNESCAPED_SLASHES);
 $brandJs = json_encode($brand);
-$pctJs   = (int)$topDealPct;
 ?>
 /* Maventech embeddable badge — v1
  * Source: <?= $site ?>/embed/badge.js
@@ -56,7 +54,6 @@ $pctJs   = (int)$topDealPct;
   'use strict';
   var SITE  = <?= $siteJs ?>;
   var BRAND = <?= $brandJs ?>;
-  var TOP_PCT = <?= $pctJs ?>;
 
   var styles = (
     '.mv-badge{display:inline-flex;align-items:center;gap:12px;padding:14px 18px;' +
@@ -106,9 +103,7 @@ $pctJs   = (int)$topDealPct;
     dest += (dest.indexOf('?') === -1 ? '?' : '&')
          + 'utm_source=badge&utm_medium=embed&utm_campaign=' + ref;
 
-    var headline = label ||
-      (TOP_PCT > 0 ? ('Save up to ' + TOP_PCT + '% on genuine software')
-                   : 'Buy genuine software keys');
+    var headline = label || 'Genuine software product keys';
 
     var dark = (theme !== 'light');
     var letter = (BRAND && BRAND.charAt(0).toUpperCase()) || 'M';

@@ -66,7 +66,10 @@ $list = db()->query("
             location COLLATE utf8mb4_unicode_ci AS location,
             review_date, rating,
             text COLLATE utf8mb4_unicode_ci AS text,
-            product COLLATE utf8mb4_unicode_ci AS product, verified
+            product COLLATE utf8mb4_unicode_ci AS product, verified,
+            COALESCE(source, 'internal') COLLATE utf8mb4_unicode_ci AS source,
+            COALESCE(source_url, '')     COLLATE utf8mb4_unicode_ci AS source_url,
+            COALESCE(avatar_url, '')     COLLATE utf8mb4_unicode_ci AS avatar_url
      FROM reviews)
     UNION ALL
     (SELECT id + 100000 AS id,
@@ -77,7 +80,10 @@ $list = db()->query("
             rating,
             comment COLLATE utf8mb4_unicode_ci AS text,
             COALESCE((SELECT p.name FROM products p WHERE p.slug = cr.product_slug LIMIT 1), 'Software Product') COLLATE utf8mb4_unicode_ci AS product,
-            1 AS verified
+            1 AS verified,
+            'internal' COLLATE utf8mb4_unicode_ci AS source,
+            '' COLLATE utf8mb4_unicode_ci AS source_url,
+            '' COLLATE utf8mb4_unicode_ci AS avatar_url
      FROM customer_reviews cr
      WHERE cr.status = 'published' AND cr.rating IS NOT NULL)
     ORDER BY review_date DESC, id DESC
@@ -125,6 +131,14 @@ include __DIR__ . '/includes/header.php';
         <div class="text-warning fs-5"><?= render_stars($avgRating) ?></div>
         <div class="small text-secondary mt-1"><strong class="text-body"><?= number_format($total) ?></strong> verified review<?= $total === 1 ? '' : 's' ?></div>
         <span class="badge text-bg-success mt-2"><i class="bi bi-patch-check-fill me-1"></i>Verified Customer Reviews</span>
+        <?php $googleProfileUrl = setting_get('google_reviews_profile_url', ''); if ($googleProfileUrl !== ''): ?>
+          <div class="mt-3">
+            <a href="<?= esc($googleProfileUrl) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary rounded-pill px-3 d-inline-flex align-items-center gap-2" data-testid="reviews-see-on-google-cta">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+              See all reviews on Google
+            </a>
+          </div>
+        <?php endif; ?>
       </div>
       <div class="col-lg-8">
         <?php foreach ($distPct as $stars => $pct): ?>
@@ -166,22 +180,36 @@ include __DIR__ . '/includes/header.php';
         <p class="small text-secondary mb-0">Be the first verified buyer to share your experience.</p>
       </div>
     <?php endif; ?>
-    <?php foreach ($list as $r): ?>
-      <div class="card p-4" data-testid="review-<?= (int)$r['id'] ?>">
+    <?php foreach ($list as $r): $isGoogle = ($r['source'] ?? '') === 'google'; ?>
+      <div class="card p-4<?= $isGoogle ? ' border-primary' : '' ?>" data-testid="review-<?= (int)$r['id'] ?>" data-source="<?= esc($r['source'] ?? 'internal') ?>">
         <div class="d-flex gap-3">
-          <span class="logo-mark flex-shrink-0" style="width:44px;height:44px;font-size:.85rem;"><?= esc($r['initials']) ?></span>
+          <?php if ($isGoogle && !empty($r['avatar_url'])): ?>
+            <img src="<?= esc($r['avatar_url']) ?>" alt="<?= esc($r['name']) ?>" class="rounded-circle flex-shrink-0" style="width:44px;height:44px;object-fit:cover;" loading="lazy">
+          <?php else: ?>
+            <span class="logo-mark flex-shrink-0" style="width:44px;height:44px;font-size:.85rem;"><?= esc($r['initials']) ?></span>
+          <?php endif; ?>
           <div class="flex-grow-1">
             <div class="d-flex justify-content-between flex-wrap gap-2">
               <div>
                 <strong><?= esc($r['name']) ?></strong>
-                <?php if ($r['verified']): ?><span class="badge text-bg-success ms-1" style="font-size:.62rem;"><i class="bi bi-patch-check-fill me-1"></i>Verified</span><?php endif; ?>
+                <?php if ($isGoogle): ?>
+                  <span class="badge d-inline-flex align-items-center gap-1 ms-1" style="background:#fff;color:#3c4043;border:1px solid #dadce0;font-size:.62rem;padding:.28rem .55rem;" title="Review from Google">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    From Google
+                  </span>
+                <?php elseif ($r['verified']): ?>
+                  <span class="badge text-bg-success ms-1" style="font-size:.62rem;"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                <?php endif; ?>
                 <small class="text-secondary ms-1"><?= esc($r['location']) ?></small>
               </div>
               <small class="text-secondary"><?= esc(date('M j, Y', strtotime($r['review_date']))) ?></small>
             </div>
             <div class="text-warning small my-1"><?= str_repeat('★', (int)$r['rating']) ?><span class="text-secondary opacity-50"><?= str_repeat('★', 5 - (int)$r['rating']) ?></span></div>
             <p class="mb-1"><?= esc($r['text']) ?></p>
-            <small class="text-secondary"><i class="bi bi-bag-check-fill text-primary me-1"></i>Purchased: <?= esc($r['product']) ?></small>
+            <?php if ($r['product']): ?><small class="text-secondary"><i class="bi bi-bag-check-fill text-primary me-1"></i>Purchased: <?= esc($r['product']) ?></small><?php endif; ?>
+            <?php if ($isGoogle && !empty($r['source_url'])): ?>
+              <div class="mt-2"><a href="<?= esc($r['source_url']) ?>" target="_blank" rel="noopener" class="small text-decoration-none" data-testid="google-review-source-link"><i class="bi bi-box-arrow-up-right me-1"></i>View this review on Google</a></div>
+            <?php endif; ?>
           </div>
         </div>
       </div>

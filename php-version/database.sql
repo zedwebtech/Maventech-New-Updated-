@@ -1142,3 +1142,50 @@ UPDATE products SET activation_url='https://setup.office.com', install_guide_url
 UPDATE products SET activation_url='https://setup.office.com', install_guide_url='/install-guide.php?slug=microsoft-visio-2024-professional-windows-pc', installer_url='https://download.winandoffice.com/Volume/visio/2024/EN/visio_2024_EN_64Bits.exe', activation_url_mode='manual', install_url_mode='manual' WHERE slug='microsoft-visio-2024-professional-windows-pc';
 UPDATE products SET activation_url='https://setup.office.com', install_guide_url='/install-guide.php?slug=microsoft-visio-2021-professional-windows-pc', installer_url='https://download.winandoffice.com/Volume/visio/2021/EN/visio_2021_EN_pro_64Bits.exe', activation_url_mode='manual', install_url_mode='manual' WHERE slug='microsoft-visio-2021-professional-windows-pc';
 UPDATE products SET activation_url='https://setup.office.com', install_guide_url='/install-guide.php?slug=ms-visio-professional-2019-pc', installer_url='https://download.winandoffice.com/Volume/visio/2019/EN/visio_2019_EN_64Bits.exe', activation_url_mode='manual', install_url_mode='manual' WHERE slug='ms-visio-professional-2019-pc';
+
+-- =====================================================================
+--  July-2026 Google Merchant Center compliance patch  (idempotent)
+--  These UPDATEs run at the END of the seed so a fresh import always
+--  lands in a Merchant-Center-safe state.  See start.sh for the same
+--  statements as runtime migrations on the preview pod.
+-- =====================================================================
+
+-- Cap aggressive MSRP discounts at 35% (price must be >= 65% of MSRP).
+-- Google auto-flags accounts with 60-80% discount spreads as unauthorised-
+-- reseller candidates.  This UPDATE is safe to re-run — it only touches
+-- rows that still violate the ceiling.
+UPDATE `products`
+   SET `original_price` = ROUND(`price` / 0.65, 2)
+ WHERE `original_price` IS NOT NULL
+   AND `original_price` > 0
+   AND `original_price` > ROUND(`price` / 0.65, 2);
+
+-- Seed a `return-policy` slug row if it's missing (copy the body from the
+-- `refund-policy` row so the two pages stay in sync).  Google Merchant
+-- Center requires a live Return Policy URL — this guarantees /return-
+-- policy.php has real content instead of the "temporarily unavailable"
+-- fallback that some old installs were serving.
+INSERT INTO `pages` (`slug`, `title`, `updated`, `content`)
+SELECT 'return-policy', 'Return Policy', `updated`, `content`
+  FROM `pages`
+ WHERE `slug` = 'refund-policy'
+    ON DUPLICATE KEY UPDATE `title` = VALUES(`title`);
+
+-- Google Reviews display columns on the curated `reviews` table.
+-- source        = 'internal' | 'google'   (drives the Google badge on /reviews.php)
+-- source_url    = link back to the actual Google review or Business Profile
+-- avatar_url    = customer profile photo URL from Google (optional)
+-- Idempotent — the ADD COLUMN uses IF NOT EXISTS syntax that MariaDB
+-- silently accepts (and phpMyAdmin's importer likewise ignores when the
+-- column already exists).
+ALTER TABLE `reviews` ADD COLUMN IF NOT EXISTS `source` VARCHAR(20) NOT NULL DEFAULT 'internal';
+ALTER TABLE `reviews` ADD COLUMN IF NOT EXISTS `source_url` VARCHAR(500) DEFAULT NULL;
+ALTER TABLE `reviews` ADD COLUMN IF NOT EXISTS `avatar_url` VARCHAR(500) DEFAULT NULL;
+
+-- Admin-configurable "See all reviews on Google" link.  Empty by default —
+-- admin fills it in from /admin.php → Reviews → Google Reviews section.
+INSERT INTO `settings` (`k`, `v`)
+SELECT 'google_reviews_profile_url', ''
+  FROM DUAL
+ WHERE NOT EXISTS (SELECT 1 FROM `settings` WHERE `k` = 'google_reviews_profile_url');
+

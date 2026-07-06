@@ -90,6 +90,35 @@ mysql -uroot ucode_store -e "ALTER TABLE orders ADD COLUMN IF NOT EXISTS gw_mode
 # row still holds that stale value, empty it so no 404-ing secondary gtag.js
 # request is emitted. Any OTHER admin-set AW-* id is preserved. Idempotent.
 mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='google_ads_tag_id' AND v='AW-18263028048'" 2>/dev/null || true
+# Google Merchant Center compliance — cap aggressive MSRP discounts at 35%.
+# The original seed had several products with 60–81% "spread" between
+# `original_price` (MSRP) and `price`, which Google's automated review reads
+# as too-good-to-be-true pricing (a common unauthorised-reseller signal that
+# just cost this account 83% of its active items in the July 5–6 diagnostic).
+# Cap: `price` must be at least 65% of `original_price` (i.e. max 35% off).
+# Idempotent — re-running only re-caps rows that violate the ceiling.
+mysql -uroot ucode_store -e "UPDATE products SET original_price = ROUND(price / 0.65, 2) WHERE original_price IS NOT NULL AND original_price > 0 AND original_price > ROUND(price / 0.65, 2)" 2>/dev/null || true
+# Google Merchant Center — Return Policy URL requirement.  Some older DB
+# imports never gained a dedicated `return-policy` slug row (only
+# `refund-policy` was seeded), which made /return-policy.php render its
+# "temporarily unavailable" fallback on production.  Copy the refund-policy
+# body into a return-policy row when missing so the URL is live.  The
+# runtime fallback in return-policy.php also handles this, but seeding the
+# row lets the admin edit it independently via /admin.php.  Idempotent.
+mysql -uroot ucode_store -e "INSERT INTO pages (slug, title, updated, content) SELECT 'return-policy', 'Return Policy', updated, content FROM pages WHERE slug='refund-policy' ON DUPLICATE KEY UPDATE title=VALUES(title)" 2>/dev/null || true
+# Google Reviews display — extend the curated `reviews` table with the
+# columns needed to render a "Google" badge + external link back to the
+# actual Google Business Profile review page.  These are used by the
+# /reviews.php page and by the admin.php "Add Google Review" form so the
+# merchant can quote real customer reviews from their Google listing on
+# their own website.  Idempotent — ADD COLUMN IF NOT EXISTS is a no-op
+# once the columns exist.
+mysql -uroot ucode_store -e "ALTER TABLE reviews ADD COLUMN IF NOT EXISTS source VARCHAR(20) NOT NULL DEFAULT 'internal'" 2>/dev/null || true
+mysql -uroot ucode_store -e "ALTER TABLE reviews ADD COLUMN IF NOT EXISTS source_url VARCHAR(500) DEFAULT NULL" 2>/dev/null || true
+mysql -uroot ucode_store -e "ALTER TABLE reviews ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) DEFAULT NULL" 2>/dev/null || true
+# Admin setting to store the merchant's Google Business Profile "See all reviews"
+# URL so the reviews page can render a "See all reviews on Google" CTA.
+mysql -uroot ucode_store -e "INSERT INTO settings (k, v) SELECT 'google_reviews_profile_url','' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM settings WHERE k='google_reviews_profile_url')" 2>/dev/null || true
 # chat_messages attachments — file uploads + voice notes in the support chat
 mysql -uroot ucode_store -e "ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS attachment_url  VARCHAR(500) DEFAULT NULL" 2>/dev/null || true
 mysql -uroot ucode_store -e "ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS attachment_type VARCHAR(20)  DEFAULT NULL" 2>/dev/null || true

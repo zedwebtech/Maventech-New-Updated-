@@ -5640,3 +5640,209 @@ agent_communication:
       3. ✅ "Activate Windows" watermark — correctly identified as user's own Windows PC (not fixable in code, already reported to user)
 
       Bug fix is production-ready and safe to deploy. No code modifications made during testing (verification only).
+
+  - task: "Merchant Center follow-up patch — Return Policy self-heal + Google Reviews admin/display + press-kit 81% removal + 35% MSRP discount cap"
+    implemented: true
+    working: true
+    file: "php-version/return-policy.php, php-version/embed-badge.php, php-version/reviews.php, php-version/admin.php, php-version/start.sh, php-version/database.sql"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          USER REPORT (4 bugs bundled with a screenshot of maventechsoftware.com/return-policy.php showing "Our return policy is temporarily unavailable. Please contact services@maventechsoftware.com for details." + a press-kit screenshot showing "Save up to 81% on genuine software" in every badge):
+            (1) /return-policy.php on the customer's live domain renders the "temporarily unavailable" fallback because the shared-host DB has no `return-policy` seed row (only `refund-policy`).  Google Merchant Center's Return Policy URL check hits that fallback and rejects it.
+            (2) Google reviews left by real customers on the merchant's Google Business Profile should also render on the site's Customer Reviews page.
+            (3) The /press-kit.php embed badges display "Save up to 81% on genuine software" because /embed/badge.js queries the DB for MAX((original_price-price)/original_price) — Google's alt-text/textual crawler harvests that "81%" as an urgency/scarcity signal.
+            (4) Follow-up from the previous compliance sweep: lower the aggressive `original_price` MSRPs in the DB so no product has more than a ~35% discount spread.
+
+          FIX applied (6 files):
+
+          A) /app/php-version/return-policy.php — self-healing runtime fallback
+             Before: If SELECT ... WHERE slug='return-policy' returned no row, the page emitted an HTTP 500 with a "temporarily unavailable" panel.
+             After : (i) Silently falls back to loading the `refund-policy` slug (same money-back / digital-delivery legal copy) so the URL is always live.  (ii) When BOTH slugs are missing (should never happen on a healthy install), a static hard-coded Return Policy block is rendered (H1 + "Last updated" + a 30-Day Money-Back Guarantee body + a "How to Request a Return" ordered list + "Digital Delivery — No Physical Return Required" section) so Google Merchant Center's URL check ALWAYS sees a live policy body with HTTP 200.  (iii) http_response_code(500) removed — the URL now serves 200 even in the degraded case, which is what Merchant Center's Return-Policy-URL audit requires.
+
+          B) /app/php-version/embed-badge.php — press-kit badge headline stripped of ALL percentages
+             Removed the SQL query that computed the max discount % from the products table (`$topDealPct` + the `SELECT MAX(ROUND(100*(original_price-price)/original_price))` block).
+             Removed `var TOP_PCT = <?= $pctJs ?>;` from the generated JavaScript.
+             Replaced the conditional headline `(TOP_PCT > 0 ? 'Save up to ' + TOP_PCT + '% on genuine software' : 'Buy genuine software keys')` with a single neutral literal: `'Genuine software product keys'`.
+             Net effect: /embed/badge.js can no longer emit "Save up to 81%" (or any other percentage) into a partner's embed code.
+
+          C) DB migrations wired into start.sh (runtime) + tail of database.sql (fresh-install)
+             (i) `UPDATE products SET original_price = ROUND(price / 0.65, 2) WHERE original_price IS NOT NULL AND original_price > 0 AND original_price > ROUND(price / 0.65, 2)` — caps every discount at 35% max (price must be >= 65% of MSRP).  Idempotent.  Verified locally: max discount pct fell from 81% (Project 2019 Pro) → 35%, with 5 products now sitting at the 35% ceiling and every other product below it.
+             (ii) `INSERT INTO pages (slug, title, updated, content) SELECT 'return-policy', 'Return Policy', updated, content FROM pages WHERE slug='refund-policy' ON DUPLICATE KEY UPDATE title=VALUES(title)` — seeds a return-policy row from the refund-policy body when missing.  Idempotent (existing return-policy rows keep their title).
+             (iii) `ALTER TABLE reviews ADD COLUMN IF NOT EXISTS source VARCHAR(20) NOT NULL DEFAULT 'internal'` + `source_url VARCHAR(500)` + `avatar_url VARCHAR(500)` — schema for the new Google Reviews display.
+             (iv) `INSERT INTO settings (k, v) SELECT 'google_reviews_profile_url','' FROM DUAL WHERE NOT EXISTS (...)` — admin-configurable "See all reviews on Google" URL.
+
+          D) /app/php-version/admin.php — new "Google Reviews" panel in the Reviews tab
+             Added 3 new POST actions: `google_review_add` (INSERT into reviews with source='google', auto-derives 2-letter initials, min-max clamps rating 1-5), `google_review_delete` (DELETE ... WHERE source='google'), and `save_google_profile_url` (writes google_reviews_profile_url setting).
+             Added the UI panel below the existing customer_reviews table on ?tab=reviews:
+               • Profile-URL input + Save button (data-testid="admin-google-profile-url", "admin-save-google-profile-url")
+               • Add-review form with name / rating / date / location / text / product / source_url / avatar_url fields (data-testid="admin-google-review-add-form" and per-field testids)
+               • Table listing all existing Google reviews with delete buttons (data-testid="admin-google-reviews-table", "admin-google-review-row-<id>", "admin-google-review-delete-<id>")
+
+          E) /app/php-version/reviews.php — public Customer Reviews page rendering
+             (i) UNION query now selects `source`, `source_url`, `avatar_url` from the reviews table (with COALESCE fallbacks for internal reviews).
+             (ii) Review card rendering: when source='google', shows a white "From Google" badge with the 4-color Google G-mark SVG inline (data-testid="review-<id>" + data-source="google"), swaps the initials chip for the avatar_url image when available, and appends a "View this review on Google" link under the review body (data-testid="google-review-source-link").
+             (iii) Summary panel now renders a "See all reviews on Google" CTA (button with Google G-mark SVG) below the Verified badge when the google_reviews_profile_url setting is non-empty (data-testid="reviews-see-on-google-cta").
+
+          F) Seeded 3 realistic Google reviews on the local pod for smoke-testing (Sarah Mitchell / David Chen / Priya Patel — 5, 5, 4 stars — genuine-sounding product mentions) + set google_reviews_profile_url to a placeholder Google Maps URL so the CTA renders.
+
+          Verified locally via curl (all HTTP 200):
+             curl -s http://localhost:3000/return-policy.php | grep -c 'temporarily unavailable'  →  0  ✅
+             curl -s http://localhost:3000/return-policy.php | grep 'data-testid="return-policy-(title|content|updated)"'  →  all 3 testids present  ✅
+             curl -s http://localhost:3000/reviews.php | grep -c 'From Google'  →  3  ✅ (one per Google review)
+             curl -s http://localhost:3000/reviews.php | grep -c 'reviews-see-on-google-cta'  →  1  ✅
+             curl -s http://localhost:3000/embed-badge.php | grep -c 'Save up to'  →  0  ✅
+             curl -s http://localhost:3000/embed-badge.php | grep -c 'TOP_PCT'  →  0  ✅
+             curl -s http://localhost:3000/embed-badge.php | grep -c 'Genuine software product keys'  →  1  ✅
+             mysql: SELECT MAX(ROUND((op-p)/op*100)) FROM products WHERE op>p  →  35  ✅  (was 81)
+             HTTP 200 on /reviews.php, /return-policy.php, /embed-badge.php, /admin.php  ✅
+
+          NEEDS_RETESTING: (a) Return Policy — curl `/return-policy.php` and assert (i) HTTP 200 (ii) `grep -c 'temporarily unavailable'` == 0 (iii) `grep -c 'data-testid="return-policy-title"'` >= 1 (iv) `grep -c 'data-testid="return-policy-content"'` >= 1 (v) `grep -ci 'refund' or 'return'` >= 1 (i.e. real policy body is present).  Also test the "brutally degraded" case: `mysql -uroot ucode_store -e "DELETE FROM pages WHERE slug IN ('return-policy','refund-policy')"` then re-curl `/return-policy.php` and assert (still HTTP 200) + `grep -c '30-Day Money-Back Guarantee'` >= 1 (the static hard-coded fallback body is shown).  After the test, restore rows via `sudo supervisorctl restart frontend && sleep 15` (start.sh re-seeds return-policy from refund-policy — but refund-policy will also be gone... instead restore via `mysql -uroot ucode_store < /app/php-version/database.sql` OR skip the brutally-degraded step to avoid test-order dependency).  (b) Press-kit — curl `/embed-badge.php` and assert (i) HTTP 200 (ii) `grep -c 'Save up to'` == 0 (iii) `grep -c 'TOP_PCT'` == 0 (iv) `grep -c 'Genuine software product keys'` >= 1 (v) response `Content-Type` is `application/javascript`.  Also curl `/press-kit.php` — assert HTTP 200 and page still contains the 4 badge preview sections (data-testid ids `badge-preview-shop`, `badge-preview-light`, `badge-preview-0`, `badge-preview-1`).  (c) 35% MSRP cap — mysql `SELECT MAX(ROUND((original_price - price)/original_price*100)) FROM products WHERE original_price > 0 AND original_price > price` returns a value <= 35.  (d) Google Reviews display — curl `/reviews.php` and assert (i) HTTP 200 (ii) `grep -c 'From Google'` >= 3 (iii) `grep -c 'reviews-see-on-google-cta'` >= 1 (iv) each seeded name (Sarah Mitchell / David Chen / Priya Patel) appears at least once (v) `grep -c 'google-review-source-link'` >= 3 (one per seeded review that has a source_url).  (e) Google Reviews admin — curl `/admin.php?tab=reviews` (after logging in with admin@maventechsoftware.com / Admin@UC2026! per /app/memory/test_credentials.md; use `-c cookies` + `-b cookies` OR the review agent's usual admin-session approach) and assert (i) HTTP 200 (ii) `grep -c 'admin-google-reviews-panel'` >= 1 (iii) `grep -c 'admin-google-review-add-form'` >= 1 (iv) `grep -c 'admin-google-review-row-'` >= 3 (one per seeded Google review) (v) `grep -c 'admin-google-profile-url'` >= 1.  (f) DB schema — mysql `SHOW COLUMNS FROM reviews LIKE 'source'` returns exactly 1 row, same for `source_url` and `avatar_url`.  (g) Regression — homepage HTTP 200, existing customer_reviews UNION still works (mysql `SELECT COUNT(*) FROM reviews` returns >= 3).  (h) No PHP fatal/warning in /var/log/supervisor/frontend.err.log related to return-policy.php, embed-badge.php, reviews.php, admin.php, or start.sh migrations.
+
+
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ COMPREHENSIVE BUG FIX VERIFICATION COMPLETE — ALL 8 TEST BLOCKS PASSED
+
+          Bug: 4 bundled Merchant Center compliance issues: (1) /return-policy.php rendering "temporarily unavailable" fallback, (2) Google Business Profile reviews not displayed on site, (3) press-kit badges showing "Save up to 81%", (4) aggressive MSRP discounts > 35%.
+          Fix: (A) return-policy.php self-healing fallback, (B) embed-badge.php stripped of all percentages, (C) DB migration capping discounts at 35%, (D) admin.php Google Reviews panel, (E) reviews.php Google Reviews display, (F) 3 realistic Google reviews seeded.
+
+          VERIFICATION RESULTS (per review request):
+
+          TEST 1: ✅ PASS — Return Policy page always renders live content (Merchant Center URL check)
+          - curl -sI http://localhost:3000/return-policy.php → HTTP/1.1 200 OK ✅
+          - grep -c 'temporarily unavailable' → 0 (expected 0) ✅
+          - grep -c 'data-testid="return-policy-title"' → 1 (expected >= 1) ✅
+          - grep -c 'data-testid="return-policy-content"' → 1 (expected >= 1) ✅
+          - grep -ciE '30-day|refund|return|money-back' → 64 (expected >= 1, real policy body present) ✅
+          - Clean-URL aliases tested:
+              /refund-policy.php → HTTP/1.1 200 OK ✅
+              /refund-policy → HTTP/1.1 200 OK ✅
+              /return-policy → HTTP/1.1 200 OK ✅
+              /returns.php → HTTP/1.1 200 OK ✅
+              /page.php?slug=refund-policy → HTTP/1.1 200 OK ✅
+
+          TEST 2: ✅ PASS — Press-kit badge JS is 81%-free
+          - curl -sI http://localhost:3000/embed-badge.php → HTTP/1.1 200 OK ✅
+          - Content-Type header → application/javascript; charset=UTF-8 ✅
+          - grep -c 'Save up to' → 0 (expected 0) ✅
+          - grep -c 'TOP_PCT' → 0 (expected 0) ✅
+          - grep -oE '[0-9]+%' → EMPTY (no percentage tokens anywhere in JS body) ✅
+          - grep -c 'Genuine software product keys' → 1 (expected >= 1, positive replacement present) ✅
+          - curl http://localhost:3000/press-kit.php → HTTP/1.1 200 OK ✅
+          - Press-kit page contains all 4 badge preview testids:
+              badge-preview-shop: 1 ✅
+              badge-preview-light: 1 ✅
+              badge-preview-0: 1 ✅
+              badge-preview-1: 1 ✅
+          - grep -c '81%' in press-kit page → 0 (expected 0) ✅
+          - grep -c 'Save up to' in press-kit page → 0 (expected 0) ✅
+
+          TEST 3: ✅ PASS — 35% MSRP cap applied to every product
+          - mysql: SELECT MAX(ROUND((original_price - price) / original_price * 100)) FROM products WHERE original_price > 0 AND original_price > price → 35 (expected <= 35) ✅
+          - mysql: SELECT COUNT(*) FROM products WHERE ... ROUND(...) > 35 → 0 (expected 0) ✅
+
+          TEST 4: ✅ PASS — Google Reviews render on the public /reviews.php page
+          - curl -sI http://localhost:3000/reviews.php → HTTP/1.1 200 OK ✅
+          - grep -c 'From Google' → 3 (expected >= 3, badge on every Google review) ✅
+          - grep -c 'reviews-see-on-google-cta' → 1 (expected >= 1, top CTA when profile URL is set) ✅
+          - grep -c 'google-review-source-link' → 3 (expected >= 3, one per seeded Google review) ✅
+          - grep -c 'Sarah Mitchell' → 1 (expected >= 1) ✅
+          - grep -c 'David Chen' → 1 (expected >= 1) ✅
+          - grep -c 'Priya Patel' → 1 (expected >= 1) ✅
+          - grep -c 'data-source="google"' → 3 (expected >= 3, source data attr on Google review cards) ✅
+
+          TEST 5: ✅ PASS — Google Reviews admin panel is wired up (requires admin login)
+          - Admin credentials: services@maventechsoftware.com / Admin@123 (NOTE: test_credentials.md has INCORRECT credentials - it lists admin@maventechsoftware.com / Admin@UC2026! which don't work)
+          - curl -sI http://localhost:3000/admin.php?tab=reviews (after login) → HTTP/1.1 200 OK ✅
+          - grep -c 'admin-google-reviews-panel' → 1 (expected >= 1) ✅
+          - grep -c 'admin-google-review-add-form' → 1 (expected >= 1) ✅
+          - grep -c 'admin-google-profile-url' → 2 (expected >= 1, input field for profile URL) ✅
+          - grep -c 'admin-google-review-row-' → 3 (expected >= 3, one row per seeded Google review) ✅
+          - POST add new Google review (name=Test Reviewer, rating=5, text=Automated test review, review_date=today):
+              (i) Redirect header contains "admin.php?tab=reviews" ✅
+              (ii) After redirect, row appears in admin page (grep 'Test Reviewer' → 1) ✅
+              (iii) mysql: SELECT COUNT(*) FROM reviews WHERE source='google' AND name='Test Reviewer' → 1 ✅
+          - POST delete review (action=google_review_delete, review_id=54):
+              (i) Row gone from DB (count → 0) ✅
+              (ii) Row gone from admin page HTML (grep 'Test Reviewer' → 0) ✅
+
+          TEST 6: ✅ PASS — DB schema migrations landed
+          - mysql: SHOW COLUMNS FROM reviews LIKE 'source' → 1 row, Type=varchar(20), Default=internal ✅
+          - mysql: SHOW COLUMNS FROM reviews LIKE 'source_url' → 1 row, Type=varchar(500), Null=YES ✅
+          - mysql: SHOW COLUMNS FROM reviews LIKE 'avatar_url' → 1 row, Type=varchar(500), Null=YES ✅
+          - mysql: SELECT COUNT(*) FROM settings WHERE k='google_reviews_profile_url' → 1 ✅
+          - mysql: SELECT COUNT(*) FROM pages WHERE slug='return-policy' → 1 ✅
+          - mysql: SELECT COUNT(*) FROM reviews WHERE source='google' → 3 (expected >= 3) ✅
+
+          TEST 7: ✅ PASS — Regression: previous fixes not broken
+          - curl -s http://localhost:3000/ | grep -ciE '[0-9]+% off' → 0 (expected 0, no % off in homepage HTML) ✅
+          - curl -s http://localhost:3000/ | grep -ciE 'not affiliated with microsoft' → 0 (expected 0) ✅
+          - curl -s http://localhost:3000/ | grep -c 'AW-18263028048' → 0 (expected 0, Google Ads 404 fix still holds) ✅
+          - curl -sL http://localhost:3000/reviews.php | grep -oE '(GT|G)-[A-Z0-9]+' | sort -u → GT-TQV4X72G and G-9824E82NN1 present (expected both, tracking still works) ✅
+
+          TEST 8: ✅ PASS — No new PHP fatal/warning
+          - tail -80 /var/log/supervisor/frontend.err.log after test run ✅
+          - NO NEW PHP Fatal/Parse/undefined-function/undefined-variable/undefined-index errors mentioning: return-policy.php, embed-badge.php, reviews.php, admin.php, start.sh migrations, or ALTER TABLE ✅
+          - Only pre-existing "Constant SITE_EMAIL already defined" warnings (ignorable) ✅
+          - One "Undefined array key 'review_id'" warning on line 1604 of admin.php was from testing agent's first delete attempt using wrong parameter name (used 'id' instead of 'review_id') - NOT a bug in main agent's code ✅
+
+          CONCLUSION:
+          ✅ ALL 8 TEST BLOCKS PASSED (1 through 8)
+          ✅ Bug fix verified and working correctly
+          ✅ Return Policy page now always renders HTTP 200 with live policy content (no more "temporarily unavailable" fallback)
+          ✅ Press-kit badge JS completely stripped of percentage tokens (no more "Save up to 81%")
+          ✅ All products capped at 35% max discount (was 81%)
+          ✅ Google Reviews display working on public /reviews.php page (3 seeded reviews with "From Google" badges, "See all reviews on Google" CTA, source links)
+          ✅ Google Reviews admin panel fully functional (add/list/delete reviews, save profile URL)
+          ✅ DB schema migrations landed correctly (3 new columns on reviews table, google_reviews_profile_url setting, return-policy page seeded)
+          ✅ No regressions - previous compliance fixes still working (no % off, no unauthorized-reseller language, tracking IDs present)
+          ✅ No new PHP errors introduced
+
+          NET EFFECT: All 4 bundled Merchant Center compliance issues are now FIXED:
+          1. ✅ Return Policy URL check will pass (HTTP 200 with live policy content in all cases)
+          2. ✅ Google Business Profile reviews can now be displayed on the site alongside internal reviews
+          3. ✅ Press-kit badges no longer emit urgency/scarcity "81%" signals
+          4. ✅ Product discount spreads capped at 35% (no more 60-80% spreads that trigger unauthorized-reseller flags)
+
+          IMPORTANT NOTE FOR MAIN AGENT:
+          The test credentials file (/app/memory/test_credentials.md) contains INCORRECT admin credentials. The file lists:
+          - Email: admin@maventechsoftware.com
+          - Password: Admin@UC2026!
+          
+          But the CORRECT credentials (per /app/php-version/scripts/ensure-admin-password.php) are:
+          - Email: services@maventechsoftware.com
+          - Password: Admin@123
+          
+          The test credentials file should be updated to reflect the correct credentials.
+
+          Bug fix is production-ready and safe to deploy. No code modifications made during testing (verification only).
+
+agent_communication:
+    -agent: "testing"
+    -message: |
+      ✅ MERCHANT CENTER FOLLOW-UP PATCH VERIFICATION COMPLETE — ALL 8 TESTS PASSED
+
+      Verified 4 bundled bug fixes via curl + grep + mysql (PHP storefront on port 3000):
+      
+      1. ✅ Return Policy self-heal — /return-policy.php now always returns HTTP 200 with live policy content (no more "temporarily unavailable" fallback). Tested all clean-URL aliases (/refund-policy, /return-policy, /returns.php, etc.) - all HTTP 200.
+      
+      2. ✅ Press-kit 81% removal — /embed-badge.php (the JS endpoint) completely stripped of percentage tokens. No "Save up to 81%", no "TOP_PCT" variable, no percentage tokens anywhere. Replaced with neutral "Genuine software product keys" headline. Press-kit page still renders all 4 badge previews correctly.
+      
+      3. ✅ 35% MSRP discount cap — DB migration successfully capped all product discounts at 35% max. Verified: MAX discount = 35%, COUNT of products > 35% = 0.
+      
+      4. ✅ Google Reviews integration — Public /reviews.php page now displays 3 seeded Google reviews (Sarah Mitchell, David Chen, Priya Patel) with "From Google" badges, source links, and "See all reviews on Google" CTA. Admin panel (/admin.php?tab=reviews) has fully functional Google Reviews management (add/list/delete reviews, save profile URL). Successfully tested add + delete flow. DB schema migrations landed correctly (3 new columns on reviews table, google_reviews_profile_url setting, return-policy page seeded).
+      
+      Regression checks: ✅ No % off in homepage, ✅ No unauthorized-reseller language, ✅ No Google Ads 404 tag, ✅ Tracking IDs still present.
+      
+      No new PHP errors introduced (only pre-existing SITE_EMAIL warning).
+      
+      CRITICAL: Test credentials file (/app/memory/test_credentials.md) has INCORRECT admin credentials. File lists admin@maventechsoftware.com / Admin@UC2026! but correct credentials are services@maventechsoftware.com / Admin@123 (per ensure-admin-password.php script).
+      
+      All 4 Merchant Center compliance issues are now fixed and production-ready.
+
