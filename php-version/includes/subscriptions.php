@@ -328,75 +328,215 @@ function sub_pdf_paths(array $order, array $sub, array $plan): array
     return $paths;
 }
 
-/** Subscription certificate PDF (binary string) — branded via _pdf_shell. */
+/** Subscription certificate PDF (binary string) — compact single-page layout
+ *  with the plan logo + name at the top, followed by the details table and
+ *  a features grid.  Uses its own stand-alone HTML (not _pdf_shell) so we
+ *  can guarantee the whole document fits on one letter page.
+ */
 function sub_generate_certificate_pdf(array $order, array $sub, array $plan): string
 {
     require_once __DIR__ . '/pdf.php';
+    $e   = fn($s) => htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
     $co  = function_exists('company_info') ? company_info() : ['name' => 'Maventech'];
     $cur = (string)($sub['currency'] ?? 'USD');
 
-    $featRows = '';
-    foreach (($plan['features'] ?? []) as $f) {
-        $featRows .= '<tr><td style="padding:3px 0;color:#047857;width:18px;">&#10003;</td><td style="padding:3px 0;color:#334155;">'
-                   . htmlspecialchars((string)$f, ENT_QUOTES, 'UTF-8') . '</td></tr>';
+    // Resolve the plan icon path — Dompdf accepts absolute filesystem paths.
+    // Falls back to the company logo when the plan icon is missing/broken so
+    // the header never renders blank.
+    $planIconUrl = (string)($plan['icon_image'] ?? '');
+    $planIconAbs = '';
+    if ($planIconUrl !== '') {
+        $rel = ltrim(preg_replace('#^https?://[^/]+#i', '', $planIconUrl) ?: '', '/');
+        $candidate = __DIR__ . '/../' . $rel;
+        if (is_file($candidate)) $planIconAbs = $candidate;
     }
+    if ($planIconAbs === '') {
+        $companyLogo = _pdf_company_logo_path();
+        if ($companyLogo && file_exists($companyLogo)) $planIconAbs = $companyLogo;
+    }
+    $planLogoTag = $planIconAbs
+        ? '<img src="' . $e($planIconAbs) . '" alt="' . $e($plan['name']) . '" style="width:74px;height:74px;object-fit:contain;display:block;">'
+        : '<div style="width:74px;height:74px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);border-radius:14px;display:inline-block;"></div>';
 
+    // Feature list — two-column layout keeps the block compact so the whole
+    // document fits on a single letter page even with 10+ bullets.
+    $features = array_values(array_filter((array)($plan['features'] ?? []), fn($f) => trim((string)$f) !== ''));
+    $half = (int)ceil(count($features) / 2);
+    $col1 = array_slice($features, 0, $half);
+    $col2 = array_slice($features, $half);
+    $renderCol = function(array $items) use ($e) {
+        $out = '';
+        foreach ($items as $f) {
+            $out .= '<tr><td style="padding:2px 0;color:#047857;width:16px;font-size:9pt;vertical-align:top;">&#10003;</td>'
+                  . '<td style="padding:2px 4px 2px 0;color:#334155;font-size:9pt;line-height:1.35;">' . $e($f) . '</td></tr>';
+        }
+        return $out;
+    };
+    $col1Html = $renderCol($col1);
+    $col2Html = $renderCol($col2);
+
+    // Details table — one canonical block, tightly spaced.
     $rows = [
-        ['Customer ID',   (string)$sub['customer_id']],
-        ['Plan',          $plan['name'] . ' — ' . $plan['tagline']],
-        ['Coverage',      (string)$plan['devices']],
-        ['Tenure',        sub_tenure_text($sub, $plan)],
-        ['Order number',  (string)($order['order_number'] ?? '')],
-        ['Amount paid',   _pdf_money((float)($sub['amount'] ?? 0), $cur)],
-        ['Payment method',ucfirst((string)($sub['gateway'] ?: 'card'))],
-        ['Status',        ucfirst((string)($sub['status'] ?? 'active'))],
+        ['Customer ID',    (string)$sub['customer_id']],
+        ['Plan',           $plan['name']],
+        ['Coverage',       (string)$plan['devices']],
+        ['Tenure',         sub_tenure_text($sub, $plan)],
+        ['Order number',   (string)($order['order_number'] ?? '')],
+        ['Amount paid',    _pdf_money((float)($sub['amount'] ?? 0), $cur)],
+        ['Payment method', ucfirst((string)($sub['gateway'] ?: 'card'))],
+        ['Status',         ucfirst((string)($sub['status'] ?? 'active'))],
     ];
-    $detailRows = '';
-    foreach ($rows as $r) {
-        $detailRows .= '<tr><td style="padding:6px 0;color:#64748b;width:150px;">' . htmlspecialchars($r[0], ENT_QUOTES, 'UTF-8')
-                     . '</td><td style="padding:6px 0;color:#0f172a;font-weight:700;">' . htmlspecialchars($r[1], ENT_QUOTES, 'UTF-8') . '</td></tr>';
-    }
+    // Two-column details grid: left labels + right values, then repeat.
+    $halfR = (int)ceil(count($rows) / 2);
+    $detL = array_slice($rows, 0, $halfR);
+    $detR = array_slice($rows, $halfR);
+    $renderDet = function(array $rs) use ($e) {
+        $out = '';
+        foreach ($rs as $r) {
+            $out .= '<tr>'
+                  . '<td style="padding:4px 6px 4px 0;color:#64748b;font-size:9pt;white-space:nowrap;">' . $e($r[0]) . '</td>'
+                  . '<td style="padding:4px 0;color:#0f172a;font-weight:700;font-size:9.5pt;">' . $e($r[1]) . '</td>'
+                  . '</tr>';
+        }
+        return $out;
+    };
+    $detLHtml = $renderDet($detL);
+    $detRHtml = $renderDet($detR);
 
-    $bodyHtml = '<div class="amount-banner">
-            <div class="amt">' . htmlspecialchars($plan['name'], ENT_QUOTES, 'UTF-8') . ' — Active Subscription</div>
-            <div class="sub">Customer ID <strong>' . htmlspecialchars((string)$sub['customer_id'], ENT_QUOTES, 'UTF-8') . '</strong> · keep this document for your records.</div>
-        </div>
-        <table style="width:100%;border-collapse:collapse;font-size:10.5pt;margin:6px 0 14px;">' . $detailRows . '</table>
-        <div style="font-weight:700;color:#0f172a;margin:6px 0 6px;font-size:11pt;">What\'s included in your ' . htmlspecialchars($plan['name'], ENT_QUOTES, 'UTF-8') . ' plan</div>
-        <table style="width:100%;border-collapse:collapse;font-size:9.5pt;">' . $featRows . '</table>';
+    // Company / support block — one row of contact chips.
+    $cName = $e((string)($co['name']    ?? 'Maventech'));
+    $cAddr = $e((string)($co['address'] ?? ''));
+    $cPh   = $e((string)(function_exists('company_phone_for_country') ? company_phone_for_country($order['country'] ?? null) : ($co['phone'] ?? (defined('SITE_PHONE') ? SITE_PHONE : ''))));
+    $cEm   = $e((string)($co['email']   ?? ''));
 
-    // Company information block (with toll-free) so the customer always has
-    // our contact details on the downloaded subscription document.
-    $cName = htmlspecialchars((string)($co['name']    ?? 'Maventech'), ENT_QUOTES, 'UTF-8');
-    $cAddr = htmlspecialchars((string)($co['address'] ?? ''), ENT_QUOTES, 'UTF-8');
-    $cPh   = htmlspecialchars((string)(function_exists('company_phone_for_country') ? company_phone_for_country($order['country'] ?? null) : ($co['phone'] ?? (defined('SITE_PHONE') ? SITE_PHONE : ''))), ENT_QUOTES, 'UTF-8');
-    $cEm   = htmlspecialchars((string)($co['email']   ?? ''), ENT_QUOTES, 'UTF-8');
-    $cWeb  = htmlspecialchars((string)($co['website'] ?? (function_exists('site_url') ? site_url() : '')), ENT_QUOTES, 'UTF-8');
-    $bodyHtml .= '<div style="margin-top:16px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:9.5pt;color:#334155;">'
-        . '<div style="font-weight:700;color:#0f172a;margin-bottom:4px;font-size:10.5pt;">' . $cName . ' — Support &amp; Company Information</div>'
-        . ($cPh   ? '<div><strong>Toll-free / Support:</strong> ' . $cPh . '</div>' : '')
-        . ($cEm   ? '<div><strong>Email:</strong> ' . $cEm . '</div>' : '')
-        . ($cWeb  ? '<div><strong>Website:</strong> ' . $cWeb . '</div>' : '')
-        . ($cAddr ? '<div><strong>Address:</strong> ' . $cAddr . '</div>' : '')
-        . '<div style="margin-top:6px;color:#64748b;">Quote your Customer ID <strong>' . htmlspecialchars((string)$sub['customer_id'], ENT_QUOTES, 'UTF-8') . '</strong> whenever you contact support.</div>'
-        . '</div>';
+    $planName    = $e((string)$plan['name']);
+    $planTagline = $e((string)($plan['tagline'] ?? ''));
+    $custId      = $e((string)$sub['customer_id']);
+    $amountBig   = $e(_pdf_money((float)($sub['amount'] ?? 0), $cur));
+    $startDate   = $e(date('F j, Y', strtotime((string)($sub['start_date'] ?? 'now'))));
+    $orderNo     = $e((string)($order['order_number'] ?? ''));
+    $billName    = $e(trim((string)($order['first_name'] ?? '') . ' ' . (string)($order['last_name'] ?? '')) ?: (string)$sub['customer_name']);
+    $billEmail   = $e((string)($order['email'] ?? $sub['email'] ?? ''));
+    $companyLogoAbs = _pdf_company_logo_path();
+    $companyLogoTag = ($companyLogoAbs && file_exists($companyLogoAbs))
+        ? '<img src="' . $e($companyLogoAbs) . '" alt="' . $cName . '" style="height:30px;width:auto;">'
+        : '<div style="font-size:14px;font-weight:800;color:#06b6d4;">' . $cName . '</div>';
 
-    $html = _pdf_shell([
-        'co'             => $co,
-        'logo'           => _pdf_company_logo_path(),
-        'title'          => 'Subscription Details',
-        'invoice_number' => (string)($order['order_number'] ?? ''),
-        'receipt_number' => (string)$sub['customer_id'],
-        'date_paid'      => date('F j, Y', strtotime((string)($sub['start_date'] ?? 'now'))),
-        'bill_to'        => array_filter([
-            (string)$sub['customer_name'], (string)$sub['email'], (string)$sub['phone'],
-        ], fn($l) => trim((string)$l) !== ''),
-        'brand_key'      => '',
-        'first_name'     => (string)($order['first_name'] ?? ''),
-        'stamp_text'     => 'ACTIVE',
-        'stamp_color'    => '#047857',
-        'qr_data_uri'    => '',
-    ], $bodyHtml);
+    $html = <<<HTML
+<!doctype html><html><head><meta charset="utf-8"><style>
+  @page { margin: 30px 36px; size: letter portrait; }
+  body { font-family:'DejaVu Sans',Helvetica,Arial,sans-serif; font-size:10pt; color:#1f2937; margin:0; padding:0; }
+
+  /* Top brand strip — company logo left, "Subscription Certificate" tag right */
+  .top-strip { width:100%; border-collapse:collapse; margin-bottom:10px; }
+  .top-strip td { vertical-align:middle; }
+  .top-strip .tag { text-align:right; font-size:8pt; letter-spacing:2.4px; font-weight:800; color:#0369a1; text-transform:uppercase; }
+
+  /* Plan hero — big card at the top with the plan logo + name + tagline */
+  .plan-hero { background:linear-gradient(135deg,#eff6ff,#dbeafe); border:1px solid #bfdbfe; border-radius:16px; padding:14px 18px; margin-bottom:12px; }
+  .plan-hero-table { width:100%; border-collapse:collapse; }
+  .plan-hero-table td { vertical-align:middle; }
+  .plan-hero-logo { width:90px; text-align:center; }
+  .plan-hero-logo .logo-box { display:inline-block; background:#ffffff; border:1px solid #dbeafe; border-radius:14px; padding:6px; box-shadow:0 1px 2px rgba(30,64,175,.08); }
+  .plan-hero-txt { padding-left:16px; }
+  .plan-hero-name { font-size:20pt; font-weight:800; color:#0f172a; line-height:1.1; letter-spacing:.2px; }
+  .plan-hero-sub  { font-size:9.5pt; color:#1e3a8a; margin-top:3px; }
+  .plan-hero-badge {
+    display:inline-block; background:#059669; color:#fff; font-size:7.5pt; font-weight:800;
+    letter-spacing:1.4px; text-transform:uppercase; padding:2px 8px; border-radius:999px; margin-top:6px;
+  }
+
+  /* Customer ID + amount banner */
+  .snap { width:100%; border-collapse:collapse; margin-bottom:12px; }
+  .snap td { width:50%; padding:0 6px; vertical-align:top; }
+  .snap td:first-child { padding-left:0; }
+  .snap td:last-child  { padding-right:0; }
+  .snap-card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 14px; }
+  .snap-card .k { font-size:7.5pt; text-transform:uppercase; letter-spacing:1.2px; color:#94a3b8; font-weight:700; margin-bottom:2px; }
+  .snap-card .v { font-size:14pt; font-weight:800; color:#0f172a; letter-spacing:.3px; font-family:'DejaVu Sans Mono',monospace; }
+  .snap-card .v.amt { color:#047857; font-family:'DejaVu Sans',sans-serif; }
+
+  /* Section label */
+  .sec { font-size:8pt; letter-spacing:1.4px; text-transform:uppercase; color:#94a3b8; font-weight:800; margin:0 0 5px; }
+
+  /* Details grid — two columns of label/value pairs */
+  .grid { width:100%; border-collapse:collapse; margin-bottom:12px; }
+  .grid > tbody > tr > td { width:50%; padding:0 8px; vertical-align:top; }
+  .grid > tbody > tr > td:first-child { padding-left:0; }
+  .grid > tbody > tr > td:last-child { padding-right:0; }
+  .grid table { width:100%; border-collapse:collapse; }
+
+  /* Features */
+  .feat { width:100%; border-collapse:collapse; margin-bottom:10px; }
+  .feat > tbody > tr > td { width:50%; padding:0 10px; vertical-align:top; }
+  .feat > tbody > tr > td:first-child { padding-left:0; }
+  .feat > tbody > tr > td:last-child  { padding-right:0; }
+  .feat table { width:100%; border-collapse:collapse; }
+
+  /* Contact footer strip */
+  .contact { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:9px 14px; font-size:8.5pt; color:#334155; margin-bottom:6px; }
+  .contact .lbl { color:#64748b; font-weight:700; margin-right:3px; }
+  .contact .chip { display:inline-block; margin-right:14px; }
+
+  .foot { font-size:7pt; color:#94a3b8; text-align:center; margin-top:6px; }
+</style></head><body>
+
+  <table class="top-strip"><tr>
+    <td>{$companyLogoTag}</td>
+    <td class="tag">Subscription Certificate</td>
+  </tr></table>
+
+  <div class="plan-hero">
+    <table class="plan-hero-table"><tr>
+      <td class="plan-hero-logo"><span class="logo-box">{$planLogoTag}</span></td>
+      <td class="plan-hero-txt">
+        <div class="plan-hero-name">{$planName}</div>
+        <div class="plan-hero-sub">{$planTagline}</div>
+        <span class="plan-hero-badge">Active Subscription</span>
+      </td>
+    </tr></table>
+  </div>
+
+  <table class="snap"><tr>
+    <td>
+      <div class="snap-card">
+        <div class="k">Customer ID</div>
+        <div class="v">{$custId}</div>
+      </div>
+    </td>
+    <td>
+      <div class="snap-card">
+        <div class="k">Amount paid</div>
+        <div class="v amt">{$amountBig}</div>
+      </div>
+    </td>
+  </tr></table>
+
+  <div class="sec">Subscription details</div>
+  <table class="grid"><tr>
+    <td><table>{$detLHtml}</table></td>
+    <td><table>{$detRHtml}</table></td>
+  </tr></table>
+
+  <div class="sec">What&#39;s included in your {$planName} plan</div>
+  <table class="feat"><tr>
+    <td><table>{$col1Html}</table></td>
+    <td><table>{$col2Html}</table></td>
+  </tr></table>
+
+  <div class="contact">
+    <span class="chip"><span class="lbl">Billed to:</span>{$billName} &lt;{$billEmail}&gt;</span>
+    <br>
+    <span class="chip"><span class="lbl">Support:</span>{$cPh}</span>
+    <span class="chip"><span class="lbl">Email:</span>{$cEm}</span>
+    <br>
+    <span class="chip"><span class="lbl">{$cName}</span>{$cAddr}</span>
+  </div>
+
+  <div class="foot">Quote your Customer ID <strong>{$custId}</strong> whenever you contact support. Issued {$startDate} · Order {$orderNo}.</div>
+
+</body></html>
+HTML;
 
     $dompdf = _pdf_dompdf();
     $dompdf->loadHtml($html, 'UTF-8');

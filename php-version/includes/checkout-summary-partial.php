@@ -31,8 +31,17 @@ if (!isset($items)) { return; }
 </div>
 <hr class="my-2">
 <?php foreach ($items as $i): ?>
+  <?php $isPlanRow = (strpos((string)$i['slug'], 'sub-') === 0); ?>
   <div class="d-flex gap-2 mb-2 align-items-center" data-testid="summary-item-<?= esc($i['slug']) ?>">
-    <img src="<?= esc($i['image'] ?: '/assets/images/product-placeholder.svg') ?>" onerror="this.onerror=null;this.src='/assets/images/product-placeholder.svg';" alt="<?= esc($i['name']) ?> — one-time purchase license key | <?= SITE_BRAND ?>" style="width:40px;height:40px;object-fit:contain;" class="bg-body-tertiary rounded p-1">
+    <?php if ($isPlanRow): ?>
+      <img src="<?= esc($i['image'] ?: '/assets/images/product-placeholder.svg') ?>"
+           onerror="this.onerror=null;this.src='/assets/images/product-placeholder.svg';"
+           alt="<?= esc($i['name']) ?> — Protection Hub plan | <?= SITE_BRAND ?>"
+           style="width:56px;height:56px;object-fit:contain;padding:4px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:12px;flex-shrink:0;"
+           data-testid="summary-plan-icon-<?= esc($i['slug']) ?>">
+    <?php else: ?>
+      <img src="<?= esc($i['image'] ?: '/assets/images/product-placeholder.svg') ?>" onerror="this.onerror=null;this.src='/assets/images/product-placeholder.svg';" alt="<?= esc($i['name']) ?> — one-time purchase license key | <?= SITE_BRAND ?>" style="width:40px;height:40px;object-fit:contain;" class="bg-body-tertiary rounded p-1">
+    <?php endif; ?>
     <div class="flex-grow-1">
       <div class="small fw-semibold"><?= esc($i['name']) ?></div>
       <?php
@@ -57,7 +66,6 @@ if (!isset($items)) { return; }
           // Protection Hub plans are one-time purchases fixed at qty=1 — hide
           // the +/- stepper for those and show a plain "1 × one-time" chip
           // instead.  Regular product SKUs keep the interactive stepper.
-          $isPlanRow = (strpos((string)$i['slug'], 'sub-') === 0);
         ?>
         <?php if ($isPlanRow): ?>
           <span class="badge rounded-pill text-bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size:.68rem;font-weight:600;letter-spacing:.02em;" data-testid="summary-plan-qty-<?= esc($i['slug']) ?>">

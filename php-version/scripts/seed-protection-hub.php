@@ -21,7 +21,7 @@ $plans = [
     'devices' => '1 Device',
     'duration_months' => 0,
     'price' => 29.00,
-    'icon_image' => '/assets/images/subscriptions/quick-fix.svg',
+    'icon_image' => '/assets/images/subscriptions/quick-fix.png',
     'sort_order' => 10,
     'features' => [
       '1 remote setup session',
@@ -39,7 +39,7 @@ $plans = [
     'devices' => '1 Device',
     'duration_months' => 12,
     'price' => 59.00,
-    'icon_image' => '/assets/images/subscriptions/starter-care.svg',
+    'icon_image' => '/assets/images/subscriptions/starter-care.png',
     'sort_order' => 20,
     'features' => [
       '12 months priority live-chat support',
@@ -58,7 +58,7 @@ $plans = [
     'devices' => 'Up to 3 Devices',
     'duration_months' => 36,
     'price' => 99.00,
-    'icon_image' => '/assets/images/subscriptions/pro-shield.svg',
+    'icon_image' => '/assets/images/subscriptions/pro-shield.png',
     'sort_order' => 30,
     'features' => [
       '36 months VIP phone support',
@@ -78,7 +78,7 @@ $plans = [
     'devices' => 'Unlimited Devices',
     'duration_months' => 120,
     'price' => 199.00,
-    'icon_image' => '/assets/images/subscriptions/lifetime-elite.svg',
+    'icon_image' => '/assets/images/subscriptions/lifetime-elite.png',
     'sort_order' => 40,
     'features' => [
       '10 years dedicated tier-3 support',
