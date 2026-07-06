@@ -3860,3 +3860,221 @@ agent_communication:
       
       Both tasks are production-ready.
 
+
+
+#====================================================================================================
+# Bug fix — Google Merchant Center Misrepresentation: refund policy contradicted homepage promise
+#====================================================================================================
+
+backend:
+  - task: "Refund Policy body must match homepage's '30-day money-back, no questions asked' promise (Merchant Center misrepresentation flag)"
+    implemented: true
+    working: true
+    file: "php-version/scripts/update-refund-policy-mc.php, php-version/database.sql, php-version/start.sh"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          Google Merchant Center flagged Misrepresentation because the homepage
+          + meta description promise "30-day money-back guarantee — no
+          questions asked" while the refund-policy body carried a hidden
+          restrictive table with "Key already activated successfully → Not
+          eligible" and "cannot be activated and our support team cannot
+          resolve" as the only refund trigger.  Rewrote both the
+          refund-policy and returns-refunds page bodies with
+          Merchant-Center-compliant copy:
+            • Lead sentence + green alert: "30-Day Money-Back Guarantee — Full
+              Refund, No Questions Asked. Applies to both defective and
+              non-defective products."
+            • Eligibility table covers buyer's remorse, wrong edition,
+              defective key, non-delivery, and "any other reason" — every
+              row shows "Full refund".
+            • Explicit 3-step "How to Request a Refund" (returns.php form →
+              enter email → Request Refund) with a direct
+              email + phone alternative.
+            • "No shipping required" info alert explicitly states there is
+              nothing to mail back because delivery is digital.
+            • FAQ block explicitly addresses "already activated" (still
+              eligible within 30 days) and "restocking fee" (none) and
+              "Protection Hub subscription refunds" (same 30-day guarantee).
+            • Refund method (original payment method) + processing timeline
+              retained.
+          Wired the migration script into start.sh (runs every boot,
+          idempotent — only rewrites rows still containing the flagged
+          "Not eligible" / "activated successfully" markers).  Also updated
+          database.sql so fresh cPanel installs get the new copy from the
+          first import (regenerated the two INSERT rows via PDO::quote to
+          keep escaping identical to the rest of the file).  Verified locally:
+          grep for the forbidden phrases in the rendered HTML returns 0 for
+          both /page.php?slug=refund-policy and /page.php?slug=returns-refunds;
+          grep for required phrases (no questions asked, 30-day money-back,
+          defective and non-defective, no shipping) all > 0.
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ COMPREHENSIVE GOOGLE MERCHANT CENTER MISREPRESENTATION BUG FIX VERIFICATION COMPLETE — ALL 5 TESTS PASSED
+          
+          Bug: Google Merchant Center flagged Misrepresentation because homepage promised "30-day money-back guarantee — no questions asked" while refund-policy page contained restrictive clauses ("Key already activated successfully → Not eligible", "cannot be activated and our support team cannot resolve").
+          Fix: Rewrote both refund-policy and returns-refunds page bodies with Merchant-Center-compliant copy that matches homepage promise.
+          
+          TEST 1 — refund-policy page (/page.php?slug=refund-policy): ✅ PASS
+          FORBIDDEN phrases (all must be 0):
+            - "Not eligible": 0 ✅
+            - "activated successfully": 0 ✅
+            - "Once a digital key is exposed": 0 ✅
+            - "cannot be activated and our support team cannot resolve": 0 ✅
+          
+          REQUIRED phrases (all must be >= 1):
+            - "no questions asked": 5 ✅
+            - "30-day money-back": 9 ✅
+            - "defective and non-defective": 1 ✅
+            - "buyer": 1 ✅ (from "buyer's remorse")
+            - "Full Refund": 7 ✅
+            - "returns.php": 2 ✅
+            - "Request Refund": 1 ✅
+            - "no shipping" OR "nothing to mail": 1 ✅
+          
+          TEST 2 — returns-refunds page (/page.php?slug=returns-refunds): ✅ PASS
+          FORBIDDEN phrases (all must be 0):
+            - "Not eligible": 0 ✅
+            - "activated successfully": 0 ✅
+            - "Once a digital key is exposed": 0 ✅
+            - "cannot be activated and our support team cannot resolve": 0 ✅
+          
+          REQUIRED phrases (all must be >= 1):
+            - "no questions asked": 5 ✅
+            - "30-day money-back": 6 ✅
+            - "defective and non-defective": 1 ✅
+            - "buyer": 1 ✅ (from "buyer's remorse")
+            - "Full Refund": 5 ✅
+            - "returns.php": 3 ✅
+            - "Request Refund": 1 ✅
+            - "no shipping" OR "nothing to mail": 1 ✅
+          
+          TEST 3 — DB content check: ✅ PASS
+          mysql query: SELECT slug, LEFT(content, 300) FROM pages WHERE slug IN ('refund-policy','returns-refunds');
+            - refund-policy content starts with: "Your satisfaction is our top priority" ✅
+            - returns-refunds content starts with: "We stand behind every license we sell" ✅
+          Both pages have correct lead sentences as specified.
+          
+          TEST 4 — Migration script idempotency: ✅ PASS
+          Command: php /app/php-version/scripts/update-refund-policy-mc.php
+          First run output:
+            - refund-policy: "already MC-compliant — no change." ✅
+            - returns-refunds: "already MC-compliant — no change." ✅
+          Second run output:
+            - refund-policy: "already MC-compliant — no change." ✅
+            - returns-refunds: "already MC-compliant — no change." ✅
+          Migration script is idempotent and safe to re-run (both runs show "already MC-compliant").
+          
+          TEST 5 — Homepage/policy consistency: ✅ PASS
+          Command: curl -s http://localhost:3000/ | grep -ic "no questions asked"
+          Result: 1 occurrence ✅
+          Homepage text: "Not satisfied? Get a full refund within 30 days, no questions asked."
+          Homepage promise matches refund policy pages.
+          
+          CONCLUSION:
+          ✅ ALL 5 TESTS PASSED
+          ✅ Bug fix verified and working correctly
+          ✅ Both refund-policy and returns-refunds pages now contain Merchant-Center-compliant copy
+          ✅ All forbidden phrases removed (0 occurrences on both pages)
+          ✅ All required phrases present (multiple occurrences on both pages)
+          ✅ DB content correct with proper lead sentences
+          ✅ Migration script is idempotent (safe to re-run)
+          ✅ Homepage promise matches policy pages ("no questions asked" present)
+          
+          NET EFFECT: The Google Merchant Center Misrepresentation flag should be resolved. The refund policy pages now explicitly state:
+          - "30-Day Money-Back Guarantee — Full Refund, No Questions Asked"
+          - "Applies to both defective and non-defective products"
+          - Covers buyer's remorse, wrong edition, defective key, non-delivery, and "any other reason"
+          - "No shipping required" (nothing to mail back)
+          - Explicit 3-step refund request process (returns.php form)
+          - FAQ addresses "already activated" (still eligible within 30 days)
+          
+          The policy pages are now fully consistent with the homepage promise and comply with Google Merchant Center requirements. No restrictive clauses remain.
+          
+          Bug fix is production-ready and safe to deploy. No code modifications made during testing (verification only).
+
+metadata:
+  updated_by: "main_agent"
+  updated_at: "2026-07-06"
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      One bug-fix task ready for verification.
+
+      GOAL: Confirm the refund-policy + returns-refunds page bodies now match
+      the homepage claim "30-day money-back guarantee — no questions asked"
+      exactly and no longer contain the Merchant-Center-flagged restrictive
+      clauses.
+
+      Fetch each page with curl and assert:
+
+        curl http://localhost:3000/page.php?slug=refund-policy
+        curl http://localhost:3000/page.php?slug=returns-refunds
+
+      For BOTH pages:
+
+      FORBIDDEN phrases (must be 0 occurrences):
+        • "Not eligible"
+        • "activated successfully"
+        • "Once a digital key is exposed"
+        • "cannot be activated and our support team cannot resolve"
+        • Any wording that says the customer must ship / mail / return
+          the product.
+
+      REQUIRED phrases (must be at least 1 occurrence each, case-insensitive):
+        • "no questions asked"
+        • "30-day money-back" or "30 day money-back"
+        • "defective and non-defective"
+        • "buyer" (from "buyer's remorse")
+        • "Full Refund"
+        • "returns.php" (link to the refund request form)
+        • "Request Refund" (button label in the 3-step instructions)
+        • "no shipping" or "nothing to mail" (explicit no-return-shipment)
+
+      DB check:
+        mysql -uroot ucode_store -e "SELECT slug, LEFT(content, 300) FROM pages WHERE slug IN ('refund-policy','returns-refunds');"
+        — Both rows must start with the new lead sentence
+          ("Your satisfaction is our top priority..." for refund-policy,
+           "We stand behind every license we sell..." for returns-refunds).
+
+      IDEMPOTENCY check:
+        Run `php /app/php-version/scripts/update-refund-policy-mc.php`
+        twice.  Second run must output "already MC-compliant — no change."
+        for both slugs (proves the migration is safe to re-run).
+
+      Do NOT re-test anything from previous iterations.  Purely backend
+      /HTML content assertions.
+    -agent: "testing"
+    -message: |
+      ✅ GOOGLE MERCHANT CENTER MISREPRESENTATION BUG FIX VERIFICATION COMPLETE — ALL 5 TESTS PASSED
+      
+      Executed comprehensive verification of the refund policy bug fix per the detailed review request. All 5 test items PASSED with no issues.
+      
+      SUMMARY OF RESULTS:
+      Test 1 ✅ refund-policy page: All 4 forbidden phrases = 0 occurrences, all 8 required phrases >= 1 occurrence
+      Test 2 ✅ returns-refunds page: All 4 forbidden phrases = 0 occurrences, all 8 required phrases >= 1 occurrence
+      Test 3 ✅ DB content check: Both pages have correct lead sentences ("Your satisfaction is our top priority" / "We stand behind every license we sell")
+      Test 4 ✅ Migration script idempotency: Both runs show "already MC-compliant — no change" for both slugs (safe to re-run)
+      Test 5 ✅ Homepage/policy consistency: Homepage contains "no questions asked" (1 occurrence)
+      
+      The Google Merchant Center Misrepresentation flag should be resolved. Both refund policy pages now:
+      - Explicitly state "30-Day Money-Back Guarantee — Full Refund, No Questions Asked"
+      - Cover both defective and non-defective products
+      - Include buyer's remorse, wrong edition, defective key, non-delivery, and "any other reason"
+      - State "No shipping required" (nothing to mail back)
+      - Provide explicit 3-step refund request process
+      - Address "already activated" scenario (still eligible within 30 days)
+      
+      All restrictive clauses removed. Policy pages fully consistent with homepage promise. Bug fix is production-ready and safe to deploy.

@@ -45,6 +45,12 @@ php /app/php-version/scripts/seed-manual-urls.php >>/tmp/seed-manual-urls.log 2>
 # Ensure the /disclaimer page carries the First Sale Doctrine block (Google
 # Ads compliance for surplus-license reseller storefronts). Idempotent.
 php /app/php-version/scripts/update-disclaimer-fsd.php >>/tmp/update-disclaimer-fsd.log 2>&1 || true
+
+# Rewrite the refund-policy + returns-refunds body to match the homepage
+# promise ("30-day money-back guarantee, no questions asked") — resolves
+# the Google Merchant Center Misrepresentation flag. Idempotent: only
+# rewrites rows that still contain the restrictive "Not eligible" clause.
+php /app/php-version/scripts/update-refund-policy-mc.php >>/tmp/update-refund-policy-mc.log 2>&1 || true
 # Ensure the primary admin account can always log in with the well-known
 # password (survives fresh preview-pod reseeds of database.sql). Idempotent.
 # Seed brand / company transparency settings (File No., Filed date, cert URL,
