@@ -6663,3 +6663,199 @@ agent_communication:
       Note: Code change NOT deployed to live yet — user must re-upload merchant-feed.php to production.
 
       Task marked as working: true. No further testing needed.
+
+##====================================================================================================
+## Bug fix bundle — 3 UI bugs surfaced from customer screenshots (2026-07-07)
+##   1. Homepage sticky header — trustbar and main navbar overlap when scrolled
+##   2. Protection-Hub receipt PDF — "×1" quantity rendering as "- ."
+##      because dompdf's default font can't render U+00D7 MULTIPLICATION SIGN
+##   3. Post-purchase order-success page — TWO Google-review CTAs (redundant)
+##      "Loved your purchase? Leave us a Google review" card + a separate
+##      "Post my review on Google" pill inside the on-site review thank-you
+##      modal. User wants only the modal pill kept.
+##====================================================================================================
+
+backend:
+  - task: "Bundle 2026-07-07: (1) sticky header overlap, (2) receipt ×1 rendering, (3) remove duplicate Google-review CTA card"
+    implemented: true
+    working: true
+    file: "php-version/assets/css/style.css, php-version/includes/header.php, php-version/includes/pdf.php, php-version/order-success.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          BUG REPORT (3 items, customer screenshots):
+            1) Homepage sticky header — the yellow-circled area in the customer's
+               screenshot showed the trustbar ("Genuine Microsoft Products / …") and
+               the main navbar ("M GENUINE LICENSES | Microsoft Products | Antivirus |
+               …") visually overlapping on sticky scroll — the "M GENUINE LICENSES"
+               pill was biting into the trustbar's bottom edge.
+            2) Protection-Hub receipt PDF — the "What you paid for" row showed
+               "Quick Fix Subscription (One-Time Service) - ." where the "- ."
+               is the "×1" quantity being emitted with the U+00D7 MULTIPLICATION
+               SIGN and dompdf's default font (DejaVu Sans mapping) rendering it
+               as a hyphen + period fallback glyph pair.
+            3) Order-success page — after a shopper submits an on-site review,
+               a compact "Post my review on Google" pill appears inside the
+               thank-you modal (srGoogleShareWrap). BUT the same page ALSO
+               shows a standalone "Loved your purchase? … Leave us a Google
+               review" card lower in the success rail — two Google-review
+               CTAs, redundant and confusing. User wants the standalone card
+               removed; keep only the contextual pill inside the thank-you
+               modal (which activates ONLY after the buyer leaves an on-site
+               review — a higher-signal entry point).
+
+          ROOT CAUSES:
+            (1) CSS at style.css:3403 pinned the navbar's sticky `top` offset
+                to a hardcoded 32px. But as the trustbar's contents grew
+                (deal chip, currency selector, theme toggle) its rendered
+                height climbed to ~40px. The navbar's top edge at 32px was
+                8px INSIDE the trustbar → visible overlap on sticky scroll.
+            (2) pdf.php:601 emitted `×1` literally in the summary row. Since
+                dompdf uses core PDF fonts (Helvetica / DejaVu) whose glyph
+                tables don't include U+00D7 reliably (especially when embedded
+                CSS declares custom font-family), the ×1 rendered as garbage.
+            (3) order-success.php lines 1017-1054 rendered a full standalone
+                "gr-card" with the "Loved your purchase?" heading and a
+                second Google-review CTA button. The contextual pill inside
+                srThanks (lines 720-728) was the intended single CTA.
+
+          FIX APPLIED:
+            (1) style.css — replaced `top: 32px` with `top: var(--trustbar-h, 46px)`.
+                46px is a safe default fitting current content. Added a small
+                inline JS block at the end of the trustbar in header.php that
+                measures the trustbar's real height on load + on resize
+                (throttled via rAF) and sets `--trustbar-h` on <html>. Any
+                future content changes stay pixel-perfect without CSS edits.
+            (2) pdf.php — replaced the always-emitted `×$qty` span with a
+                conditional: `qty > 1 ? ' <span class="ps-qty">&#215;$qty</span>' : ''`.
+                Uses HTML numeric entity `&#215;` (safer for dompdf than the
+                raw UTF-8 byte sequence) and OMITS the qty span entirely
+                when qty=1 (which subscription rows always are). Cleaner
+                receipt + eliminates the rendering artifact.
+            (3) order-success.php — deleted the entire `.gr-card` HTML block
+                (with its own `<style>` scope), the `if (!$isDemo && $googleReviewUrl !== ''):`
+                gate, and the "Loved your purchase? / Leave us a Google review"
+                copy. RETAINED the `.gr-btn` CSS rules (moved into a small
+                surviving `<style>` block) because the SAME class is used by
+                the surviving "Post my review on Google" pill inside srThanks
+                (at line 723). Added a PHP comment block documenting exactly
+                what was removed and why.
+
+          FILES CHANGED:
+            - php-version/assets/css/style.css   (1 CSS rule: `.navbar-below-trustbar` top offset)
+            - php-version/includes/header.php    (1 <script> block appended after trustbar)
+            - php-version/includes/pdf.php       (1 line: `$summaryRows .= …` conditional qty)
+            - php-version/order-success.php      (removed ~38 lines of card HTML + kept .gr-btn CSS)
+
+          NEEDS_RETESTING CHECKLIST for testing agent:
+            (i)   Static-code — style.css line ~3417 MUST contain
+                  `top: var(--trustbar-h, 46px);` NOT `top: 32px;`.
+                  header.php MUST contain the inline `Trustbar height
+                  auto-measure` <script> block that sets --trustbar-h.
+            (ii)  Static-code — pdf.php line ~601 MUST show the conditional
+                  `qty > 1 ? ' <span class="ps-qty">&#215;' . $qty . '</span>' : ''`
+                  (NOT the old raw `×` UTF-8 form, and NOT unconditional).
+            (iii) Static-code — order-success.php MUST have NO active
+                  `<div class="gr-card mt-4"` block that renders the
+                  "Loved your purchase?" text. Grep for the string
+                  `Loved your purchase` — it should only appear inside a PHP
+                  comment (`/* … Loved your purchase … */`), NOT in HTML.
+                  Similarly `Leave us a Google review` must only appear in
+                  the PHP comment block. The `srGoogleShare` button and
+                  `srGoogleShareWrap` div MUST still exist (that's the
+                  surviving contextual pill inside srThanks).
+            (iv)  Static-code — order-success.php MUST still contain the
+                  `.gr-btn` CSS rule (moved into the surviving `<style>`
+                  block) so the "Post my review on Google" pill inside
+                  srThanks still styles correctly.
+            (v)   Live production check (post-deploy only — the changes
+                  have NOT been deployed to maventechsoftware.com yet):
+                  once the customer re-uploads the 4 modified files, the
+                  live page https://maventechsoftware.com/order-success.php?…
+                  should render only ONE Google-branded CTA (inside the
+                  review thank-you state), and the sticky header must not
+                  overlap on scroll. This step will FAIL until deployment
+                  happens and is expected to be reported as such.
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ STATIC-CODE VERIFICATION COMPLETE — ALL 4 CHECKS PASSED
+
+          Verified the 3-bug fix bundle (2026-07-07) via static-code inspection of the 4 modified PHP files. All checks passed.
+
+          CHECK (i) — Fix 1: sticky header overlap ✅
+            a. grep for `top: 32px` in style.css inside `.navbar-below-trustbar` selector → NO MATCH (old value removed) ✅
+            b. Confirmed style.css line 3417 contains: `top: var(--trustbar-h, 46px);` inside `.navbar-below-trustbar` block ✅
+            c. Confirmed header.php line 792 contains <script> block with "Trustbar height auto-measure" comment ✅
+            d. Confirmed header.php line 803 contains `getBoundingClientRect()` call that measures trustbar height ✅
+            e. Confirmed the script sets `--trustbar-h` CSS variable on :root (line 804) ✅
+
+          CHECK (ii) — Fix 2: receipt "×1" artifact ✅
+            a. Confirmed pdf.php lines 599-604 contain the conditional qty span:
+               `($qty > 1 ? ' <span class="ps-qty">&#215;' . $qty . '</span>' : '')`
+               Uses HTML entity &#215; instead of raw UTF-8 × ✅
+               Only renders when qty > 1 (hidden for qty=1) ✅
+            b. Confirmed raw UTF-8 × (U+00D7) is NOT present in the $summaryRows construction ✅
+               The grep found only the comment line explaining the fix, not the actual code ✅
+
+          CHECK (iii) — Fix 3: standalone Google-review card removed ✅
+            a. grep for "Loved your purchase" in order-success.php → ONLY appears at line 1018 inside PHP comment block `/* … */` ✅
+               NOT present in any active HTML ✅
+            b. grep for `<div class="gr-card mt-4"` in order-success.php → NO MATCH (standalone card div removed) ✅
+            c. grep for "Leave us a Google review" → ONLY appears at line 1018 inside PHP comment block ✅
+               NOT present in any active <a> link ✅
+            d. Confirmed `srGoogleShare` button still exists at line 723 (data-testid="success-review-google-share") ✅
+               Confirmed `srGoogleShareWrap` div still exists at line 721 ✅
+               These are the surviving contextual CTA inside the srThanks thank-you modal ✅
+
+          CHECK (iv) — Fix 3 regression guard: .gr-btn CSS retained ✅
+            a. Confirmed order-success.php lines 1039-1040 contain `.gr-btn` CSS rules ✅
+               The class is used by the surviving "Post my review on Google" button at line 723 ✅
+               CSS moved into a surviving <style> block (lines 1037-1044) with explanatory comment ✅
+
+          SUMMARY:
+          ✅ Fix 1 (sticky header overlap): CSS variable + auto-measure JS correctly implemented
+          ✅ Fix 2 (receipt ×1 artifact): Conditional qty span with HTML entity &#215; correctly implemented
+          ✅ Fix 3 (duplicate Google CTA): Standalone card removed, contextual pill retained, CSS preserved
+
+          All 4 static-code checks passed. The fixes are correctly implemented and ready for production deployment.
+
+          NOTE: Live production check (v) is out of scope per review request — the changes have NOT been deployed to maventechsoftware.com yet. That verification will occur after the customer re-uploads the modified files.
+
+
+metadata:
+  test_sequence: 34
+
+test_plan:
+  current_focus:
+    - "Bundle 2026-07-07: (1) sticky header overlap, (2) receipt ×1 rendering, (3) remove duplicate Google-review CTA card"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Bundle of 3 UI bugs fixed (2026-07-07): sticky-header overlap (CSS +
+      trustbar height auto-measure JS), Protection-Hub receipt "×1" rendering
+      artifact (conditional + HTML entity), and removal of the redundant
+      standalone Google-review card on order-success (kept the contextual
+      pill inside the on-site review thank-you modal). Please verify per the
+      NEEDS_RETESTING checklist above — static-code checks (i)-(iv) MUST all
+      pass; live check (v) is expected to fail until the customer redeploys.
+    -agent: "testing"
+    -message: |
+      ✅ STATIC-CODE VERIFICATION COMPLETE — ALL 4 CHECKS PASSED
+
+      Verified the 3-bug fix bundle (2026-07-07) via static-code inspection. All 4 checks passed:
+      
+      ✅ CHECK (i): Sticky header overlap fix verified — style.css uses `var(--trustbar-h, 46px)`, header.php contains auto-measure script
+      ✅ CHECK (ii): Receipt ×1 artifact fix verified — pdf.php uses conditional qty span with HTML entity &#215;
+      ✅ CHECK (iii): Duplicate Google CTA fix verified — standalone card removed, contextual pill retained
+      ✅ CHECK (iv): CSS regression guard verified — .gr-btn rules preserved for surviving button
+
+      All fixes correctly implemented and ready for production deployment. Live production check (v) is out of scope until customer redeploys.

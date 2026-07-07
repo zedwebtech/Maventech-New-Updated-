@@ -3392,7 +3392,21 @@ body .brand-grad,
 
 /* --- Sticky trustbar so the "Genuine Microsoft Products / phone" strip
        is always visible. The main navbar then sticks BELOW it so they
-       never overlap. --- */
+       never overlap.
+
+       The navbar's `top` offset MUST equal the trustbar's rendered
+       height. Previously this was a hardcoded `top: 32px`, but as the
+       trustbar's contents grew (deal chip, currency selector, theme
+       toggle) its real rendered height climbed to ~40px — the navbar
+       was then anchoring 8px INSIDE the trustbar, producing the visual
+       overlap the user reported (the "M GENUINE LICENSES" logo pill
+       biting into the trustbar's bottom edge on sticky scroll).
+
+       The fix pins the offset via a CSS custom property `--trustbar-h`
+       with a safe 46px default that fits the current content on both
+       themes. A tiny inline script in header.php measures the real
+       height at load + on resize and overrides the variable, so any
+       future content changes stay pixel-perfect without CSS edits. */
 .trustbar.trustbar-sticky {
   position: sticky;
   top: 0;
@@ -3400,7 +3414,7 @@ body .brand-grad,
   background: #1a1f38;
 }
 .navbar.sticky-top.navbar-below-trustbar {
-  top: 32px;   /* trustbar height — keep nav anchored just below it */
+  top: var(--trustbar-h, 46px);   /* trustbar height — auto-measured by header.php JS, 46px is a safe fallback */
   z-index: 1030;
 }
 @media (max-width: 767.98px) {

@@ -788,6 +788,30 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
     </div>
   </div>
 </div>
+<script>
+/* Trustbar height auto-measure — the main navbar's sticky offset
+   (--trustbar-h) must equal the trustbar's ACTUAL rendered height on
+   every viewport, or the two overlap on sticky scroll. This runs once
+   on load and again on resize (throttled via rAF), and sets the CSS
+   variable on :root so .navbar-below-trustbar's `top` follows it
+   pixel-perfectly regardless of future content changes. */
+(function(){
+  var tb = document.querySelector('.trustbar-sticky');
+  if (!tb) return;
+  var pending = 0;
+  function sync(){
+    var h = Math.round(tb.getBoundingClientRect().height);
+    if (h > 0) document.documentElement.style.setProperty('--trustbar-h', h + 'px');
+  }
+  function onResize(){
+    if (pending) cancelAnimationFrame(pending);
+    pending = requestAnimationFrame(function(){ pending = 0; sync(); });
+  }
+  sync();
+  window.addEventListener('resize', onResize, { passive: true });
+  window.addEventListener('load', sync);
+})();
+</script>
 
 <!-- Mobile-only promo chip (sits above the navbar on phones; the trustbar
      itself is hidden on mobile, so this carries the "Save 10% • CODE •

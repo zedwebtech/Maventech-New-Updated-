@@ -598,7 +598,8 @@ function generate_receipt_pdf(array $order, array $items, ?array $payment = null
         $subtotal += $amt;
         $summaryRows .= '<tr>'
             . '<td class="ps-name">' . $e($it['name'] ?? $it['product_name'] ?? '—')
-            . ' <span class="ps-qty">×' . $qty . '</span></td>'
+            . ($qty > 1 ? ' <span class="ps-qty">&#215;' . $qty . '</span>' : '') // hide "×1" — clutter + dompdf's default font can't render U+00D7 cleanly (renders as "-" / ".")
+            . '</td>'
             . '<td class="ps-amt">' . _pdf_money($amt, $cur) . '</td>'
             . '</tr>';
     }
