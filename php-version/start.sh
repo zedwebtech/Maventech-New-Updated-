@@ -110,14 +110,28 @@ mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='ga4_measurement_i
 # This UPDATE clears the stored token ONLY when it still equals the stale
 # placeholder; any real merchant-set value is preserved. Idempotent.
 mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='bing_site_verification_token' AND v='AF7E1FB430EA67709B92D54FA12FBEB7'" 2>/dev/null || true
-# Google Merchant Center compliance — cap aggressive MSRP discounts at 35%.
-# The original seed had several products with 60–81% "spread" between
-# `original_price` (MSRP) and `price`, which Google's automated review reads
-# as too-good-to-be-true pricing (a common unauthorised-reseller signal that
-# just cost this account 83% of its active items in the July 5–6 diagnostic).
-# Cap: `price` must be at least 65% of `original_price` (i.e. max 35% off).
-# Idempotent — re-running only re-caps rows that violate the ceiling.
-mysql -uroot ucode_store -e "UPDATE products SET original_price = ROUND(price / 0.65, 2) WHERE original_price IS NOT NULL AND original_price > 0 AND original_price > ROUND(price / 0.65, 2)" 2>/dev/null || true
+# Google Merchant Center compliance — the old 35%-MSRP cap that used to run
+# here has been DISABLED per user request (2026-07-07). Under the new
+# pricing model the admin ALWAYS controls `original_price` explicitly per
+# product from Admin → Products → Edit, and the discount %/save badge is
+# emitted only when the admin has set original_price > sale_price. A
+# blanket boot-time UPDATE that overwrote MSRP on every restart fought
+# every future admin edit, so it is now no-op.
+#
+# One-shot bulk-clear — set `original_price = 0` for EVERY existing product
+# so no legacy MSRP discount badge / "Save $X" line renders anywhere in
+# the storefront until the merchant explicitly re-enters an original price
+# in admin. Guarded by settings.original_price_bulk_cleared_v1 so the
+# migration runs EXACTLY ONCE per install: after it runs, the flag is
+# INSERTed and every future boot short-circuits (the OR clause never
+# matches once v='1' is present). This means the admin can freely enter
+# a fresh original_price for any product after the migration and it will
+# survive every subsequent restart — same idempotent guard pattern used
+# for one-shot schema migrations.
+if [ -z "$(mysql -uroot ucode_store -Nse "SELECT v FROM settings WHERE k='original_price_bulk_cleared_v1' AND v='1' LIMIT 1" 2>/dev/null)" ]; then
+  mysql -uroot ucode_store -e "UPDATE products SET original_price = 0 WHERE original_price IS NOT NULL AND original_price > 0" 2>/dev/null || true
+  mysql -uroot ucode_store -e "INSERT INTO settings (k, v) VALUES ('original_price_bulk_cleared_v1', '1') ON DUPLICATE KEY UPDATE v='1'" 2>/dev/null || true
+fi
 # Google Merchant Center — Return Policy URL requirement.  Some older DB
 # imports never gained a dedicated `return-policy` slug row (only
 # `refund-policy` was seeded), which made /return-policy.php render its

@@ -7628,3 +7628,242 @@ agent_communication:
       
       All 3 bug fixes verified and production-ready. No code modifications made during testing.
 
+
+##====================================================================================================
+## Bug fix bundle 2026-07-07 #5 — merchant-listings validFrom + bulk-clear original_price
+##   1. Google Search Console: "Missing field 'validFrom' (in 'offers')"
+##      warning on Merchant listings (Microsoft Office Home 2024 PC among
+##      others). Fix by emitting a valid ISO 8601 datetime in the Product
+##      JSON-LD Offer block.
+##   2. Business rule change: bulk-clear every product's original_price
+##      to 0 so no discount %/save badge ("35% OFF save $21.53") shows
+##      anywhere on the site. Discount badges/percentages already gate on
+##      `original_price > price` in code — this is a one-shot DATA migration.
+##      Future admin edits to original_price will persist and re-enable
+##      the badge only for products the admin explicitly discounts.
+##====================================================================================================
+
+backend:
+  - task: "Bundle 2026-07-07 #5: (1) add validFrom to Product JSON-LD offers + (2) one-shot bulk-clear all products' original_price=0 (with settings-flag guard)"
+    implemented: true
+    working: true
+    file: "php-version/product.php, php-version/start.sh"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          BUG 1 — "Missing field 'validFrom' (in 'offers')"
+            Search Console Merchant listings enhancement report (screenshot
+            2026-07-07) flagged one affected item — the Product schema
+            emitted a `priceValidUntil` end-date but no matching `validFrom`
+            start date. This is a non-critical warning; adding `validFrom`
+            pairs cleanly with the existing `priceValidUntil` to form a
+            proper sale window in the SERP snippet.
+            FIX APPLIED — /app/php-version/product.php around line 212-226:
+              'validFrom' => !empty($product['sale_starts_at'])
+                  ? date('c', strtotime($product['sale_starts_at']))
+                  : (!empty($product['created_at'])
+                      ? date('c', strtotime($product['created_at']))
+                      : date('c'))
+            Preference cascade:
+              - per-product `sale_starts_at` (set in admin → Edit Product
+                → "Pin sale window for Google Shopping") when configured;
+              - falls back to `created_at` (when the offer first went live);
+              - final safety net is today (`date('c')`).
+            Emits ISO 8601 with timezone offset (Google's expected format).
+
+          BUG 2 — Bulk-clear all products' original_price to 0
+            User asked: keep only the sale price everywhere; leave
+            original_price blank/zero across all existing products so no
+            discount %/save-$ badge is shown until the admin explicitly
+            re-enters an original price per product from admin.
+
+            AUDIT — every place in the codebase that renders the discount
+            badge / percentage ALREADY gates on the correct condition:
+              product.php:112       $discountFlag = ($product['original_price'] && $product['original_price'] > $product['price']);
+              product.php:449       $discountPct  = (…same test…)
+              index.php:274         $featPct      = (…same test…)
+              includes/functions.php:1918
+                                    $pct          = (…same test…)
+            So the moment original_price = 0, EVERY badge/percentage
+            evaluates to falsy → nothing renders. No PHP changes needed
+            in the render path; only the DATA needs a one-shot rewrite.
+
+            MERCHANT FEED audit — merchant-feed.php SELECTs original_price
+            (line 280) but NEVER emits any MSRP-related tag (no
+            <g:sale_price>, no <g:msrp>, no <g:cost_of_goods_sold>). Only
+            <g:price> is emitted (line 367). So clearing original_price
+            has zero impact on the Google Shopping feed. Zero risk of
+            regression on Merchant Center ingestion.
+
+            FIX APPLIED — /app/php-version/start.sh:
+              (a) Removed the previous "cap discounts at 35%" UPDATE (old
+                  line 120) — it was aggressive-rewriting original_price
+                  on every boot, which under the new model would fight the
+                  admin's future MSRP edits. Documented as no-op in a
+                  comment block.
+              (b) Added a ONE-SHOT idempotent migration guarded by
+                  settings.original_price_bulk_cleared_v1:
+                    if flag is not '1':
+                        UPDATE products SET original_price = 0
+                          WHERE original_price IS NOT NULL AND > 0;
+                        INSERT (k,v)=('original_price_bulk_cleared_v1','1')
+                          ON DUPLICATE KEY UPDATE v='1';
+                  After the flag flips to '1' the guard short-circuits on
+                  every future boot — any admin-set original_price value
+                  is preserved from that point onward. Same idempotent
+                  guard pattern already proven for the AW / GA4 / Bing
+                  cleanups above.
+
+          FILES CHANGED:
+            - php-version/product.php   (validFrom added to Offer JSON-LD)
+            - php-version/start.sh      (35%-cap removed; one-shot bulk clear added w/ flag guard)
+
+          NEEDS_RETESTING CHECKLIST for testing agent:
+            (i)   Static-code — /app/php-version/product.php around
+                  line 212-226 MUST contain `'validFrom' =>` inside the
+                  `'offers' => [` block, using date('c', …) format, with
+                  a `sale_starts_at` → `created_at` → `date('c')` fallback
+                  chain. Report the exact line numbers.
+            (ii)  Static-code — /app/php-version/start.sh MUST no longer
+                  contain the old aggressive `UPDATE products SET original_price = ROUND(price / 0.65, 2)`
+                  as an ACTIVE line (must be gone OR commented out).
+                  Grep for `ROUND(price / 0.65` → should return 0 hits
+                  in actual mysql commands (comments explaining removal
+                  are OK).
+            (iii) Static-code — /app/php-version/start.sh MUST contain a
+                  guarded one-shot block using
+                  `settings.original_price_bulk_cleared_v1`. Confirm ALL
+                  three lines present:
+                    - `if [ -z "$(mysql … SELECT v FROM settings WHERE k='original_price_bulk_cleared_v1' AND v='1' LIMIT 1)" ]; then`
+                    - `UPDATE products SET original_price = 0 WHERE original_price IS NOT NULL AND original_price > 0`
+                    - `INSERT INTO settings (k, v) VALUES ('original_price_bulk_cleared_v1', '1') ON DUPLICATE KEY UPDATE v='1'`
+                  Report the line numbers you observed for all three.
+            (iv)  Static-code — audit that the discount badge/percent
+                  render sites ALL gate on `original_price > price`:
+                  grep for `original_price.*>.*price` in
+                  /app/php-version/product.php,
+                  /app/php-version/index.php,
+                  /app/php-version/includes/functions.php
+                  → must return exactly 4 matches (already-existing lines
+                  112 + 449 in product.php, 274 in index.php, 1918 in
+                  functions.php). No new render sites without this guard.
+            (v)   Merchant-feed regression guard — /app/php-version/merchant-feed.php
+                  MUST NOT emit any of `<g:sale_price>`, `<g:msrp>`,
+                  `<g:cost_of_goods_sold>` (would break under
+                  original_price=0). Grep for those 3 tag names — should
+                  return 0 hits.
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ BUNDLE #5 STATIC-CODE VERIFICATION COMPLETE — ALL 5 CHECKS PASSED
+
+          Bug fix bundle 2026-07-07 #5: (1) add validFrom to Product JSON-LD offers + (2) one-shot bulk-clear all products' original_price=0 (with settings-flag guard)
+
+          VERIFICATION RESULTS (static-code inspection only, no PHP execution):
+
+          CHECK (i): ✅ PASS — validFrom field added to Product JSON-LD offers
+          File: /app/php-version/product.php
+          - Line 224: `'validFrom' => !empty($product['sale_starts_at'])` — FOUND ✅
+          - Line 225: `? date('c', strtotime((string)$product['sale_starts_at']))` — sale_starts_at check + date('c') format ✅
+          - Line 227: `? date('c', strtotime((string)$product['created_at']))` — created_at fallback + date('c') format ✅
+          - Line 228: `: date('c')),` — final fallback to today ✅
+          - Line 218: Comment mentions "per-product `sale_starts_at`" ✅
+          - Exactly 1 occurrence of `'validFrom' =>` in the offers block ✅
+          - sale_starts_at appears 2 times in the fallback chain (line 218 comment + line 224-225 code) ✅
+          - date('c' appears 3 times (lines 225, 227, 228) — complete fallback chain ✅
+          RESULT: validFrom field correctly added with sale_starts_at → created_at → date('c') fallback chain using ISO 8601 format.
+
+          CHECK (ii): ✅ PASS — old aggressive 35%-cap UPDATE removed from start.sh
+          File: /app/php-version/start.sh
+          - Command: grep -c 'ROUND(price / 0.65' /app/php-version/start.sh
+          - Result: 0 (exit code 1 = no matches) ✅
+          EXPECTED: exactly 0 hits
+          RESULT: The old `UPDATE products SET original_price = ROUND(price / 0.65, 2)` command is NOT present as an active mysql command. Removal confirmed.
+
+          CHECK (iii): ✅ PASS — one-shot bulk-clear present and guarded in start.sh
+          File: /app/php-version/start.sh
+          All 3 required substrings found in correct order:
+          (a) Line 131: `if [ -z "$(mysql -uroot ucode_store -Nse "SELECT v FROM settings WHERE k='original_price_bulk_cleared_v1' AND v='1' LIMIT 1" 2>/dev/null)" ]; then` ✅
+              - Guard SELECT statement present with exact key name 'original_price_bulk_cleared_v1' ✅
+          (b) Line 132: `mysql -uroot ucode_store -e "UPDATE products SET original_price = 0 WHERE original_price IS NOT NULL AND original_price > 0" 2>/dev/null || true` ✅
+              - Bulk-clear UPDATE statement present with correct WHERE clause ✅
+          (c) Line 133: `mysql -uroot ucode_store -e "INSERT INTO settings (k, v) VALUES ('original_price_bulk_cleared_v1', '1') ON DUPLICATE KEY UPDATE v='1'" 2>/dev/null || true` ✅
+              - Flag-flip INSERT statement present with ON DUPLICATE KEY UPDATE ✅
+          RESULT: One-shot idempotent migration correctly implemented with settings flag guard. Lines 131-133 form the complete guarded block.
+
+          CHECK (iv): ✅ PASS — discount-badge render sites correctly gate on original_price > price
+          Files: /app/php-version/product.php, /app/php-version/index.php, /app/php-version/includes/functions.php
+          - Command: grep -n "original_price.*>.*price" (across all 3 files)
+          - Result: Exactly 4 matches found ✅
+              1. /app/php-version/product.php:112 — `$discountFlag = ($product['original_price'] && $product['original_price'] > $product['price']);` ✅
+              2. /app/php-version/product.php:449 — `$discountPct = ($product['original_price'] && $product['original_price'] > $product['price'])` ✅
+              3. /app/php-version/index.php:274 — `$featPct = ($feat['original_price'] && $feat['original_price'] > $feat['price'])` ✅
+              4. /app/php-version/includes/functions.php:1918 — `$pct = (!empty($p['original_price']) && $p['original_price'] > $p['price'])` ✅
+          EXPECTED: exactly 4 matches (lines 112 + 449 in product.php, 274 in index.php, 1918 in functions.php)
+          RESULT: All 4 expected matches found. Every discount-badge render site correctly gates on `original_price > price`. When original_price=0, no badge will render.
+
+          CHECK (v): ✅ PASS — merchant-feed.php regression guard: no MSRP-related tags emitted
+          File: /app/php-version/merchant-feed.php
+          - Command: grep -c "<g:sale_price>" /app/php-version/merchant-feed.php → 0 ✅
+          - Command: grep -c "<g:msrp>" /app/php-version/merchant-feed.php → 0 ✅
+          - Command: grep -c "<g:cost_of_goods_sold>" /app/php-version/merchant-feed.php → 0 ✅
+          EXPECTED: 0 hits for all three tags
+          RESULT: None of the MSRP-related tags (<g:sale_price>, <g:msrp>, <g:cost_of_goods_sold>) are emitted in the merchant feed. Safe — no regression on Google Merchant Center ingestion under the new original_price=0 data model.
+
+          CONCLUSION:
+          ✅ ALL 5 STATIC-CODE CHECKS PASSED
+          ✅ Bundle #5 verified and working correctly
+          ✅ validFrom field added to Product JSON-LD offers with correct fallback chain (sale_starts_at → created_at → today) using ISO 8601 date('c') format
+          ✅ Old aggressive 35%-cap UPDATE removed from start.sh (0 occurrences of ROUND(price / 0.65))
+          ✅ One-shot bulk-clear migration present in start.sh with settings.original_price_bulk_cleared_v1 guard (lines 131-133)
+          ✅ All 4 discount-badge render sites correctly gate on original_price > price (product.php:112+449, index.php:274, functions.php:1918)
+          ✅ Merchant feed does NOT emit any MSRP-related tags (g:sale_price, g:msrp, g:cost_of_goods_sold all 0 hits)
+
+          NET EFFECT:
+          1. Google Search Console's "Missing field 'validFrom' (in 'offers')" warning will clear on next re-crawl — Product JSON-LD now emits a complete sale window (validFrom + priceValidUntil) for SERP snippet enhancement.
+          2. One-shot migration will bulk-clear all products' original_price to 0 on first boot (guarded by settings flag), giving merchant a clean slate. No discount badges will render until merchant explicitly re-enters MSRP values in admin. Future admin edits are preserved (migration runs exactly once).
+          3. No render-path changes needed — existing original_price > price guards prevent badge display when original_price=0.
+          4. No merchant-feed regression — feed does not emit MSRP-related tags that would break under original_price=0.
+
+          Bundle #5 is production-ready and safe to deploy. All fixes verified via static-code inspection (no PHP execution required per review request).
+
+
+metadata:
+  test_sequence: 39
+
+test_plan:
+  current_focus:
+    - "Bundle 2026-07-07 #5: (1) add validFrom to Product JSON-LD offers + (2) one-shot bulk-clear all products' original_price=0 (with settings-flag guard)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Bundle #5 for 2026-07-07 — (1) Product JSON-LD Offer block now
+      emits a valid ISO 8601 `validFrom` (paired with the existing
+      priceValidUntil) so Google Search Console's "Missing field
+      'validFrom' (in 'offers')" warning clears on next re-crawl;
+      (2) one-shot idempotent DB migration in start.sh bulk-clears
+      every product's original_price=0, guarded by a settings flag so
+      future admin edits are preserved. Every discount-badge render
+      site already gates on original_price > price so no code changes
+      needed in the render path. Merchant-feed audit confirms no MSRP
+      tag is emitted (safe). Please verify per the NEEDS_RETESTING
+      checklist above — all 5 checks are static-code inspections.
+    -agent: "testing"
+    -message: |
+      ✅ Bundle #5 verification COMPLETE — ALL 5 static-code checks PASSED.
+      
+      (i) validFrom field correctly added to product.php lines 224-228 with sale_starts_at → created_at → date('c') fallback chain ✅
+      (ii) Old ROUND(price / 0.65) UPDATE removed from start.sh (0 hits) ✅
+      (iii) One-shot bulk-clear migration present in start.sh lines 131-133 with settings.original_price_bulk_cleared_v1 guard ✅
+      (iv) All 4 discount-badge render sites correctly gate on original_price > price (product.php:112+449, index.php:274, functions.php:1918) ✅
+      (v) Merchant feed does NOT emit g:sale_price, g:msrp, or g:cost_of_goods_sold (all 0 hits) ✅
+      
+      Bundle #5 is production-ready. No issues found.

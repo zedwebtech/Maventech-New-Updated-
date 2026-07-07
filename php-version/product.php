@@ -209,6 +209,23 @@ $jsonLd = [
         'price'         => number_format((float)$product['price'] * (float)($_cc['rate'] ?? 1), 2, '.', ''),
         'availability'  => $availability,
         'itemCondition' => 'https://schema.org/NewCondition',
+        // validFrom — the START date/time of the offer's price validity.
+        // Google Merchant Center's "Merchant listings" enhancement flags
+        // "Missing field 'validFrom' (in 'offers')" as a non-critical
+        // issue when this is absent (Search Console 2026-07-06 warning).
+        // Emitting it pairs with priceValidUntil below to form a proper
+        // sale window Google can display in the SERP snippet.
+        // Preferred source: per-product `sale_starts_at` (set in admin →
+        // Edit Product → "Pin sale window for Google Shopping"). Falls
+        // back to `created_at` (when the product was published, i.e. when
+        // the offer first went live) and finally to today — never past,
+        // never future — so Google's parser always sees a valid ISO 8601
+        // datetime paired with priceValidUntil.
+        'validFrom' => !empty($product['sale_starts_at'])
+            ? date('c', strtotime((string)$product['sale_starts_at']))
+            : (!empty($product['created_at'])
+                ? date('c', strtotime((string)$product['created_at']))
+                : date('c')),
         // priceValidUntil honours the per-product `sale_ends_at` window
         // (set in admin → Edit Product → "Pin sale window for Google
         // Shopping") so Google sees an accurate, dated sale.  Falls back
