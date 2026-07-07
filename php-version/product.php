@@ -463,7 +463,7 @@ include __DIR__ . '/includes/header.php';
   <div class="row g-4 g-lg-5 mt-1">
     <div class="col-lg-5">
       <div class="card border p-4 position-relative pd-360-card">
-        <?php if ($product['badge']): ?><span class="badge text-bg-primary position-absolute top-0 start-0 m-3" style="z-index:3;"><?= esc($product['badge']) ?></span><?php endif; ?>
+        <?php if ($product['badge']): ?><span class="badge badge-promo position-absolute top-0 start-0 m-3" style="z-index:3;"><?= esc($product['badge']) ?></span><?php endif; ?>
         <div class="pd-360-frame" data-testid="product-360-viewer">
           <span class="pd-360-ring" aria-hidden="true"></span>
           <span class="pd-360-podium" aria-hidden="true"></span>

@@ -5024,3 +5024,52 @@ html[data-bs-theme="dark"] .surplus-price-label {
 }
 html[data-bs-theme="dark"] .surplus-price-label::before { background: #94a3b8; }
 
+
+/* =====================================================================
+   Promotional badges — bright red-orange (2026-07-07 user request).
+   Replaces the old muted "text-bg-primary" (Bootstrap blue) which the
+   user flagged as "not bright enough". Two variants:
+     .badge-promo      — for merchant-set promo labels ("Hot Pick",
+                         "Best Seller", "Limited Time Offer", etc.) —
+                         warm red→orange gradient, white text, rounded
+                         pill, shipped everywhere a $p['badge'] pill
+                         renders (product card, product row, product hero).
+     .badge-promo-off  — for the auto-calculated discount % / "% Off"
+                         pill that appears ONLY when the admin has set
+                         original_price > sale_price. Solid red (matches
+                         the "58% Off" pill on the product-detail hero
+                         in the customer reference screenshot).
+   Both are pill-shaped, bold, all-caps letter-spacing tightened, with
+   a subtle drop-shadow so they pop off any card background. Dark-mode
+   safe (color values are non-theme-dependent).
+   ===================================================================== */
+.badge.badge-promo {
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  color: #ffffff !important;
+  font-weight: 700;
+  letter-spacing: .18px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, .30);
+  border: none;
+  font-size: .72rem;
+  text-transform: none;
+}
+.badge.badge-promo:hover { filter: brightness(1.05); }
+
+.badge.badge-promo-off {
+  background: #ef4444;
+  color: #ffffff !important;
+  font-weight: 800;
+  letter-spacing: .12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, .30);
+  border: none;
+  font-size: .72rem;
+}
+
+[data-bs-theme="dark"] .badge.badge-promo,
+[data-bs-theme="dark"] .badge.badge-promo-off {
+  box-shadow: 0 4px 14px rgba(239, 68, 68, .45);
+}

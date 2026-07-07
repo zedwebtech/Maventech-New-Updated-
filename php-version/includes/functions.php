@@ -2270,11 +2270,23 @@ function render_product_row(array $p): string
     $teaserHtml = $teaser !== ''
         ? '<p class="shop-row-teaser small text-secondary mb-1" data-testid="row-teaser-' . esc($p['slug']) . '">' . esc($teaser) . '</p>'
         : '';
-    // Compliance: no strike-through "was" price or % discount badges. A single
-    // flat "Direct Price" is shown instead.
-    $orig = '';
-    $save = '';
-    $badge = $p['badge'] ? '<span class="badge text-bg-primary">' . esc($p['badge']) . '</span>' : '';
+    // Discount %/save-$ + strike-through "was" price — ONLY when the admin has
+    // explicitly set an original_price greater than the sale price. When
+    // original_price=0 (the default after the 2026-07-07 bulk-clear), NOTHING
+    // renders and the row keeps its clean single-price look. When the admin
+    // fills in a real MSRP, the row shows: red "% Off" pill + "was $X" strike
+    // matching the product-detail hero.
+    $pctOff = 0;
+    if (!empty($p['original_price']) && (float)$p['original_price'] > (float)$p['price']) {
+        $pctOff = (int)round((1 - (float)$p['price'] / (float)$p['original_price']) * 100);
+    }
+    $orig = $pctOff > 0
+        ? '<div class="mb-1"><small class="text-secondary text-decoration-line-through" data-testid="row-orig-price-' . esc($p['slug']) . '">' . format_price((float)$p['original_price']) . '</small></div>'
+        : '';
+    $save = $pctOff > 0
+        ? '<span class="badge badge-promo-off rounded-pill" data-testid="row-discount-' . esc($p['slug']) . '">' . $pctOff . '% Off</span>'
+        : '';
+    $badge = $p['badge'] ? '<span class="badge badge-promo" data-testid="row-badge-' . esc($p['slug']) . '">' . esc($p['badge']) . '</span>' : '';
     $osIcon = $p['platform'] === 'Mac' ? 'macos' : 'windows';
     return '
     <div class="card product-card shop-row p-3 p-sm-4" data-testid="product-row-' . esc($p['slug']) . '">
@@ -2323,10 +2335,25 @@ function render_product_card(array $p): string
     $teaserHtml = $teaser !== ''
         ? '<p class="pc-teaser small text-secondary mb-2" data-testid="card-teaser-' . esc($p['slug']) . '">' . esc($teaser) . '</p>'
         : '';
-    // Compliance: no % discount badge or strike-through price.
-    $discount = '';
-    $badge = $p['badge'] ? '<span class="badge text-bg-primary position-absolute top-0 start-0 m-2">' . esc($p['badge']) . '</span>' : '';
-    $orig = '';
+    // Discount %/save-$ badge on card image + strike-through "was" price
+    // in the price row — ONLY when the admin has explicitly set an
+    // original_price greater than the sale price. Under the new pricing
+    // model (2026-07-07) original_price=0 by default → nothing renders.
+    // Matches the styling on the product-detail hero.
+    $pctOff = 0;
+    if (!empty($p['original_price']) && (float)$p['original_price'] > (float)$p['price']) {
+        $pctOff = (int)round((1 - (float)$p['price'] / (float)$p['original_price']) * 100);
+    }
+    $discount = $pctOff > 0
+        ? '<span class="badge badge-promo-off position-absolute top-0 start-0 m-2" style="z-index:3;" data-testid="card-discount-' . esc($p['slug']) . '">' . $pctOff . '% Off</span>'
+        : '';
+    $orig = $pctOff > 0
+        ? ' <small class="text-secondary text-decoration-line-through" data-testid="card-orig-price-' . esc($p['slug']) . '">' . format_price((float)$p['original_price']) . '</small>'
+        : '';
+    // When both a promo badge AND a discount % exist, stack them vertically
+    // so they don't collide (badge stays at top-0, discount pill drops below).
+    $badgeTopOffset = $discount !== '' ? ' style="top:34px;z-index:3;"' : ' style="z-index:3;"';
+    $badge = $p['badge'] ? '<span class="badge badge-promo position-absolute start-0 m-2"' . $badgeTopOffset . '>' . esc($p['badge']) . '</span>' : '';
     $osIcon = $p['platform'] === 'Mac' ? 'macos' : 'windows';
     $stockPill = render_stock_pill($p['slug']);
     $cartBtn = '<button class="pc-btn pc-btn-cart add-to-cart-btn" data-slug="' . esc($p['slug']) . '" data-testid="add-to-cart-' . esc($p['slug']) . '" aria-label="Add to cart"><i class="bi bi-cart-plus"></i><span class="pc-btn-label">Add</span></button>
