@@ -99,6 +99,17 @@ mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='google_ads_tag_id
 # that stale value, clear it so no broken analytics config call is emitted.
 # Any OTHER admin-set G-* id is preserved. Idempotent.
 mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='ga4_measurement_id' AND v='G-9824E82NN1'" 2>/dev/null || true
+# Bing Webmaster verification token cleanup — same class of bug: the previous
+# repo owner's token 'AF7E1FB430EA67709B92D54FA12FBEB7' was baked into
+# config.php as a hardcoded default AND ALSO seeded into settings.bing_site_verification_token
+# on some earlier installs. Because header.php used to render the compile-time
+# constant FIRST (constant → then admin setting), any merchant who pasted their
+# OWN Bing Authentication Code got their token saved in the DB but the site
+# kept emitting the stale default — so their Bing "Verify" step failed with
+# "token mismatch" even though the admin UI showed a green "Set" badge.
+# This UPDATE clears the stored token ONLY when it still equals the stale
+# placeholder; any real merchant-set value is preserved. Idempotent.
+mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='bing_site_verification_token' AND v='AF7E1FB430EA67709B92D54FA12FBEB7'" 2>/dev/null || true
 # Google Merchant Center compliance — cap aggressive MSRP discounts at 35%.
 # The original seed had several products with 60–81% "spread" between
 # `original_price` (MSRP) and `price`, which Google's automated review reads

@@ -7110,3 +7110,266 @@ agent_communication:
 
       All 3 bugs correctly fixed and ready for production deployment. No code modifications made during testing.
 
+
+##====================================================================================================
+## Bug fix bundle 2026-07-07 #3 — admin webmaster verification + panel counter mismatch
+##   1. Bing Webmaster token pasted in Admin → doesn't verify (Google/Bing
+##      keep seeing the previous repo owner's stale token). Same class of
+##      bug as GA4/AW baked-in defaults, now applied to the site-verification
+##      meta tags (Google, Bing, Yandex, Pinterest).
+##   2. "Search Engine Visibility" panel: collapsed header badge shows
+##      "0/5 connected" but expanded panel correctly shows "3/5 platforms
+##      connected". Bug: $seoConfigured was computed AFTER the summary
+##      badge, so the header rendered with $seoConfigured=null.
+##====================================================================================================
+
+backend:
+  - task: "Bundle 2026-07-07 #3: (1) webmaster tokens can't verify (compile-time constant shadows admin setting) + (2) SEO panel counter mismatch 0/5 vs 3/5"
+    implemented: true
+    working: true
+    file: "php-version/includes/header.php, php-version/config.php, php-version/start.sh, php-version/admin.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          BUG 1 — Bing Webmaster (and by symmetry Google / Yandex / Pinterest)
+                  verification tokens pasted in Admin never verify
+
+            REPRODUCTION path (from customer screenshot):
+              a. Merchant pastes their Bing Authentication Code in
+                 Admin → Search Engine Visibility → Bing Webmaster.
+              b. UI shows a green "Set" badge (token is saved in
+                 settings.bing_site_verification_token — verified live:
+                 `curl https://maventechsoftware.com/ | grep msvalidate.01`).
+              c. Merchant clicks Verify → Bing reports the site's meta
+                 tag doesn't match their code.
+
+            ROOT CAUSE — verified with live curl:
+              `curl -s https://maventechsoftware.com/ | grep msvalidate`
+              → <meta name="msvalidate.01" content="AF7E1FB430EA67709B92D54FA12FBEB7">
+              That value is NOT the merchant's — it's the token baked
+              into config.php:90 as the compile-time default
+              (`BING_SITE_VERIFICATION = 'AF7E1FB430EA67709B92D54FA12FBEB7'`).
+              header.php:242 used to check the CONSTANT first and only
+              fall back to the admin setting when the constant was blank
+              — so every merchant install shipped with the previous
+              repo owner's token permanently overriding whatever they
+              pasted in admin. Same class of bug as the previously
+              fixed GA4_MEASUREMENT_ID (G-9824E82NN1 → 404) and
+              GOOGLE_ADS_TAG_ID (AW-18263028048 → 404).
+
+            FIX APPLIED (3 files, mirrors the AW/GA4 fix pattern exactly):
+
+              (a) includes/header.php — reversed the priority order for
+                  all four verification meta tags (Google, Bing, Yandex,
+                  Pinterest):
+
+                    old: if (constant is set) → use constant;
+                         elseif (admin setting is set) → use setting.
+
+                    new: if (admin setting is set) → use setting;
+                         elseif (constant is set) → use constant.
+
+                  Now admin-saved tokens ALWAYS win over compile-time
+                  defaults. Baidu is unchanged (constant-only, no admin UI).
+
+              (b) config.php:97 — BING_SITE_VERIFICATION default changed
+                  from 'AF7E1FB430EA67709B92D54FA12FBEB7' to ''. Any
+                  merchant-set value in admin OR the BING_SITE_VERIFICATION
+                  env var still applies. Documented the fix inline.
+
+              (c) start.sh — added an idempotent MySQL UPDATE that clears
+                  settings.bing_site_verification_token ONLY when the
+                  stored value still equals the stale placeholder
+                  'AF7E1FB430EA67709B92D54FA12FBEB7'. Any real
+                  merchant-set token is preserved. Mirrors the two
+                  sister UPDATEs already there (google_ads_tag_id +
+                  ga4_measurement_id cleanups).
+
+          BUG 2 — Search Engine Visibility panel: header says "0/5", body says "3/5"
+
+            REPRODUCTION (customer screenshot):
+              - Collapsed <details> summary shows: "0/5 connected" (amber)
+              - Clicked open — the same panel's title strip shows: "3/5 platforms connected" (green)
+              - Both are supposed to be the same value.
+
+            ROOT CAUSE:
+              admin.php had the <details> summary FIRST (rendering the
+              collapsed badge with `$seoConfigured ?? 0` → 0 because
+              $seoConfigured wasn't set yet), then computed
+              $seoConfigured a few lines LATER inside <div class="ai-body">,
+              and used the computed value for the inner badge. Classic
+              order-of-operations mistake.
+
+            FIX APPLIED:
+              admin.php — moved the entire block that reads the 5
+              tokens (google_site_verification_token, bing_site_verification_token,
+              yandex_site_verification_token, pinterest_site_verification_token,
+              google_merchant_id) and computes $seoConfigured to run
+              BEFORE the <details><summary> element. Also moved
+              $seoBadge helper (defined in the same block; used by
+              rows deeper in the card) up along with it. Both badges
+              now read the SAME up-to-date $seoConfigured value —
+              collapsed and expanded will always agree.
+
+          FILES CHANGED:
+            - php-version/includes/header.php  (verification meta priority reversed for Google/Bing/Yandex/Pinterest)
+            - php-version/config.php           (BING_SITE_VERIFICATION default blanked + inline docs)
+            - php-version/start.sh             (added stale-token cleanup UPDATE)
+            - php-version/admin.php            ($seoConfigured computed BEFORE the summary badge)
+
+          NEEDS_RETESTING CHECKLIST for testing agent:
+            (i)   Static-code — includes/header.php lines 250-275 MUST
+                  emit the admin `setting_get` branch FIRST for Google,
+                  Bing, Yandex and Pinterest (each `if` opens with
+                  `($__xxx = setting_get(...)) !== ''`; the `elseif`
+                  falls back to the constant). Grep specifically that
+                  the FIRST branch under each `<meta name="msvalidate.01"` /
+                  `<meta name="google-site-verification"` / etc uses
+                  setting_get() — the constant must appear in the
+                  elseif.
+            (ii)  Static-code — config.php line 97 MUST show
+                  `define('BING_SITE_VERIFICATION', getenv('BING_SITE_VERIFICATION') ?: '')`
+                  (empty-string fallback, NOT the stale hex token).
+            (iii) Static-code — start.sh MUST contain a line
+                  `mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='bing_site_verification_token' AND v='AF7E1FB430EA67709B92D54FA12FBEB7'"`
+                  (idempotent DB cleanup).
+            (iv)  Static-code — admin.php around line 5399-5445. The
+                  `$seoConfigured = 0; if ($seoGsc) $seoConfigured++; ...`
+                  block MUST appear BEFORE the line
+                  `<details class="ai-section" id="seo-visibility-section">`
+                  Report the line numbers you observed for both.
+            (v)   Diagnostic (documents the sister-bug that's already
+                  present live so the customer knows it too will heal
+                  once they redeploy):
+                    curl -s https://maventechsoftware.com/ | grep -oE '<meta name="msvalidate\.01" content="[^"]+"'
+                  Report what you see. Currently should still show the
+                  stale AF7E1FB4… token — that's the pre-deploy state,
+                  and NOT a regression. Once the customer redeploys
+                  header.php + config.php AND the daemon restarts and
+                  runs start.sh's new UPDATE, the DB row will be cleared
+                  and the merchant's real Bing token will emit here.
+
+metadata:
+  test_sequence: 36
+
+test_plan:
+  current_focus:
+    - "Bundle 2026-07-07 #3: (1) webmaster tokens can't verify (compile-time constant shadows admin setting) + (2) SEO panel counter mismatch 0/5 vs 3/5"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Bundle #3 for 2026-07-07 — (1) all site-verification meta tags
+      (Google/Bing/Yandex/Pinterest) now give admin-saved settings
+      PRIORITY over compile-time defaults (previously reversed, so
+      the previous repo owner's baked-in Bing token
+      'AF7E1FB430EA67709B92D54FA12FBEB7' was silently overriding every
+      merchant's own token — same class of bug as GA4/AW). (2) SEO
+      Visibility panel: $seoConfigured is now computed BEFORE the
+      collapsed <summary> badge so both counters agree. Please verify
+      per the NEEDS_RETESTING checklist above — checks (i)-(iv) are
+      static-code and MUST all pass; check (v) is a live diagnostic
+      documenting the pre-deploy state.
+        -working: true
+        -agent: "testing"
+        -comment: |
+          ✅ BUNDLE #3 (2026-07-07) VERIFICATION COMPLETE — ALL 5 CHECKS PASSED
+
+          Bug fix bundle addresses:
+          (1) Webmaster verification tokens can't verify (compile-time constant shadows admin setting)
+          (2) SEO panel counter mismatch (collapsed summary shows 0/5, expanded body shows 3/5)
+
+          VERIFICATION RESULTS:
+
+          CHECK (i) — ✅ PASS: Static-code verification meta priority reversal in includes/header.php
+          Confirmed lines 253-272 of /app/php-version/includes/header.php:
+          For EACH of Google / Bing / Yandex / Pinterest verification meta tags:
+            - The `if` branch evaluates the admin setting FIRST via `setting_get(...)`.
+            - The `elseif` branch falls back to the compile-time constant via `defined('*_SITE_VERIFICATION')`.
+
+          Exact 4 preceding-if lines observed:
+            Line 253: <?php if (($__gsc = setting_get('google_site_verification_token', '')) !== ''): ?>
+                      (precedes <meta name="google-site-verification">)
+            Line 258: <?php if (($__bing = setting_get('bing_site_verification_token', '')) !== ''): ?>
+                      (precedes <meta name="msvalidate.01">)
+            Line 263: <?php if (($__yandex = setting_get('yandex_site_verification_token', '')) !== ''): ?>
+                      (precedes <meta name="yandex-verification">)
+            Line 268: <?php if (($__pin = setting_get('pinterest_site_verification_token', '')) !== ''): ?>
+                      (precedes <meta name="p:domain_verify">)
+
+          All 4 verification meta tags now correctly prioritize admin settings over compile-time constants. ✅
+
+          CHECK (ii) — ✅ PASS: Static-code BING_SITE_VERIFICATION default blanked
+          Confirmed /app/php-version/config.php line 97 contains:
+            define('BING_SITE_VERIFICATION',   getenv('BING_SITE_VERIFICATION')   ?: '');
+          Empty-string fallback confirmed (NOT the old 'AF7E1FB430EA67709B92D54FA12FBEB7'). ✅
+
+          Grep for stale token 'AF7E1FB430EA67709B92D54FA12FBEB7' across /app/php-version/:
+            /app/php-version/includes/header.php:242 — COMMENT explaining the bug (line starts with "//")
+            /app/php-version/config.php:93 — COMMENT explaining the fix (line starts with "//")
+            /app/php-version/start.sh:103 — COMMENT explaining the cleanup (line starts with "#")
+            /app/php-version/start.sh:112 — Idempotent SQL cleanup UPDATE statement (expected)
+          Result: ALL 4 occurrences are either comments OR the idempotent cleanup SQL. ✅
+          NO active code path defaults to the stale token. ✅
+
+          CHECK (iii) — ✅ PASS: Static-code DB cleanup in start.sh
+          Confirmed /app/php-version/start.sh line 112 contains the exact idempotent cleanup:
+            mysql -uroot ucode_store -e "UPDATE settings SET v='' WHERE k='bing_site_verification_token' AND v='AF7E1FB430EA67709B92D54FA12FBEB7'" 2>/dev/null || true
+          Idempotent (does not fail the boot). ✅
+
+          CHECK (iv) — ✅ PASS: Static-code $seoConfigured computed BEFORE summary badge in admin.php
+          Confirmed /app/php-version/admin.php:
+            Line 5420: $seoConfigured = 0;
+            Lines 5421-5425: Five if statements incrementing $seoConfigured
+            Line 5436: <details class="ai-section" id="seo-visibility-section">
+          Result: $seoConfigured computation (line 5420) appears BEFORE the <details> tag (line 5436). ✅
+          Line 5420 < Line 5436 ✅
+          Both the collapsed summary badge and the expanded body badge now read the SAME $seoConfigured value. ✅
+
+          CHECK (v) — ✅ PASS: Live diagnostic (documents PRE-DEPLOY state)
+          Command: curl -s 'https://maventechsoftware.com/' | grep -oE '<meta name="msvalidate\.01" content="[^"]+"'
+          Result: <meta name="msvalidate.01" content="AF7E1FB430EA67709B92D54FA12FBEB7"
+          
+          Analysis: The stale token AF7E1FB4… is STILL emitted on the live site (expected pre-deploy state). ✅
+          This is NOT a regression — it confirms the bug exists in production and will be fixed once the customer redeploys header.php + config.php and the daemon restarts (running start.sh's new UPDATE to clear the DB row).
+          After redeployment, the merchant's own Bing token (saved in Admin → SEO) will emit correctly. ✅
+
+          CONCLUSION:
+          ✅ ALL 5 VERIFICATION CHECKS PASSED (i through v)
+          ✅ Bug fix bundle #3 verified and working correctly via static-code inspection
+          ✅ CHECK (i): Verification meta tags now prioritize admin settings over constants (4/4 tags fixed)
+          ✅ CHECK (ii): BING_SITE_VERIFICATION default is empty string, stale token only in comments/cleanup SQL
+          ✅ CHECK (iii): Idempotent DB cleanup present in start.sh line 112
+          ✅ CHECK (iv): $seoConfigured computed at line 5420, BEFORE <details> tag at line 5436
+          ✅ CHECK (v): Live diagnostic confirms pre-deploy state (stale token still present, will heal on redeploy)
+
+          NET EFFECT after customer redeploys:
+          1. ✅ Webmaster verification tokens (Google/Bing/Yandex/Pinterest) will now verify successfully when merchants paste their own tokens in Admin → SEO (admin setting takes priority over compile-time constant).
+          2. ✅ SEO Visibility panel collapsed summary badge and expanded body badge will always show the same count (e.g., "3/5 connected" in both places, not "0/5" vs "3/5").
+          3. ✅ The stale Bing token 'AF7E1FB430EA67709B92D54FA12FBEB7' will be cleared from the database on next daemon restart (idempotent cleanup in start.sh).
+
+          Bundle #3 is production-ready and safe to deploy. No code modifications made during testing (verification only).
+
+    -agent: "testing"
+    -message: |
+      Bundle #3 (2026-07-07) verification complete — ALL 5 CHECKS PASSED via static-code inspection + live diagnostic.
+      
+      ✅ CHECK (i): Verification meta tags (Google/Bing/Yandex/Pinterest) now prioritize admin settings over compile-time constants (lines 253, 258, 263, 268 in header.php all use setting_get() in the FIRST if branch).
+      ✅ CHECK (ii): BING_SITE_VERIFICATION default is empty string in config.php line 97; stale token 'AF7E1FB430EA67709B92D54FA12FBEB7' only appears in comments + idempotent cleanup SQL.
+      ✅ CHECK (iii): Idempotent DB cleanup present in start.sh line 112.
+      ✅ CHECK (iv): $seoConfigured computed at line 5420 BEFORE <details> tag at line 5436 in admin.php.
+      ✅ CHECK (v): Live diagnostic confirms pre-deploy state (stale Bing token still emitted at maventechsoftware.com, will heal on redeploy).
+      
+      Both bugs fixed correctly:
+      (1) Webmaster tokens will now verify successfully (admin setting takes priority).
+      (2) SEO panel counter mismatch resolved (both badges read the same $seoConfigured value).
+      
+      Bundle is production-ready. No code modifications made during testing.
+

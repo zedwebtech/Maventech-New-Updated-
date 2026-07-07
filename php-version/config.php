@@ -87,7 +87,14 @@ define('SITE_URL', getenv('SITE_URL') ?: '');
 // Google Search Console verification — paste your GSC meta-tag code here (content="..." value)
 define('GOOGLE_SITE_VERIFICATION', getenv('GOOGLE_SITE_VERIFICATION') ?: '');
 // Bing Webmaster Tools verification (unlocks Copilot + ChatGPT-via-Bing).
-define('BING_SITE_VERIFICATION',   getenv('BING_SITE_VERIFICATION')   ?: 'AF7E1FB430EA67709B92D54FA12FBEB7');
+// Defaults to '' so that whatever the merchant pastes in
+// Admin → SEO / Search Engine Visibility → Bing Webmaster ALWAYS wins.
+// (Previously baked in the original repo owner's token
+// "AF7E1FB430EA67709B92D54FA12FBEB7" — that value shadowed the admin-saved
+// setting because header.php's meta-tag branch tried the constant FIRST,
+// causing every merchant's Bing Verify step to fail with "token mismatch"
+// even after they'd correctly pasted their own Authentication Code.)
+define('BING_SITE_VERIFICATION',   getenv('BING_SITE_VERIFICATION')   ?: '');
 // Yandex Webmaster verification (used by Yandex search + several AI engines).
 define('YANDEX_SITE_VERIFICATION', getenv('YANDEX_SITE_VERIFICATION') ?: '');
 // Pinterest domain verification (rich pins on product pages).

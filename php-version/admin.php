@@ -5397,14 +5397,14 @@ elseif ($tab === 'ai-blogger'):
 </script>
 
   <!-- Search Engine Visibility -->
-  <details class="ai-section" id="seo-visibility-section">
-    <summary>
-      <i class="bi bi-globe2 text-primary"></i> Search Engine Visibility
-      <span class="ai-badge" style="background:<?= ($seoConfigured ?? 0) >= 3 ? '#d1fae5' : '#fef3c7' ?>;color:<?= ($seoConfigured ?? 0) >= 3 ? '#065f46' : '#92400e' ?>;"><?= $seoConfigured ?? 0 ?>/5 connected</span>
-    </summary>
-    <div class="ai-body">
   <?php
-    // Read saved tokens for display
+    // ===== Read saved tokens + compute $seoConfigured EARLY so both the =====
+    // collapsed <summary> badge AND the expanded card badge show the SAME
+    // count. Previously $seoConfigured was computed AFTER the <summary>
+    // badge, so the header rendered "0/5 connected" while the expanded
+    // panel correctly rendered "3/5 platforms connected" — the exact
+    // inconsistency the user flagged. Moving the computation up fixes
+    // that class of bug at the source.
     $seoGsc     = setting_get('google_site_verification_token', defined('GOOGLE_SITE_VERIFICATION') ? GOOGLE_SITE_VERIFICATION : '');
     $seoBing    = setting_get('bing_site_verification_token', defined('BING_SITE_VERIFICATION') ? BING_SITE_VERIFICATION : '');
     $seoYandex  = setting_get('yandex_site_verification_token', defined('YANDEX_SITE_VERIFICATION') ? YANDEX_SITE_VERIFICATION : '');
@@ -5416,15 +5416,14 @@ elseif ($tab === 'ai-blogger'):
     if (!in_array($seoCanonHost, ['naked', 'www'], true)) $seoCanonHost = 'naked';
     $seoTwitter = (string)setting_get('twitter_site_handle', '');
     $seoFbApp   = (string)setting_get('facebook_app_id', '');
-    // Count how many are configured
+    // Count how many verification / shopping IDs are configured (out of 5)
     $seoConfigured = 0;
     if ($seoGsc)    $seoConfigured++;
     if ($seoBing)   $seoConfigured++;
     if ($seoYandex) $seoConfigured++;
     if ($seoPint)   $seoConfigured++;
     if ($seoGmc)    $seoConfigured++;
-    // Status pill (matches the green-check style used in the Tracking card):
-    // green check-circle when a token/ID is filled, muted circle when empty.
+    // Status pill helper — kept here (used by rows lower in the card)
     $seoBadge = function (bool $on, string $emptyLabel = 'Not set', string $emptyTone = 'amber'): string {
         if ($on) {
             return '<span class="badge rounded-pill" style="background:#d1fae5;color:#065f46;font-size:9px;"><i class="bi bi-check-circle-fill me-1"></i>Connected</span>';
@@ -5434,6 +5433,12 @@ elseif ($tab === 'ai-blogger'):
         return '<span class="badge rounded-pill" style="background:' . $bg . ';color:' . $fg . ';font-size:9px;"><i class="bi bi-circle me-1"></i>' . htmlspecialchars($emptyLabel) . '</span>';
     };
   ?>
+  <details class="ai-section" id="seo-visibility-section">
+    <summary>
+      <i class="bi bi-globe2 text-primary"></i> Search Engine Visibility
+      <span class="ai-badge" style="background:<?= $seoConfigured >= 3 ? '#d1fae5' : '#fef3c7' ?>;color:<?= $seoConfigured >= 3 ? '#065f46' : '#92400e' ?>;"><?= $seoConfigured ?>/5 connected</span>
+    </summary>
+    <div class="ai-body">
   <div class="card-e mb-3" style="border:1px solid #e2e8f0;border-radius:14px;padding:20px;">
     <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
       <h5 class="fw-bold mb-0" style="font-size:15px;"><i class="bi bi-globe2 me-2 text-primary"></i>Search Engine Visibility</h5>

@@ -234,25 +234,41 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="<?= esc(preg_replace('/\s+software\s*$/i', '', $brandName)) ?>">
-  <?php if (defined('GOOGLE_SITE_VERIFICATION') && GOOGLE_SITE_VERIFICATION !== ''): ?>
-  <meta name="google-site-verification" content="<?= esc(GOOGLE_SITE_VERIFICATION) ?>">
-  <?php elseif (($__gsc = setting_get('google_site_verification_token', '')) !== ''): ?>
+  <?php
+    /* Site-verification meta tags — admin-saved settings ALWAYS take
+       precedence over the compile-time constants in config.php.
+       Previously the order was reversed: the hardcoded constants (which
+       ship with the original repo owner's tokens baked in — e.g.
+       BING_SITE_VERIFICATION = "AF7E1FB430EA67709B92D54FA12FBEB7") shadowed
+       whatever the merchant pasted in Admin → SEO / Search Engine
+       Visibility. Result: merchants could paste their OWN Bing/Google/
+       Yandex/Pinterest tokens, see them saved in the DB with a "Set" green
+       badge, and STILL fail every Verify call because the meta tag on the
+       homepage was rendering the compile-time default (the previous owner's
+       token). Bing / Google / Yandex / Pinterest then reported "token
+       mismatch" or "token not found" during the Verify step.
+       The order below now matches every other tracker / analytics ID in
+       this codebase: admin setting → then constant → then nothing. */
+  ?>
+  <?php if (($__gsc = setting_get('google_site_verification_token', '')) !== ''): ?>
   <meta name="google-site-verification" content="<?= esc($__gsc) ?>">
+  <?php elseif (defined('GOOGLE_SITE_VERIFICATION') && GOOGLE_SITE_VERIFICATION !== ''): ?>
+  <meta name="google-site-verification" content="<?= esc(GOOGLE_SITE_VERIFICATION) ?>">
   <?php endif; ?>
-  <?php if (defined('BING_SITE_VERIFICATION') && BING_SITE_VERIFICATION !== ''): ?>
-  <meta name="msvalidate.01" content="<?= esc(BING_SITE_VERIFICATION) ?>">
-  <?php elseif (($__bing = setting_get('bing_site_verification_token', '')) !== ''): ?>
+  <?php if (($__bing = setting_get('bing_site_verification_token', '')) !== ''): ?>
   <meta name="msvalidate.01" content="<?= esc($__bing) ?>">
+  <?php elseif (defined('BING_SITE_VERIFICATION') && BING_SITE_VERIFICATION !== ''): ?>
+  <meta name="msvalidate.01" content="<?= esc(BING_SITE_VERIFICATION) ?>">
   <?php endif; ?>
-  <?php if (defined('YANDEX_SITE_VERIFICATION') && YANDEX_SITE_VERIFICATION !== ''): ?>
-  <meta name="yandex-verification" content="<?= esc(YANDEX_SITE_VERIFICATION) ?>">
-  <?php elseif (($__yandex = setting_get('yandex_site_verification_token', '')) !== ''): ?>
+  <?php if (($__yandex = setting_get('yandex_site_verification_token', '')) !== ''): ?>
   <meta name="yandex-verification" content="<?= esc($__yandex) ?>">
+  <?php elseif (defined('YANDEX_SITE_VERIFICATION') && YANDEX_SITE_VERIFICATION !== ''): ?>
+  <meta name="yandex-verification" content="<?= esc(YANDEX_SITE_VERIFICATION) ?>">
   <?php endif; ?>
-  <?php if (defined('PINTEREST_SITE_VERIFICATION') && PINTEREST_SITE_VERIFICATION !== ''): ?>
-  <meta name="p:domain_verify" content="<?= esc(PINTEREST_SITE_VERIFICATION) ?>">
-  <?php elseif (($__pin = setting_get('pinterest_site_verification_token', '')) !== ''): ?>
+  <?php if (($__pin = setting_get('pinterest_site_verification_token', '')) !== ''): ?>
   <meta name="p:domain_verify" content="<?= esc($__pin) ?>">
+  <?php elseif (defined('PINTEREST_SITE_VERIFICATION') && PINTEREST_SITE_VERIFICATION !== ''): ?>
+  <meta name="p:domain_verify" content="<?= esc(PINTEREST_SITE_VERIFICATION) ?>">
   <?php endif; ?>
   <?php if (defined('BAIDU_SITE_VERIFICATION') && BAIDU_SITE_VERIFICATION !== ''): ?>
   <meta name="baidu-site-verification" content="<?= esc(BAIDU_SITE_VERIFICATION) ?>">
