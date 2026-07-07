@@ -20,8 +20,32 @@
  *     server is reached via a different internal hostname (ingress rewrite).
  */
 
+/* Public, side-effect-free XML sitemap. Disable PHP session cache-limiter
+   AND the session cookie BEFORE includes/functions.php runs session_start(),
+   so that:
+     1. PHP doesn't emit `Cache-Control: no-store` / `Pragma: no-cache`
+        (the `nocache` cache_limiter default that Google Search Console's
+        sitemap fetcher reports as "Temporary processing error" / "Couldn't
+        fetch");
+     2. PHP doesn't emit a `Set-Cookie: PHPSESSID` header, which any
+        intermediate CDN (Cloudflare, Akamai, LiteSpeed cache) treats as a
+        "personalised response — bypass cache" signal, and which Google's
+        sitemap fetcher likewise refuses to process reliably.
+   Both signals silently override the `Cache-Control: public, max-age=1800`
+   rule below when they leak through. Mirrors the exact same pattern used
+   in merchant-feed.php for the identical class of bug. */
+session_cache_limiter('');
+@ini_set('session.use_cookies', '0');
+@ini_set('session.use_only_cookies', '0');
+
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/seo-content.php';
+
+/* Belt-and-braces: in case any earlier handler already queued session /
+   cache headers, strip them and set our own public-cache rule below. */
+foreach (['Cache-Control', 'Pragma', 'Expires', 'Set-Cookie'] as $h) {
+    header_remove($h);
+}
 
 header('Content-Type: application/xml; charset=UTF-8');
 header('Cache-Control: public, max-age=1800');

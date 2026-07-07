@@ -634,24 +634,24 @@ function generate_receipt_pdf(array $order, array $items, ?array $payment = null
   body { font-family:'DejaVu Sans',Helvetica,Arial,sans-serif; font-size:9.5pt; color:#1f2937; }
   .scatter-wrap { position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; }
   .scatter-icon { position:absolute; opacity:0.09; }
-  .rc-top { width:100%; border-collapse:collapse; margin-bottom:8px; }
+  .rc-top { width:100%; border-collapse:collapse; margin-bottom:5px; }
   .rc-top td { vertical-align:top; }
-  .rc-top .rc-co { font-size:7.5pt; color:#64748b; line-height:1.4; margin-top:3px; }
+  .rc-top .rc-co { font-size:7pt; color:#64748b; line-height:1.35; margin-top:2px; }
   .rc-tag { text-align:right; }
   .rc-tag .lbl { font-size:8pt; letter-spacing:2px; font-weight:700; color:#059669; text-transform:uppercase; }
-  .rc-hero { background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:9px 18px; margin-bottom:8px; text-align:center; }
-  .rc-check { width:30px; height:30px; line-height:28px; border-radius:50%; background:#059669; color:#fff; font-size:15pt; font-weight:700; margin:0 auto 3px; }
-  .rc-badge { display:inline-block; background:#059669; color:#fff; font-size:7pt; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; padding:2px 9px; border-radius:999px; }
-  .rc-amt { font-size:20pt; font-weight:800; color:#047857; margin:5px 0 2px; letter-spacing:.3px; }
-  .rc-amt-sub { font-size:8.5pt; color:#059669; }
-  .rc-card { border:1px solid #e2e8f0; border-radius:10px; padding:0; margin-bottom:8px; }
+  .rc-hero { background:#ecfdf5; border:1px solid #a7f3d0; border-radius:10px; padding:7px 14px 8px; margin-bottom:6px; text-align:center; }
+  .rc-check { width:24px; height:24px; line-height:22px; border-radius:50%; background:#059669; color:#fff; font-size:12pt; font-weight:700; margin:0 auto 2px; }
+  .rc-badge { display:inline-block; background:#059669; color:#fff; font-size:6.5pt; font-weight:700; letter-spacing:1.3px; text-transform:uppercase; padding:1.5px 8px; border-radius:999px; }
+  .rc-amt { font-size:17pt; font-weight:800; color:#047857; margin:3px 0 1px; letter-spacing:.3px; }
+  .rc-amt-sub { font-size:8pt; color:#059669; }
+  .rc-card { border:1px solid #e2e8f0; border-radius:9px; padding:0; margin-bottom:6px; }
   .rc-card table { width:100%; border-collapse:collapse; }
-  .rc-card td { padding:4px 12px; font-size:8.5pt; vertical-align:top; border-bottom:1px solid #eef2f7; }
+  .rc-card td { padding:3px 12px; font-size:8pt; vertical-align:top; border-bottom:1px solid #eef2f7; }
   .rc-card tr:last-child td { border-bottom:0; }
   .rc-card .k { color:#64748b; width:38%; }
   .rc-card .v { color:#0f172a; font-weight:700; text-align:right; }
   .rc-card .v.mono { font-family:'DejaVu Sans Mono',monospace; letter-spacing:.3px; }
-  .sec-label { font-size:7pt; letter-spacing:1.4px; text-transform:uppercase; color:#94a3b8; font-weight:700; margin:0 0 3px; }
+  .sec-label { font-size:6.5pt; letter-spacing:1.3px; text-transform:uppercase; color:#94a3b8; font-weight:700; margin:0 0 2px; }
   .ps { width:100%; border-collapse:collapse; margin-bottom:3px; }
   .ps td { padding:4px 2px; font-size:8.5pt; border-bottom:1px dashed #e2e8f0; }
   .ps .ps-name { color:#1f2937; }

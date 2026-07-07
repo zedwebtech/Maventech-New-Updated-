@@ -260,28 +260,70 @@ function sub_tenure_text(array $sub, array $plan): string
  * Generate the Receipt + Subscription Certificate PDFs for a subscription
  * order and return their file paths (for email attachment).
  */
-/** "What's included" description block appended to the subscription receipt PDF. */
+/** "What's included" description block appended to the subscription receipt PDF.
+ *
+ *  Layout is deliberately compact so the receipt fits on a SINGLE PDF page
+ *  even when a plan has 13-14 feature bullets (Quick Fix): a 2-column
+ *  features grid + tight leading + a small "Your subscription" summary
+ *  strip.  Previously this block used a single-column list which pushed
+ *  Quick Fix / Lifetime Elite receipts onto page 2 (see customer PDF
+ *  screenshot 2026-07-07). */
 function sub_receipt_extra_html(array $sub, array $plan): string
 {
-    $feat = '';
-    foreach (($plan['features'] ?? []) as $f) {
-        $feat .= '<tr><td style="padding:2px 0;color:#047857;width:16px;">&#10003;</td><td style="padding:2px 0;color:#334155;">'
-               . htmlspecialchars((string)$f, ENT_QUOTES, 'UTF-8') . '</td></tr>';
+    // Split features into TWO columns so long "What's included" lists
+    // (Quick Fix has 13 bullets; Lifetime Elite similar) fit inside one page.
+    $features = array_values(array_filter(array_map('strval', (array)($plan['features'] ?? []))));
+    $n = count($features);
+    if ($n === 0) {
+        $featCols = '';
+    } else {
+        $mid = (int)ceil($n / 2);
+        $rowsFor = function (array $subset): string {
+            $out = '';
+            foreach ($subset as $f) {
+                $out .= '<tr><td style="padding:1.5pt 0;color:#059669;width:12pt;font-size:8pt;">&#10003;</td>'
+                     .  '<td style="padding:1.5pt 0;color:#334155;font-size:8pt;line-height:1.35;">'
+                     .  htmlspecialchars($f, ENT_QUOTES, 'UTF-8')
+                     .  '</td></tr>';
+            }
+            return $out;
+        };
+        $left  = $rowsFor(array_slice($features, 0, $mid));
+        $right = $rowsFor(array_slice($features, $mid));
+        $featCols = '<table style="width:100%;border-collapse:collapse;margin-top:3pt;">'
+                  . '<tr>'
+                  .   '<td style="vertical-align:top;width:50%;padding-right:8pt;">'
+                  .     '<table style="width:100%;border-collapse:collapse;">' . $left . '</table>'
+                  .   '</td>'
+                  .   '<td style="vertical-align:top;width:50%;padding-left:8pt;border-left:1px solid #eef2f7;">'
+                  .     '<table style="width:100%;border-collapse:collapse;">' . $right . '</table>'
+                  .   '</td>'
+                  . '</tr></table>';
     }
+
     $tenure = htmlspecialchars(sub_tenure_text($sub, $plan), ENT_QUOTES, 'UTF-8');
     $custId = htmlspecialchars((string)($sub['customer_id'] ?? ''), ENT_QUOTES, 'UTF-8');
     $devices= htmlspecialchars((string)($plan['devices'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $planNm = htmlspecialchars((string)($plan['name'] ?? ''), ENT_QUOTES, 'UTF-8');
     $tag    = htmlspecialchars((string)($plan['tagline'] ?? ''), ENT_QUOTES, 'UTF-8');
-    return '<div style="margin-top:18px;padding-top:12px;border-top:1px solid #e2e8f0;">'
-         . '<div style="font-weight:700;color:#0f172a;font-size:11pt;margin-bottom:4px;">Your subscription</div>'
-         . '<div style="font-size:9.5pt;color:#475569;margin-bottom:4px;">' . $tag . '</div>'
-         . '<table style="width:100%;border-collapse:collapse;font-size:9.5pt;margin-bottom:8px;">'
-         . '<tr><td style="color:#64748b;width:130px;padding:2px 0;">Customer ID</td><td style="font-weight:700;padding:2px 0;">' . $custId . '</td></tr>'
-         . '<tr><td style="color:#64748b;padding:2px 0;">Coverage</td><td style="padding:2px 0;">' . $devices . '</td></tr>'
-         . '<tr><td style="color:#64748b;padding:2px 0;">Tenure</td><td style="padding:2px 0;">' . $tenure . '</td></tr>'
+
+    return '<div style="margin-top:10pt;padding:10pt 12pt;border:1px solid #e2e8f0;border-radius:8pt;background:#f8fafc;">'
+         . '<table style="width:100%;border-collapse:collapse;margin-bottom:5pt;">'
+         .   '<tr>'
+         .     '<td style="vertical-align:top;">'
+         .       '<div style="font-weight:800;color:#0f172a;font-size:10.5pt;letter-spacing:.02em;">' . $planNm . '</div>'
+         .       '<div style="font-size:8.5pt;color:#64748b;margin-top:1pt;">' . $tag . '</div>'
+         .     '</td>'
+         .     '<td style="vertical-align:top;text-align:right;font-size:8pt;color:#334155;line-height:1.55;white-space:nowrap;">'
+         .       '<span style="color:#64748b;">Customer&nbsp;ID</span>&nbsp;&nbsp;<strong style="color:#0f172a;font-family:ui-monospace,Menlo,monospace;">' . $custId . '</strong><br>'
+         .       '<span style="color:#64748b;">Coverage</span>&nbsp;&nbsp;<strong style="color:#0f172a;">' . $devices . '</strong><br>'
+         .       '<span style="color:#64748b;">Tenure</span>&nbsp;&nbsp;<strong style="color:#0f172a;">' . $tenure . '</strong>'
+         .     '</td>'
+         .   '</tr>'
          . '</table>'
-         . '<div style="font-weight:700;color:#0f172a;font-size:10pt;margin-bottom:2px;">What\'s included</div>'
-         . '<table style="width:100%;border-collapse:collapse;font-size:9pt;">' . $feat . '</table>'
+         . ($featCols !== ''
+             ? '<div style="font-weight:700;color:#0f172a;font-size:8.5pt;letter-spacing:.05em;text-transform:uppercase;margin-top:6pt;padding-top:6pt;border-top:1px dashed #cbd5e1;">What&#39;s included</div>' . $featCols
+             : '')
          . '</div>';
 }
 
@@ -292,8 +334,18 @@ function sub_pdf_paths(array $order, array $sub, array $plan): array
     if (!is_dir($dir)) @mkdir($dir, 0775, true);
     $paths = [];
 
+    // Receipt line-item name — clean "Plan — Tenure" format so the receipt
+    // shows "Quick Fix — One-Time Service" / "Starter Care — 30-day Care" /
+    // "Pro Shield — Annual" / "Lifetime Elite — Lifetime" cleanly, instead
+    // of the older awkward "<Name> Subscription (<Tenure>)" wrapping.
+    // Uses an en-dash (—, U+2014) so the line reads as a proper subtitle.
+    $__planItemName = trim((string)$plan['name']);
+    $__planTenure   = trim((string)($plan['tenure_label'] ?? ''));
+    if ($__planTenure !== '' && stripos($__planItemName, $__planTenure) === false) {
+        $__planItemName .= ' — ' . $__planTenure;
+    }
     $items = [[
-        'name'       => $plan['name'] . ' Subscription (' . $plan['tenure_label'] . ')',
+        'name'       => $__planItemName,
         'unit_price' => (float)($sub['amount'] ?? $plan['price']),
         'quantity'   => 1,
         'price'      => (float)($sub['amount'] ?? $plan['price']),
@@ -651,8 +703,13 @@ function sub_fulfill_order(array $order): void
     try {
         if (function_exists('notify_company_of_sale')) {
             $pdfPaths = sub_pdf_paths($order, $sub, $plan);
+            $__notifyName = trim((string)$plan['name']);
+            $__notifyTenure = trim((string)($plan['tenure_label'] ?? ''));
+            if ($__notifyTenure !== '' && stripos($__notifyName, $__notifyTenure) === false) {
+                $__notifyName .= ' — ' . $__notifyTenure;
+            }
             $items = [[
-                'name'  => $plan['name'] . ' Subscription (' . $plan['tenure_label'] . ')',
+                'name'  => $__notifyName,
                 'qty'   => 1,
                 'price' => (float)($sub['amount'] ?? $plan['price']),
             ]];
