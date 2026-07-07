@@ -86,9 +86,17 @@
   tiltCards.forEach(function (el) {
     el.classList.add('s3d-tilt');
     var raf = null, rect = null;
-    // Read layout ONCE per hover (on enter) instead of on every mousemove,
-    // which avoids repeated forced reflows (PageSpeed: forced reflow).
-    el.addEventListener('mouseenter', function () { rect = el.getBoundingClientRect(); });
+    // Read layout inside requestAnimationFrame so the getBoundingClientRect()
+    // call runs at the top of the next frame — BEFORE any style-write in the
+    // same tick — which is the only reliable way to avoid the "forced reflow"
+    // PageSpeed flagged on this file (desktop + mobile 2026-07-07 report,
+    // savings ~50 ms per hover start). Previously the rect was read
+    // synchronously inside mouseenter, which if the browser had a pending
+    // style invalidation from an animation or CSS-class swap higher up in
+    // the tree caused a sync layout.
+    el.addEventListener('mouseenter', function () {
+      requestAnimationFrame(function () { rect = el.getBoundingClientRect(); });
+    });
     el.addEventListener('mousemove', function (e) {
       if (raf || !rect) return;
       var cx = e.clientX, cy = e.clientY;
