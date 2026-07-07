@@ -22,34 +22,74 @@ $st->execute([$orderNumber]);
 $order = $st->fetch();
 if (!$order || $order['status'] !== 'paid') { echo json_encode(['ok' => false, 'error' => 'Order not found.']); exit; }
 
-// First non-ProAssist product on the order — that's what the review attaches to.
-$it = $pdo->prepare("SELECT product_slug, name FROM order_items WHERE order_id=? AND product_slug <> 'proassist-premium' ORDER BY id ASC LIMIT 1");
+// ALL non-ProAssist products on the order — the review attaches to EVERY
+// one of them. Previously we picked only the FIRST product, so on a
+// 2+-product order the second/third products showed "No reviews yet"
+// on their product pages while the customer thought they had reviewed
+// them all. This iterates every purchased product and creates/updates
+// a customer_reviews row for each with the same rating + comment.
+$it = $pdo->prepare("SELECT product_slug, name FROM order_items WHERE order_id=? AND product_slug <> 'proassist-premium' ORDER BY id ASC");
 $it->execute([(int)$order['id']]);
-$item = $it->fetch();
-$slug = $item['product_slug'] ?? null;
-$productName = $item['name'] ?? 'your purchase';
+$purchasedItems = $it->fetchAll();
+if (empty($purchasedItems)) {
+    echo json_encode(['ok' => false, 'error' => 'No reviewable products on this order.']); exit;
+}
+// Product names for the thank-you email — "X, Y and Z" or single item.
+$productNames = array_column($purchasedItems, 'name');
+if (count($productNames) === 1) {
+    $productName = $productNames[0];
+} elseif (count($productNames) === 2) {
+    $productName = $productNames[0] . ' and ' . $productNames[1];
+} else {
+    $last = array_pop($productNames);
+    $productName = implode(', ', $productNames) . ' and ' . $last;
+}
 
 // Auto-hide low ratings (<3) — same policy as review.php. Anything 3+ is
 // published straight to the public reviews page.
 $autoStatus = $rating >= 3 ? 'published' : 'hidden';
 $custName = trim(((string)($order['first_name'] ?? '')) . ' ' . ((string)($order['last_name'] ?? ''))) ?: 'A customer';
 
-// Reuse the customer_reviews row created at fulfillment if it exists.
-$existing = $pdo->prepare('SELECT id, submitted_at FROM customer_reviews WHERE order_id=? AND product_slug=? LIMIT 1');
-$existing->execute([(int)$order['id'], $slug]);
-$row = $existing->fetch();
-
-if ($row) {
-    if (!empty($row['submitted_at'])) {
-        echo json_encode(['ok' => false, 'already' => true, 'error' => 'You have already submitted a review for this order. Thank you!']);
-        exit;
+// Save the same review against EVERY purchased product. If any one product
+// already has a submitted review for this order, we treat the whole order
+// as "already reviewed" (matches the old single-product behavior) — the
+// customer submits ONE review that fans out to N products atomically.
+$anyAlreadySubmitted = false;
+$rowsToUpdate  = []; // existing customer_reviews rows w/o submitted_at yet
+$slugsToInsert = []; // products without any customer_reviews row on this order
+foreach ($purchasedItems as $pi) {
+    $slugP = $pi['product_slug'];
+    $existing = $pdo->prepare('SELECT id, submitted_at FROM customer_reviews WHERE order_id=? AND product_slug=? LIMIT 1');
+    $existing->execute([(int)$order['id'], $slugP]);
+    $row = $existing->fetch();
+    if ($row) {
+        if (!empty($row['submitted_at'])) { $anyAlreadySubmitted = true; break; }
+        $rowsToUpdate[] = ['id' => (int)$row['id']];
+    } else {
+        $slugsToInsert[] = $slugP;
     }
-    $pdo->prepare('UPDATE customer_reviews SET rating=?, comment=?, ai_generated=?, status=?, submitted_at=NOW() WHERE id=?')
-        ->execute([$rating, $comment, $ai, $autoStatus, (int)$row['id']]);
-} else {
-    $tok = bin2hex(random_bytes(16));
-    $pdo->prepare('INSERT INTO customer_reviews (order_id, product_slug, customer_email, customer_name, rating, comment, ai_generated, status, request_token, submitted_at, region) VALUES (?,?,?,?,?,?,?,?,?,NOW(),?)')
-        ->execute([(int)$order['id'], $slug, $order['email'], $custName, $rating, $comment, $ai, $autoStatus, $tok, $order['region'] ?? 'US']);
+}
+if ($anyAlreadySubmitted) {
+    echo json_encode(['ok' => false, 'already' => true, 'error' => 'You have already submitted a review for this order. Thank you!']);
+    exit;
+}
+
+$pdo->beginTransaction();
+try {
+    foreach ($rowsToUpdate as $u) {
+        $pdo->prepare('UPDATE customer_reviews SET rating=?, comment=?, ai_generated=?, status=?, submitted_at=NOW() WHERE id=?')
+            ->execute([$rating, $comment, $ai, $autoStatus, $u['id']]);
+    }
+    foreach ($slugsToInsert as $slugP) {
+        $tok = bin2hex(random_bytes(16));
+        $pdo->prepare('INSERT INTO customer_reviews (order_id, product_slug, customer_email, customer_name, rating, comment, ai_generated, status, request_token, submitted_at, region) VALUES (?,?,?,?,?,?,?,?,?,NOW(),?)')
+            ->execute([(int)$order['id'], $slugP, $order['email'], $custName, $rating, $comment, $ai, $autoStatus, $tok, $order['region'] ?? 'US']);
+    }
+    $pdo->commit();
+} catch (Throwable $e) {
+    $pdo->rollBack();
+    @error_log('[success-review multi-product] ' . $e->getMessage());
+    echo json_encode(['ok' => false, 'error' => 'We could not save your review. Please try again.']); exit;
 }
 
 // Admin PWA bell.

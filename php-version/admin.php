@@ -13145,80 +13145,22 @@ elseif ($tab === 'reviews'):
     </table>
   </div>
 
-  <?php /* ================================================================
-             Google Reviews — manually-transcribed reviews from the
-             merchant's Google Business Profile.  Rendered on the public
-             /reviews.php page with a "From Google" badge and a link back
-             to the original review on Google.
-       ================================================================ */
-    $googleProfileUrl = setting_get('google_reviews_profile_url', '');
-    try {
-        $googleReviews  = $pdo->query("SELECT * FROM reviews WHERE source='google' ORDER BY review_date DESC, id DESC")->fetchAll();
-    } catch (Throwable $e) { $googleReviews = []; }
+  <?php
+    /* Google Reviews admin panel REMOVED per user request (2026-07-07).
+       Reason: the merchant wanted the Customer Reviews page kept simple —
+       only the customer_reviews table (real, product-attached reviews
+       collected post-purchase) is managed here. The old panel let admins
+       manually TRANSCRIBE reviews scraped from a Google Business Profile
+       into a separate `reviews` table with source='google' — a duplicate,
+       manually-copy-paste flow that was confusing next to the auto-collected
+       review pipeline right above.
+
+       The DB tables (`reviews` with source='google') and the /reviews.php
+       public rendering are left intact so any Google reviews already
+       imported still display, but the admin CAN no longer add new ones
+       from this UI. Post-purchase reviews (customer_reviews table)
+       remain the single source of truth for admin management. */
   ?>
-  <div class="card-e p-4 mt-4" data-testid="admin-google-reviews-panel">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-      <div>
-        <h6 class="fw-bold mb-1"><i class="bi bi-google me-1" style="color:#4285F4;"></i> Google Reviews</h6>
-        <p class="text-muted small mb-0">Manually add customer reviews from your Google Business Profile so they display on your <a href="reviews.php" target="_blank">Customer Reviews</a> page with a "From Google" badge.</p>
-      </div>
-    </div>
-
-    <form method="post" class="row g-2 mb-3" data-testid="admin-google-profile-url-form">
-      <input type="hidden" name="action" value="save_google_profile_url">
-      <div class="col-md-9">
-        <label class="form-label small mb-1">Your Google Business Profile "See all reviews" URL</label>
-        <input type="url" name="profile_url" class="form-control" placeholder="https://www.google.com/maps/place/..." value="<?= esc($googleProfileUrl) ?>" data-testid="admin-google-profile-url">
-        <div class="form-text small">Renders a "See all reviews on Google" CTA on the public reviews page.</div>
-      </div>
-      <div class="col-md-3 d-flex align-items-end">
-        <button class="btn btn-primary w-100" data-testid="admin-save-google-profile-url"><i class="bi bi-save me-1"></i>Save URL</button>
-      </div>
-    </form>
-
-    <form method="post" class="row g-2 border-top pt-3" data-testid="admin-google-review-add-form">
-      <input type="hidden" name="action" value="google_review_add">
-      <div class="col-md-4"><label class="form-label small mb-1">Customer name *</label><input type="text" name="name" class="form-control" required data-testid="admin-google-review-name"></div>
-      <div class="col-md-2"><label class="form-label small mb-1">Rating *</label>
-        <select name="rating" class="form-select" data-testid="admin-google-review-rating">
-          <option value="5">5 &#9733;</option><option value="4">4 &#9733;</option><option value="3">3 &#9733;</option><option value="2">2 &#9733;</option><option value="1">1 &#9733;</option>
-        </select>
-      </div>
-      <div class="col-md-3"><label class="form-label small mb-1">Review date</label><input type="date" name="review_date" class="form-control" value="<?= date('Y-m-d') ?>" data-testid="admin-google-review-date"></div>
-      <div class="col-md-3"><label class="form-label small mb-1">Location <small class="text-muted">(optional)</small></label><input type="text" name="location" class="form-control" placeholder="Los Angeles, CA" data-testid="admin-google-review-location"></div>
-      <div class="col-md-12"><label class="form-label small mb-1">Review text *</label><textarea name="text" class="form-control" rows="3" required placeholder="Paste the customer's review from Google here..." data-testid="admin-google-review-text"></textarea></div>
-      <div class="col-md-6"><label class="form-label small mb-1">Product referenced <small class="text-muted">(optional)</small></label><input type="text" name="product" class="form-control" placeholder="e.g. Microsoft Office 2024" data-testid="admin-google-review-product"></div>
-      <div class="col-md-6"><label class="form-label small mb-1">Direct link back to this review on Google <small class="text-muted">(optional)</small></label><input type="url" name="source_url" class="form-control" placeholder="https://www.google.com/maps/reviews/..." data-testid="admin-google-review-source-url"></div>
-      <div class="col-md-12"><label class="form-label small mb-1">Reviewer avatar URL <small class="text-muted">(optional)</small></label><input type="url" name="avatar_url" class="form-control" placeholder="https://..." data-testid="admin-google-review-avatar"></div>
-      <div class="col-12 pt-1">
-        <button class="btn btn-success" data-testid="admin-google-review-submit"><i class="bi bi-plus-circle me-1"></i>Add Google Review</button>
-      </div>
-    </form>
-
-    <div class="tbl-e mt-3">
-      <table class="table mb-0" data-testid="admin-google-reviews-table">
-        <thead><tr><th>Customer</th><th>Rating</th><th>Comment</th><th>Product</th><th>Link</th><th>Date</th><th></th></tr></thead>
-        <tbody>
-          <?php if (empty($googleReviews)): ?>
-            <tr><td colspan="7" class="text-center text-muted py-4">No Google reviews added yet. Use the form above to transcribe reviews from your Google Business Profile.</td></tr>
-          <?php endif; ?>
-          <?php foreach ($googleReviews as $gr): ?>
-            <tr data-testid="admin-google-review-row-<?= (int)$gr['id'] ?>">
-              <td><strong><?= esc($gr['name']) ?></strong><?php if (!empty($gr['location'])): ?><br><small class="text-muted"><?= esc($gr['location']) ?></small><?php endif; ?></td>
-              <td><?= str_repeat('&#9733;', (int)$gr['rating']) . str_repeat('&#9734;', 5 - (int)$gr['rating']) ?></td>
-              <td><small><?= esc(mb_strimwidth((string)$gr['text'], 0, 120, '…')) ?></small></td>
-              <td><small class="text-muted"><?= esc((string)$gr['product']) ?></small></td>
-              <td><?php if (!empty($gr['source_url'])): ?><a href="<?= esc($gr['source_url']) ?>" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i></a><?php endif; ?></td>
-              <td><small class="text-muted"><?= esc((string)$gr['review_date']) ?></small></td>
-              <td>
-                <form method="post" class="d-inline" onsubmit="return confirm('Delete this Google review?')"><input type="hidden" name="action" value="google_review_delete"><input type="hidden" name="review_id" value="<?= (int)$gr['id'] ?>"><button class="btn btn-soft-red btn-sm py-0 px-2" data-testid="admin-google-review-delete-<?= (int)$gr['id'] ?>"><i class="bi bi-trash"></i></button></form>
-              </td>
-            </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
-  </div>
 
 
 <?php elseif ($tab === 'settings'):

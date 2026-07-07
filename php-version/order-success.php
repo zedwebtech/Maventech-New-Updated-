@@ -260,24 +260,39 @@ if (!$isDemo && $order && !empty($order['subscription_plan'])) {
 }
 
 // Has the customer already reviewed this order? (avoid showing the prompt twice)
+// Also collects the FULL list of purchased non-ProAssist product names — the
+// AI review generator gets prompted about ALL products at once so a
+// multi-item order produces a single review that actually mentions each
+// purchased title, instead of a review about only the first product.
 $reviewAlreadyDone = false;
-$reviewProductName = '';
+$reviewProductName = '';                          // Human display string ("A, B and C")
+$reviewProductNamesList = [];                     // Raw array — used by the AI prompt
 if (!$isDemo && $order && $order['status'] === 'paid') {
     try {
-        $rv = db()->prepare("SELECT cr.submitted_at, cr.product_slug, p.name
-                             FROM customer_reviews cr LEFT JOIN products p ON p.slug=cr.product_slug
-                             WHERE cr.order_id=? ORDER BY cr.id ASC LIMIT 1");
+        $rv = db()->prepare("SELECT cr.submitted_at
+                             FROM customer_reviews cr
+                             WHERE cr.order_id=?
+                             ORDER BY cr.id ASC LIMIT 1");
         $rv->execute([(int)$order['id']]);
         if ($rrow = $rv->fetch()) {
             $reviewAlreadyDone = !empty($rrow['submitted_at']);
-            $reviewProductName = (string)($rrow['name'] ?? '');
         }
     } catch (Throwable $e) { /* non-fatal */ }
-    if ($reviewProductName === '') {
-        foreach ($orderItems as $oiN) {
-            if (($oiN['product_slug'] ?? '') === 'proassist-premium') continue;
-            $reviewProductName = (string)($oiN['name'] ?? ''); break;
-        }
+    // Gather every non-ProAssist product name on the order (in checkout order).
+    foreach ($orderItems as $oiN) {
+        if (($oiN['product_slug'] ?? '') === 'proassist-premium') continue;
+        $nm = trim((string)($oiN['name'] ?? ''));
+        if ($nm !== '') $reviewProductNamesList[] = $nm;
+    }
+    // Build a natural-language string: "X" / "X and Y" / "X, Y and Z".
+    if (count($reviewProductNamesList) === 1) {
+        $reviewProductName = $reviewProductNamesList[0];
+    } elseif (count($reviewProductNamesList) === 2) {
+        $reviewProductName = $reviewProductNamesList[0] . ' and ' . $reviewProductNamesList[1];
+    } elseif (count($reviewProductNamesList) > 2) {
+        $tail = end($reviewProductNamesList);
+        $head = array_slice($reviewProductNamesList, 0, -1);
+        $reviewProductName = implode(', ', $head) . ' and ' . $tail;
     }
 }
 ?>
@@ -809,17 +824,59 @@ if ($gcrOptInEnabled && $isPaid && $gmcId !== '' && !empty($order['email'])):
               else if (d.published === false) { document.getElementById('srThanksMsg').textContent = 'Thanks for your feedback — our team will follow up to make things right.'; }
               document.getElementById('srThanks').style.display='block';
               // Funnel happy reviewers (4-5★) to Google with their words pre-copied.
+              // IMPORTANT click-handler order (fixes the "review didn't paste on Google" bug
+              // the customer reported): browsers require window.open() to be called
+              // SYNCHRONOUSLY inside the same user-gesture stack as the click event —
+              // if we await navigator.clipboard.writeText() first, Chrome/Safari/Edge
+              // popup-blockers reject the subsequent window.open(). And on iOS Safari
+              // the clipboard write itself is disallowed outside a direct user gesture.
+              // So we:
+              //   1. Open the Google review tab SYNCHRONOUSLY (no async before it),
+              //   2. Fire navigator.clipboard.writeText() right after — this DOES
+              //      execute inside the same gesture and iOS honours it,
+              //   3. Reveal the "review copied — paste on Google" hint immediately
+              //      AND change the button label to a permanent "Review copied"
+              //      state so the user knows to just Cmd/Ctrl-V into Google.
               if (GREVIEW && !d.already && rating >= 4) {
                 var savedComment = cmt.value.trim();
                 var wrap = document.getElementById('srGoogleShareWrap');
                 var gbtn = document.getElementById('srGoogleShare');
                 if (wrap && gbtn) {
                   wrap.style.display = 'block';
-                  gbtn.onclick = function(){
-                    function go(){ window.open(GREVIEW, '_blank', 'noopener'); var h=document.getElementById('srGoogleShareHint'); if(h) h.style.display='block'; }
-                    if (savedComment && navigator.clipboard && navigator.clipboard.writeText) {
-                      navigator.clipboard.writeText(savedComment).then(go, go);
-                    } else { go(); }
+                  gbtn.onclick = function(e){
+                    if (e && e.preventDefault) e.preventDefault();
+                    // (1) synchronous window.open — must be first.
+                    var w = window.open(GREVIEW, '_blank', 'noopener');
+                    // (2) clipboard write in the same gesture tick.
+                    if (savedComment) {
+                      try {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                          navigator.clipboard.writeText(savedComment);
+                        } else {
+                          var ta = document.createElement('textarea');
+                          ta.value = savedComment;
+                          ta.style.position = 'fixed'; ta.style.top = '-1000px';
+                          document.body.appendChild(ta);
+                          ta.select();
+                          try { document.execCommand('copy'); } catch (_) {}
+                          ta.remove();
+                        }
+                      } catch (_) { /* best-effort */ }
+                    }
+                    // (3) update the UI: show the "paste on Google" hint permanently
+                    // and swap the button label so the customer knows next step.
+                    var h = document.getElementById('srGoogleShareHint');
+                    if (h) h.style.display = 'block';
+                    var lbl = document.getElementById('srGoogleShareLabel');
+                    if (lbl) lbl.textContent = 'Review copied — paste it on Google';
+                    if (!w) {
+                      // Popup blocked despite everything — surface a clickable
+                      // fallback link so the reviewer can still open Google
+                      // (their text is safely on the clipboard already).
+                      if (h) {
+                        h.innerHTML = '<i class="bi bi-clipboard-check me-1"></i>Your review is copied. <a href="' + GREVIEW + '" target="_blank" rel="noopener" style="color:#0369a1;text-decoration:underline;font-weight:700;">Open Google &rarr;</a> and paste it.';
+                      }
+                    }
                   };
                 }
               }
