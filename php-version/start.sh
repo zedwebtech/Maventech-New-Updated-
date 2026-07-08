@@ -132,6 +132,18 @@ if [ -z "$(mysql -uroot ucode_store -Nse "SELECT v FROM settings WHERE k='origin
   mysql -uroot ucode_store -e "UPDATE products SET original_price = 0 WHERE original_price IS NOT NULL AND original_price > 0" 2>/dev/null || true
   mysql -uroot ucode_store -e "INSERT INTO settings (k, v) VALUES ('original_price_bulk_cleared_v1', '1') ON DUPLICATE KEY UPDATE v='1'" 2>/dev/null || true
 fi
+# Second-pass bulk-clear (v2) — used to enforce original_price=0 AFTER a
+# customer re-imports database.sql on their production (which restores the
+# MSRP values). The v1 flag above is already set on the merchant's live
+# install, so v1 alone would never re-run. The v2 flag runs the UPDATE
+# exactly ONCE more per install, then latches so subsequent boots skip.
+# This lets us ship database.sql with the historical MSRPs preserved (for
+# any merchant who ever wants to opt back in via SQL) while defaulting
+# every live-served page to 'no discount visible until admin re-enables'.
+if [ -z "$(mysql -uroot ucode_store -Nse "SELECT v FROM settings WHERE k='original_price_bulk_cleared_v2' AND v='1' LIMIT 1" 2>/dev/null)" ]; then
+  mysql -uroot ucode_store -e "UPDATE products SET original_price = 0 WHERE original_price IS NOT NULL AND original_price > 0" 2>/dev/null || true
+  mysql -uroot ucode_store -e "INSERT INTO settings (k, v) VALUES ('original_price_bulk_cleared_v2', '1') ON DUPLICATE KEY UPDATE v='1'" 2>/dev/null || true
+fi
 # Google Merchant Center — Return Policy URL requirement.  Some older DB
 # imports never gained a dedicated `return-policy` slug row (only
 # `refund-policy` was seeded), which made /return-policy.php render its

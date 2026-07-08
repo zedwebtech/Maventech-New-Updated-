@@ -182,21 +182,33 @@ $gcrMid = trim((string)setting_get('google_merchant_id', defined('GOOGLE_MERCHAN
 $gcrPos = trim((string)setting_get('gcr_badge_position', 'BOTTOM_LEFT'));
 if ($gcrMid !== '' && ctype_digit($gcrMid)):
 ?>
-<!-- Google Customer Reviews badge -->
-<script id="merchantWidgetScript" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>
+<!-- Google Customer Reviews badge — deferred until first interaction / idle
+     (same gate as GTM). Rationale (PageSpeed Mob 2026-07-08): the widget
+     runs a 57 ms forced reflow inside its internal init, so leaving it
+     with a plain `defer` still ate into LCP. Delaying to the __mvTrk
+     interaction/3 s-post-load gate removes it from the initial critical
+     path entirely — no visible UX regression (the badge still appears
+     within seconds for any real user who scrolls / clicks). -->
 <script>
-  merchantWidgetScript.addEventListener('load', function () {
-    merchantwidget.start({
-      merchant_id: <?= (int)$gcrMid ?>,
-      position: "<?= esc($gcrPos) ?>"
-    });
-    // Accessibility: the badge iframe Google injects has no title attribute
-    // (PageSpeed: "<iframe> elements do not have a title"). Set it once it appears.
-    var _mwT = setInterval(function () {
-      var f = document.getElementById('merchantwidgetiframe');
-      if (f) { f.setAttribute('title', 'Google Customer Reviews'); clearInterval(_mwT); }
-    }, 400);
-    setTimeout(function () { clearInterval(_mwT); }, 12000);
+  window.__mvTrk = window.__mvTrk || [];
+  window.__mvTrk.push(function () {
+    var s = document.createElement('script');
+    s.src = 'https://www.gstatic.com/shopping/merchant/merchantwidget.js';
+    s.async = true;
+    s.id = 'merchantWidgetScript';
+    s.onload = function () {
+      if (typeof merchantwidget === 'undefined') return;
+      merchantwidget.start({
+        merchant_id: <?= (int)$gcrMid ?>,
+        position: "<?= esc($gcrPos) ?>"
+      });
+      var _mwT = setInterval(function () {
+        var f = document.getElementById('merchantwidgetiframe');
+        if (f) { f.setAttribute('title', 'Google Customer Reviews'); clearInterval(_mwT); }
+      }, 400);
+      setTimeout(function () { clearInterval(_mwT); }, 12000);
+    };
+    document.head.appendChild(s);
   });
 </script>
 <!-- end Google Customer Reviews badge -->

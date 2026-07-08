@@ -499,6 +499,15 @@ include __DIR__ . '/includes/header.php';
         <?php if (!empty($product['badge'])): ?>
           <span class="badge badge-promo" data-testid="pd-promo-badge"><?= esc($product['badge']) ?></span>
         <?php endif; ?>
+        <?php /* Discount % pill — placed IMMEDIATELY after the promotion
+                badge so the two live-together look matches the admin's
+                Live Website Preview panel (Hot Pick + 20% OFF).  Rendered
+                only when the admin has set original_price > sale_price.
+                The strikethrough MSRP + "You save $X" line stay near the
+                price further down for context. */ ?>
+        <?php if ($discountPct > 0): ?>
+          <span class="badge badge-promo-off rounded-pill" data-testid="pd-discount-pill"><?= $discountPct ?>% Off</span>
+        <?php endif; ?>
       </div>
       <h1 class="h3 fw-bold" data-testid="product-name"><?= esc($adsH1 ?? $product['name']) ?></h1>
       <?php /* Original product name preserved as small subtitle so the
@@ -557,11 +566,6 @@ include __DIR__ . '/includes/header.php';
         <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
           <span class="surplus-price-label surplus-price-label-lg" data-testid="product-surplus-label">Direct Price</span>
           <span class="display-6 fw-bold text-primary lh-1" data-testid="product-price"><?= format_price((float)$product['price']) ?></span>
-          <?php if ($discountPct > 0): ?>
-            <span class="badge badge-promo-off rounded-pill" data-testid="pd-discount-pill" style="font-size:.85rem;font-weight:700;letter-spacing:.03em;">
-              <?= $discountPct ?>% Off
-            </span>
-          <?php endif; ?>
         </div>
         <?php if ($discountPct > 0): ?>
           <div class="small fw-semibold text-success mb-1" data-testid="pd-save-line">
