@@ -8317,3 +8317,109 @@ agent_communication:
             (g) Regression: GET / (homepage), /shop.php, /category.php?slug=office-2024-pc → all HTTP 200; no PHP notice/warning in /var/log/supervisor/frontend.err.log.
             (h) Regression on admin: GET /admin.php?tab=products&action=edit&slug=microsoft-office-2024-professional-plus-windows → HTTP 200, "Pricing & Discount" section renders with the three inputs unchanged (Original Price / Sale Price / auto-calculated % Off) and the "Promotional Badge" section renders with the badge input + 8 preset chips (Best Seller / New Arrival / etc.).
 
+
+  - task: "Bug verification — discount pills and promotional badges invisible on product pages despite correct database values"
+    implemented: true
+    working: false
+    file: "php-version/assets/css/style.min.css"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "user"
+        -comment: |
+          USER REPORT: The site admin set original_price=50.00, price=39.99, and badge='Hot Pick' for product slug=mcafee-premium-individual-1-year-unlimited-devices-usa. Customer expected all discount elements to show on the public product page and shop cards. Screenshots show the strikethrough MSRP and "You save $X" line render fine, BUT:
+            - The "20% Off" red discount pill is INVISIBLE on the product detail page even though the DOM has [data-testid="pd-discount-pill"]
+            - The "Hot Pick" promotion badge chip near the H1 is INVISIBLE even though the DOM has [data-testid="pd-promo-badge"]
+            - On the shop card, the same pill ([data-testid="card-discount-<slug>"]) and image-corner promo badge (.badge.badge-promo) are invisible too
+          
+          Customer's product with real discount verified in DB: slug=mcafee-premium-individual-1-year-unlimited-devices-usa, price=39.99, original_price=50.00, badge='Hot Pick', discount=20%.
+        
+        -working: false
+        -agent: "testing"
+        -comment: |
+          ✗ BUG CONFIRMED — ROOT CAUSE IDENTIFIED
+          
+          CRITICAL FINDING: The discount pills and promotional badges ARE present in the DOM with correct text content, but they are INVISIBLE to users because the CSS background colors are not being applied. The elements have `backgroundColor: 'rgba(0, 0, 0, 0)'` (transparent) instead of the expected red/orange gradient.
+          
+          ROOT CAUSE: The minified CSS file (assets/css/style.min.css) that is served to browsers is OUTDATED and does NOT contain the .badge-promo and .badge-promo-off styles. The source file (assets/css/style.css) has the correct styles at lines 5046-5075:
+            - .badge.badge-promo: background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+            - .badge.badge-promo-off: background: #ef4444;
+          
+          However, the minified version ends with .surplus-price-label styles and does NOT include these badge styles. Since the HTML loads style.min.css (not style.css), browsers never see the badge backgrounds, resulting in transparent/invisible badges.
+          
+          VERIFICATION RESULTS:
+          
+          DATABASE STATE (BEFORE TESTING):
+          - Initial check: ALL 37 products had original_price=0.00 (bulk-cleared on 2026-07-07)
+          - Updated mcafee product to match customer report: original_price=50.00, price=39.99, badge='Hot Pick'
+          
+          TEST 1 — Product detail page (/product.php?slug=mcafee-premium-individual-1-year-unlimited-devices-usa):
+          ✓ pd-was-price: EXISTS, IS_VISIBLE, text='$50.00', has line-through decoration
+          ✗ pd-discount-pill: EXISTS, IS_VISIBLE, text='20% Off', BUT backgroundColor='rgba(0, 0, 0, 0)' (TRANSPARENT) ← BUG
+          ✓ pd-save-line: EXISTS, IS_VISIBLE, text='You save $10.01 off MSRP'
+          ✗ pd-promo-badge: EXISTS, IS_VISIBLE, text='Hot Pick', BUT backgroundColor='rgba(0, 0, 0, 0)' (TRANSPARENT) ← BUG
+          ✓ Image-corner badge (.badge.badge-promo.position-absolute): EXISTS, IS_VISIBLE, text='Hot Pick', width=60.078125px
+          
+          TEST 2 — Shop card page (/shop.php?category=mcafee):
+          ✗ card-discount-mcafee-premium-individual-1-year-unlimited-devices-usa: EXISTS, IS_VISIBLE, text='20% Off', BUT backgroundColor='rgba(0, 0, 0, 0)' (TRANSPARENT) ← BUG
+          ✓ card-orig-price-mcafee-premium-individual-1-year-unlimited-devices-usa: EXISTS, IS_VISIBLE, text='$50.00', has line-through decoration
+          ✓ Image-corner badge on McAfee card: EXISTS, IS_VISIBLE, text='Hot Pick'
+          
+          TEST 3 — Regression with original_price=0:
+          ✓ pd-was-price: NOT present (count=0) ✓
+          ✓ pd-discount-pill: NOT present (count=0) ✓
+          ✓ pd-save-line: NOT present (count=0) ✓
+          ✓ pd-promo-badge: STILL present (count=1), text='Hot Pick' ✓
+          
+          CSS FILE ANALYSIS:
+          - style.css (234,933 bytes, 5,075 lines): Contains correct .badge-promo and .badge-promo-off styles at lines 5046-5075
+          - style.min.css (168,413 bytes, 0 newlines): Does NOT contain "badge-promo" or "badge-promo-off" strings (grep returned 0 matches)
+          - HTML loads: <link href="assets/css/style.min.css?v=1783485448" rel="stylesheet">
+          
+          IMPACT:
+          - Discount pills (20% Off) are invisible on product pages and shop cards
+          - Promotional badges (Hot Pick, Best Seller, etc.) are invisible on product pages and shop cards
+          - Strikethrough prices and "You save $X" text ARE visible (these use inline styles or other CSS classes)
+          - The PHP logic is correct - elements are rendered with correct text and data-testid attributes
+          - The issue is purely CSS - the minified stylesheet is out of sync with the source
+          
+          FIX REQUIRED:
+          Regenerate style.min.css from style.css to include the .badge-promo and .badge-promo-off styles. The minification process needs to be re-run to sync the minified file with the source.
+          
+          SCREENSHOTS:
+          - .screenshots/test1_product_page_discount_elements.png: Shows product page with invisible discount pill and promo badge
+          - .screenshots/test2_shop_page_mcafee_card.png: Shows shop page with invisible discount pill on card
+          
+          NOTE: I did NOT modify any code during testing (verification only). The database was temporarily updated to match the customer's reported state (original_price=50.00) for testing purposes, then restored.
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Bug verification — discount pills and promotional badges invisible"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "testing"
+    -message: |
+      CRITICAL BUG CONFIRMED: Discount pills and promotional badges are invisible due to outdated minified CSS file.
+      
+      The root cause is that style.min.css does not contain the .badge-promo and .badge-promo-off styles that exist in style.css. The minified file needs to be regenerated.
+      
+      FIX: Regenerate /app/php-version/assets/css/style.min.css from /app/php-version/assets/css/style.css to include the badge styles at lines 5046-5075.
+      
+      All other functionality is working correctly:
+      - PHP logic correctly renders elements with proper data-testid attributes
+      - Strikethrough prices and "You save $X" text are visible
+      - Regression test passed (elements correctly hidden when original_price=0)
+      - Database queries are correct
+      
+      This is a build/deployment issue, not a code logic issue.
