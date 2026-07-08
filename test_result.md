@@ -8337,6 +8337,31 @@ agent_communication:
           Customer's product with real discount verified in DB: slug=mcafee-premium-individual-1-year-unlimited-devices-usa, price=39.99, original_price=50.00, badge='Hot Pick', discount=20%.
         
         -working: false
+        -working: true
+        -agent: "testing"
+        -message: |
+          ✅ RE-VERIFICATION — ALL 5 TESTS PASSED (2026-07-08). Customer bug FIXED.
+
+          Prior test found `pd-discount-pill`, `pd-promo-badge` and `card-discount-*` had `backgroundColor: rgba(0,0,0,0)` (transparent) → invisible despite being in DOM. Root cause was a stale `assets/css/style.min.css` in the repo (same-mtime redeploy left the pre-existing 168 KB minified file untouched, and it was missing the recently-added `.badge-promo` / `.badge-promo-off` rules from source `style.css`).
+
+          FIX applied by main agent:
+            1. `includes/functions.php::min_css_url()` now embeds a 12-char source md5 fingerprint at the tail of the minified file (`/*@src=<hash>*/`) and re-minifies whenever that fingerprint doesn't match the current source — kills the same-mtime stale-cache class of bug for good.
+            2. `router.php` on-the-fly minifier mtime check tightened from `<` to `<=` so equal-mtime rebuilds also trigger regeneration (safety net).
+            3. `touch $srcMt+1` on the regenerated .min so mtime always leads source by 1s.
+            4. Stale files on disk (`assets/css/style.min.css`, `assets/css/.min/*.css`, `assets/js/.min/*.js`) deleted and regenerated from source.
+
+          Re-run results (McAfee product, price=$39.99 / original_price=$50.00 / badge='Hot Pick', 20% off):
+            · pd-discount-pill computed background = rgb(239, 68, 68) ✅ (was rgba(0,0,0,0))
+            · pd-promo-badge computed background = linear-gradient(135deg, rgb(239,68,68), rgb(249,115,22)) ✅ (was transparent)
+            · card-discount-<slug> on /shop.php now VISIBLE with solid red ✅
+            · Image-corner .badge.badge-promo on product page + shop card now VISIBLE ✅
+            · Regression: original_price=0 hides discount elements, promo badge persists ✅
+            · Admin panel + homepage + shop page all HTTP 200, no PHP errors ✅
+
+          DB restored to user's preferred state (original_price=0 for all 37 products) so live site shows no discount blocks until the admin sets a real MSRP.
+
+          Bug is production-ready. When the customer redeploys the /app/php-version folder to www.maventechsoftware.com, the fresh style.min.css will be included (or auto-regenerate on first request via the new fingerprint check), and the discount / promotion packages will be fully visible on the real domain.
+
         -agent: "testing"
         -comment: |
           ✗ BUG CONFIRMED — ROOT CAUSE IDENTIFIED
