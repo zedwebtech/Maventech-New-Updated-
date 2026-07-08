@@ -70,7 +70,9 @@ var MAX = 5;
 tiltCards.forEach(function (el) {
 el.classList.add('s3d-tilt');
 var raf = null, rect = null;
-el.addEventListener('mouseenter', function () { rect = el.getBoundingClientRect(); });
+el.addEventListener('mouseenter', function () {
+requestAnimationFrame(function () { rect = el.getBoundingClientRect(); });
+});
 el.addEventListener('mousemove', function (e) {
 if (raf || !rect) return;
 var cx = e.clientX, cy = e.clientY;

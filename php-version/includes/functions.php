@@ -952,7 +952,30 @@ function min_css_url(string $srcFsPath, string $srcWebPath): string {
     $minFs  = preg_replace('/\.css$/', '.min.css', $srcFsPath);
     $minWeb = preg_replace('/\.css$/', '.min.css', $srcWebPath);
     $srcMt  = (int)@filemtime($srcFsPath);
-    if (!is_file($minFs) || (int)@filemtime($minFs) < $srcMt) {
+    /* Detect a stale minified companion by a two-part check:
+     *   1) mtime  – the classic "source edited after minified" case.
+     *   2) content-fingerprint – on shared hosting (cPanel FTP re-upload,
+     *      git-checkout, tarball extract) BOTH files can land with the
+     *      same mtime, which used to leave the stale .min.css in place
+     *      and hide freshly-added CSS rules (BUG: 2026-07-08 — new
+     *      .badge-promo rules were missing from style.min.css because
+     *      both files had equal mtime after the last redeploy, so the
+     *      "% Off" pill + "Hot Pick" promo badge rendered transparent).
+     *   The fingerprint is a short prefix-tail hash of the source that
+     *   we embed at the end of the .min file as a CSS comment.  If the
+     *   hash embedded in the minified file doesn't match the fresh
+     *   hash of the source, we re-minify — cheap, deterministic, no
+     *   external deps, and works on any host that can write PHP files.
+     */
+    $srcHash = is_file($srcFsPath) ? substr(md5_file($srcFsPath), 0, 12) : '';
+    $stale = !is_file($minFs) || (int)@filemtime($minFs) < $srcMt;
+    if (!$stale && $srcHash !== '') {
+        $tail = @file_get_contents($minFs, false, null, max(0, filesize($minFs) - 64));
+        if ($tail === false || strpos($tail, '/*@src=' . $srcHash . '*/') === false) {
+            $stale = true;
+        }
+    }
+    if ($stale) {
         $css = (string)@file_get_contents($srcFsPath);
         if ($css === '') return $srcWebPath . '?v=' . $srcMt;
         $css = preg_replace('!/\*.*?\*/!s', '', $css);            // strip comments
@@ -960,9 +983,13 @@ function min_css_url(string $srcFsPath, string $srcWebPath): string {
         $css = preg_replace('/\s*([{}:;,>~+])\s*/', '$1', $css);  // trim around tokens
         $css = str_replace(';}', '}', (string)$css);
         $css = trim((string)$css);
+        // Embed source-fingerprint marker so a later request can detect
+        // when the source has changed even if the mtime hasn't moved.
+        if ($srcHash !== '') $css .= "\n/*@src=" . $srcHash . "*/";
         if (@file_put_contents($minFs, $css) === false) {
             return $srcWebPath . '?v=' . $srcMt;                  // dir not writable → original
         }
+        @touch($minFs, $srcMt + 1);                               // guarantee minFs mtime > srcMt
     }
     return $minWeb . '?v=' . (int)@filemtime($minFs);
 }

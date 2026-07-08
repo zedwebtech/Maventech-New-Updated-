@@ -522,7 +522,7 @@ if ($path !== '/' && file_exists($file) && !is_dir($file)) {
             if (!is_dir($minDir)) @mkdir($minDir, 0775, true);
             $minFile = $minDir . '/' . basename($file);
             $srcMtime = filemtime($file);
-            if (!file_exists($minFile) || filemtime($minFile) < $srcMtime) {
+            if (!file_exists($minFile) || filemtime($minFile) <= $srcMtime) {
                 $src = file_get_contents($file);
                 if ($ext === 'css') {
                     // Strip /* ... */ comments (non-greedy), collapse whitespace,
