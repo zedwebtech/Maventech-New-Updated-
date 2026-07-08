@@ -896,7 +896,7 @@ matter how stale the DB rows are.
   - merchant-feed.xml: every `<link>` is `https://maventechsoftware.com` ✓
   - JSON-LD on homepage: 0 preview hostnames ✓
   - The stale `company_logo` DB row pointing at
-    `https://bugfix-preview-11.preview.emergentagent.com/uploads/...` is
+    `https://pricing-display-3.preview.emergentagent.com/uploads/...` is
     transparently rewritten on output → relative URL ✓
 - CSS/JS/static assets untouched (content-type guard) ✓
 - Storefront on preview URL renders pixel-perfect with no regression

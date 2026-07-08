@@ -1051,7 +1051,7 @@ frontend:
           ✅ BUG FIX VERIFICATION COMPLETE - ALL 4 SECTIONS PASSED
           
           SECTION 1 — External preview URL (through Cloudflare): ✅ PASS
-          - curl -sk -i https://bugfix-preview-11.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301) ✅
+          - curl -sk -i https://pricing-display-3.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301) ✅
           - x-powered-by: PHP/8.2.31 header present ✅
           - Body contains "Maventech" (site title) ✅
           - Body contains "Microsoft" (hero copy) ✅
@@ -1493,7 +1493,7 @@ agent_communication:
     -agent: "main"
     -message: |
       COMPREHENSIVE UI TESTING REQUEST — Test the installation guide feature end-to-end via browser automation.
-      Focus ONLY on the new installation guide feature. Test at https://bugfix-preview-11.preview.emergentagent.com
+      Focus ONLY on the new installation guide feature. Test at https://pricing-display-3.preview.emergentagent.com
       
       PART 1-4: Test native guide pages, product page block, order history page, and admin filter.
 
@@ -2132,7 +2132,7 @@ frontend:
         -agent: "testing"
         -comment: |
           COMPREHENSIVE GOOGLE ADS/MERCHANT COMPLIANCE TESTING COMPLETE
-          Tested 10 critical compliance items on preview URL: https://bugfix-preview-11.preview.emergentagent.com
+          Tested 10 critical compliance items on preview URL: https://pricing-display-3.preview.emergentagent.com
           
           CRITICAL FAILURES (MUST FIX):
           
@@ -2240,7 +2240,7 @@ agent_communication:
     -message: |
       ✅ GOOGLE ADS/MERCHANT COMPLIANCE TESTING COMPLETE — 1 CRITICAL FAILURE FOUND
       
-      Tested all 10 compliance items from the review request on preview URL: https://bugfix-preview-11.preview.emergentagent.com
+      Tested all 10 compliance items from the review request on preview URL: https://pricing-display-3.preview.emergentagent.com
       
       CRITICAL FAILURE (MUST FIX IMMEDIATELY):
       ✗ "Save up to 10%" discount badge appears in top navigation bar
@@ -2484,7 +2484,7 @@ agent_communication:
 
       PLEASE VERIFY at http://localhost:3000/ (preview) and via curl with faked host headers (we can't test their real Apache, but we can validate the intent of router.php + inspect .htaccess statically):
 
-        (a) Preview host unchanged: GET https://bugfix-preview-11.preview.emergentagent.com/ → HTTP 200 (no redirect). Also confirm curl -si -H "Host: 58485f15-d8bc-415a-9027-8cd21a31434f.preview.emergentagent.com" http://127.0.0.1:3000/ → 200.
+        (a) Preview host unchanged: GET https://pricing-display-3.preview.emergentagent.com/ → HTTP 200 (no redirect). Also confirm curl -si -H "Host: 58485f15-d8bc-415a-9027-8cd21a31434f.preview.emergentagent.com" http://127.0.0.1:3000/ → 200.
 
         (b) Router redirect direction for a real-world host — simulate an HTTPS request behind a proxy. Send curl -si -H "Host: www.maventechsoftware.com" -H "X-Forwarded-Proto: https" http://127.0.0.1:3000/. Expected: HTTP/1.1 301 Moved Permanently with `Location: https://maventechsoftware.com/` (www stripped, HTTPS preserved). Then curl -si -H "Host: maventechsoftware.com" -H "X-Forwarded-Proto: https" http://127.0.0.1:3000/ → HTTP 200 (naked passes through, no redirect).
 
@@ -2514,7 +2514,7 @@ agent_communication:
 
       User report: clicking the "open in new tab" arrow on the Emergent preview panel opens a broken page. Cause was router.php redirecting the preview host (bdc5651e-…preview.emergentagent.com) 301 → http://www.bdc5651e-…preview.emergentagent.com/ (that www. host doesn't resolve).
       Fix applied in /app/php-version/router.php lines 65-73: broadened the canonical-host-redirect bypass to cover any *.emergentagent.com (and *.emergent.host) host, and to also honour X-Forwarded-Host (Cloudflare/ingress) with any :port suffix stripped. Localhost bypass unchanged. No other files touched.
-      Please verify at https://bugfix-preview-11.preview.emergentagent.com/ (and via internal curl at http://localhost:3000/):
+      Please verify at https://pricing-display-3.preview.emergentagent.com/ (and via internal curl at http://localhost:3000/):
         (a) GET / returns HTTP 200 (no 301 to a www.* host).
         (b) Homepage renders full HTML — title contains "Maventech" / "Microsoft Office", hero section present.
         (c) A few other key routes still return 200: /shop.php, /product.php?slug=windows-11-pro, /cart.php, /install-guide.php?slug=microsoft-office-2024-professional-plus-windows.
@@ -2608,7 +2608,7 @@ agent_communication:
       TEST RESULTS:
       
       SECTION 1 — External preview URL (through Cloudflare): ✅ PASS
-      - curl -sk -i https://bugfix-preview-11.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301 to www.*)
+      - curl -sk -i https://pricing-display-3.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301 to www.*)
       - x-powered-by: PHP/8.2.31 header present
       - Body contains "Maventech" (site title) and "Microsoft" (hero copy)
       - Full HTML rendered, not an empty body or redirect page
@@ -2893,7 +2893,7 @@ frontend:
           VERIFICATION RESULTS (per review request):
           
           TEST 1: ✅ LOGIN FLOW — PASS
-          - Navigated to https://bugfix-preview-11.preview.emergentagent.com/login.php
+          - Navigated to https://pricing-display-3.preview.emergentagent.com/login.php
           - Filled credentials: admin@maventechsoftware.com / Admin@UC2026!
           - Clicked "Log In" button
           - Result: Successfully redirected to /admin.php?tab=dashboard ✅
@@ -2946,12 +2946,12 @@ test_plan:
 
 agent_communication:
     -agent: "main"
-    -message: "Please verify admin login. Preview URL: https://bugfix-preview-11.preview.emergentagent.com/login.php - Enter email admin@maventechsoftware.com and password Admin@UC2026! then click Log In. It should redirect to /admin.php with the admin control panel visible (sidebar with Dashboard/Users/Company Info/etc.). Also confirm the Google Ads Smart-Bidding Blueprint status card renders under Admin -> Company Info tab (data-testid=google-ads-blueprint-card). Report only login pass/fail and whether the blueprint card is visible."
+    -message: "Please verify admin login. Preview URL: https://pricing-display-3.preview.emergentagent.com/login.php - Enter email admin@maventechsoftware.com and password Admin@UC2026! then click Log In. It should redirect to /admin.php with the admin control panel visible (sidebar with Dashboard/Users/Company Info/etc.). Also confirm the Google Ads Smart-Bidding Blueprint status card renders under Admin -> Company Info tab (data-testid=google-ads-blueprint-card). Report only login pass/fail and whether the blueprint card is visible."
     -agent: "testing"
     -message: |
       ✅ ADMIN LOGIN BUG FIX VERIFICATION COMPLETE — ALL TESTS PASSED
       
-      Verified the admin login bug fix on preview pod (https://bugfix-preview-11.preview.emergentagent.com):
+      Verified the admin login bug fix on preview pod (https://pricing-display-3.preview.emergentagent.com):
       
       1. ✅ LOGIN FLOW: Successfully logged in with admin@maventechsoftware.com / Admin@UC2026! — redirected to /admin.php?tab=dashboard with full admin control panel visible (sidebar with Dashboard, Users, Company Info, Orders, etc.). NO "Invalid username/email or password" error.
       
@@ -2994,7 +2994,7 @@ test_plan:
 agent_communication:
     -agent: "main"
     -message: |
-      Please verify 3 things on the Maventech PHP storefront preview URL (https://bugfix-preview-11.preview.emergentagent.com):
+      Please verify 3 things on the Maventech PHP storefront preview URL (https://pricing-display-3.preview.emergentagent.com):
 
       1) **Protection Hub card layout** — go to /protection-hub.php. On each of the 4 plan cards (Quick Fix, Starter Care, Pro Shield, Lifetime Elite), the plan icon + plan name + tagline + price MUST all be centered horizontally within the card. Feature bullets below can remain left-aligned. Confirm the inline logo (bi-lightning-charge-fill / bi-shield-check / bi-shield-shaded / bi-gem) sits directly above the plan name, both centered.
 
@@ -3042,7 +3042,7 @@ frontend:
         -comment: |
           ✅ COMPREHENSIVE MOBILE CURRENCY DROPDOWN TESTING COMPLETE — ALL TESTS PASSED
           
-          Tested on preview URL: https://bugfix-preview-11.preview.emergentagent.com
+          Tested on preview URL: https://pricing-display-3.preview.emergentagent.com
           Viewport: 390x844 (iPhone 14)
           
           TEST 1 — Mobile currency dropdown clipping (HIGHEST PRIORITY): ✅ PASS
@@ -3090,7 +3090,7 @@ frontend:
         -comment: |
           ✅ PROTECTION HUB CENTERED LAYOUT VERIFICATION COMPLETE — ALL TESTS PASSED
           
-          Tested on preview URL: https://bugfix-preview-11.preview.emergentagent.com/protection-hub.php
+          Tested on preview URL: https://pricing-display-3.preview.emergentagent.com/protection-hub.php
           Viewport: 1920x900 (Desktop)
           
           TEST 2a — Protection Hub centered layout: ✅ PASS
@@ -3140,7 +3140,7 @@ frontend:
         -comment: |
           ✅ CHECKOUT THUMBNAIL VERIFICATION COMPLETE — ALL TESTS PASSED
           
-          Tested on preview URL: https://bugfix-preview-11.preview.emergentagent.com/checkout.php
+          Tested on preview URL: https://pricing-display-3.preview.emergentagent.com/checkout.php
           Viewport: 1920x900 (Desktop)
           
           TEST 2b — Checkout thumbnail matches plan icon: ✅ PASS
@@ -3185,7 +3185,7 @@ frontend:
         -comment: |
           ✅ MERCHANT CENTER FEED VERIFICATION COMPLETE — ALL TESTS PASSED
           
-          Tested on preview URL: https://bugfix-preview-11.preview.emergentagent.com/merchant-feed.php
+          Tested on preview URL: https://pricing-display-3.preview.emergentagent.com/merchant-feed.php
           
           TEST 2c — Merchant Center feed contains Protection Hub plans: ✅ PASS
           
@@ -3232,7 +3232,7 @@ frontend:
     -message: |
       ✅ COMPREHENSIVE VERIFICATION COMPLETE — ALL 4 TESTS PASSED (2026-07-05)
       
-      Tested TWO specific fixes on Maventech PHP storefront preview URL: https://bugfix-preview-11.preview.emergentagent.com
+      Tested TWO specific fixes on Maventech PHP storefront preview URL: https://pricing-display-3.preview.emergentagent.com
       
       ═══════════════════════════════════════════════════════════════════════════════
       TEST 1 — Mobile currency dropdown clipping (HIGHEST PRIORITY): ✅ PASS
@@ -8259,3 +8259,61 @@ agent_communication:
       2. Forced reflow eliminated (layout read deferred to next frame via rAF)
       
       Bundle is production-ready. No code modifications made during testing.
+
+
+  - task: "Bug fix — Admin's Original Price / Sale Price / Promotional Badge (aka discount package + promotion package) are not shown clearly on the real product page; the discount block should render ONLY when original_price > sale_price, and disappear when original_price=0"
+    implemented: true
+    working: "NA"
+    file: "php-version/product.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: |
+          USER REPORT: In Admin → Products → Edit, the merchant sees two related field groups on every product: (1) "Pricing & Discount" — Original Price (MSRP) + Sale Price + auto-calculated % Off; (2) Promotional Badge (Best Seller / Hot Deal / Limited Time Offer / etc.). On the real public product page, the DISCOUNT package (the % Off pill, "was $X" strike-through, and "You save $X" line) was NOT being shown even when an admin filled in an original_price greater than the sale price — only the plain sale price rendered. The promotion badge WAS shown on the product image (top-left corner) but could be visually clipped by the 360° ring / product image overlay. User wants: (a) when admin sets a real MSRP, ALL three discount signals visible near the buy price; (b) when no discount (original_price=0 or ≤ sale_price), NOTHING renders — the buy box stays clean; (c) the promotion badge should also be clearly visible near the product title so it's unmissable; (d) fix must persist on the customer's production domain after re-upload.
+
+          ROOT CAUSE — /app/php-version/product.php: the discount percentage was computed at line 449 (`$discountPct`) but NEVER emitted anywhere in the buy box below (lines 521-538). Only the sale price rendered. The image-corner promo badge (line 466) was the only place the "Promotional Badge" showed on the detail page — and it could visually collide with the pd-360-ring / mix-blend-mode:multiply image.
+
+          FIX applied to /app/php-version/product.php (single file, ~50 lines added, no logic outside these two blocks touched):
+
+          (1) Buy-box discount block (lines 531-570) — wrapped in a `if ($discountPct > 0)` guard so nothing renders when original_price=0 or ≤ sale_price. When active, emits three new visible signals with test IDs so an automated check can assert they exist / are absent per DB state:
+              · Above the price: `<small class="text-secondary text-decoration-line-through" data-testid="pd-was-price">$299.99</small> MSRP` — struck-through "was" price + "MSRP" label so the discount is honest and Google-Ads-compliant.
+              · Beside the price: `<span class="badge badge-promo-off rounded-pill" data-testid="pd-discount-pill">30% Off</span>` — the red % Off pill matches the styling on shop cards / rows so the site is visually consistent.
+              · Below the price: `<div class="small fw-semibold text-success" data-testid="pd-save-line"><i class="bi bi-tag-fill"></i>You save $90.00 off MSRP</div>` — dollar-amount savings, so shoppers see both the percentage AND the absolute amount they save (higher CTR on Buy Now).
+              · `$_saveAmt` computed inline from `$product['original_price'] - $product['price']` when discountPct>0, else 0. Uses the site-wide `format_price()` helper so the currency symbol always matches the shopper's selected region (USD/EUR/GBP/CAD/AUD).
+
+          (2) Title-row promotion chip (lines 492-501) — added a `<span class="badge badge-promo" data-testid="pd-promo-badge">Best Seller</span>` inside the existing chip row (`Windows / In Stock / One-Time Purchase`) so the admin-set Promotional Badge is unmissable next to the H1 even if the image-corner badge is visually clipped by product art. Uses the SAME `.badge.badge-promo` CSS class (red-to-orange gradient, white text) so the styling matches the shop cards / rows. Wrapped in `if (!empty($product['badge']))` so nothing renders when the admin leaves the badge field blank.
+
+          Verification on local pod:
+             1. curl on microsoft-office-2024-professional-plus-windows with original_price=0 (current DB state):
+                  - grep -c 'pd-was-price\|pd-discount-pill\|pd-save-line' → 0 occurrences ✅
+                  - grep 'MSRP\|% Off\|You save' → not in buy box ✅
+                  - `Direct Price $209.99` shows clean without any discount decoration ✅
+             2. curl on same slug after `UPDATE products SET original_price=299.99`:
+                  - `pd-was-price` renders `$299.99 MSRP` (strikethrough) ✅
+                  - `pd-discount-pill` renders `30% Off` (red pill) ✅
+                  - `pd-save-line` renders `You save $90.00 off MSRP` (green text) ✅
+                  - Product-list card shop.php also shows `30% Off` + strike `$299.99` on the same product (existing behaviour, verified regression-free) ✅
+             3. Promotion chip: curl shows `<span class="badge badge-promo" data-testid="pd-promo-badge">Best Seller</span>` in the chip row for any product with a badge set; hidden for products with badge='' ✅
+
+          FINAL DB STATE per user request: `UPDATE products SET original_price=0` restored — 0 products have `original_price > 0`, so on the live site NO discount block renders for ANY product. When the merchant sets a real MSRP in Admin → Products → Edit → "Original Price", the discount block auto-appears on that product's detail page + shop cards + rows. No boot-time / cron migration will overwrite admin edits.
+
+          NEEDS_RETESTING (all 8 checks against the local preview URL):
+            (a) With original_price=0 for ALL products (current state), GET /product.php?slug=microsoft-office-2024-professional-plus-windows and confirm:
+                - grep 'data-testid="pd-was-price"' → 0 matches
+                - grep 'data-testid="pd-discount-pill"' → 0 matches
+                - grep 'data-testid="pd-save-line"' → 0 matches
+                - `Direct Price $209.99` in DOM, no strikethrough, no % Off pill.
+            (b) Temporarily `UPDATE products SET original_price=299.99 WHERE slug='microsoft-office-2024-professional-plus-windows'` and re-fetch the same URL. Confirm:
+                - `data-testid="pd-was-price"` contains "$299.99" AND has class `text-decoration-line-through`
+                - `data-testid="pd-discount-pill"` contains "30% Off" AND has class `badge-promo-off`
+                - `data-testid="pd-save-line"` contains "You save $90.00 off MSRP" AND has class `text-success`
+            (c) Cross-check the shop.php + category.php pages for the same slug still render the pre-existing `card-discount-*` / `card-orig-price-*` / `row-discount-*` badges (no regression on the shop-card render).
+            (d) Promotion chip: `data-testid="pd-promo-badge"` present in the chip row for the same slug (badge='Best Seller' in DB). Restyle test: matches `.badge.badge-promo` (red/orange gradient).
+            (e) Set `UPDATE products SET badge='' WHERE slug='microsoft-office-2024-professional-plus-windows'` — confirm the pd-promo-badge disappears (0 matches) AND the image-corner badge (line 466) also disappears.
+            (f) RESTORE the DB: `UPDATE products SET original_price=0, badge='Best Seller' WHERE slug='microsoft-office-2024-professional-plus-windows'` — verify (a) still holds after restore.
+            (g) Regression: GET / (homepage), /shop.php, /category.php?slug=office-2024-pc → all HTTP 200; no PHP notice/warning in /var/log/supervisor/frontend.err.log.
+            (h) Regression on admin: GET /admin.php?tab=products&action=edit&slug=microsoft-office-2024-professional-plus-windows → HTTP 200, "Pricing & Discount" section renders with the three inputs unchanged (Original Price / Sale Price / auto-calculated % Off) and the "Promotional Badge" section renders with the badge input + 8 preset chips (Best Seller / New Arrival / etc.).
+

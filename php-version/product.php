@@ -489,6 +489,16 @@ include __DIR__ . '/includes/header.php';
         <span class="badge os-badge"><img src="assets/images/os/<?= $product['platform'] === 'Mac' ? 'macos' : 'windows' ?>.svg" alt="<?= esc($product['platform']) ?>" class="os-icon me-1"><?= esc($product['platform']) ?></span>
         <span class="badge text-bg-success" data-testid="stock-pill-in-<?= esc($product['slug']) ?>"><i class="bi bi-check-circle me-1"></i>In Stock</span>
         <span class="badge one-time-purchase-badge" data-testid="one-time-purchase-badge"><i class="bi bi-infinity me-1"></i>One-Time Purchase</span>
+        <?php /* Promotion package chip — mirrors the admin-set "Promotional Badge"
+                (e.g. Best Seller, Hot Deal, Limited Time Offer) next to the
+                product title so it's unmissable on the real website.  The
+                same badge also renders on the product image top-left; this
+                duplicate near the H1 guarantees visibility even when the
+                image or 360° ring visually covers the image-corner badge.
+                Hidden entirely when the admin has left the badge field blank. */ ?>
+        <?php if (!empty($product['badge'])): ?>
+          <span class="badge badge-promo" data-testid="pd-promo-badge"><?= esc($product['badge']) ?></span>
+        <?php endif; ?>
       </div>
       <h1 class="h3 fw-bold" data-testid="product-name"><?= esc($adsH1 ?? $product['name']) ?></h1>
       <?php /* Original product name preserved as small subtitle so the
@@ -519,10 +529,45 @@ include __DIR__ . '/includes/header.php';
                     ?? find_variant($vg['group'], $cv['version'], $os)) ?>
 
       <div class="mb-4">
+        <?php
+        /* Discount package — rendered ONLY when the admin explicitly set an
+         * original_price greater than the sale price on this product (i.e.
+         * $discountPct > 0). If original_price is 0 / NULL / <= price NOTHING
+         * renders here so the buy box stays clean. When a real MSRP exists,
+         * we show three visible signals:
+         *   1) A strike-through "was $X" line above the sale price
+         *   2) A red "N% Off" pill next to the sale price
+         *   3) A green "You save $X" savings line beneath
+         * The percentage / savings are computed from the same fields the
+         * admin sees in Admin → Products → Edit → Pricing & Discount, so
+         * whatever the admin previews live-updates the public product page.
+         */
+        $_saveAmt = $discountPct > 0
+            ? (float)$product['original_price'] - (float)$product['price']
+            : 0;
+        ?>
+        <?php if ($discountPct > 0): ?>
+          <div class="mb-1">
+            <small class="text-secondary text-decoration-line-through" data-testid="pd-was-price">
+              <?= format_price((float)$product['original_price']) ?>
+            </small>
+            <small class="text-secondary ms-1">MSRP</small>
+          </div>
+        <?php endif; ?>
         <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
           <span class="surplus-price-label surplus-price-label-lg" data-testid="product-surplus-label">Direct Price</span>
           <span class="display-6 fw-bold text-primary lh-1" data-testid="product-price"><?= format_price((float)$product['price']) ?></span>
+          <?php if ($discountPct > 0): ?>
+            <span class="badge badge-promo-off rounded-pill" data-testid="pd-discount-pill" style="font-size:.85rem;font-weight:700;letter-spacing:.03em;">
+              <?= $discountPct ?>% Off
+            </span>
+          <?php endif; ?>
         </div>
+        <?php if ($discountPct > 0): ?>
+          <div class="small fw-semibold text-success mb-1" data-testid="pd-save-line">
+            <i class="bi bi-tag-fill me-1"></i>You save <?= format_price($_saveAmt) ?> off MSRP
+          </div>
+        <?php endif; ?>
         <?php /* Tax transparency line — Google Ads / Bing Ads require the
                 price the user clicks the ad expecting to roughly match what
                 they see on the LP, including any tax handling.  Single
