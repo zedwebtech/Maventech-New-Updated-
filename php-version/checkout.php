@@ -733,7 +733,7 @@ include __DIR__ . '/includes/header.php';
     </div>
   <?php endif; ?>
 
-  <form method="post" class="row g-3 align-items-start">
+  <form method="post" class="row g-3 align-items-start" onsubmit="return mvValidateCheckoutOnSubmit(this, event)">
     <input type="hidden" name="pro" value="<?= $proAssist ? '1' : '0' ?>">
     <?php $defaultPM = (($_POST['payment_method'] ?? 'card') === 'paypal') ? 'paypal' : 'card'; ?>
     <input type="hidden" name="payment_method" id="payment-method-input" value="<?= $defaultPM ?>">
@@ -795,36 +795,43 @@ include __DIR__ . '/includes/header.php';
       </div>
       <!-- Card details drop-down (shown when Card selected). Fields have NO name attrs —
            they are never posted to our server; the charge is confirmed on Stripe's PCI-compliant page.
-           Layout: 3 columns on md+ (Card Number spans 6, Expiry 3, CVV 3) so the whole card row
-           fits on a single line desktop-side, per UX request 2026-07-13. -->
+           Layout: Card Number spans wider (col-md-6) with brand icons UNDERNEATH the field;
+           Expiry & CVV sit on the same row so the whole card block stays on ONE line desktop-side. -->
       <div id="card-form" class="card-form-reveal mb-2<?= $defaultPM !== 'card' ? ' d-none' : '' ?>" data-testid="card-details-form">
         <div class="row g-2">
           <div class="col-md-6 col-12">
-            <label class="form-label">Card Number</label>
+            <label class="form-label mb-1">Card Number</label>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-credit-card-2-front text-primary"></i></span>
               <input id="card-number" class="form-control" inputmode="numeric" autocomplete="cc-number" maxlength="19" data-testid="card-number-input" aria-label="Card number" placeholder="1234 5678 9012 3456">
-              <span class="input-group-text card-brands" id="card-brands" data-testid="card-brand-icons">
-                <img src="assets/images/payments/visa.svg" alt="Visa" data-brand="visa" class="card-brand-icon">
-                <img src="assets/images/payments/mastercard.svg" alt="Mastercard" data-brand="mastercard" class="card-brand-icon">
-                <img src="assets/images/payments/amex.svg" alt="American Express" data-brand="amex" class="card-brand-icon">
-                <img src="assets/images/payments/discover.svg" alt="Discover" data-brand="discover" class="card-brand-icon">
-              </span>
+            </div>
+            <!-- Brand icons UNDER the input.  Each icon dims until the customer
+                 types digits matching that brand; the matching brand then
+                 highlights (scale-up + full opacity). Ties in with the
+                 detectCardBrand() logic in assets/js/main.js. -->
+            <div class="card-brands-below" id="card-brands" data-testid="card-brand-icons">
+              <img src="assets/images/payments/visa.svg" alt="Visa" data-brand="visa" class="card-brand-icon">
+              <img src="assets/images/payments/mastercard.svg" alt="Mastercard" data-brand="mastercard" class="card-brand-icon">
+              <img src="assets/images/payments/amex.svg" alt="American Express" data-brand="amex" class="card-brand-icon">
+              <img src="assets/images/payments/discover.svg" alt="Discover" data-brand="discover" class="card-brand-icon">
+              <span id="card-brand-status" class="card-brand-status" data-testid="card-brand-status" aria-live="polite"></span>
             </div>
           </div>
           <div class="col-md-3 col-7">
-            <label class="form-label">Expiry Date</label>
+            <label class="form-label mb-1">Expiry Date</label>
             <input id="card-exp" class="form-control" inputmode="numeric" autocomplete="cc-exp" maxlength="5" data-testid="card-exp-input" aria-label="Card expiry date" placeholder="MM/YY">
+            <div id="card-exp-hint" class="card-field-hint" data-testid="card-exp-hint"></div>
           </div>
           <div class="col-md-3 col-5">
-            <label class="form-label">CVV</label>
+            <label class="form-label mb-1">CVV</label>
             <div class="input-group">
               <input id="card-cvv" type="password" class="form-control" inputmode="numeric" autocomplete="cc-csc" maxlength="4" data-testid="card-cvv-input" aria-label="Card CVV" placeholder="CVV">
-              <span class="input-group-text" title="3-4 digit code on the back of your card"><i class="bi bi-question-circle text-secondary"></i></span>
+              <span class="input-group-text" title="3-digit code on the back of your card · 4 digits for American Express"><i class="bi bi-question-circle text-secondary"></i></span>
             </div>
+            <div id="card-cvv-hint" class="card-field-hint" data-testid="card-cvv-hint"></div>
           </div>
         </div>
-        <div class="small text-secondary mt-2"><i class="bi bi-shield-lock-fill text-success me-1"></i>Your card is verified &amp; charged on Stripe's PCI-compliant secure page — we never store card data.</div>
+        <div class="small text-secondary mt-1"><i class="bi bi-shield-lock-fill text-success me-1"></i>Your card is verified &amp; charged on Stripe's PCI-compliant secure page — we never store card data.</div>
       </div>
       <!-- PayPal info drop-down (shown when PayPal is selected). No card fields —
            the customer is redirected to PayPal's own secure checkout to authorise the payment. -->
@@ -1031,6 +1038,80 @@ include __DIR__ . '/includes/header.php';
   background: linear-gradient(135deg, rgba(0,48,135,.18), rgba(0,112,186,.22));
   border-color: rgba(0,112,186,.45);
 }
+
+/* ============================================================
+   COMPACT CHECKOUT — target: fit everything from the top of the
+   summary/payment cards to the "Pay Securely" button inside a single
+   1080-vh viewport at 100 % zoom (no scroll needed on desktop).
+   Achieved by shaving vertical padding / margins on the biggest offenders
+   (co-banner cards, section heads, form labels, gap between form rows,
+   the merge divider, and the paypal-info panel) — nothing hidden.
+   ============================================================ */
+.co-banner.p-3 { padding: 1rem !important; }
+.co-summary-sticky.p-3 { padding: .9rem !important; }
+.co-head { margin-bottom: .5rem !important; }
+.co-head h6 { font-size: 1rem; }
+.co-head small { font-size: .72rem; }
+.co-head .co-num { width: 30px; height: 30px; font-size: .9rem; }
+.co-merge-divider { margin: .85rem 0 !important; }
+#card-form .form-label,
+form .form-label { margin-bottom: .15rem; font-size: .74rem; letter-spacing: .04em; }
+form .form-control,
+form .form-select { padding: .38rem .65rem; font-size: .88rem; }
+form .row.g-2 > * { padding-top: .25rem; padding-bottom: .25rem; }
+form .row.g-3 { --bs-gutter-y: .75rem; }
+#checkout-summary .card,
+.pay-tile { padding: .55rem !important; }
+.pay-tile .fw-bold { font-size: .95rem; }
+.pay-tile small { font-size: .7rem; }
+.paypal-info-box { padding: .75rem !important; }
+.paypal-info-box ul { line-height: 1.45 !important; }
+#card-form .card-field-hint { min-height: 14px; font-size: .68rem; }
+/* Card number wider (fills its col fully). */
+#card-number { font-size: .95rem; letter-spacing: .04em; }
+
+/* ============================================================
+   Card-brand icons row — now sits UNDER the Card Number input,
+   with a live status pill on the right ("Enter 6 more digits",
+   "Visa · valid", or "That doesn't look like a real card number").
+   Each icon dims until the customer's typed number matches, and
+   the matched icon scales up + gets a cyan glow.
+   ============================================================ */
+.card-brands-below {
+  display: flex; align-items: center; gap: .35rem;
+  margin-top: .35rem; padding: 0 .1rem;
+}
+.card-brands-below .card-brand-icon {
+  height: 20px; width: auto; border-radius: 3px; opacity: .45;
+  transition: opacity .18s ease, transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+.card-brands-below .card-brand-icon.dimmed { opacity: .18; filter: grayscale(100%); }
+.card-brands-below .card-brand-icon.active {
+  opacity: 1; transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(6,182,212,.4);
+}
+.card-brand-status {
+  margin-left: auto; font-size: .72rem; line-height: 1;
+  padding: .18rem .5rem; border-radius: 999px;
+  color: var(--bs-secondary-color); background: transparent;
+}
+.card-brand-status.pending { color: #b45309; background: rgba(251,191,36,.15); }
+.card-brand-status.unknown,
+.card-brand-status.invalid { color: #b91c1c; background: rgba(239,68,68,.12); }
+.card-brand-status.valid   { color: #047857; background: rgba(16,185,129,.14); }
+[data-bs-theme="dark"] .card-brand-status.pending { color: #fbbf24; background: rgba(251,191,36,.16); }
+[data-bs-theme="dark"] .card-brand-status.unknown,
+[data-bs-theme="dark"] .card-brand-status.invalid { color: #fca5a5; background: rgba(239,68,68,.16); }
+[data-bs-theme="dark"] .card-brand-status.valid   { color: #6ee7b7; background: rgba(16,185,129,.18); }
+
+/* Validity states on card inputs (Bootstrap is-valid / is-invalid). */
+.card-field-hint { min-height: 14px; font-size: .68rem; margin-top: 3px; }
+.card-field-hint.is-invalid { color: #b91c1c; }
+.card-field-hint.is-valid   { color: #047857; }
+[data-bs-theme="dark"] .card-field-hint.is-invalid { color: #fca5a5; }
+[data-bs-theme="dark"] .card-field-hint.is-valid   { color: #6ee7b7; }
+#card-form .form-control.is-invalid { border-color: #ef4444; background-image: none; padding-right: .65rem; }
+#card-form .form-control.is-valid   { border-color: #10b981; background-image: none; padding-right: .65rem; }
 </style>
 <script>
 /* Region-aware checkout address form. The PHP $REGION_FORMS config is the
@@ -1093,6 +1174,58 @@ function mvApplyCheckoutRegion(cc) {
     if (typeof syncPhoneFlag === 'function') syncPhoneFlag(pc);
   }
 }
+
+/* ============================================================
+   Submit-time card validation.  Only runs when the selected payment
+   method is "card" (PayPal jumps straight to the PayPal flow).
+   Uses the same detectCardBrand()/luhnCheck() helpers exposed by
+   assets/js/main.js.  On failure: focuses the offending field, adds
+   .is-invalid, and returns false so the form doesn't submit.
+   ============================================================ */
+function mvValidateCheckoutOnSubmit(form, ev) {
+  var pm = (document.getElementById('payment-method-input') || {}).value || 'card';
+  if (pm !== 'card') return true; // PayPal path skips card checks
+  var num  = document.getElementById('card-number');
+  var exp  = document.getElementById('card-exp');
+  var cvv  = document.getElementById('card-cvv');
+  if (!num) return true; // Card form not on page (edge case)
+  var digits = (num.value || '').replace(/\D/g, '');
+  var info   = (typeof detectCardBrand === 'function') ? detectCardBrand(digits) : { brand: '', len: [16], cvv: 3 };
+  var okLuhn = (typeof luhnCheck === 'function') ? luhnCheck(digits) : true;
+  var maxL   = info.len[info.len.length - 1] || 16;
+
+  function fail(el, msg) {
+    if (el) { el.classList.add('is-invalid'); el.focus(); }
+    var toast = document.getElementById('mv-card-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'mv-card-toast';
+      toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;background:#ef4444;color:#fff;padding:.7rem 1.1rem;border-radius:12px;font-size:.9rem;font-weight:600;box-shadow:0 12px 30px rgba(239,68,68,.35);animation:aaSlide .3s ease;';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    clearTimeout(window.__mvCardToastT);
+    window.__mvCardToastT = setTimeout(function () { if (toast) toast.remove(); }, 3500);
+    if (ev && ev.preventDefault) ev.preventDefault();
+    return false;
+  }
+
+  if (!digits.length)            return fail(num, 'Please enter your card number.');
+  if (!info.brand)               return fail(num, "That card brand isn't supported. Try Visa, Mastercard, Amex or Discover.");
+  if (digits.length < maxL)      return fail(num, 'Card number is incomplete.');
+  if (!okLuhn)                   return fail(num, "That doesn't look like a valid card number.");
+  var eDig = ((exp && exp.value) || '').replace(/\D/g, '');
+  if (eDig.length < 4)           return fail(exp, 'Please enter the card expiry (MM/YY).');
+  var mm = parseInt(eDig.slice(0,2), 10), yy = parseInt(eDig.slice(2,4), 10);
+  if (mm < 1 || mm > 12)         return fail(exp, 'Expiry month must be 01-12.');
+  var now = new Date(), cy = now.getFullYear() % 100, cm = now.getMonth() + 1;
+  if (yy < cy || (yy === cy && mm < cm)) return fail(exp, 'Card is expired.');
+  var cvvNeed = info.cvv || 3;
+  var cvvVal  = (cvv && cvv.value) || '';
+  if (cvvVal.length < cvvNeed)   return fail(cvv, 'CVV must be ' + cvvNeed + ' digits.');
+  return true;
+}
+window.mvValidateCheckoutOnSubmit = mvValidateCheckoutOnSubmit;
 </script>
 
 <script>

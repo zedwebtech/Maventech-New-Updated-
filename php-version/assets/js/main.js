@@ -340,30 +340,114 @@ function syncPhoneFlag(sel) {
   if (opt) sel.style.setProperty('--phone-flag', "url('https://flagcdn.com/w40/" + (opt.dataset.iso || 'us') + ".png')");
 }
 
-/* Card field formatting: number groups of 4, MM/YY expiry, numeric CVV + live brand detect */
-function detectCardBrand(digits) {
-  if (digits.startsWith('4')) return 'visa';
-  if (digits.startsWith('5')) return 'mastercard';
-  if (digits.startsWith('3')) return 'amex';
-  if (digits.startsWith('6')) return 'discover';
-  return '';
+/* Card field formatting: number groups of 4, MM/YY expiry, numeric CVV + live brand detect.
+   NB: the real detectCardBrand() + Luhn helpers live in the block below —
+   this stub is kept only as a comment marker for grep-based tooling. */
+/* ============================================================
+   Card-brand detection & Luhn validation.
+   Card patterns (BIN + length) cover the four brands the storefront
+   accepts. detectCardBrand() returns the brand + expected length +
+   CVV length so the caller can reformat the input + validate.
+   ============================================================ */
+const CARD_PATTERNS = [
+  { brand: 'visa',       re: /^4/,                       len: [16],           cvv: 3 },
+  { brand: 'mastercard', re: /^(5[1-5]|2[2-7])/,         len: [16],           cvv: 3 },
+  { brand: 'amex',       re: /^3[47]/,                   len: [15],           cvv: 4 },
+  { brand: 'discover',   re: /^(6011|65|64[4-9]|622)/,   len: [16],           cvv: 3 },
+];
+function detectCardBrand(cardNumber) {
+  const digits = (cardNumber || '').toString().replace(/\D/g, '');
+  for (const p of CARD_PATTERNS) if (p.re.test(digits)) return { brand: p.brand, len: p.len, cvv: p.cvv };
+  return { brand: '', len: [16], cvv: 3 };
+}
+function luhnCheck(cardNumber) {
+  const digits = (cardNumber || '').toString().replace(/\D/g, '');
+  if (digits.length < 12) return false;
+  let sum = 0, alt = false;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let n = parseInt(digits.charAt(i), 10);
+    if (alt) { n *= 2; if (n > 9) n -= 9; }
+    sum += n; alt = !alt;
+  }
+  return sum % 10 === 0;
+}
+
+function setCardFieldValidity(el, ok, msg) {
+  if (!el) return;
+  el.classList.toggle('is-valid',   ok === true);
+  el.classList.toggle('is-invalid', ok === false);
+  const hintId = el.id + '-hint';
+  const hint = document.getElementById(hintId);
+  if (hint) {
+    hint.textContent = msg || '';
+    hint.classList.toggle('is-invalid', ok === false);
+    hint.classList.toggle('is-valid',   ok === true);
+  }
 }
 
 document.addEventListener('input', (e) => {
   if (e.target.id === 'card-number') {
-    const digits = e.target.value.replace(/\D/g, '').slice(0, 16);
-    e.target.value = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
-    const brand = digits.length ? detectCardBrand(digits) : '';
+    const raw   = e.target.value.replace(/\D/g, '');
+    const info  = detectCardBrand(raw);
+    const maxL  = info.len[info.len.length - 1] || 16;
+    const digits = raw.slice(0, maxL);
+    // Amex format: 4-6-5 spacing; everything else: 4-4-4-4.
+    let formatted;
+    if (info.brand === 'amex') {
+      formatted = digits.replace(/^(\d{4})(\d{0,6})(\d{0,5}).*/, function (_, a, b, c) {
+        return [a, b, c].filter(Boolean).join(' ');
+      });
+    } else {
+      formatted = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
+    }
+    // Update the visible field without moving the caret away from the end.
+    if (e.target.value !== formatted) e.target.value = formatted;
+    // Highlight the matching brand + dim the others.
+    const brand = digits.length ? info.brand : '';
     document.querySelectorAll('#card-brands .card-brand-icon').forEach((i) => {
       i.classList.toggle('active', i.dataset.brand === brand);
       i.classList.toggle('dimmed', brand !== '' && i.dataset.brand !== brand);
     });
+    // Status pill under the icons.
+    const statusEl = document.getElementById('card-brand-status');
+    if (statusEl) {
+      if (!digits.length) { statusEl.textContent = ''; statusEl.className = 'card-brand-status'; }
+      else if (!brand)    { statusEl.textContent = 'Unrecognised card'; statusEl.className = 'card-brand-status unknown'; }
+      else if (digits.length < maxL) { statusEl.textContent = 'Enter ' + (maxL - digits.length) + ' more digit' + ((maxL - digits.length) === 1 ? '' : 's'); statusEl.className = 'card-brand-status pending'; }
+      else if (!luhnCheck(digits))   { statusEl.textContent = "That doesn't look like a real card number"; statusEl.className = 'card-brand-status invalid'; }
+      else                            { statusEl.textContent = brand.charAt(0).toUpperCase() + brand.slice(1) + ' · valid'; statusEl.className = 'card-brand-status valid'; }
+    }
+    // Field-level validity.
+    if (!digits.length) setCardFieldValidity(e.target, null);
+    else if (digits.length < maxL || !brand) setCardFieldValidity(e.target, false, '');
+    else setCardFieldValidity(e.target, luhnCheck(digits));
+    // Re-validate CVV since the required length depends on the brand.
+    const cvvEl = document.getElementById('card-cvv');
+    if (cvvEl && cvvEl.value) cvvEl.dispatchEvent(new Event('input', { bubbles: true }));
   } else if (e.target.id === 'card-exp') {
     let v = e.target.value.replace(/\D/g, '').slice(0, 4);
     if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
     e.target.value = v;
+    const digits = v.replace(/\D/g, '');
+    if (digits.length < 4) { setCardFieldValidity(e.target, null); return; }
+    const mm = parseInt(digits.slice(0, 2), 10);
+    const yy = parseInt(digits.slice(2, 4), 10);
+    if (mm < 1 || mm > 12)          setCardFieldValidity(e.target, false, 'Invalid month');
+    else {
+      const now = new Date();
+      const curYY = now.getFullYear() % 100;
+      const curMM = now.getMonth() + 1;
+      if (yy < curYY || (yy === curYY && mm < curMM)) setCardFieldValidity(e.target, false, 'Card is expired');
+      else setCardFieldValidity(e.target, true, '');
+    }
   } else if (e.target.id === 'card-cvv') {
     e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+    const cardEl = document.getElementById('card-number');
+    const info   = detectCardBrand(cardEl ? cardEl.value : '');
+    const need   = info.cvv || 3;
+    if (!e.target.value)                    setCardFieldValidity(e.target, null);
+    else if (e.target.value.length < need)  setCardFieldValidity(e.target, false, need + ' digits');
+    else                                    setCardFieldValidity(e.target, true, '');
   }
 });
 
