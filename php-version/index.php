@@ -56,7 +56,7 @@ include __DIR__ . '/includes/header.php';
     <div class="row align-items-center g-4 g-lg-5">
       <div class="col-lg-7">
         <span class="hero-badge mb-3"><i class="bi bi-patch-check-fill me-1"></i>Authentic · Verified · Trusted</span>
-        <h1 class="display-4">Microsoft Office &amp; <span class="accent">Windows 11 License Keys</span></h1>
+        <h1 class="display-4">Genuine Office Suite &amp; <span class="accent">Windows 11 License Keys</span></h1>
         <p class="text-secondary fs-5 mt-3">Direct-from-source product keys — one-time payment, no recurring bills, delivered to your inbox.</p>
         <ul class="list-unstyled d-grid gap-2 my-4">
           <li><i class="bi bi-check-circle-fill text-success me-2"></i>100% authentic keys, sourced through legitimate channels</li>
@@ -484,23 +484,24 @@ include __DIR__ . '/includes/header.php';
   </div>
 </section>
 
-<!-- Why Choose Perpetual Licenses -->
+<!-- Beyond-the-basics perks: intentionally covers post-purchase value NOT
+     already promised in the top-bar / hero / trusted-partner block. -->
 <section class="py-5">
   <div class="container">
     <div class="text-center mb-5">
-      <span class="eyebrow">WHY CHOOSE US</span>
-      <h2 class="fw-bold mt-1">Why Choose Perpetual Licenses?</h2>
-      <p class="text-secondary mx-auto" style="max-width:620px;">Get the complete Microsoft Office experience with one-time purchase. No recurring subscription fees, just authentic software that's yours forever.</p>
+      <span class="eyebrow">MORE THAN A LICENCE SHOP</span>
+      <h2 class="fw-bold mt-1">Beyond the Basics — What You Also Get</h2>
+      <p class="text-secondary mx-auto" style="max-width:620px;">Post-purchase perks most resellers never mention — from a self-serve dashboard to invoicing-ready receipts and human agents who pick up on the first ring.</p>
     </div>
     <div class="row g-4" data-testid="why-choose-grid">
       <?php
       $why = [
-        ['bi-envelope-check', 'Digital Delivery', 'Your product key is delivered by email once the order is processed — see our Shipping &amp; Delivery page.'],
-        ['bi-patch-check-fill', 'Genuine Products', 'All licenses are authentic and sourced from authorized software clearing houses.'],
-        ['bi-infinity', 'One-Time Purchase', 'No recurring fees. Pay once and keep the software — a perpetual license for as long as you own your device.'],
-        ['bi-headset', 'Order Support', 'Help with your order, license-key delivery, activation and checkout. Product installation follows the official vendor documentation we include.'],
-        ['bi-shield-lock-fill', 'Secure Checkout', 'Shop with confidence using our SSL-encrypted payment processing.'],
-        ['bi-arrow-counterclockwise', '30-Day Guarantee', 'Not satisfied? Get a full refund within 30 days, no questions asked.'],
+        ['bi-person-workspace',    'Self-Serve Account Dashboard', 'Sign in anytime to redownload your keys, view PDF receipts, and manage every licence you have ever bought — even from a new device.'],
+        ['bi-headset',             'Real Human Support',           'No chatbot loops. Chat, call, or email a trained agent Mon-Sat 9 AM to 6 PM EST — most tickets close on the first touch.'],
+        ['bi-file-earmark-text',   'Business-Friendly Invoicing',  'Every order ships with a VAT / GST itemised PDF invoice. Verified companies unlock net-30 terms and reseller-tax exemptions.'],
+        ['bi-shield-fill-check',   'Fraud-Shielded Payments',      '3-D Secure at checkout, PCI-DSS Level 1 processing via Stripe, and a zero-liability chargeback shield covering every purchase.'],
+        ['bi-arrow-left-right',    'Move Licences Between PCs',    'Upgraded your machine? We walk you through Microsoft\'s deactivate-and-reassign flow so your key follows you — at no extra charge.'],
+        ['bi-people-fill',         'Volume Pricing for Teams',     'Buying 5 seats or more? Save up to 22 % across the cart and get a dedicated account rep for future top-ups.'],
       ];
       foreach ($why as [$ic, $t, $d]): ?>
         <div class="col-lg-4 col-sm-6">

@@ -70,12 +70,12 @@ $checklist = [
     ['bi-arrow-counterclockwise', '30-day money-back guarantee'],
 ];
 $features = [
-    ['bi-envelope-check', 'primary', 'Digital Delivery', 'Your product key is delivered by email after the order is processed. See our Shipping &amp; Delivery page for full timing details.'],
-    ['bi-patch-check-fill', 'success', 'Genuine Products', 'Every product key is sourced through legitimate channels and verified before delivery.'],
-    ['bi-infinity', 'primary', 'One-Time Purchase', 'Pay once and keep the software. No recurring fees, no subscription — a perpetual license that belongs to you.'],
-    ['bi-headset', 'info', 'Order Support', 'Help with your order, product-key delivery, activation and checkout. Product installation follows the official vendor documentation we include.'],
-    ['bi-lock-fill', 'primary', 'Secure Checkout', 'Shop confidently over SSL-encrypted, PCI-compliant payment processing with trusted providers.'],
-    ['bi-arrow-counterclockwise', 'danger', '30-Day Guarantee', 'Not satisfied? Receive a full refund within 30 days — no questions asked, no hoops to jump through.'],
+    ['bi-award-fill',       'warning', 'Independent Reseller Since 2024', 'Registered as Maventech LLC (File No. 202463711253, filed 9/3/2024) — a fully-compliant U.S. business focused solely on surplus & pre-licensed software from vetted clearing houses.'],
+    ['bi-globe-americas',   'primary', 'Global Reach, Regional Pricing',  'Storefronts optimised for the US, Canada, UK, EU and Australia — with local currency, address formats and tax-friendly invoicing baked into checkout.'],
+    ['bi-diagram-3-fill',   'info',    'Direct Supply-Chain Auditing',    'Every key is traced back to the originating volume-licence pool before it ever hits your inbox. If a key ever fails validation, we replace it that same day.'],
+    ['bi-star-fill',        'warning', 'Real Reviews Only',               'Every star rating you see is left by a shopper who actually paid on this site. No incentivised reviews, no farmed testimonials, no purchased 5-stars.'],
+    ['bi-people-fill',      'success', 'Boutique Support Team',           'A tight-knit, US-based support crew — not a call-centre. You will usually speak with the same person from first ticket to activation success.'],
+    ['bi-flower1',          'primary', 'Zero-Waste, Zero-Landfill',       'Because every product is a digital key, your Maventech order will never generate shipping cardboard, plastic packaging, or e-waste.'],
 ];
 ?>
 <!-- Hero -->

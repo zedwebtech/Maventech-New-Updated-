@@ -1,0 +1,46 @@
+PHONE NUMBER VERIFICATION RESULTS
+==================================
+
+DATABASE CHECKS (all should be 0):
+- pages table with 888-632-9902: 0 ✅
+- pages table with 855-559-9001: 0 ✅
+- settings table with old numbers: 0 ✅
+- email_templates table with old numbers: 0 ✅
+- company_phone setting: 1-805-823-9961 ✅
+
+RENDERED PAGE BODY CHECKS:
+URL                          | has_805 | has_888 | has_855
+-----------------------------|---------|---------|--------
+/why-choose-us.php           | yes (9) | no (0)  | no (0)  ✅
+/refund-policy.php           | yes (11)| no (0)  | no (0)  ✅
+/shipping-delivery.php       | yes (9) | no (0)  | no (0)  ✅
+/contact-us.php              | no (0)  | no (0)  | no (0)  ✅
+/faqs.php                    | yes (9) | no (0)  | no (0)  ✅
+/terms-of-service.php        | yes (9) | no (0)  | no (0)  ✅
+/privacy-policy.php          | yes (9) | no (0)  | no (0)  ✅
+
+HOMEPAGE HERO H1 CHECK:
+- Contains "Genuine Office Suite &": YES ✅
+- Contains "Windows 11 License Keys": YES ✅
+- OLD pattern "Microsoft Office & <span class=\"accent\">Windows 11 License Keys": NO ✅
+
+HOMEPAGE "BEYOND THE BASICS" SECTION (all 6 new titles present):
+- Self-Serve Account Dashboard: YES ✅
+- Real Human Support: YES ✅
+- Business-Friendly Invoicing: YES ✅
+- Fraud-Shielded Payments: YES ✅
+- Move Licences Between PCs: YES ✅
+- Volume Pricing for Teams: YES ✅
+- OLD "Why Choose Perpetual Licenses?": NO ✅
+- OLD "Every product key is delivered by email": NO ✅
+
+ABOUT-US FEATURES CHECK (all 6 new titles present):
+- Independent Reseller Since 2024: YES ✅
+- Global Reach, Regional Pricing: YES ✅
+- Direct Supply-Chain Auditing: YES ✅
+- Real Reviews Only: YES ✅
+- Boutique Support Team: YES ✅
+- Zero-Waste, Zero-Landfill: YES ✅
+- OLD titles in features grid (card h-100 p-3): NO ✅
+
+ALL TESTS PASSED ✅
