@@ -140,6 +140,39 @@ frontend:
         -agent: "testing"
         -comment: "✅ BUG FIX VERIFIED — ALL 14 TESTS PASSED (100% SUCCESS RATE). Comprehensive Playwright testing at 1920×1080 confirms the dropdown STAYS CLOSED after selection bug fix is working perfectly. MOUSE CLICK FLOW (9 tests): ✅ Panel appears with 2 suggestions when typing '1600 Amphitheatre' ✓. ✅ Panel closes after clicking first suggestion (panel.hidden = True) ✓. ✅ All fields autofilled correctly: Address='1600 Amphitheatre Parkway', City='Mountain View', State='CA', Postal='94043' ✓. ✅ **CRITICAL FIX VERIFIED**: Panel STAYS CLOSED when re-focusing the address field (panel.hidden = True, suggestions count = 0) ✓. ✅ Tab key moves focus cleanly to address2 field without reopening panel ✓. ✅ Typing additional text after selection allows dropdown to potentially reappear (expected behavior for new queries) ✓. KEYBOARD NAVIGATION FLOW (5 tests): ✅ Panel appears with 4 suggestions when typing 'Times Square New York' ✓. ✅ ArrowDown navigation works correctly (selected index 1 = second item) ✓. ✅ Enter key selects suggestion and autofills: Address='Times Square', City='New York', State='NY', Postal='10036' ✓. ✅ Panel closes after Enter ✓. ✅ **CRITICAL FIX VERIFIED**: Panel STAYS CLOSED when re-focusing address field after keyboard selection ✓. ROOT CAUSE FIX CONFIRMED: The clearState() function successfully resets the suggestions array to empty after selection, preventing the focus handler (line 1342: if suggestions.length) from reopening the panel. The fix also clears the debounce timer and increments currentReq to prevent stale in-flight requests from repopulating the dropdown. Screenshots: test_address_suggest_mouse_flow.png, test_address_suggest_keyboard_flow.png. NO ISSUES FOUND. Bug fix is production-ready."
 
+  - task: "Checkout — address suggestion dropdown must render ABOVE the Pay Securely button (not clipped by any sibling)"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Root cause: the checkout Payment card has a scroll-tilt effect (.card.co-banner.s3d-tilt) that applies a matrix3d transform. Any non-none transform on an ancestor creates a new stacking context AND makes a descendant's position:fixed anchor to that ancestor. That was skewing the panel's position AND trapping it below sibling elements even at z-index 2000. Fix: on IIFE init, document.body.appendChild(panel) to move the suggestion panel OUT of the transformed ancestor. Combined with position:fixed + z-index 2000 + JS that recomputes left/top/width on every show() (and on window scroll/resize), the panel now renders precisely under the address input AND paints ABOVE every sibling on the page (Pay Securely button, PayPal panel, order summary card). Verified: panel_parent=BODY, aligned_with_input=true, panel_top_below_input=true, overlaps_button=true, panel_on_top_at_overlap=TRUE. Screenshot shows all 4 suggestions clearly readable sitting on top of the Pay Securely button."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ COMPREHENSIVE VERIFICATION COMPLETE — ALL 10 TESTS PASSED (100% SUCCESS RATE). Executed comprehensive Playwright testing at 1440×900 viewport in dark mode following exact review_request specifications. TEST 1 (Trigger suggestions): ✅ Typed '2nd Avenue Southwest', waited 1300ms for debounce+fetch. TEST 2 (Panel visibility): ✅ Panel visible (hidden=false), 4 suggestions found (>=1 required). TEST 3 (Panel parent): ✅ Panel parent is BODY (successfully moved out of tilt card stacking context). TEST 4 (Positioning): ✅ Position='fixed' ✓, z-index='2000' ✓. TEST 5 (Horizontal alignment): ✅ Panel left-aligned with input (diff 0.01px < 5px tolerance). TEST 6 (Vertical positioning): ✅ Panel positioned below input (panel.top=735.19px > input.bottom=731.19px). TEST 7 (CRITICAL - Paint order): ✅ Panel overlaps Pay Securely button (panel.bottom=974.05px > button.top=836.04px), elementFromPoint test at overlap point (x=856.94, y=846.04) confirms panel paints ABOVE button. TEST 8 (Reposition on scroll): ✅ Scrolled 200px, panel still visible, delta difference 0.015px (<=10px tolerance) — panel correctly repositions to stay under input. TEST 9 (Sanity check - selection): ✅ Clicked first suggestion, panel hidden, all fields autofilled correctly (Address='2nd Avenue Southwest', City='Seattle', State='WA', Zip='98106'). TEST 10 (Sanity check - stays closed): ✅ Re-focused address input, panel stays hidden (previous bug fix still working). Screenshots: test_address_dropdown_visible.png (dropdown clearly visible on top of Pay button), test_address_dropdown_after_scroll.png (repositioning verified), test_address_dropdown_final.png (final state after selection). NO ISSUES FOUND. The fix successfully resolves the stacking context issue — the panel now renders above ALL sibling elements including the Pay Securely button. Production-ready."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Iteration 2026-07-13(k, follow-up 2): fixed the address suggestion dropdown being visually clipped/hidden BEHIND the Pay Securely button. Root cause was the s3d-tilt matrix3d transform on the parent .card.co-banner that trapped position:fixed inside its stacking context. Fix: (a) append the panel to document.body on init to escape any ancestor stacking context, (b) reposition the panel on every show() via JS by reading the input's getBoundingClientRect(), (c) recompute on scroll/resize. Please verify via Playwright at 1440x900 (dark mode preferably): add product to cart, open /checkout.php, type '2nd Avenue Southwest' in #checkout-address, wait 1200ms. Assert (1) panel.parentElement === document.body (moved out of the tilt card), (2) getComputedStyle(panel).position === 'fixed', z-index === '2000', (3) the panel bounding box overlaps with the Pay Securely button's bounding box AND document.elementFromPoint at a point inside the overlap returns a descendant of the panel (i.e. panel paints on TOP). Also test on scroll: scroll a few hundred pixels and confirm the panel repositions to stay under the input. Skip re-testing anything already working:true."
+    -agent: "testing"
+    -message: "✅ ITERATION 2026-07-13(k, follow-up 2) TESTING COMPLETE — ALL TESTS PASSED. Comprehensive Playwright testing at 1440×900 viewport in dark mode executed all 10 test scenarios from review_request with 100% success rate. CRITICAL FIX VERIFIED: Address suggestion dropdown now renders ABOVE the Pay Securely button. Key findings: (1) Panel successfully moved to document.body (escaped tilt card stacking context) ✓. (2) Positioning correct: position='fixed', z-index='2000' ✓. (3) Panel left-aligned with input (0.01px diff) ✓. (4) Panel positioned below input ✓. (5) CRITICAL: Panel overlaps Pay button AND elementFromPoint test confirms panel paints ON TOP at overlap point (x=856.94, y=846.04) ✓. (6) Scroll repositioning works perfectly (delta diff 0.015px after 200px scroll) ✓. (7) Selection behavior: panel closes, fields autofill correctly (Address='2nd Avenue Southwest', City='Seattle', State='WA', Zip='98106') ✓. (8) Previous bug fix still working: panel stays closed after re-focusing address input ✓. Screenshots saved: test_address_dropdown_visible.png (dropdown clearly visible on top), test_address_dropdown_after_scroll.png (repositioning verified), test_address_dropdown_final.png (final state). NO ISSUES FOUND. The stacking context fix is production-ready. All iteration 2026-07-13(k) tasks now fully working."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"

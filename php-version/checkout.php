@@ -894,7 +894,7 @@ include __DIR__ . '/includes/header.php';
         </div>
         <div class="col-md-6"><label class="form-label">First Name *</label><input name="first_name" autocomplete="given-name" required class="form-control" value="<?= esc($_POST['first_name'] ?? '') ?>"></div>
         <div class="col-md-6"><label class="form-label">Last Name *</label><input name="last_name" autocomplete="family-name" required class="form-control" value="<?= esc($_POST['last_name'] ?? '') ?>"></div>
-        <div class="col-md-8"><label class="form-label">Address *</label><input name="address" autocomplete="address-line1" required class="form-control" value="<?= esc($_POST['address'] ?? '') ?>" id="checkout-address" data-testid="checkout-address">
+        <div class="col-md-8 checkout-addr-parent"><label class="form-label">Address *</label><input name="address" autocomplete="address-line1" required class="form-control" value="<?= esc($_POST['address'] ?? '') ?>" id="checkout-address" data-testid="checkout-address">
           <div id="checkout-address-hint" class="checkout-hint" style="display:none;" data-testid="checkout-address-hint"></div>
           <!-- Address auto-suggest dropdown — populated by ajax/address-suggest.php
                (OpenStreetMap Nominatim). Hidden until 3+ chars typed. -->
@@ -1116,43 +1116,49 @@ form .row.g-3 { --bs-gutter-y: .75rem; }
 /* ============================================================
    Address auto-suggest dropdown (OpenStreetMap Nominatim, proxied
    via /ajax/address-suggest.php). Rendered as an absolutely-positioned
-   panel directly under the #checkout-address input.
+   panel directly under the #checkout-address input.  z-index is high
+   enough to sit ABOVE the sibling Country/City/State/Zip row AND above
+   the Pay Securely button that renders further down in the same card
+   — otherwise the panel gets clipped by the button.
    ============================================================ */
-.col-md-8 { position: relative; }
+.checkout-addr-parent { position: relative; }
 .checkout-addr-suggest {
-  position: absolute; left: 12px; right: 12px; top: calc(100% - 8px);
-  z-index: 30;
+  position: fixed;                          /* escapes ALL parent stacking contexts */
+  z-index: 2000;                            /* well above Pay button + PayPal panel */
   background: var(--bs-body-bg, #fff);
-  border: 1px solid var(--bs-border-color);
-  border-radius: 10px;
-  box-shadow: 0 12px 24px rgba(2,6,23,.12);
-  max-height: 260px; overflow-y: auto;
-  padding: .3rem;
+  border: 1px solid rgba(6,182,212,.45);   /* subtle cyan hair-line so the panel reads as attached to the input */
+  border-radius: 12px;
+  box-shadow: 0 18px 36px rgba(2,6,23,.22), 0 4px 10px rgba(2,6,23,.08);
+  max-height: 300px; overflow-y: auto;
+  padding: .35rem;
 }
 [data-bs-theme="dark"] .checkout-addr-suggest {
-  background: #0f172a; border-color: #334155;
-  box-shadow: 0 12px 24px rgba(0,0,0,.55);
+  background: #0f172a; border-color: rgba(6,182,212,.55);
+  box-shadow: 0 20px 40px rgba(0,0,0,.6), 0 4px 12px rgba(0,0,0,.4);
 }
 .checkout-addr-suggest[hidden] { display: none !important; }
 .addr-suggest-header {
   font-size: .68rem; font-weight: 700; letter-spacing: .06em;
   color: var(--bs-secondary-color); text-transform: uppercase;
-  padding: .35rem .55rem .1rem;
+  padding: .4rem .65rem .2rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  margin-bottom: .3rem;
 }
 .addr-suggest-item {
-  padding: .45rem .55rem; border-radius: 8px;
-  font-size: .82rem; line-height: 1.35; cursor: pointer;
-  display: flex; align-items: flex-start; gap: .5rem;
+  padding: .55rem .65rem; border-radius: 8px;
+  font-size: .84rem; line-height: 1.35; cursor: pointer;
+  display: flex; align-items: flex-start; gap: .55rem;
+  transition: background-color .12s ease;
 }
 .addr-suggest-item + .addr-suggest-item { margin-top: 1px; }
 .addr-suggest-item:hover,
 .addr-suggest-item.active {
-  background: rgba(6,182,212,.10); color: inherit;
+  background: rgba(6,182,212,.14); color: inherit;
 }
-.addr-suggest-item .bi { color: #0891b2; flex-shrink: 0; margin-top: 2px; }
+.addr-suggest-item .bi { color: #0891b2; flex-shrink: 0; margin-top: 2px; font-size: 1rem; }
 .addr-suggest-empty {
-  font-size: .78rem; color: var(--bs-secondary-color);
-  padding: .55rem .65rem; text-align: center;
+  font-size: .82rem; color: var(--bs-secondary-color);
+  padding: .8rem .65rem; text-align: center;
 }
 </style>
 <script>
@@ -1282,6 +1288,11 @@ window.mvValidateCheckoutOnSubmit = mvValidateCheckoutOnSubmit;
   var input   = document.getElementById('checkout-address');
   var panel   = document.getElementById('checkout-address-suggest');
   if (!input || !panel) return;
+  // The checkout summary/payment cards have a `s3d-tilt` transform on scroll,
+  // which creates a stacking context that traps position:fixed elements. Move
+  // the suggestion panel to document.body so it can float above everything
+  // (Pay Securely button included) regardless of parent transforms.
+  document.body.appendChild(panel);
 
   var timer = null, currentReq = 0, cursor = -1, suggestions = [];
 
@@ -1290,7 +1301,20 @@ window.mvValidateCheckoutOnSubmit = mvValidateCheckoutOnSubmit;
     return el ? (el.value || 'US') : 'US';
   }
   function hide() { panel.hidden = true; cursor = -1; }
-  function show() { panel.hidden = false; }
+  function show() {
+    // Recompute panel position relative to the input EVERY show — position
+    // is fixed (viewport-anchored) so it escapes parent stacking contexts,
+    // but we have to keep it visually attached to the input.
+    var r = input.getBoundingClientRect();
+    panel.style.left  = r.left + 'px';
+    panel.style.top   = (r.bottom + 4) + 'px';
+    panel.style.width = r.width + 'px';
+    panel.hidden = false;
+  }
+  // Reposition on scroll / resize / country-switch reflow while open.
+  var __reposHandler = function () { if (!panel.hidden) show(); };
+  window.addEventListener('scroll', __reposHandler, true);
+  window.addEventListener('resize', __reposHandler);
   // Reset internal state so the panel can't be re-shown by the focus handler
   // right after a selection.  Called from pick() below.
   function clearState() { suggestions = []; cursor = -1; panel.innerHTML = ''; }
