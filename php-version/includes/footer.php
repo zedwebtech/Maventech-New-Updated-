@@ -43,13 +43,6 @@
         </div>
         <p class="small mb-3" style="line-height:1.55;">Your trusted source for genuine Microsoft Office licenses at competitive prices. One-time purchase — no recurring fees.</p>
 
-        <!-- Newsletter -->
-        <div class="small fw-bold text-white mb-2">Subscribe for Deals</div>
-        <form class="d-flex gap-2 mb-4 footer-newsletter" onsubmit="subscribeNewsletter(event)">
-          <input type="email" required class="form-control form-control-sm" placeholder="Enter your email" aria-label="Email address for deals newsletter">
-          <button class="btn btn-sm btn-primary flex-shrink-0" type="submit" aria-label="Subscribe to deals newsletter"><i class="bi bi-arrow-right"></i></button>
-        </form>
-
         <!-- Contact block: tight vertical rhythm, aligned icons -->
         <ul class="list-unstyled small mb-3 footer-contact-list">
           <li><i class="bi bi-telephone-fill text-info"></i><a href="tel:<?= esc(tel_e164($brandPhone)) ?>"><?= esc($brandPhone) ?></a></li>

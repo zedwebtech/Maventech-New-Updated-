@@ -1,3 +1,21 @@
+<!-- 2026-07-13 (c): Homepage + footer copy hygiene — de-duplicated three
+  areas that were saying the same thing twice.
+  (1) Footer (includes/footer.php): removed the small "Subscribe for Deals"
+  inline newsletter under the brand column. The full-width "Join our list
+  for the latest deals & product updates" band at the top of the footer
+  is the single newsletter surface now.
+  (2) Homepage "Your Trusted Software Partner" section (index.php ~L521):
+  removed the entire right column (the "2+ Yrs / 30-Day / 100% Genuine
+  Keys" stat cards + "Trusted by …" chip row) — the same trust signals are
+  already shown in the top-bar strip ("Trusted Software Store · 2 YRS")
+  and hero ("30-Day Money-Back Guarantee"). Left column widened to
+  col-lg-10 centered.
+  (3) Homepage "For Every Business" volume card (index.php ~L365): badge
+  changed from "VOLUME PRICING" → "VOLUME LICENSING" (single label);
+  removed the "Team Licensing" chip (redundant with the new badge). Chips
+  now read: Priority Support · Bulk Discounts. -->
+
+
 <!-- 2026-07-13 (b): Checkout Payment method — mutually-exclusive detail
   panels. When the customer picks Card, only the Card Number / Expiry / CVV
   reveal is shown. When they pick PayPal, the Card fields hide and a new

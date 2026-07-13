@@ -362,11 +362,10 @@ include __DIR__ . '/includes/header.php';
       <div class="col-lg-4">
         <div class="rounded-4 text-white p-3 position-relative overflow-hidden biz-card" data-testid="business-card">
           <div class="biz-glow"></div>
-          <span class="badge rounded-pill text-bg-warning text-dark fw-bold mb-2" style="font-size:.62rem; letter-spacing:.12em;">VOLUME PRICING</span>
+          <span class="badge rounded-pill text-bg-warning text-dark fw-bold mb-2" style="font-size:.62rem; letter-spacing:.12em;">VOLUME LICENSING</span>
           <h3 class="fw-bold h4 mb-1">For Every <span class="text-warning">Business</span></h3>
           <p class="small opacity-75 mb-3">Professional tools for teams of all sizes. Volume discounts available.</p>
           <div class="d-flex flex-wrap gap-2 mb-3">
-            <span class="biz-chip"><i class="bi bi-people-fill me-1"></i>Team Licensing</span>
             <span class="biz-chip"><i class="bi bi-headset me-1"></i>Priority Support</span>
             <span class="biz-chip"><i class="bi bi-tags-fill me-1"></i>Bulk Discounts</span>
           </div>
@@ -521,8 +520,8 @@ include __DIR__ . '/includes/header.php';
 <!-- Your Trusted Software Partner -->
 <section class="py-5" data-testid="trusted-partner-section">
   <div class="container">
-    <div class="row g-4 g-lg-5 align-items-center">
-      <div class="col-lg-7">
+    <div class="row g-4 g-lg-5 align-items-center justify-content-center">
+      <div class="col-lg-10">
         <h2 class="fw-bold">Your Trusted Software Partner</h2>
         <p class="text-secondary mt-3">At <?= SITE_BRAND ?>, we're committed to providing genuine Microsoft software at competitive prices. Our team of experts ensures every customer receives the support they need for a seamless experience.</p>
         <p class="text-secondary">We focus on fast, reliable order fulfillment — making sure your genuine license key is delivered promptly and that you have a clear, step-by-step digital activation guide for every purchase.</p>
@@ -538,21 +537,6 @@ include __DIR__ . '/includes/header.php';
           <?php endforeach; ?>
         </div>
         <a href="about-us.php" class="btn btn-outline-primary rounded-pill px-4 mt-4">Learn More About Us</a>
-      </div>
-      <div class="col-lg-5">
-        <div class="row g-3 text-center">
-          <?php foreach ([['2+ Yrs', 'In Business'], ['30-Day', 'Money-Back'], ['100%', 'Genuine Keys']] as [$v, $l]): ?>
-            <div class="col-6"><div class="card p-3 h-100"><div class="fs-3 fw-bold text-primary"><?= $v ?></div><small class="text-secondary"><?= $l ?></small></div></div>
-          <?php endforeach; ?>
-        </div>
-        <div class="text-center mt-3 small text-secondary">
-          <div class="fw-semibold mb-2">Trusted by</div>
-          <div class="d-flex flex-wrap justify-content-center gap-2 opacity-75">
-            <?php foreach (['Businesses', 'Schools & Universities', 'Government Teams', 'Nonprofits', 'Freelancers'] as $org): ?>
-              <span class="badge text-bg-light border"><?= $org ?></span>
-            <?php endforeach; ?>
-          </div>
-        </div>
       </div>
     </div>
   </div>
