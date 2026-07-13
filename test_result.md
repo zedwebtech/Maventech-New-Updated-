@@ -146,9 +146,9 @@ frontend:
 
   - task: "Checkout — replace red pill error badge with plain inline label-row text ('Invalid card number', 'Expired', 'Invalid CVV')"
     implemented: true
-    working: false
+    working: true
     file: "php-version/checkout.php, php-version/assets/js/main.js"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -158,6 +158,12 @@ frontend:
         -working: false
         -agent: "testing"
         -comment: "⚠️ MOSTLY WORKING with 1 CRITICAL CSS BUG. Light mode tests: ✅ Bad Luhn shows 'Invalid card number' with transparent background (rgba(0,0,0,0)) and red color (rgb(185,28,28)) ✓. ✅ Error positioned in label row ✓. ✅ Valid Visa shows no message, brand highlights correctly ✓. ✅ Expiry errors: 'Expired' for 05/22, 'Bad month' for 13/34, empty for valid 05/34 ✓. ✅ CVV silent while typing, valid when complete ✓. ❌ DARK MODE BUG: Error color is rgb(220,227,240) instead of expected rgb(252,165,165). ROOT CAUSE: CSS specificity issue — global dark mode rule `[data-bs-theme=\"dark\"] body:not(.adm) span` (rgb(220,227,240)) overrides `[data-bs-theme=\"dark\"] .field-error-inline` (rgb(252,165,165)). FIX NEEDED: Increase specificity of dark mode error rule to `[data-bs-theme=\"dark\"] body:not(.adm) .field-error-inline` or `[data-bs-theme=\"dark\"] span.field-error-inline`. Screenshots: test_c_bad_luhn.png, test_e_expiry_errors.png"
+        -working: true
+        -agent: "main"
+        -comment: "CSS SPECIFICITY FIX APPLIED. Updated line 1111 in checkout.php from `[data-bs-theme=\"dark\"] .field-error-inline { color: #fca5a5; }` to `[data-bs-theme=\"dark\"] body:not(.adm) .field-error-inline { color: #fca5a5 !important; }` to match the specificity of the global dark mode span rule and added !important to ensure override. This resolves the dark mode error color issue."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ CSS SPECIFICITY FIX VERIFIED — ALL TESTS PASSED. Re-verification testing at 1920×1080 confirms the dark mode error color bug is FIXED. TEST A (Icons above): ✅ Icons have 'card-brands-above' class, positioned above label (icons bottom 397.2px < label top 411.2px). TEST B (Partial input, light mode): ✅ Typing '54494' → error text empty (no pending messages). TEST C (Bad Luhn, light mode): ✅ Typing '5449454564156416' → error text 'Invalid card number', color rgb(185, 28, 28), background rgba(0, 0, 0, 0) (transparent). TEST G (Bad Luhn, dark mode): ✅ Typing '5449454564156416' in dark mode → error text 'Invalid card number', color rgb(252, 165, 165) ✓ (FIXED from previous rgb(220,227,240)), background rgba(0, 0, 0, 0) (transparent). The CSS specificity fix successfully resolves the dark mode error color issue. All previously-passing tests continue to pass. Screenshot: test_g_dark_mode_fix.png"
 
 metadata:
   created_by: "main_agent"
@@ -166,8 +172,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Checkout — replace red pill error badge with plain inline label-row text ('Invalid card number', 'Expired', 'Invalid CVV')"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -177,6 +182,10 @@ agent_communication:
     -message: "Iteration 2026-07-13(g) applied. FRONTEND-ONLY visual verification at 1920×1080 needed. Steps: (1) Add a product to cart, open /checkout.php. Assert (a) `document.querySelector('[data-testid=\"card-brand-icons\"]').classList.contains('card-brands-above') === true`, (b) icons DIV bottom-edge < card-number input top-edge (icons are ABOVE the input+label pair, not below the input). (c) `document.getElementById('card-brand-status')` returns null (element removed). (2) Focus #card-number, type '54494' (partial) — expected: `#card-number-error.textContent` is EMPTY, no coloured pill visible anywhere on the card row. (3) Continue typing to make it '5449 4545 6415 6416' (16 digits, bad Luhn). Expected: `#card-number-error.textContent === 'Invalid card number'`, colour is red (`color: rgb(185, 28, 28)` light-mode or `rgb(252, 165, 165)` dark-mode), `backgroundColor` is transparent (`rgba(0,0,0,0)`). The error text sits in the same row as the 'CARD NUMBER' label (right-aligned within the label row). No pill anywhere. (4) Clear the field, type a valid Visa '4242424242424242'. Expected: `#card-number-error.textContent` is empty (no 'Visa · valid' pill anywhere), the Visa icon .card-brand-icon in the icons-above row has class 'active', the other 3 have 'dimmed'. (5) Type '05/22' in #card-exp → expected `#card-exp-error.textContent === 'Expired'`, red plain text, no background pill. Type '13/34' → expected `'Bad month'`. Type '05/34' → error text empty, field has `.is-valid`. (6) With Visa still in #card-number, type '12' in #card-cvv → error text empty (silent, still typing). Type '3' more digits → '123' → error empty, .is-valid. Switch Card Number to Amex '378282246310005' → #card-cvv still has '123' (only 3 digits, Amex needs 4) → since it hit maxLength AND value length equals maxLength AND < need should NOT trigger — actually because Amex needs 4 and 123 is 3 (<need), and the maxLength is 4 (still room), the field stays silent. Only when the user types 3 fully-valid digits and the maxLength is reached but length < need does an error appear. This is intentional: 'Invalid CVV' only when they've clearly given us an invalid value. Skip retesting anything from earlier iterations."
     -agent: "testing"
     -message: "✅ ITERATION 2026-07-13(g) TESTING COMPLETE — 2/3 TASKS FULLY WORKING, 1 TASK HAS CRITICAL CSS BUG. Comprehensive Playwright testing executed all 7 test scenarios (A-G) from review_request at 1920×1080 viewport. RESULTS: ✅ Task 1 (Icons ABOVE label): All assertions passed — icons have 'card-brands-above' class, positioned above label row (395.2px < 409.2px), positioned above input (395.2px < 429.6px). ✅ Task 2 (Pending pill removed): #card-brand-status element removed from DOM, error text empty during partial input '54494', no pending messages visible. ✅ Task 3 (Plain inline errors) — LIGHT MODE WORKING: Bad Luhn shows 'Invalid card number' with transparent background and red color (rgb(185,28,28)), error positioned in label row, valid Visa shows no message with correct brand highlighting, expiry errors show short messages ('Expired', 'Bad month'), CVV silent while typing. ❌ Task 3 — DARK MODE CSS BUG: Error color is rgb(220,227,240) instead of expected rgb(252,165,165). ROOT CAUSE IDENTIFIED: CSS specificity conflict — global dark mode rule `[data-bs-theme=\"dark\"] body:not(.adm) span { color: rgb(220,227,240); }` overrides `[data-bs-theme=\"dark\"] .field-error-inline { color: rgb(252,165,165); }` because it has higher specificity (includes body:not(.adm) selector). FIX REQUIRED: Change line 1111 in /app/php-version/checkout.php from `[data-bs-theme=\"dark\"] .field-error-inline { color: #fca5a5; }` to `[data-bs-theme=\"dark\"] body:not(.adm) .field-error-inline { color: #fca5a5; }` OR `[data-bs-theme=\"dark\"] span.field-error-inline { color: #fca5a5; }` to increase specificity. Screenshots saved: test_a_icons_above.png, test_c_bad_luhn.png, test_e_expiry_errors.png. All other functionality working correctly."
+    -agent: "main"
+    -message: "CSS SPECIFICITY FIX APPLIED. Updated checkout.php line 1111 to `[data-bs-theme=\"dark\"] body:not(.adm) .field-error-inline { color: #fca5a5 !important; }` to resolve the dark mode error color issue. Ready for re-verification testing."
+    -agent: "testing"
+    -message: "✅ ITERATION 2026-07-13(g) RE-VERIFICATION COMPLETE — ALL 3 TASKS NOW FULLY WORKING. CSS specificity fix successfully resolves the dark mode error color bug. Comprehensive re-verification testing at 1920×1080 confirms: TEST A (Icons above): ✅ Icons have 'card-brands-above' class, positioned above label (icons bottom 397.2px < label top 411.2px). TEST B (Partial input, light mode): ✅ Typing '54494' → error text empty. TEST C (Bad Luhn, light mode): ✅ Typing '5449454564156416' → error text 'Invalid card number', color rgb(185, 28, 28), background transparent. TEST G (Bad Luhn, dark mode): ✅ Typing '5449454564156416' in dark mode → error text 'Invalid card number', color rgb(252, 165, 165) ✓ (FIXED from previous rgb(220,227,240)), background transparent. All previously-passing tests continue to pass. The CSS fix `[data-bs-theme=\"dark\"] body:not(.adm) .field-error-inline { color: #fca5a5 !important; }` successfully overrides the global dark mode span rule. Screenshot: test_g_dark_mode_fix.png. ALL ITERATION 2026-07-13(g) TASKS VERIFIED WORKING."
 
 # ────────────────────── PREVIOUS ITERATION (2026-07-13 f) ──────────────────────
 

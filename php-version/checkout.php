@@ -1108,7 +1108,7 @@ form .row.g-3 { --bs-gutter-y: .75rem; }
   overflow: hidden; text-overflow: ellipsis;
   max-width: 60%;
 }
-[data-bs-theme="dark"] .field-error-inline { color: #fca5a5; }
+[data-bs-theme="dark"] body:not(.adm) .field-error-inline { color: #fca5a5 !important; }
 
 /* Field-level validity ring (kept minimal — no background icon). */
 #card-form .form-control.is-invalid { border-color: #ef4444; background-image: none; padding-right: .65rem; }
