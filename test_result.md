@@ -102,16 +102,62 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 
 user_problem_statement: |
-  Iteration 2026-07-13 (j) — bug fix: card-number validation was firing
-  too early:
-  (1) "Invalid card number" was being displayed BELOW the input, but the
-      user wants it next to the CARD NUMBER label (inline in the label
-      row, right-aligned).
-  (2) When the customer typed a non-Visa card prefix like "5456", the
-      validator would immediately flag it "Invalid card number" while
-      they were still typing. The error should ONLY appear AFTER the
-      last digit is entered (16 for Visa/MC/Discover, 15 for Amex).
-      Silent while typing.
+  Iteration 2026-07-13 (k) — checkout address auto-suggest:
+  When the customer types in the Address field on checkout, show a
+  dropdown of suggested addresses below the input. Clicking a suggestion
+  should auto-fill Address / City / State / ZIP based on the currently-
+  selected Country. Use OpenStreetMap Nominatim (free, no API key).
+
+backend:
+  - task: "New /ajax/address-suggest.php proxying OpenStreetMap Nominatim with cache + rate-limit"
+    implemented: true
+    working: true
+    file: "php-version/ajax/address-suggest.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Created POST/GET /ajax/address-suggest.php. Accepts {q, country}, minimum q length 3, maximum 120. Maps internal 'UK'→'gb' before hitting Nominatim. Auto-creates `address_suggest_cache` (24h TTL by cache_key = 'v1:'+q+'|'+country) and `address_suggest_rate` (6 requests / 10s per IP). Calls https://nominatim.openstreetmap.org/search with User-Agent 'MaventechCheckout/1.0 (ops@…)' as required by Nominatim's usage policy. Normalises the response to { display, line1, city, state, state_code (from ISO3166-2-lvl4), postcode, country } — falling back through Nominatim's inconsistent city/town/village/hamlet/suburb keys and pedestrian/road/footway keys. Verified: curl for '1600 Amphitheatre&country=us' returns 2 suggestions with line1='1600 Amphitheatre Parkway', city='Mountain View', state='California', state_code='CA', postcode='94043', country='US'."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ COMPREHENSIVE BACKEND TESTING COMPLETE — ALL 8 TESTS PASSED. Executed all test scenarios from review_request. TEST 1 (Happy path US address): ✅ HTTP 200, Content-Type application/json, ok:true, 2 suggestions returned. First suggestion verified: line1='1600 Amphitheatre Parkway', city='Mountain View', state='California', state_code='CA', postcode='94043', country='US'. All fields match expected values exactly. TEST 2 (UK country biasing): ✅ Query 'Buckingham Palace&country=uk' correctly maps UK→GB internally and returns country='UK' in response. First suggestion: city='City of Westminster' (acceptable London variant), postcode='SW1A 1AA' (contains SW1 as required). TEST 3 (Short query): ✅ Query 'ab' (2 chars) returns {ok:true, suggestions:[]} without upstream call (short-circuit working). TEST 4 (Cache): ✅ Repeat query returns identical JSON. Cache speedup verified: second call 2.0% faster (190.30ms → 186.45ms). Database verification: 1 row found in address_suggest_cache with cache_key='v1:1600 amphitheatre|us'. TEST 5 (Rate limit): ✅ 10 rapid requests: exactly 6 successful (ok:true) and 4 rate-limited (ok:false, error='Too many requests — try again in a moment.'). Rate limiting working correctly at 6 req/10s per IP. TEST 6 (Long query): ✅ Query with 121 chars returns {ok:false, error:'Query too long.'}. TEST 7 (Missing country): ✅ Query 'Eiffel Tower' without country parameter returns ok:true with 2 suggestions (Paris, France and Alberta, Canada). All suggestions include country field (FR, CA). TEST 8 (DB schema): ✅ Both tables exist. address_suggest_cache has cache_key (PK), payload (LONGTEXT), created_at (TIMESTAMP). address_suggest_rate has ip (VARCHAR), ts (TIMESTAMP), and index on (ip, ts). All schema requirements met. NO ISSUES FOUND. Backend endpoint fully functional and production-ready."
+
+frontend:
+  - task: "Checkout — address input auto-suggest dropdown with click-to-autofill"
+    implemented: true
+    working: "NA"
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Added `<div id='checkout-address-suggest' class='checkout-addr-suggest' role='listbox' hidden>` directly under the #checkout-address input. New CSS (`checkout-addr-suggest`, `addr-suggest-item`, `addr-suggest-header`, `addr-suggest-empty`) — absolutely-positioned panel, dark-mode aware, max 260px scrollable. New JS IIFE at bottom of the checkout script block: 300 ms debounced fetch to /ajax/address-suggest.php with the current #co-country value, renders header + up to 6 items. Keyboard: ArrowUp/Down to move a highlight, Enter to select, Escape to close; also closes on outside click. pick(idx) fills: address input, `input[name=\"city\"]`, postcode via #co-postal, and state — if state is a <select> (US/CA/AU/IN) it matches the ISO-3166-2 code or the state name option; otherwise it drops the free-text state name. Verified live: typing '1600 Amphitheatre' shows 2 suggestions, click → address='1600 Amphitheatre Parkway', city='Mountain View', state='CA' (selected in state dropdown), zip='94043'."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "New /ajax/address-suggest.php proxying OpenStreetMap Nominatim with cache + rate-limit"
+    - "Checkout — address input auto-suggest dropdown with click-to-autofill"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Iteration 2026-07-13(k) applied. Please verify: (1) BACKEND: `curl -s 'http://localhost:3000/ajax/address-suggest.php?q=1600+Amphitheatre&country=us'` → HTTP 200 JSON with ok:true and at least 1 suggestion whose city='Mountain View' and postcode='94043' and country='US'. Also test country biasing: `?q=Buckingham+Palace&country=uk` → suggestions with country='UK'. Rate limit: hit the endpoint 8 times in <10s from same IP — the 7th+ response should be `{ok:false,error:'Too many requests…'}`. Cache: repeat query for '1600 Amphitheatre&us' — response identical + latency lower (2nd hit reads from address_suggest_cache table). Empty/short q: `?q=ab&country=us` → `{ok:true,suggestions:[]}` (short-circuit, no upstream call). (2) FRONTEND (Playwright, 1920×1080): add product to cart, open /checkout.php. Focus #checkout-address, type '1600 Amphitheatre'. Wait 800ms. Assert `#checkout-address-suggest.hidden === false`, `.addr-suggest-item` count >= 1. Click the first suggestion. Assert `#checkout-address.value === '1600 Amphitheatre Parkway'`, `input[name=\"city\"].value === 'Mountain View'`, `[name=\"state\"].value === 'CA'` (the US state select), `#co-postal.value === '94043'`. Panel closes after selection. (3) Country switch: change #co-country to 'GB' (UK) via storefront reload (this reloads checkout under /uk/ prefix), then type 'Buckingham Palace' — assert first suggestion contains 'London' and postcode contains 'SW1A'. (4) Keyboard: type '1600 Amphitheatre', press ArrowDown, ArrowDown, Enter — assert autofill happened with the SECOND suggestion. Escape closes the panel without filling. Skip retesting anything from earlier iterations."
+    -agent: "testing"
+    -message: "✅ BACKEND TESTING COMPLETE — ALL 8 TESTS PASSED. Comprehensive testing of /ajax/address-suggest.php endpoint executed successfully. All test scenarios from review_request verified: (1) Happy path US address: 1600 Amphitheatre returns correct Mountain View, CA data with all fields matching exactly. (2) UK country biasing: Buckingham Palace query correctly maps uk→gb internally and returns UK in response with Westminster/London city and SW1A postcode. (3) Short query handling: 2-char query returns empty suggestions without upstream call. (4) Cache functionality: Repeat queries return identical JSON with faster response time (2% speedup verified), database cache entry confirmed. (5) Rate limiting: Exactly 6 successful requests and 4 rate-limited responses in 10-request burst, confirming 6 req/10s per IP limit. (6) Long query rejection: 121-char query properly rejected with 'Query too long.' error. (7) Missing country parameter: Eiffel Tower query without country returns results with country codes included. (8) Database schema: Both tables (address_suggest_cache, address_suggest_rate) exist with correct fields and indexes. Backend endpoint is fully functional and production-ready. FRONTEND testing NOT performed per system instructions (DO NOT TEST FRONTEND). Main agent should proceed with frontend testing if needed or summarize and finish if backend-only verification was required."
+
+# ────────────────────── PREVIOUS ITERATION (2026-07-13 j) ──────────────────────
 
 frontend:
   - task: "Checkout — move card validation error text from BELOW input back to INLINE next to label"

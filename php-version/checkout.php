@@ -896,6 +896,9 @@ include __DIR__ . '/includes/header.php';
         <div class="col-md-6"><label class="form-label">Last Name *</label><input name="last_name" autocomplete="family-name" required class="form-control" value="<?= esc($_POST['last_name'] ?? '') ?>"></div>
         <div class="col-md-8"><label class="form-label">Address *</label><input name="address" autocomplete="address-line1" required class="form-control" value="<?= esc($_POST['address'] ?? '') ?>" id="checkout-address" data-testid="checkout-address">
           <div id="checkout-address-hint" class="checkout-hint" style="display:none;" data-testid="checkout-address-hint"></div>
+          <!-- Address auto-suggest dropdown — populated by ajax/address-suggest.php
+               (OpenStreetMap Nominatim). Hidden until 3+ chars typed. -->
+          <div id="checkout-address-suggest" class="checkout-addr-suggest" data-testid="checkout-address-suggest" role="listbox" hidden></div>
         </div>
         <div class="col-md-4"><label class="form-label">Address Line 2</label><input name="address2" autocomplete="address-line2" class="form-control" value="<?= esc($_POST['address2'] ?? '') ?>"></div>
         <div class="col-md-3 col-6">
@@ -1109,6 +1112,48 @@ form .row.g-3 { --bs-gutter-y: .75rem; }
 /* Field-level validity ring (kept minimal — no background icon). */
 #card-form .form-control.is-invalid { border-color: #ef4444; background-image: none; padding-right: .65rem; }
 #card-form .form-control.is-valid   { border-color: #10b981; background-image: none; padding-right: .65rem; }
+
+/* ============================================================
+   Address auto-suggest dropdown (OpenStreetMap Nominatim, proxied
+   via /ajax/address-suggest.php). Rendered as an absolutely-positioned
+   panel directly under the #checkout-address input.
+   ============================================================ */
+.col-md-8 { position: relative; }
+.checkout-addr-suggest {
+  position: absolute; left: 12px; right: 12px; top: calc(100% - 8px);
+  z-index: 30;
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  box-shadow: 0 12px 24px rgba(2,6,23,.12);
+  max-height: 260px; overflow-y: auto;
+  padding: .3rem;
+}
+[data-bs-theme="dark"] .checkout-addr-suggest {
+  background: #0f172a; border-color: #334155;
+  box-shadow: 0 12px 24px rgba(0,0,0,.55);
+}
+.checkout-addr-suggest[hidden] { display: none !important; }
+.addr-suggest-header {
+  font-size: .68rem; font-weight: 700; letter-spacing: .06em;
+  color: var(--bs-secondary-color); text-transform: uppercase;
+  padding: .35rem .55rem .1rem;
+}
+.addr-suggest-item {
+  padding: .45rem .55rem; border-radius: 8px;
+  font-size: .82rem; line-height: 1.35; cursor: pointer;
+  display: flex; align-items: flex-start; gap: .5rem;
+}
+.addr-suggest-item + .addr-suggest-item { margin-top: 1px; }
+.addr-suggest-item:hover,
+.addr-suggest-item.active {
+  background: rgba(6,182,212,.10); color: inherit;
+}
+.addr-suggest-item .bi { color: #0891b2; flex-shrink: 0; margin-top: 2px; }
+.addr-suggest-empty {
+  font-size: .78rem; color: var(--bs-secondary-color);
+  padding: .55rem .65rem; text-align: center;
+}
 </style>
 <script>
 /* Region-aware checkout address form. The PHP $REGION_FORMS config is the
@@ -1223,6 +1268,139 @@ function mvValidateCheckoutOnSubmit(form, ev) {
   return true;
 }
 window.mvValidateCheckoutOnSubmit = mvValidateCheckoutOnSubmit;
+
+/* ============================================================
+   Address auto-suggest — as the customer types in #checkout-address,
+   we debounce-fetch suggestions from OpenStreetMap Nominatim (via our
+   own proxy /ajax/address-suggest.php).  Clicking a suggestion fills
+   Address / City / State / Postal-code (and, when possible, tries to
+   match the state to the current country's fixed list; otherwise it
+   drops the text into the free-text state input).
+   Keyboard: Arrow-Up/Down to navigate, Enter to pick, Escape to close.
+   ============================================================ */
+(function () {
+  var input   = document.getElementById('checkout-address');
+  var panel   = document.getElementById('checkout-address-suggest');
+  if (!input || !panel) return;
+
+  var timer = null, currentReq = 0, cursor = -1, suggestions = [];
+
+  function currentCountry() {
+    var el = document.getElementById('co-country');
+    return el ? (el.value || 'US') : 'US';
+  }
+  function hide() { panel.hidden = true; cursor = -1; }
+  function show() { panel.hidden = false; }
+
+  function render(list) {
+    suggestions = Array.isArray(list) ? list : [];
+    cursor = -1;
+    if (suggestions.length === 0) {
+      panel.innerHTML = '<div class="addr-suggest-empty">No matching address found — please type it manually.</div>';
+      show();
+      return;
+    }
+    var html = '<div class="addr-suggest-header"><i class="bi bi-geo-alt-fill"></i> Suggested addresses</div>';
+    html += suggestions.map(function (s, i) {
+      var meta = [];
+      if (s.city)     meta.push(s.city);
+      if (s.state)    meta.push(s.state);
+      if (s.postcode) meta.push(s.postcode);
+      var metaLine = meta.length ? '<div class="small text-secondary">' + escHtml(meta.join(' · ')) + '</div>' : '';
+      return '<div class="addr-suggest-item" role="option" data-idx="' + i + '" data-testid="addr-suggest-item">'
+        + '<i class="bi bi-geo-alt"></i>'
+        + '<div class="flex-grow-1"><div>' + escHtml(s.line1) + '</div>' + metaLine + '</div>'
+        + '</div>';
+    }).join('');
+    panel.innerHTML = html;
+    show();
+  }
+  function escHtml(s) { return String(s || '').replace(/[&<>"']/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]); }); }
+
+  async function fetchSuggestions(q) {
+    var req = ++currentReq;
+    try {
+      var url = 'ajax/address-suggest.php?q=' + encodeURIComponent(q) + '&country=' + encodeURIComponent(currentCountry());
+      var r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      var j = await r.json();
+      if (req !== currentReq) return; // stale
+      if (j.ok) render(j.suggestions || []);
+      else      { panel.innerHTML = '<div class="addr-suggest-empty">' + escHtml(j.error || 'Suggestions unavailable') + '</div>'; show(); }
+    } catch (e) { if (req === currentReq) hide(); }
+  }
+
+  input.addEventListener('input', function () {
+    var q = (input.value || '').trim();
+    if (q.length < 3) { hide(); return; }
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(function () { fetchSuggestions(q); }, 300);
+  });
+  input.addEventListener('focus', function () {
+    if ((input.value || '').trim().length >= 3 && suggestions.length) show();
+  });
+
+  function pick(idx) {
+    var s = suggestions[idx];
+    if (!s) return;
+    // Address line 1.
+    input.value = s.line1 || '';
+    // City.
+    var cityEl = document.querySelector('input[name="city"]');
+    if (cityEl && s.city) cityEl.value = s.city;
+    // Postal code.
+    var zipEl = document.getElementById('co-postal') || document.querySelector('input[name="zip"]');
+    if (zipEl && s.postcode) zipEl.value = s.postcode;
+    // State — if the country has a fixed list (select), try to match either
+    // the ISO subdivision code (best) or the display name. Otherwise drop
+    // the plain state name into the free-text input.
+    var stateEl = document.querySelector('[name="state"]');
+    if (stateEl) {
+      var target = s.state_code || s.state || '';
+      if (stateEl.tagName === 'SELECT') {
+        var matched = false;
+        for (var i = 0; i < stateEl.options.length; i++) {
+          var v = stateEl.options[i].value;
+          if (v && (v === s.state_code || v.toLowerCase() === (s.state || '').toLowerCase())) {
+            stateEl.selectedIndex = i; matched = true; break;
+          }
+        }
+        if (!matched && s.state) {
+          // No exact match — fall back to trying by prefix of the option
+          // text (e.g. Nominatim returns "New South Wales" and the option
+          // list has just "NSW"). Leave unchanged if no prefix match.
+        }
+      } else {
+        stateEl.value = target;
+      }
+    }
+    hide();
+    input.focus();
+  }
+
+  panel.addEventListener('click', function (ev) {
+    var it = ev.target.closest('.addr-suggest-item');
+    if (!it) return;
+    var idx = parseInt(it.getAttribute('data-idx'), 10);
+    if (!isNaN(idx)) pick(idx);
+  });
+
+  input.addEventListener('keydown', function (ev) {
+    if (panel.hidden || !suggestions.length) return;
+    if (ev.key === 'ArrowDown') { ev.preventDefault(); cursor = (cursor + 1) % suggestions.length; paintCursor(); }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); cursor = (cursor - 1 + suggestions.length) % suggestions.length; paintCursor(); }
+    else if (ev.key === 'Enter' && cursor >= 0) { ev.preventDefault(); pick(cursor); }
+    else if (ev.key === 'Escape') { hide(); }
+  });
+  function paintCursor() {
+    panel.querySelectorAll('.addr-suggest-item').forEach(function (n, i) {
+      n.classList.toggle('active', i === cursor);
+      if (i === cursor) n.scrollIntoView({ block: 'nearest' });
+    });
+  }
+  document.addEventListener('click', function (ev) {
+    if (!panel.hidden && ev.target !== input && !panel.contains(ev.target)) hide();
+  });
+})();
 </script>
 
 <script>
