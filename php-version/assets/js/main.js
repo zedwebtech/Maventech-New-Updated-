@@ -405,12 +405,20 @@ document.addEventListener('input', (e) => {
       i.classList.toggle('active', i.dataset.brand === brand);
       i.classList.toggle('dimmed', brand !== '' && i.dataset.brand !== brand);
     });
-    // Field-level validity — silent while the customer is still typing
-    // (no "Enter N more digits" nag).  Only fire an inline error when the
-    // field looks fully wrong: unrecognised brand or Luhn-fail at full length.
+    // Field-level validity — SILENT while the customer is still typing.
+    // We only surface an error once they've typed the FULL card number
+    // (16 digits for Visa/MC/Discover, 15 for Amex) so a mid-type partial
+    // like "5456" doesn't flash "Invalid card number" before they're done.
+    //
+    // Rules:
+    //   digits.length === 0                         → neutral
+    //   digits.length < brand.maxLength             → neutral (still typing)
+    //   digits.length === brand.maxLength + Luhn OK → is-valid
+    //   digits.length === brand.maxLength + Luhn NG → is-invalid, "Invalid card number"
+    //   digits.length === 16 (default) & no brand   → is-invalid, "Invalid card number"
     if (!digits.length)                    setCardFieldValidity(e.target, null);
+    else if (digits.length < maxL)         setCardFieldValidity(e.target, null); // silent
     else if (!brand)                       setCardFieldValidity(e.target, false, 'Invalid card number');
-    else if (digits.length < maxL)         setCardFieldValidity(e.target, null); // silent while incomplete
     else if (!luhnCheck(digits))           setCardFieldValidity(e.target, false, 'Invalid card number');
     else                                   setCardFieldValidity(e.target, true);
     // Re-validate CVV since the required length depends on the brand.

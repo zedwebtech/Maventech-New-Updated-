@@ -807,25 +807,31 @@ include __DIR__ . '/includes/header.php';
       <div id="card-form" class="card-form-reveal mb-2<?= $defaultPM !== 'card' ? ' d-none' : '' ?>" data-testid="card-details-form">
         <div class="row g-2">
           <div class="col-md-6 col-12">
-            <label class="form-label mb-1" for="card-number">Card Number</label>
+            <div class="d-flex align-items-baseline justify-content-between">
+              <label class="form-label mb-1" for="card-number">Card Number</label>
+              <span class="field-error-inline" id="card-number-error" data-testid="card-number-error" aria-live="polite"></span>
+            </div>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-credit-card-2-front text-primary"></i></span>
               <input id="card-number" class="form-control" inputmode="numeric" autocomplete="cc-number" maxlength="19" data-testid="card-number-input" aria-label="Card number" placeholder="1234 5678 9012 3456">
             </div>
-            <div class="field-error-under" id="card-number-error" data-testid="card-number-error" aria-live="polite"></div>
           </div>
           <div class="col-md-3 col-7">
-            <label class="form-label mb-1" for="card-exp">Expiry Date</label>
+            <div class="d-flex align-items-baseline justify-content-between">
+              <label class="form-label mb-1" for="card-exp">Expiry Date</label>
+              <span class="field-error-inline" id="card-exp-error" data-testid="card-exp-error" aria-live="polite"></span>
+            </div>
             <input id="card-exp" class="form-control" inputmode="numeric" autocomplete="cc-exp" maxlength="5" data-testid="card-exp-input" aria-label="Card expiry date" placeholder="MM/YY">
-            <div class="field-error-under" id="card-exp-error" data-testid="card-exp-error" aria-live="polite"></div>
           </div>
           <div class="col-md-3 col-5">
-            <label class="form-label mb-1" for="card-cvv">CVV</label>
+            <div class="d-flex align-items-baseline justify-content-between">
+              <label class="form-label mb-1" for="card-cvv">CVV</label>
+              <span class="field-error-inline" id="card-cvv-error" data-testid="card-cvv-error" aria-live="polite"></span>
+            </div>
             <div class="input-group">
               <input id="card-cvv" type="password" class="form-control" inputmode="numeric" autocomplete="cc-csc" maxlength="4" data-testid="card-cvv-input" aria-label="Card CVV" placeholder="CVV">
               <span class="input-group-text" title="3-digit code on the back of your card · 4 digits for American Express"><i class="bi bi-question-circle text-secondary"></i></span>
             </div>
-            <div class="field-error-under" id="card-cvv-error" data-testid="card-cvv-error" aria-live="polite"></div>
           </div>
         </div>
         <div class="small text-secondary mt-1"><i class="bi bi-shield-lock-fill text-success me-1"></i>Your card is verified &amp; charged on Stripe's PCI-compliant secure page — we never store card data.</div>
@@ -1083,20 +1089,22 @@ form .row.g-3 { --bs-gutter-y: .75rem; }
   box-shadow: 0 2px 8px rgba(6,182,212,.45);
 }
 
-/* Field error rendered UNDER the input — bold, red, CENTER-aligned so it
-   stands out clearly beneath its field (per UX request 2026-07-13 h).
-   No background box / pill — pure standout text. */
-.field-error-under {
-  min-height: 16px;
-  margin-top: 3px;
+/* Field error rendered INLINE next to the field label (right-aligned in
+   the label row) — bold red plain text, no background pill. Only shows
+   AFTER the customer has finished typing (see main.js — only fires when
+   the card is full-length OR the field is fully wrong). */
+.field-error-inline {
   font-size: .78rem;
   font-weight: 700;
-  color: #dc2626;              /* Red-600 for strong contrast */
-  text-align: center;
-  letter-spacing: .01em;
+  color: #dc2626;
+  min-height: 14px;
   line-height: 1;
+  padding-left: .5rem;
+  white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  max-width: 62%;
 }
-[data-bs-theme="dark"] body:not(.adm) .field-error-under { color: #fca5a5 !important; }
+[data-bs-theme="dark"] body:not(.adm) .field-error-inline { color: #fca5a5 !important; }
 
 /* Field-level validity ring (kept minimal — no background icon). */
 #card-form .form-control.is-invalid { border-color: #ef4444; background-image: none; padding-right: .65rem; }

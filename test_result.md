@@ -102,11 +102,67 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 
 user_problem_statement: |
-  Iteration 2026-07-13 (i) — reposition card brand icons: move them from
-  inside the Card Number input group to a small row UNDER the "Card"
-  payment tile (top-left tile in the Payment section). They should still
-  light up the matching brand when the customer types a Visa/MC/Amex/
-  Discover number.
+  Iteration 2026-07-13 (j) — bug fix: card-number validation was firing
+  too early:
+  (1) "Invalid card number" was being displayed BELOW the input, but the
+      user wants it next to the CARD NUMBER label (inline in the label
+      row, right-aligned).
+  (2) When the customer typed a non-Visa card prefix like "5456", the
+      validator would immediately flag it "Invalid card number" while
+      they were still typing. The error should ONLY appear AFTER the
+      last digit is entered (16 for Visa/MC/Discover, 15 for Amex).
+      Silent while typing.
+
+frontend:
+  - task: "Checkout — move card validation error text from BELOW input back to INLINE next to label"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Deleted the `<div class='field-error-under'>` blocks under each input; put `<span class='field-error-inline'>` back into the label row (flex row with `justify-content-between` — label on the left, error span on the right). CSS: red text (light: #dc2626, dark: #fca5a5), font-weight 700, .78rem, transparent background, ellipsis if overflow, max-width 62%. Same treatment for card-number, card-exp, card-cvv. Verified visually: 'Invalid card number' now shows to the right of the CARD NUMBER label, not below the input."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED via Playwright at 1920×1080. ALL 4 ASSERTIONS PASSED. (1) document.getElementById('card-number-error').classList.contains('field-error-inline') === true ✓. (2) document.querySelectorAll('.field-error-under').length === 0 ✓ (old below-input DIV class completely removed from DOM). (3) Error span and label in SAME row: error top 394.62px, label top 393.16px, difference 1.46px < 5px ✓. (4) Error span right-aligned: error right 1197.58px, wrapper right 1197.58px, difference 0.001px < 5px ✓. Screenshot: test_iteration_j_final.png. Error text 'Invalid card number' displays inline to the right of the CARD NUMBER label (not below the input) with perfect alignment."
+
+  - task: "Checkout — card validation is SILENT until the customer types the full-length card number"
+    implemented: true
+    working: true
+    file: "php-version/assets/js/main.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Reordered the field-validity branches in the card-number 'input' handler so `digits.length < maxL` is checked BEFORE the `!brand` branch. Consequence: while the customer is still typing (fewer than the required 15 or 16 digits) the field stays neutral — no `.is-invalid`, no error text — regardless of whether the current prefix matches a known brand. Only once `digits.length === maxL` does the code evaluate: `!brand` → 'Invalid card number' (16 digits but no known BIN); `!luhnCheck(digits)` → 'Invalid card number'; otherwise → is-valid. Verified: typing '5456' (4 digits, MC BIN) leaves the field silent; typing '5456 4654 5645 6456' (16 digits, bad Luhn) shows 'Invalid card number' inline next to the label."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED via Playwright at 1920×1080. ALL PROGRESSIVE TYPING TESTS PASSED. Mastercard BIN '5456...' progressive test (9 steps): ✅ 1 digit '5' → error '' (silent) ✓. ✅ 2 digits '54' → error '' (silent) ✓. ✅ 4 digits '5456' → error '' (silent) ✓. ✅ 8 digits '54564654' → error '' (silent) ✓. ✅ 12 digits '545646545645' → error '' (silent) ✓. ✅ 13 digits '5456465456456' → error '' (silent) ✓. ✅ 14 digits '54564654564564' → error '' (silent) ✓. ✅ 15 digits '545646545645645' → error '' (silent, still incomplete for MC) ✓. ✅ 16 digits '5456465456456456' (bad Luhn) → error 'Invalid card number', field has 'is-invalid' class ✓. Valid Visa test: ✅ '4242424242424242' (16 digits, valid Luhn) → error '', field has 'is-valid' class ✓. Amex 15-digit test (3 steps): ✅ 12 digits '378282246310' → error '' (silent) ✓. ✅ 14 digits '37828224631000' → error '' (silent) ✓. ✅ 15 digits '378282246310005' (valid Amex Luhn) → error '', field has 'is-valid' class ✓. Screenshot: test_iteration_j_final.png. Validation is completely silent while typing partial input and only triggers error message after the full-length card number is entered (16 for Visa/MC/Discover, 15 for Amex)."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Iteration 2026-07-13(j). FRONTEND verification at 1920×1080. Steps: (1) Add product to cart, open /checkout.php. (2) Assert `document.getElementById('card-number-error').classList.contains('field-error-inline') === true` (span is now inline, not the `.field-error-under` DIV). Assert `.field-error-under` no longer appears in the DOM. (3) Position: the error span's `getBoundingClientRect().top` must be VERY CLOSE to the CARD NUMBER `<label>`'s top (both are in the same label row) — abs delta < 5px. And the error span's `getBoundingClientRect().right` must equal the label row's right edge (right-aligned). (4) SILENT-WHILE-TYPING: focus #card-number, type '5' → wait 150ms → assert `#card-number-error.textContent === ''`. Type '5', '4' → still empty. Type '5', '4', '5', '6' → still empty. Continue typing until 15 digits '5456465456456' — still `#card-number-error.textContent === ''` (silent, incomplete). Type the 16th → '5456465456456456' — NOW assert `#card-number-error.textContent === 'Invalid card number'` (bad Luhn triggers on completion). (5) Valid Visa: clear + type '4242424242424242' (16 digits) → error empty (valid Luhn). Assert exactly one `.card-brand-icon.active` under the Card tile with `data-brand='visa'`. (6) Amex 15-digit: clear + type '3782822463100' (13 digits) → error empty (silent). Type '05' → 15 digits '378282246310005' → error empty (valid). Now type '3782822463100056' → 16 digits with Amex prefix but wrong length — since our detectCardBrand returns len=[15] for Amex, typing a 16th digit will be blocked by maxlength=19 but len[maxL]=15 means at 15 digits the check ran. So test 15 valid Amex → is-valid. Then test '3711111111111112' 15 digits Amex bad-Luhn → 'Invalid card number'. Skip retesting anything from earlier iterations."
+    -agent: "testing"
+    -message: "✅ ITERATION 2026-07-13(j) TESTING COMPLETE — BOTH TASKS FULLY WORKING. Comprehensive Playwright testing executed all assertions from review_request at 1920×1080 viewport. RESULTS: ✅ Task 1 (Error text INLINE next to label): All 4 assertions passed — (1) #card-number-error has 'field-error-inline' class ✓, (2) 0 '.field-error-under' elements in DOM (old DIV removed) ✓, (3) error span and label in SAME row (top diff 1.46px < 5px) ✓, (4) error span right-aligned (right diff 0.001px < 5px) ✓. ✅ Task 2 (Silent-until-full-length validation): All progressive typing tests passed — Mastercard BIN test: 1-15 digits all silent (error ''), 16 digits with bad Luhn shows 'Invalid card number' + 'is-invalid' class ✓. Valid Visa '4242424242424242' shows no error + 'is-valid' class ✓. Amex test: 12-14 digits silent, 15 digits valid Amex shows no error + 'is-valid' class ✓. Screenshot: test_iteration_j_final.png. NO ISSUES FOUND. Both iteration 2026-07-13(j) tasks verified working correctly. Ready for user acceptance."
+
+# ────────────────────── PREVIOUS ITERATION (2026-07-13 i) ──────────────────────
 
 frontend:
   - task: "Checkout — card brand icons moved UNDER the Card payment tile (below the 'Card' label)"
