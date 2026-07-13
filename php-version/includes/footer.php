@@ -62,7 +62,7 @@
           <li><i class="bi bi-envelope-fill text-info"></i><a href="mailto:<?= esc($brandEmail) ?>"><?= esc($brandEmail) ?></a></li>
           <li><i class="bi bi-geo-alt-fill text-info"></i><?= esc($brandAddress) ?></li>
           <li><i class="bi bi-clock-fill text-info"></i><?= SITE_HOURS ?></li>
-          <?php if ($brandRegNumber): ?><li data-testid="footer-reg-number"><i class="bi bi-patch-check-fill text-info"></i>File No. <?= esc($brandRegNumber) ?><?php if (!empty($brandRegDateFiled)): ?> · Filed <?= esc(date('n/j/Y', strtotime((string)$brandRegDateFiled))) ?><?php endif; ?></li><?php endif; ?>
+          <?php if ($brandRegNumber): ?><li data-testid="footer-reg-number"><i class="bi bi-patch-check-fill text-info"></i>Company Registration Number: <?= esc($brandRegNumber) ?><?php if (!empty($brandRegDateFiled)): ?> · Filed <?= esc(date('n/j/Y', strtotime((string)$brandRegDateFiled))) ?><?php endif; ?></li><?php endif; ?>
         </ul>
 
         <!-- Google Maps + socials on the same visual row for compactness -->
@@ -140,15 +140,6 @@
       </div>
     </div>
 
-    <!-- Secure payments moved to the top of the footer (right below the
-         newsletter band). Keeping only the customer-reviews / trademark row here. -->
-    <hr class="border-secondary my-4">
-    <div class="row g-4 align-items-center text-center text-md-start">
-      <div class="col-md-3 text-md-center offset-md-9">
-        <?php /* Customer Reviews footer block removed — no reviews shown site-wide */ ?>
-      </div>
-    </div>
-
     <!-- Trademark + legal -->
     <hr class="border-secondary my-4">
 
@@ -167,7 +158,7 @@
         <a href="<?= $lh ?>"><?= $ll ?></a><?= $idx < count($legal) - 1 ? '<span aria-hidden="true" style="color:#94a3b8;">|</span>' : '' ?>
       <?php endforeach; ?>
     </div>
-    <div class="text-center small">© <?= date('Y') ?> <?= esc($brandLegalName) ?>. All rights reserved.<?php if ($brandRegNumber): ?> · File No. <?= esc($brandRegNumber) ?><?php endif; ?></div>
+    <div class="text-center small">© <?= date('Y') ?> <?= esc($brandLegalName) ?>. All rights reserved.<?php if ($brandRegNumber): ?> · Company Registration Number: <?= esc($brandRegNumber) ?><?php endif; ?></div>
   </div>
 </footer>
 

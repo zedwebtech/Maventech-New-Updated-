@@ -305,6 +305,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 trim($_POST['installer_url'] ?? ''),
                 $actMode, $insMode,
                 $region_code, '']);
+        /* ─── Auto-generate the rich AI product description + meta description
+              for the freshly-created product — same treatment the existing
+              37 products got via scripts/seed-descriptions.php.  Only runs
+              when the admin left the description empty AND the LLM key is
+              configured — a manual paste always wins.  Best-effort: silently
+              logs (never blocks) if the LLM call fails; the admin can hit
+              "Generate with AI" on the edit page later. ─── */
+        try {
+            require_once __DIR__ . '/includes/ai-product-description.php';
+            $adminEnteredDesc = trim((string)($_POST['description'] ?? '')) !== '';
+            if (!$adminEnteredDesc && function_exists('ai_write_product_description') && defined('OPENAI_API_KEY') && OPENAI_API_KEY !== '') {
+                $newProd = [
+                    'name'         => trim((string)$_POST['name']),
+                    'brand'        => trim((string)$_POST['brand']),
+                    'category'     => $categorySlug,
+                    'apps'         => '',
+                    'platform'     => (string)($_POST['platform'] ?? ''),
+                    'year'         => (string)($_POST['year']     ?? ''),
+                    'license_type' => (string)($_POST['license_type'] ?? ''),
+                ];
+                $aiRes = ai_write_product_description($newProd);
+                if (!empty($aiRes['ok']) && !empty($aiRes['description'])) {
+                    $desc = trim((string)$aiRes['description']);
+                    // Derive a Google-safe meta description (≤160 chars, first
+                    // full sentence of the AI intro).  A safe fallback if the
+                    // first line is unusually long: hard-truncate at 155.
+                    $firstLine = trim((string)explode("\n", $desc)[0]);
+                    $meta      = mb_substr($firstLine, 0, 155, 'UTF-8');
+                    if ($meta !== '' && mb_strlen($firstLine, 'UTF-8') > 155) $meta .= '…';
+                    $pdo->prepare('UPDATE products SET description=?, meta_description=?, seo_refreshed_at=NOW() WHERE slug=?')
+                        ->execute([$desc, ($meta ?: null), $slug]);
+                }
+            }
+        } catch (Throwable $e) {
+            @error_log('[add_product] AI description auto-fill failed for ' . $slug . ': ' . $e->getMessage());
+        }
         // Instant-index the brand-new product page (+ category + shop list +
         // sitemap + Google Merchant feed + Bing Shopping feed + homepage) via
         // IndexNow — a new product is always a "new price" event, so we ping
@@ -4865,7 +4901,7 @@ elseif ($tab === 'ai-blogger'):
     </div>
 
     <div class="row g-3">
-      <div class="col-md-6 col-lg-3">
+      <div class="col-md-6 col-lg-4">
         <a href="admin.php?tab=ai-blogger&run_underserved_post=1" class="card text-decoration-none h-100 qa-card qa-card-underserved" data-base-href="admin.php?tab=ai-blogger&run_underserved_post=1" style="border:2px solid #d1fae5;border-radius:12px;padding:14px;transition:all .15s;" data-testid="ai-blogger-run-underserved"
            onmouseover="this.style.borderColor='#10b981';this.style.transform='translateY(-2px)'"
            onmouseout="this.style.borderColor='#d1fae5';this.style.transform='none'"
@@ -4877,7 +4913,7 @@ elseif ($tab === 'ai-blogger'):
           </div>
         </a>
       </div>
-      <div class="col-md-6 col-lg-3">
+      <div class="col-md-6 col-lg-4">
         <a href="admin.php?tab=ai-blogger&run_random_post=1" class="card text-decoration-none h-100 qa-card qa-card-random" data-base-href="admin.php?tab=ai-blogger&run_random_post=1" style="border:2px solid #dbeafe;border-radius:12px;padding:14px;transition:all .15s;" data-testid="ai-blogger-run-random"
            onmouseover="this.style.borderColor='#3b82f6';this.style.transform='translateY(-2px)'"
            onmouseout="this.style.borderColor='#dbeafe';this.style.transform='none'"
@@ -4889,7 +4925,7 @@ elseif ($tab === 'ai-blogger'):
           </div>
         </a>
       </div>
-      <div class="col-md-6 col-lg-3">
+      <div class="col-md-6 col-lg-4">
         <a href="admin.php?tab=ai-blogger&run_trends_article=1&force=1" class="card text-decoration-none h-100 qa-card qa-card-trends" data-base-href="admin.php?tab=ai-blogger&run_trends_article=1&force=1" style="border:2px solid #ede9fe;border-radius:12px;padding:14px;transition:all .15s;background:linear-gradient(135deg,#f5f3ff,#ede9fe);" data-testid="ai-blogger-run-trends"
            onmouseover="this.style.borderColor='#8b5cf6';this.style.transform='translateY(-2px)'"
            onmouseout="this.style.borderColor='#ede9fe';this.style.transform='none'"
@@ -4901,18 +4937,9 @@ elseif ($tab === 'ai-blogger'):
           </div>
         </a>
       </div>
-      <div class="col-md-6 col-lg-3">
-        <a href="admin.php?tab=ai-blogger&seo_run=1" class="card text-decoration-none h-100" style="border:2px solid #fef3c7;border-radius:12px;padding:14px;transition:all .15s;background:linear-gradient(135deg,#fffbeb,#fef9c3);" data-testid="ai-blogger-run-now"
-           onmouseover="this.style.borderColor='#f59e0b';this.style.transform='translateY(-2px)'"
-           onmouseout="this.style.borderColor='#fef3c7';this.style.transform='none'"
-           onclick="return confirm('Publish the full daily batch? This writes 4 posts — one random product per country (US, UK, AU, CA) — and takes about 45 seconds.')">
-          <div class="text-center">
-            <div style="font-size:24px;color:#f59e0b;"><i class="bi bi-play-circle-fill"></i></div>
-            <div class="fw-bold mt-1" style="font-size:13px;color:#0f172a;">Publish Full Batch</div>
-            <div class="text-secondary" style="font-size:11px;">4 posts (1 random product × 4 countries)</div>
-          </div>
-        </a>
-      </div>
+      <?php /* "Publish Full Batch" tile intentionally removed (2026-07-13) —
+             the 4-posts-per-batch runner was too noisy for the admin dashboard;
+             daily-cron & the three manual tiles above cover all use-cases. */ ?>
     </div>
 
     <?php
