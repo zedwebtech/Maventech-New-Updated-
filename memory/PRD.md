@@ -1,3 +1,39 @@
+<!-- 2026-07-13 (e): Sitewide brand/phone consistency + hero + content de-dup
+  fixes flagged by Google Merchant AI review (see maventech-review.html).
+  (1) DB PHONE NORMALIZATION — bulk REPLACE across three tables removed
+      every occurrence of the stale numbers 1-888-632-9902 and 1-855-559-9001
+      from pages.content (13 rows updated), settings.v (0), and
+      email_templates.html (0). All rendered pages (why-choose-us,
+      refund-policy, shipping-delivery, faqs, terms-of-service,
+      privacy-policy, etc.) now show the canonical company_phone value
+      1-805-823-9961. Verified 0/0/0 rows remaining in each table.
+  (2) HERO H1 (index.php) — "Microsoft Office & Windows 11 License Keys"
+      → "Genuine Office Suite & Windows 11 License Keys". Removes the
+      leading "Microsoft" branding while re-introducing "Genuine" per
+      user request (previous 'a' iteration had stripped all Genuine
+      mentions; this brings it back to exactly ONE place).
+  (3) HOMEPAGE "WHY CHOOSE US" SECTION REPLACED (index.php ~L487) — old
+      6 tiles (Digital Delivery / Genuine Products / One-Time Purchase
+      / Order Support / Secure Checkout / 30-Day Guarantee) were 100 %
+      duplicates of the top-bar strip + hero bullets + trusted-partner
+      block. Now a fresh block titled "Beyond the Basics — What You
+      Also Get" (eyebrow: "MORE THAN A LICENCE SHOP") with 6 post-
+      purchase perks that DON'T repeat any above-the-fold copy:
+      Self-Serve Account Dashboard · Real Human Support · Business-
+      Friendly Invoicing · Fraud-Shielded Payments · Move Licences
+      Between PCs · Volume Pricing for Teams.
+  (4) ABOUT-US FEATURES GRID REPLACED (about-us.php ~L72) — old 6 cards
+      mirrored the homepage's now-removed Why-Choose grid. Replaced
+      with company-differentiator content that only makes sense on the
+      About page: Independent Reseller Since 2024 (with File No.) ·
+      Global Reach, Regional Pricing · Direct Supply-Chain Auditing ·
+      Real Reviews Only · Boutique Support Team · Zero-Waste, Zero-
+      Landfill.
+  Verified by the deep-testing backend agent: 100 % pass across DB
+  queries + curl body checks for phone numbers, hero H1, "Beyond the
+  Basics" cards, and about-us features. -->
+
+
 <!-- 2026-07-13 (d): Ask-AI real-LLM launch + de-dup + console warning fixes.
   (1) NEW ENDPOINT ajax/ask-ai-general.php — POST {question} → JSON
       {ok, answer, ms}. Rate-limit 8/min/IP. System prompt gives Claude
