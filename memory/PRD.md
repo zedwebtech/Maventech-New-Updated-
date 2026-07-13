@@ -1,3 +1,38 @@
+<!-- 2026-07-13 (h): Dark-mode + checkout UX polish.
+  (1) ADMIN FLASH DEAL PANEL (admin.php + includes/admin-shell.php) —
+      the light-pink/yellow gradient background was washing out labels
+      in dark mode. Refactored inline styles off the panel/title/badge/
+      tagline into semantic CSS classes; added theme-aware overrides in
+      admin-shell.php <style>. Light mode keeps the warm red-yellow
+      gradient; dark mode swaps to a deep-charcoal gradient with red
+      border, high-contrast label/select/tagline colors. Every element
+      is now clearly visible in both themes.
+  (2) ABOUT-US STAT ROW (about-us.php) — added justify-content-center
+      to the [data-testid="about-stats"] row so the 3 tiles
+      (100% Genuine Products / 30-Day Money-Back / 4.9/5 Customer
+      Rating) sit balanced in the middle of the container instead of
+      hugging the left edge with dead space on the right. Verified:
+      first tile x=467.8px (centered).
+  (3) CHECKOUT LOGO BOUNCE (assets/css/style.css) — added CSS overrides
+      scoped to `.co-summary-head .logo-3d` and `.co-banner .logo-3d`
+      that force animation:none + transform:none. Site-wide
+      body[data-brand-motion="bounce"] unchanged; only the checkout
+      summary is calmed for a more trust-worthy payment step.
+  (4) CHECKOUT CARD FIELDS (checkout.php) — Card Number / Expiry Date
+      / CVV are now on ONE LINE. Grid changed from col-12 (Card Number)
+      + col-7/col-5 (Expiry/CVV split second row) → col-md-6 / col-md-3
+      / col-md-3. Added a placeholder to Card Number for better mobile
+      UX. Verified: all 3 inputs share y=27px on desktop.
+  (5) CHECKOUT CARD TILE (checkout.php) — removed the mini
+      Visa/MC/Amex/Discover row beneath the "Card" label inside the
+      #pay-card tile (they duplicated the 4 brand icons already inside
+      the Card Number input group #card-brands). Tile now shows only
+      the radio + credit-card icon + "Card" label. Verified:
+      `#pay-card .pay-icon-sm` count = 0; `#card-brands img` count = 4
+      (still visible in the input group).
+  All 5 tasks verified 100% by the auto-frontend-testing agent. -->
+
+
 <!-- 2026-07-13 (g): Footer legal-label rename + admin AI-Blogger UI trim
   + new-product AI auto-fill hook.
   (1) FOOTER (includes/footer.php) — "File No." label replaced with the
