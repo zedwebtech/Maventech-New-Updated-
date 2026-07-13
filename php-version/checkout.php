@@ -150,7 +150,88 @@ $REGION_FORMS = [
     'EU' => ['country'=>'EU','dial'=>'+49','flag'=>'🇪🇺','region_label'=>'Region / State','region_required'=>false,
         'regions'=>[],
         'postal_label'=>'Postal Code','postal_ph'=>'10115','postal_re'=>'^.{3,}$','postal_err'=>'Postal code is too short.'],
+    'IN' => ['country'=>'IN','dial'=>'+91','flag'=>'🇮🇳','region_label'=>'State','region_required'=>true,
+        'regions'=>['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'],
+        'postal_label'=>'PIN Code','postal_ph'=>'110001','postal_re'=>'^\\d{6}$','postal_err'=>'Indian PIN code must be 6 digits (e.g. 110001).'],
 ];
+
+/* Full ISO country list for the checkout Country dropdown. Countries not in
+   $REGION_FORMS above get a generic form config (free-text State/Region + a
+   lenient postal validation). Sorted alphabetically for the dropdown. */
+$ALL_COUNTRIES = [
+    'US'=>'United States','CA'=>'Canada','UK'=>'United Kingdom','AU'=>'Australia',
+    'AF'=>'Afghanistan','AL'=>'Albania','DZ'=>'Algeria','AS'=>'American Samoa','AD'=>'Andorra','AO'=>'Angola','AI'=>'Anguilla','AQ'=>'Antarctica','AG'=>'Antigua and Barbuda','AR'=>'Argentina','AM'=>'Armenia','AW'=>'Aruba','AT'=>'Austria','AZ'=>'Azerbaijan',
+    'BS'=>'Bahamas','BH'=>'Bahrain','BD'=>'Bangladesh','BB'=>'Barbados','BY'=>'Belarus','BE'=>'Belgium','BZ'=>'Belize','BJ'=>'Benin','BM'=>'Bermuda','BT'=>'Bhutan','BO'=>'Bolivia','BA'=>'Bosnia and Herzegovina','BW'=>'Botswana','BR'=>'Brazil','IO'=>'British Indian Ocean Territory','BN'=>'Brunei','BG'=>'Bulgaria','BF'=>'Burkina Faso','BI'=>'Burundi',
+    'KH'=>'Cambodia','CM'=>'Cameroon','CV'=>'Cape Verde','KY'=>'Cayman Islands','CF'=>'Central African Republic','TD'=>'Chad','CL'=>'Chile','CN'=>'China','CX'=>'Christmas Island','CC'=>'Cocos (Keeling) Islands','CO'=>'Colombia','KM'=>'Comoros','CG'=>'Congo','CD'=>'Congo (DRC)','CK'=>'Cook Islands','CR'=>'Costa Rica','CI'=>"Côte d'Ivoire",'HR'=>'Croatia','CU'=>'Cuba','CW'=>'Curaçao','CY'=>'Cyprus','CZ'=>'Czech Republic',
+    'DK'=>'Denmark','DJ'=>'Djibouti','DM'=>'Dominica','DO'=>'Dominican Republic',
+    'EC'=>'Ecuador','EG'=>'Egypt','SV'=>'El Salvador','GQ'=>'Equatorial Guinea','ER'=>'Eritrea','EE'=>'Estonia','SZ'=>'Eswatini','ET'=>'Ethiopia',
+    'FK'=>'Falkland Islands','FO'=>'Faroe Islands','FJ'=>'Fiji','FI'=>'Finland','FR'=>'France','GF'=>'French Guiana','PF'=>'French Polynesia',
+    'GA'=>'Gabon','GM'=>'Gambia','GE'=>'Georgia','DE'=>'Germany','GH'=>'Ghana','GI'=>'Gibraltar','GR'=>'Greece','GL'=>'Greenland','GD'=>'Grenada','GP'=>'Guadeloupe','GU'=>'Guam','GT'=>'Guatemala','GG'=>'Guernsey','GN'=>'Guinea','GW'=>'Guinea-Bissau','GY'=>'Guyana',
+    'HT'=>'Haiti','HN'=>'Honduras','HK'=>'Hong Kong','HU'=>'Hungary',
+    'IS'=>'Iceland','IN'=>'India','ID'=>'Indonesia','IR'=>'Iran','IQ'=>'Iraq','IE'=>'Ireland','IM'=>'Isle of Man','IL'=>'Israel','IT'=>'Italy',
+    'JM'=>'Jamaica','JP'=>'Japan','JE'=>'Jersey','JO'=>'Jordan',
+    'KZ'=>'Kazakhstan','KE'=>'Kenya','KI'=>'Kiribati','KW'=>'Kuwait','KG'=>'Kyrgyzstan',
+    'LA'=>'Laos','LV'=>'Latvia','LB'=>'Lebanon','LS'=>'Lesotho','LR'=>'Liberia','LY'=>'Libya','LI'=>'Liechtenstein','LT'=>'Lithuania','LU'=>'Luxembourg',
+    'MO'=>'Macao','MG'=>'Madagascar','MW'=>'Malawi','MY'=>'Malaysia','MV'=>'Maldives','ML'=>'Mali','MT'=>'Malta','MH'=>'Marshall Islands','MQ'=>'Martinique','MR'=>'Mauritania','MU'=>'Mauritius','YT'=>'Mayotte','MX'=>'Mexico','FM'=>'Micronesia','MD'=>'Moldova','MC'=>'Monaco','MN'=>'Mongolia','ME'=>'Montenegro','MS'=>'Montserrat','MA'=>'Morocco','MZ'=>'Mozambique','MM'=>'Myanmar',
+    'NA'=>'Namibia','NR'=>'Nauru','NP'=>'Nepal','NL'=>'Netherlands','NC'=>'New Caledonia','NZ'=>'New Zealand','NI'=>'Nicaragua','NE'=>'Niger','NG'=>'Nigeria','NU'=>'Niue','NF'=>'Norfolk Island','KP'=>'North Korea','MK'=>'North Macedonia','MP'=>'Northern Mariana Islands','NO'=>'Norway',
+    'OM'=>'Oman',
+    'PK'=>'Pakistan','PW'=>'Palau','PS'=>'Palestine','PA'=>'Panama','PG'=>'Papua New Guinea','PY'=>'Paraguay','PE'=>'Peru','PH'=>'Philippines','PN'=>'Pitcairn','PL'=>'Poland','PT'=>'Portugal','PR'=>'Puerto Rico',
+    'QA'=>'Qatar',
+    'RE'=>'Réunion','RO'=>'Romania','RU'=>'Russia','RW'=>'Rwanda',
+    'BL'=>'Saint Barthélemy','SH'=>'Saint Helena','KN'=>'Saint Kitts and Nevis','LC'=>'Saint Lucia','MF'=>'Saint Martin','PM'=>'Saint Pierre and Miquelon','VC'=>'Saint Vincent and the Grenadines','WS'=>'Samoa','SM'=>'San Marino','ST'=>'São Tomé and Príncipe','SA'=>'Saudi Arabia','SN'=>'Senegal','RS'=>'Serbia','SC'=>'Seychelles','SL'=>'Sierra Leone','SG'=>'Singapore','SX'=>'Sint Maarten','SK'=>'Slovakia','SI'=>'Slovenia','SB'=>'Solomon Islands','SO'=>'Somalia','ZA'=>'South Africa','GS'=>'South Georgia','KR'=>'South Korea','SS'=>'South Sudan','ES'=>'Spain','LK'=>'Sri Lanka','SD'=>'Sudan','SR'=>'Suriname','SJ'=>'Svalbard and Jan Mayen','SE'=>'Sweden','CH'=>'Switzerland','SY'=>'Syria',
+    'TW'=>'Taiwan','TJ'=>'Tajikistan','TZ'=>'Tanzania','TH'=>'Thailand','TL'=>'Timor-Leste','TG'=>'Togo','TK'=>'Tokelau','TO'=>'Tonga','TT'=>'Trinidad and Tobago','TN'=>'Tunisia','TR'=>'Turkey','TM'=>'Turkmenistan','TC'=>'Turks and Caicos Islands','TV'=>'Tuvalu',
+    'UG'=>'Uganda','UA'=>'Ukraine','AE'=>'United Arab Emirates','UY'=>'Uruguay','UZ'=>'Uzbekistan',
+    'VU'=>'Vanuatu','VA'=>'Vatican City','VE'=>'Venezuela','VN'=>'Vietnam','VG'=>'British Virgin Islands','VI'=>'U.S. Virgin Islands',
+    'WF'=>'Wallis and Futuna','EH'=>'Western Sahara',
+    'YE'=>'Yemen',
+    'ZM'=>'Zambia','ZW'=>'Zimbabwe',
+];
+// Sort by country name (keeping the top-4 primary countries pinned at the top)
+$__pinned = ['US','CA','UK','AU'];
+$__rest = [];
+foreach ($ALL_COUNTRIES as $__cc => $__nm) {
+    if (!in_array($__cc, $__pinned, true)) $__rest[$__cc] = $__nm;
+}
+asort($__rest, SORT_NATURAL | SORT_FLAG_CASE);
+$ALL_COUNTRIES = array_merge(
+    array_intersect_key($ALL_COUNTRIES, array_flip($__pinned)),
+    $__rest
+);
+
+/* Return the region-form config for ANY country code — falls back to a
+   generic (free-text State/Region + lenient postal) config for countries not
+   in $REGION_FORMS. */
+$__generic_dial = [
+    // Common dial codes so at least the phone prefix defaults sensibly.
+    'IN'=>'+91','DE'=>'+49','FR'=>'+33','ES'=>'+34','IT'=>'+39','NL'=>'+31','AE'=>'+971','NZ'=>'+64',
+    'BR'=>'+55','MX'=>'+52','JP'=>'+81','CN'=>'+86','SG'=>'+65','MY'=>'+60','PH'=>'+63','KR'=>'+82',
+    'ID'=>'+62','TH'=>'+66','VN'=>'+84','PK'=>'+92','BD'=>'+880','LK'=>'+94','TR'=>'+90','SA'=>'+966',
+    'ZA'=>'+27','EG'=>'+20','NG'=>'+234','KE'=>'+254','RU'=>'+7','UA'=>'+380','PL'=>'+48','SE'=>'+46',
+    'NO'=>'+47','DK'=>'+45','FI'=>'+358','BE'=>'+32','CH'=>'+41','AT'=>'+43','PT'=>'+351','IE'=>'+353',
+    'GR'=>'+30','CZ'=>'+420','HU'=>'+36','RO'=>'+40',
+];
+$__region_form_for = function(string $cc) use (&$REGION_FORMS, $__generic_dial, $ALL_COUNTRIES) {
+    $cc = strtoupper($cc);
+    if (isset($REGION_FORMS[$cc])) return $REGION_FORMS[$cc];
+    // Generic fallback for any other country in the ISO list.
+    return [
+        'country' => $cc,
+        'dial' => $__generic_dial[$cc] ?? '+1',
+        'flag' => '🌐',
+        'region_label' => 'State / Region',
+        'region_required' => false,
+        'regions' => [],
+        'postal_label' => 'Postal / ZIP Code',
+        'postal_ph' => '00000',
+        'postal_re' => '^.{2,}$',
+        'postal_err' => 'Postal code is too short.',
+    ];
+};
+// Build a full-country JS map so client-side region switching works for any country selected.
+$JS_REGION_FORMS = [];
+foreach (array_keys($ALL_COUNTRIES) as $__cc) {
+    $JS_REGION_FORMS[$__cc] = $__region_form_for($__cc);
+}
 /* Map the active storefront currency back to the address region so the form
    defaults to the country the shopper is buying from. */
 $__curToRegion = ['USD'=>'US','CAD'=>'CA','GBP'=>'UK','AUD'=>'AU','EUR'=>'EU'];
@@ -226,9 +307,10 @@ if ($isSub) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postCC = strtoupper(trim($_POST['country'] ?? 'US'));
-    if (!isset($REGION_FORMS[$postCC])) $postCC = 'US';
+    if (!isset($ALL_COUNTRIES[$postCC])) $postCC = 'US';
+    $postRF = $__region_form_for($postCC);
     $required = ['email', 'first_name', 'last_name', 'phone', 'address', 'city', 'zip'];
-    if (!empty($REGION_FORMS[$postCC]['region_required'])) $required[] = 'state';
+    if (!empty($postRF['region_required'])) $required[] = 'state';
     foreach ($required as $f) {
         if (trim($_POST[$f] ?? '') === '') $errors[] = ucwords(str_replace('_', ' ', $f)) . ' is required.';
     }
@@ -270,9 +352,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // (US 5-digit, CA A1A 1A1, UK postcode, AU 4-digit, EU 3+ chars).
         $zipVal     = trim($_POST['zip'] ?? '');
         $countryVal = strtoupper(trim($_POST['country'] ?? 'US'));
-        if (!isset($REGION_FORMS[$countryVal])) $countryVal = 'US';
+        if (!isset($ALL_COUNTRIES[$countryVal])) $countryVal = 'US';
+        $rfPost = $__region_form_for($countryVal);
         if ($zipVal !== '') {
-            $rfPost = $REGION_FORMS[$countryVal];
             if (!preg_match('/' . $rfPost['postal_re'] . '/', $zipVal)) {
                 $errors[] = $rfPost['postal_err'];
             }
@@ -283,12 +365,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($phoneDigits !== '' && strlen($phoneDigits) < 7) {
             $errors[] = 'Phone number is too short — please enter at least 7 digits.';
         }
-        // State / province / county — when the country has a fixed list (US/CA/AU)
-        // the value must be one of them; free-text regions (UK/EU) accept anything.
+        // State / province / county — when the country has a fixed list (US/CA/AU/IN)
+        // the value must be one of them; free-text regions accept anything.
         $stateVal = trim($_POST['state'] ?? '');
-        $validStates = $REGION_FORMS[$countryVal]['regions'];
+        $validStates = $rfPost['regions'] ?? [];
         if ($stateVal !== '' && !empty($validStates) && !in_array($stateVal, $validStates, true)) {
-            $errors[] = 'Please select a valid ' . strtolower($REGION_FORMS[$countryVal]['region_label']) . '.';
+            $errors[] = 'Please select a valid ' . strtolower($rfPost['region_label']) . '.';
         }
     }
 
@@ -657,8 +739,8 @@ include __DIR__ . '/includes/header.php';
     <input type="hidden" name="email_override" id="email-override-input" value="0">
     <input type="hidden" name="address_override" id="address-override-input" value="0">
 
-    <!-- Right column: Order Summary (receipt style) -->
-    <div class="col-lg-5 order-lg-2">
+    <!-- Left column: Order Summary (receipt style) -->
+    <div class="col-lg-5 order-lg-1">
     <div class="card co-banner co-summary-sticky p-3 position-relative" data-testid="co-banner-summary">
       <div id="checkout-summary">
       <?php include __DIR__ . '/includes/checkout-summary-partial.php'; ?>
@@ -666,89 +748,12 @@ include __DIR__ . '/includes/header.php';
     </div>
     </div>
 
-    <!-- Left column: Your Details + Payment -->
-    <div class="col-lg-7 order-lg-1 d-grid gap-3">
-    <!-- Banner 2: Contact Information -->
+    <!-- Right column: Payment (top) + Your Details -->
+    <div class="col-lg-7 order-lg-2 d-grid gap-3">
+    <!-- Banner: Payment (moved above Your Details per UX request) -->
     <div class="card co-banner p-3" data-testid="co-banner-contact">
-      <div class="co-head d-flex align-items-center gap-3 mb-3">
-        <span class="co-num">1</span>
-        <div class="lh-sm">
-          <h6 class="fw-bold mb-0">Your Details</h6>
-          <small class="text-secondary">License key goes to your email · address is for payment verification only</small>
-        </div>
-        <i class="bi bi-person-vcard co-head-icon ms-auto"></i>
-      </div>
-      <div class="row g-2">
-        <div class="col-md-6">
-          <label class="form-label">Email Address *</label>
-          <input type="email" name="email" required class="form-control" value="<?= esc($_POST['email'] ?? '') ?>" data-testid="checkout-email" id="checkout-email">
-          <div id="checkout-email-hint" class="checkout-hint" style="display:none;" data-testid="checkout-email-hint"></div>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Phone Number *</label>
-          <?php
-          $phoneFlags = ['+1' => '🇺🇸', '+44' => '🇬🇧', '+61' => '🇦🇺', '+49' => '🇩🇪', '+33' => '🇫🇷', '+34' => '🇪🇸', '+39' => '🇮🇹', '+31' => '🇳🇱', '+91' => '🇮🇳', '+971' => '🇦🇪', '+64' => '🇳🇿'];
-          // Dial-code -> ISO country for the flag image (real SVG/PNG flags, so
-          // it renders elegantly everywhere — emoji flags don't render on Windows).
-          $phoneIso = ['+1' => 'us', '+44' => 'gb', '+61' => 'au', '+49' => 'de', '+33' => 'fr', '+34' => 'es', '+39' => 'it', '+31' => 'nl', '+91' => 'in', '+971' => 'ae', '+64' => 'nz'];
-          // Region the form should default to: a re-displayed form (validation
-          // error) keeps the POSTed country; a fresh form follows the storefront
-          // region derived from the active currency.
-          $formCC = strtoupper(trim($_POST['country'] ?? '')) ?: $curRegionCC;
-          if (!isset($REGION_FORMS[$formCC])) $formCC = 'US';
-          $rf = $REGION_FORMS[$formCC];
-          $selCode = $_POST['phone_code'] ?? $rf['dial'];
-          $selIso  = $phoneIso[$selCode] ?? 'us';
-          ?>
-          <div class="input-group phone-group">
-            <select name="phone_code" id="phone-code" class="form-select phone-code" style="--phone-flag:url('https://flagcdn.com/w40/<?= $selIso ?>.png')" onchange="syncPhoneFlag(this)" data-testid="phone-code-select" aria-label="Country dial code">
-              <?php foreach ($phoneFlags as $code => $flag): ?>
-                <option value="<?= $code ?>" data-iso="<?= $phoneIso[$code] ?? 'us' ?>" <?= $selCode === $code ? 'selected' : '' ?>><?= $code ?></option>
-              <?php endforeach; ?>
-            </select>
-            <input name="phone" required class="form-control" value="<?= esc($_POST['phone'] ?? '') ?>" data-testid="phone-number-input" placeholder="Phone number" inputmode="tel" autocomplete="tel-national">
-          </div>
-        </div>
-        <div class="col-md-6"><label class="form-label">First Name *</label><input name="first_name" required class="form-control" value="<?= esc($_POST['first_name'] ?? '') ?>"></div>
-        <div class="col-md-6"><label class="form-label">Last Name *</label><input name="last_name" required class="form-control" value="<?= esc($_POST['last_name'] ?? '') ?>"></div>
-        <div class="col-md-8"><label class="form-label">Address *</label><input name="address" required class="form-control" value="<?= esc($_POST['address'] ?? '') ?>" id="checkout-address" data-testid="checkout-address">
-          <div id="checkout-address-hint" class="checkout-hint" style="display:none;" data-testid="checkout-address-hint"></div>
-        </div>
-        <div class="col-md-4"><label class="form-label">Address Line 2</label><input name="address2" class="form-control" value="<?= esc($_POST['address2'] ?? '') ?>"></div>
-        <div class="col-md-3 col-6">
-          <label class="form-label">Country *</label>
-          <select name="country" id="co-country" class="form-select" onchange="mvSwitchCheckoutCountry(this.value)" data-testid="country-select">
-            <?php foreach (['US' => 'United States', 'CA' => 'Canada', 'UK' => 'United Kingdom', 'AU' => 'Australia', 'EU' => 'Europe (Other)'] as $c => $n): ?>
-              <option value="<?= $c ?>" <?= $formCC === $c ? 'selected' : '' ?>><?= $n ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="col-md-3 col-6"><label class="form-label">City *</label><input name="city" required class="form-control" value="<?= esc($_POST['city'] ?? '') ?>"></div>
-        <div class="col-md-3 col-6" id="co-region-wrap">
-          <label class="form-label" id="co-region-label"><?= esc($rf['region_label']) ?><?= $rf['region_required'] ? ' *' : '' ?></label>
-          <?php if (!empty($rf['regions'])): ?>
-          <select name="state" <?= $rf['region_required'] ? 'required' : '' ?> class="form-select" data-testid="state-select">
-            <option value="">Select</option>
-            <?php foreach ($rf['regions'] as $st): ?>
-              <option value="<?= $st ?>" <?= ($_POST['state'] ?? '') === $st ? 'selected' : '' ?>><?= $st ?></option>
-            <?php endforeach; ?>
-          </select>
-          <?php else: ?>
-          <input name="state" <?= $rf['region_required'] ? 'required' : '' ?> class="form-control" value="<?= esc($_POST['state'] ?? '') ?>" data-testid="state-select" placeholder="<?= esc($rf['region_label']) ?>">
-          <?php endif; ?>
-        </div>
-        <div class="col-md-3 col-6"><label class="form-label" id="co-postal-label"><?= esc($rf['postal_label']) ?> *</label><input name="zip" required class="form-control" value="<?= esc($_POST['zip'] ?? '') ?>" id="co-postal" placeholder="<?= esc($rf['postal_ph']) ?>" data-testid="zip-input"></div>
-        <div class="col-12">
-          <div class="form-check mb-0">
-            <input class="form-check-input" type="checkbox" name="sms_consent" id="sms-consent" value="1" <?= !empty($_POST['sms_consent']) ? 'checked' : '' ?> data-testid="sms-consent">
-            <label class="form-check-label text-secondary" for="sms-consent" style="font-size:.72rem;">I agree to receive SMS order updates &amp; delivery notifications from <?= SITE_BRAND ?>. Msg &amp; data rates may apply. Reply STOP to opt out.</label>
-          </div>
-        </div>
-      </div>
-      <hr class="co-merge-divider my-4">
-      <!-- Payment — merged into the SAME card as Your Details for a cleaner, single-box checkout -->
       <div class="co-head d-flex align-items-center gap-3 mb-3" data-testid="co-banner-payment">
-        <span class="co-num">2</span>
+        <span class="co-num">1</span>
         <div class="lh-sm">
           <h6 class="fw-bold mb-0">Payment</h6>
           <small class="text-secondary">All transactions are secure and encrypted</small>
@@ -818,11 +823,88 @@ include __DIR__ . '/includes/header.php';
         </div>
         <div class="small text-secondary mt-2"><i class="bi bi-shield-lock-fill text-success me-1"></i>Your card is verified &amp; charged on Stripe's PCI-compliant secure page — we never store card data.</div>
       </div>
+      <hr class="co-merge-divider my-4">
+      <!-- Your Details — merged into the SAME card, now BELOW Payment -->
+      <div class="co-head d-flex align-items-center gap-3 mb-3">
+        <span class="co-num">2</span>
+        <div class="lh-sm">
+          <h6 class="fw-bold mb-0">Your Details</h6>
+          <small class="text-secondary">License key goes to your email · address is for payment verification only</small>
+        </div>
+        <i class="bi bi-person-vcard co-head-icon ms-auto"></i>
+      </div>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label">Email Address *</label>
+          <input type="email" name="email" required class="form-control" value="<?= esc($_POST['email'] ?? '') ?>" data-testid="checkout-email" id="checkout-email">
+          <div id="checkout-email-hint" class="checkout-hint" style="display:none;" data-testid="checkout-email-hint"></div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Phone Number *</label>
+          <?php
+          $phoneFlags = ['+1' => '🇺🇸', '+44' => '🇬🇧', '+61' => '🇦🇺', '+49' => '🇩🇪', '+33' => '🇫🇷', '+34' => '🇪🇸', '+39' => '🇮🇹', '+31' => '🇳🇱', '+91' => '🇮🇳', '+971' => '🇦🇪', '+64' => '🇳🇿'];
+          // Dial-code -> ISO country for the flag image (real SVG/PNG flags, so
+          // it renders elegantly everywhere — emoji flags don't render on Windows).
+          $phoneIso = ['+1' => 'us', '+44' => 'gb', '+61' => 'au', '+49' => 'de', '+33' => 'fr', '+34' => 'es', '+39' => 'it', '+31' => 'nl', '+91' => 'in', '+971' => 'ae', '+64' => 'nz'];
+          // Region the form should default to: a re-displayed form (validation
+          // error) keeps the POSTed country; a fresh form follows the storefront
+          // region derived from the active currency.
+          $formCC = strtoupper(trim($_POST['country'] ?? '')) ?: $curRegionCC;
+          if (!isset($ALL_COUNTRIES[$formCC])) $formCC = 'US';
+          $rf = $__region_form_for($formCC);
+          $selCode = $_POST['phone_code'] ?? $rf['dial'];
+          $selIso  = $phoneIso[$selCode] ?? 'us';
+          ?>
+          <div class="input-group phone-group">
+            <select name="phone_code" id="phone-code" class="form-select phone-code" style="--phone-flag:url('https://flagcdn.com/w40/<?= $selIso ?>.png')" onchange="syncPhoneFlag(this)" data-testid="phone-code-select" aria-label="Country dial code">
+              <?php foreach ($phoneFlags as $code => $flag): ?>
+                <option value="<?= $code ?>" data-iso="<?= $phoneIso[$code] ?? 'us' ?>" <?= $selCode === $code ? 'selected' : '' ?>><?= $code ?></option>
+              <?php endforeach; ?>
+            </select>
+            <input name="phone" required class="form-control" value="<?= esc($_POST['phone'] ?? '') ?>" data-testid="phone-number-input" placeholder="Phone number" inputmode="tel" autocomplete="tel-national">
+          </div>
+        </div>
+        <div class="col-md-6"><label class="form-label">First Name *</label><input name="first_name" required class="form-control" value="<?= esc($_POST['first_name'] ?? '') ?>"></div>
+        <div class="col-md-6"><label class="form-label">Last Name *</label><input name="last_name" required class="form-control" value="<?= esc($_POST['last_name'] ?? '') ?>"></div>
+        <div class="col-md-8"><label class="form-label">Address *</label><input name="address" required class="form-control" value="<?= esc($_POST['address'] ?? '') ?>" id="checkout-address" data-testid="checkout-address">
+          <div id="checkout-address-hint" class="checkout-hint" style="display:none;" data-testid="checkout-address-hint"></div>
+        </div>
+        <div class="col-md-4"><label class="form-label">Address Line 2</label><input name="address2" class="form-control" value="<?= esc($_POST['address2'] ?? '') ?>"></div>
+        <div class="col-md-3 col-6">
+          <label class="form-label">Country *</label>
+          <select name="country" id="co-country" class="form-select" onchange="mvSwitchCheckoutCountry(this.value)" data-testid="country-select">
+            <?php foreach ($ALL_COUNTRIES as $c => $n): ?>
+              <option value="<?= $c ?>" <?= $formCC === $c ? 'selected' : '' ?>><?= esc($n) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="col-md-3 col-6"><label class="form-label">City *</label><input name="city" required class="form-control" value="<?= esc($_POST['city'] ?? '') ?>"></div>
+        <div class="col-md-3 col-6" id="co-region-wrap">
+          <label class="form-label" id="co-region-label"><?= esc($rf['region_label']) ?><?= $rf['region_required'] ? ' *' : '' ?></label>
+          <?php if (!empty($rf['regions'])): ?>
+          <select name="state" <?= $rf['region_required'] ? 'required' : '' ?> class="form-select" data-testid="state-select">
+            <option value="">Select</option>
+            <?php foreach ($rf['regions'] as $st): ?>
+              <option value="<?= $st ?>" <?= ($_POST['state'] ?? '') === $st ? 'selected' : '' ?>><?= $st ?></option>
+            <?php endforeach; ?>
+          </select>
+          <?php else: ?>
+          <input name="state" <?= $rf['region_required'] ? 'required' : '' ?> class="form-control" value="<?= esc($_POST['state'] ?? '') ?>" data-testid="state-select" placeholder="<?= esc($rf['region_label']) ?>">
+          <?php endif; ?>
+        </div>
+        <div class="col-md-3 col-6"><label class="form-label" id="co-postal-label"><?= esc($rf['postal_label']) ?> *</label><input name="zip" required class="form-control" value="<?= esc($_POST['zip'] ?? '') ?>" id="co-postal" placeholder="<?= esc($rf['postal_ph']) ?>" data-testid="zip-input"></div>
+        <div class="col-12">
+          <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" name="sms_consent" id="sms-consent" value="1" <?= !empty($_POST['sms_consent']) ? 'checked' : '' ?> data-testid="sms-consent">
+            <label class="form-check-label text-secondary" for="sms-consent" style="font-size:.72rem;">I agree to receive SMS order updates &amp; delivery notifications from <?= SITE_BRAND ?>. Msg &amp; data rates may apply. Reply STOP to opt out.</label>
+          </div>
+        </div>
+      </div>
       <?php if ($_cardEnabled): ?>
-      <button id="btn-pay-card" type="submit" class="btn btn-primary btn-lg rounded-pill w-100" data-testid="checkout-pay-button">Pay Securely · <?= format_price($total) ?></button>
+      <button id="btn-pay-card" type="submit" class="btn btn-primary btn-lg rounded-pill w-100 mt-3" data-testid="checkout-pay-button">Pay Securely · <?= format_price($total) ?></button>
       <?php endif; ?>
       <?php if ($_paypalEnabled): ?>
-      <button id="btn-pay-paypal" type="submit" class="btn btn-paypal btn-lg rounded-pill w-100 <?= $_cardEnabled ? 'd-none' : '' ?>" data-testid="checkout-paypal-button"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span> · Continue <?= format_price($total) ?></button>
+      <button id="btn-pay-paypal" type="submit" class="btn btn-paypal btn-lg rounded-pill w-100 mt-3 <?= $_cardEnabled ? 'd-none' : '' ?>" data-testid="checkout-paypal-button"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span> · Continue <?= format_price($total) ?></button>
       <?php endif; ?>
       <div class="text-center small text-secondary mt-2"><i class="bi bi-shield-lock me-1"></i>256-bit SSL · Powered by Stripe — card details are entered on the secure payment page</div>
       <div class="text-center mt-1" style="font-size:.72rem;">By placing your order, you agree to our <a href="page.php?slug=terms-of-service">Terms</a> and <a href="page.php?slug=privacy-policy">Privacy Policy</a></div>
@@ -928,18 +1010,26 @@ include __DIR__ . '/includes/header.php';
    single source of truth; this mirrors it client-side so changing the Country
    select instantly reshapes the State/Province/County field, its label, the
    Postal/ZIP label + placeholder and the phone dial code — without a reload. */
-window.MV_REGION_FORMS = <?= json_encode($REGION_FORMS) ?>;
+window.MV_REGION_FORMS = <?= json_encode($JS_REGION_FORMS) ?>;
 /* Changing the checkout Country must switch the storefront CURRENCY too, so the
    country selected always matches the currency being charged (e.g. selecting
    Canada shows CA$ prices — never US country with CA$ totals). We reload the
    checkout under that country's region prefix + ?cur= so every price recomputes
-   in the matching currency. The cart (session) is preserved across the reload. */
+   in the matching currency. The cart (session) is preserved across the reload.
+   For any OTHER country (rest of the world) we don't have a dedicated
+   currency/region-prefix — we just morph the address form in-place so the
+   State/Region + Postal fields adapt to the selection without a page reload. */
 function mvSwitchCheckoutCountry(cc) {
   cc = (cc || 'US').toUpperCase();
   var CUR = { US: 'USD', CA: 'CAD', UK: 'GBP', AU: 'AUD', EU: 'EUR' };
-  var cur = CUR[cc] || 'USD';
-  var prefix = (cc === 'US') ? '' : '/' + cc.toLowerCase();
-  window.location.href = prefix + '/checkout.php?cur=' + cur;
+  if (Object.prototype.hasOwnProperty.call(CUR, cc)) {
+    var cur = CUR[cc];
+    var prefix = (cc === 'US') ? '' : '/' + cc.toLowerCase();
+    window.location.href = prefix + '/checkout.php?cur=' + cur;
+    return;
+  }
+  // Rest-of-world: just reshape the address fields client-side.
+  mvApplyCheckoutRegion(cc);
 }
 function mvApplyCheckoutRegion(cc) {
   var rf = window.MV_REGION_FORMS[cc] || window.MV_REGION_FORMS['US'];

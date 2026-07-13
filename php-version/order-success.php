@@ -1053,7 +1053,7 @@ if ($gcrOptInEnabled && $isPaid && $gmcId !== '' && !empty($order['email'])):
                data-url="<?= esc($qrUrl) ?>"></div>
         </div>
         <div class="receipt-qr-title" data-testid="receipt-qr-title">
-          View your license keys &amp; installation guide on any phone
+          View license key with QR
         </div>
         <div class="receipt-qr-help" data-testid="receipt-qr-help">
           Scanning opens a secure receipt page showing this order, the product name, license key,

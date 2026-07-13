@@ -1,3 +1,27 @@
+<!-- 2026-07-13: Checkout UX overhaul + order-success QR caption tweak.
+  (1) Order Success page: shortened the QR block caption from
+  "View your license keys & installation guide on any phone" to
+  "View license key with QR" (order-success.php).
+  (2) Checkout page (checkout.php):
+    - Country dropdown expanded from 5 regions to a FULL 243-entry ISO country
+      list (US/CA/UK/AU pinned at top, then A→Z). Added $ALL_COUNTRIES array +
+      $__region_form_for($cc) helper that returns a generic form config for
+      any country not in the special $REGION_FORMS map (which now also
+      includes IN with a proper State list + PIN-Code validation). $JS_REGION_FORMS
+      is emitted for every country so the client-side region-morph works
+      regardless of selection.
+    - mvSwitchCheckoutCountry: only reloads with a currency prefix for the
+      5 currency-mapped regions (US/CA/UK/AU/EU); for all other countries
+      it just calls mvApplyCheckoutRegion(cc) to reshape the address fields
+      in-place (label, state field type, postal placeholder, phone dial code).
+    - Layout swap: Order Summary column now on the LEFT (col-lg-5 order-lg-1),
+      Details+Payment column on the RIGHT (col-lg-7 order-lg-2).
+    - Payment method tiles (Card / PayPal) + card-details reveal moved to the
+      TOP of the right column (numbered 1). "Your Details" section moved
+      BELOW payment (numbered 2). Pay Securely / PayPal submit button stays
+      at the very bottom of the card. -->
+
+
 <!-- 2026-06-25: Production (Apache/cPanel) deployment-readiness audit on a local Apache prod-sim. Verified: all core pages 200; regional prefix routing (/ca /au /uk /eu, /us->bare 301, stacked-prefix self-heal); extensionless clean URLs; SEO/feed endpoints (sitemap.xml, merchant-feed, llms.txt, agents.json, ai.txt, manifest, sitemap.xsl) correct content-types; security blocks (.env/database.sql/router.php denied, includes/ 404, config.php executes to empty body=no source leak); E2E checkout creates orders with region-aware country/state/zip/currency; per-region postcode validation rejects bad input; currency switching correct across all regions. FIX: added @ini_set session.use_cookies/use_only_cookies in functions.php to silence a session_set_cookie_params warning on shared hosts with use_cookies disabled. Zero PHP warnings/errors on Apache after fix. .htaccess confirmed free of invalid-in-htaccess directives. -->
 
 <!-- 2026-06-25: (1) Added per-region currency-code label next to product card prices (render_product_card / render_product_row in functions.php; testid card-currency-<slug>). (2) Made the checkout address form region-aware: $REGION_FORMS config in checkout.php drives Country default, phone dial code, region field label+control (State dropdown for US/CA/AU, free-text County/Region for UK/EU), and Postal/ZIP label+placeholder+validation per region. Client-side window.mvApplyCheckoutRegion morphs the form instantly when Country changes; server-side validation mirrors per-region postal/state rules. Verified iteration_25 (frontend 100%, 8/8 scenarios across US/CA/AU/UK/EU). -->
