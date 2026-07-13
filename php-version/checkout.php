@@ -1291,6 +1291,9 @@ window.mvValidateCheckoutOnSubmit = mvValidateCheckoutOnSubmit;
   }
   function hide() { panel.hidden = true; cursor = -1; }
   function show() { panel.hidden = false; }
+  // Reset internal state so the panel can't be re-shown by the focus handler
+  // right after a selection.  Called from pick() below.
+  function clearState() { suggestions = []; cursor = -1; panel.innerHTML = ''; }
 
   function render(list) {
     suggestions = Array.isArray(list) ? list : [];
@@ -1374,7 +1377,16 @@ window.mvValidateCheckoutOnSubmit = mvValidateCheckoutOnSubmit;
       }
     }
     hide();
-    input.focus();
+    clearState();
+    // Cancel any pending debounce timer so a stale fetch that started before
+    // the user picked doesn't repopulate the dropdown moments later.
+    if (timer) { clearTimeout(timer); timer = null; }
+    currentReq++;
+    // Advance focus to the next field (Address Line 2) instead of the address
+    // input — otherwise refocusing #checkout-address would trigger a redundant
+    // input/focus event and could reveal the dropdown again.
+    var next = document.querySelector('input[name="address2"]');
+    if (next) next.focus();
   }
 
   panel.addEventListener('click', function (ev) {
