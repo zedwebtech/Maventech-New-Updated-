@@ -795,45 +795,37 @@ include __DIR__ . '/includes/header.php';
       </div>
       <!-- Card details drop-down (shown when Card selected). Fields have NO name attrs —
            they are never posted to our server; the charge is confirmed on Stripe's PCI-compliant page.
-           Layout: brand icons row sits ABOVE the Card Number label; Expiry & CVV are on the same
-           row as Card Number.  Field errors are rendered inline in the label row (plain text,
-           no pill/background) per UX request 2026-07-13(g). -->
+           Layout: brand icons render INSIDE the Card Number input group as a live-highlight overlay
+           on the right; validation errors render as centered, bold, red plain-text UNDER the
+           corresponding input per UX request 2026-07-13(h). -->
       <div id="card-form" class="card-form-reveal mb-2<?= $defaultPM !== 'card' ? ' d-none' : '' ?>" data-testid="card-details-form">
-        <!-- Accepted-brand icons ABOVE the fields — each icon dims when the customer's
-             typed number matches a specific brand; the matching brand highlights. -->
-        <div class="card-brands-above" id="card-brands" data-testid="card-brand-icons">
-          <img src="assets/images/payments/visa.svg" alt="Visa" data-brand="visa" class="card-brand-icon">
-          <img src="assets/images/payments/mastercard.svg" alt="Mastercard" data-brand="mastercard" class="card-brand-icon">
-          <img src="assets/images/payments/amex.svg" alt="American Express" data-brand="amex" class="card-brand-icon">
-          <img src="assets/images/payments/discover.svg" alt="Discover" data-brand="discover" class="card-brand-icon">
-        </div>
         <div class="row g-2">
           <div class="col-md-6 col-12">
-            <div class="d-flex align-items-baseline justify-content-between">
-              <label class="form-label mb-1" for="card-number">Card Number</label>
-              <span class="field-error-inline" id="card-number-error" data-testid="card-number-error" aria-live="polite"></span>
-            </div>
+            <label class="form-label mb-1" for="card-number">Card Number</label>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-credit-card-2-front text-primary"></i></span>
               <input id="card-number" class="form-control" inputmode="numeric" autocomplete="cc-number" maxlength="19" data-testid="card-number-input" aria-label="Card number" placeholder="1234 5678 9012 3456">
+              <span class="input-group-text card-brands-inside" id="card-brands" data-testid="card-brand-icons">
+                <img src="assets/images/payments/visa.svg"       alt="Visa"       data-brand="visa"       class="card-brand-icon">
+                <img src="assets/images/payments/mastercard.svg" alt="Mastercard" data-brand="mastercard" class="card-brand-icon">
+                <img src="assets/images/payments/amex.svg"       alt="American Express" data-brand="amex" class="card-brand-icon">
+                <img src="assets/images/payments/discover.svg"   alt="Discover"   data-brand="discover"   class="card-brand-icon">
+              </span>
             </div>
+            <div class="field-error-under" id="card-number-error" data-testid="card-number-error" aria-live="polite"></div>
           </div>
           <div class="col-md-3 col-7">
-            <div class="d-flex align-items-baseline justify-content-between">
-              <label class="form-label mb-1" for="card-exp">Expiry Date</label>
-              <span class="field-error-inline" id="card-exp-error" data-testid="card-exp-error" aria-live="polite"></span>
-            </div>
+            <label class="form-label mb-1" for="card-exp">Expiry Date</label>
             <input id="card-exp" class="form-control" inputmode="numeric" autocomplete="cc-exp" maxlength="5" data-testid="card-exp-input" aria-label="Card expiry date" placeholder="MM/YY">
+            <div class="field-error-under" id="card-exp-error" data-testid="card-exp-error" aria-live="polite"></div>
           </div>
           <div class="col-md-3 col-5">
-            <div class="d-flex align-items-baseline justify-content-between">
-              <label class="form-label mb-1" for="card-cvv">CVV</label>
-              <span class="field-error-inline" id="card-cvv-error" data-testid="card-cvv-error" aria-live="polite"></span>
-            </div>
+            <label class="form-label mb-1" for="card-cvv">CVV</label>
             <div class="input-group">
               <input id="card-cvv" type="password" class="form-control" inputmode="numeric" autocomplete="cc-csc" maxlength="4" data-testid="card-cvv-input" aria-label="Card CVV" placeholder="CVV">
               <span class="input-group-text" title="3-digit code on the back of your card · 4 digits for American Express"><i class="bi bi-question-circle text-secondary"></i></span>
             </div>
+            <div class="field-error-under" id="card-cvv-error" data-testid="card-cvv-error" aria-live="polite"></div>
           </div>
         </div>
         <div class="small text-secondary mt-1"><i class="bi bi-shield-lock-fill text-success me-1"></i>Your card is verified &amp; charged on Stripe's PCI-compliant secure page — we never store card data.</div>
@@ -923,12 +915,8 @@ include __DIR__ . '/includes/header.php';
           <?php endif; ?>
         </div>
         <div class="col-md-3 col-6"><label class="form-label" id="co-postal-label"><?= esc($rf['postal_label']) ?> *</label><input name="zip" autocomplete="postal-code" required class="form-control" value="<?= esc($_POST['zip'] ?? '') ?>" id="co-postal" placeholder="<?= esc($rf['postal_ph']) ?>" data-testid="zip-input"></div>
-        <div class="col-12">
-          <div class="form-check mb-0">
-            <input class="form-check-input" type="checkbox" name="sms_consent" id="sms-consent" value="1" <?= !empty($_POST['sms_consent']) ? 'checked' : '' ?> data-testid="sms-consent">
-            <label class="form-check-label text-secondary" for="sms-consent" style="font-size:.72rem;">I agree to receive SMS order updates &amp; delivery notifications from <?= SITE_BRAND ?>. Msg &amp; data rates may apply. Reply STOP to opt out.</label>
-          </div>
-        </div>
+        <?php /* SMS consent checkbox removed per UX request 2026-07-13(h) —
+                the storefront no longer collects marketing consent at checkout. */ ?>
       </div>
       <?php if ($_cardEnabled): ?>
       <button id="btn-pay-card" type="submit" class="btn btn-primary btn-lg rounded-pill w-100 mt-3<?= $defaultPM !== 'card' ? ' d-none' : '' ?>" data-testid="checkout-pay-button">Pay Securely · <?= format_price($total) ?></button>
@@ -1076,39 +1064,38 @@ form .row.g-3 { --bs-gutter-y: .75rem; }
 #card-number { font-size: .95rem; letter-spacing: .04em; }
 
 /* ============================================================
-   Card-brand icons row — sits ABOVE the Card Number label so the
-   customer sees which brands are accepted BEFORE typing. When they
-   start typing, the icons dim/highlight based on the detected brand.
-   No pill / no status text — validation errors render inline in the
-   label row instead (see .field-error-inline below).
+   Card-brand icons INSIDE the Card Number input group (right side).
+   As the customer types, the matching brand highlights (full opacity +
+   subtle scale-up + cyan glow) while the others dim/desaturate.
    ============================================================ */
-.card-brands-above {
-  display: flex; align-items: center; gap: .35rem;
-  margin: 0 0 .55rem 0; padding: 0 .1rem;
+.card-brands-inside {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: 0 .55rem;
 }
-.card-brands-above .card-brand-icon {
-  height: 22px; width: auto; border-radius: 3px; opacity: .55;
+.card-brands-inside .card-brand-icon {
+  height: 18px; width: auto; border-radius: 3px; opacity: .55;
   transition: opacity .18s ease, transform .18s ease, box-shadow .18s ease, filter .18s ease;
 }
-.card-brands-above .card-brand-icon.dimmed { opacity: .2; filter: grayscale(100%); }
-.card-brands-above .card-brand-icon.active {
-  opacity: 1; transform: scale(1.15);
-  box-shadow: 0 2px 8px rgba(6,182,212,.4);
+.card-brands-inside .card-brand-icon.dimmed { opacity: .18; filter: grayscale(100%); }
+.card-brands-inside .card-brand-icon.active {
+  opacity: 1; transform: scale(1.2);
+  box-shadow: 0 2px 8px rgba(6,182,212,.45);
 }
 
-/* Inline field error — plain text, right-aligned in the label row,
-   no background pill.  Only appears when the field is invalid. */
-.field-error-inline {
-  font-size: .72rem; font-weight: 600;
-  color: #b91c1c;
-  min-height: 14px;
+/* Field error rendered UNDER the input — bold, red, CENTER-aligned so it
+   stands out clearly beneath its field (per UX request 2026-07-13 h).
+   No background box / pill — pure standout text. */
+.field-error-under {
+  min-height: 16px;
+  margin-top: 3px;
+  font-size: .78rem;
+  font-weight: 700;
+  color: #dc2626;              /* Red-600 for strong contrast */
+  text-align: center;
+  letter-spacing: .01em;
   line-height: 1;
-  padding-left: .5rem;
-  white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-  max-width: 60%;
 }
-[data-bs-theme="dark"] body:not(.adm) .field-error-inline { color: #fca5a5 !important; }
+[data-bs-theme="dark"] body:not(.adm) .field-error-under { color: #fca5a5 !important; }
 
 /* Field-level validity ring (kept minimal — no background icon). */
 #card-form .form-control.is-invalid { border-color: #ef4444; background-image: none; padding-right: .65rem; }

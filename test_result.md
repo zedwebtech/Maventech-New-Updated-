@@ -102,16 +102,84 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 
 user_problem_statement: |
-  Iteration 2026-07-13 (g) — checkout card UX polish v2:
-  (1) Move the Visa/MC/Amex/Discover brand icons row ABOVE the Card Number
-      label (was rendered below the input in the previous iteration).
-  (2) Remove the amber "Enter N more digits" pending pill entirely — no
-      status messages while the customer is still typing.
-  (3) Remove the red pill-style "That doesn't look like a real card number"
-      badge. Replace with a plain-text inline error label ("Invalid card
-      number") rendered in the field label row (right-aligned, no coloured
-      background box). Same treatment for Expiry (short "Expired" / "Bad
-      month") and CVV ("Invalid CVV").
+  Iteration 2026-07-13 (h) — final checkout polish:
+  (1) Remove the "I agree to receive SMS order updates & delivery
+      notifications from Maventech. Msg & data rates may apply. Reply
+      STOP to opt out." consent checkbox at the bottom of the details
+      section.
+  (2) Move the accepted-brand icons row (Visa/MC/Amex/Discover) back
+      INSIDE the Card Number input group (right side overlay) — this
+      is the classic Stripe-style layout the customer expects. Icons
+      still highlight the matching brand as digits are typed.
+  (3) When card / expiry / CVV are invalid, show the error message
+      CENTERED under the input in bold red text (no pill, no box).
+      Same for all three card fields.
+
+frontend:
+  - task: "Checkout — remove SMS consent checkbox at bottom of Your Details"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Deleted the `<div class='col-12'>` block that rendered the SMS-consent checkbox + label ('I agree to receive SMS order updates & delivery notifications from Maventech. Msg & data rates may apply. Reply STOP to opt out.'). Replaced with a PHP comment. Server-side handling of the sms_consent field remains — it just receives no value now (defaults to unchecked). Verified: `#sms-consent` element no longer in DOM."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED via Playwright at 1920×1080. TEST A — SMS CONSENT CHECKBOX REMOVED: (A.1) document.getElementById('sms-consent') === null ✓. (A.2) document.body.textContent does NOT include 'SMS order updates' ✓. (A.3) document.querySelectorAll('input[name=\"sms_consent\"]').length === 0 ✓. All 3 assertions passed. The SMS consent checkbox and all related text have been successfully removed from the checkout page."
+
+  - task: "Checkout — card brand icons back INSIDE the Card Number input group (right overlay)"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Moved the `#card-brands` span back to the RIGHT of the Card Number `<input>` inside the `.input-group` container, renamed the class to `.card-brands-inside`. CSS restyled: display: inline-flex, gap .3rem, padding .55rem; icons 18px tall, base opacity .55, dimmed .18 + grayscale on non-match, active class = full opacity + scale 1.2 + cyan glow. Verified: `#card-brands.card-brands-inside === true`, parent is `.input-group`; typing a Visa card highlights only the Visa icon and dims the other 3."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED via Playwright at 1920×1080. TEST B — CARD BRAND ICONS INSIDE INPUT GROUP: (B.1) document.getElementById('card-brands').classList.contains('card-brands-inside') === true ✓. (B.2) document.getElementById('card-brands').parentElement.classList.contains('input-group') === true ✓. (B.3) Typing valid Visa '4242424242424242' → exactly ONE .card-brand-icon.active with data-brand='visa' ✓. (B.4) Other 3 icons (mastercard, amex, discover) have class 'dimmed' ✓. All 4 assertions passed. Card brand icons are correctly positioned inside the Card Number input group with proper live highlighting behavior."
+
+  - task: "Checkout — validation errors rendered CENTERED under the input as bold red text (no box/pill)"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Removed `.field-error-inline` spans from the label rows. Each field (card-number / card-exp / card-cvv) now has a `<div class='field-error-under' id='{id}-error'>` immediately under its `<input>`. CSS: min-height 16px, margin-top 3px, font-size .78rem, font-weight 700, color #dc2626 (Red-600 light) / #fca5a5 (dark, with body:not(.adm) !important specificity fix), text-align CENTER, transparent background, letter-spacing .01em. The setCardFieldValidity() JS in main.js writes the error text into #card-number-error / #card-exp-error / #card-cvv-error unchanged — since we kept the same id + textContent behaviour. Verified: bad card 6565… → 'Invalid card number' centered under the input in bold red, backgroundColor rgba(0,0,0,0), textAlign 'center', color rgb(252,165,165) in dark mode / rgb(220,38,38) in light mode."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED via Playwright at 1920×1080. TEST C — VALIDATION ERRORS CENTERED UNDER INPUT: LIGHT MODE (C.1-5): Typing invalid card '6565656565656565' → #card-number-error.textContent === 'Invalid card number' ✓, textAlign === 'center' ✓, fontWeight === '700' ✓, backgroundColor === 'rgba(0, 0, 0, 0)' (transparent, no pill) ✓, color === 'rgb(220, 38, 38)' (Red-600) ✓, error positioned 1.15px under input (within tolerance) ✓. DARK MODE (C.6-8): Error text === 'Invalid card number' ✓, color === 'rgb(252, 165, 165)' (#fca5a5) ✓. EXPIRY FIELD (C.9): Typing '05/22' → #card-exp-error.textContent === 'Expired' ✓, centered ✓, bold ✓, red color ✓, positioned 2.58px under input ✓. CVV SILENT (C.10): Valid Visa + typing '12' (2 of 3 digits) → #card-cvv-error.textContent === '' (empty, silent while typing) ✓. All 20 sub-tests passed. Screenshot saved: test_c_dark_mode_invalid_card.png"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Iteration 2026-07-13(h) applied. FRONTEND visual verification needed at 1920×1080. Steps: (1) Add a product to cart, open /checkout.php. Assert `document.getElementById('sms-consent') === null` and the text 'I agree to receive SMS order updates' does NOT appear anywhere on the page. (2) Icons INSIDE: assert `document.getElementById('card-brands').classList.contains('card-brands-inside') === true` AND `document.getElementById('card-brands').parentElement.classList.contains('input-group') === true`. Type a valid Visa '4242424242424242' and confirm the visa `.card-brand-icon` inside the input group has class 'active' while mastercard/amex/discover have 'dimmed'. (3) Errors centered under input: clear #card-number, type '6565656565656565' (invalid Luhn). Assert `#card-number-error.textContent === 'Invalid card number'`. Assert `getComputedStyle(#card-number-error)` has: `textAlign === 'center'`, `fontWeight === '700'`, `backgroundColor === 'rgba(0, 0, 0, 0)'`, `color === 'rgb(220, 38, 38)'` in light mode. Assert the `#card-number-error` div renders IMMEDIATELY UNDER `#card-number` (top edge of error > bottom edge of input). Repeat with dark-mode enabled — color should be rgb(252, 165, 165). (4) Expiry '05/22' → `#card-exp-error.textContent === 'Expired'` centered bold red under `#card-exp`. (5) CVV: with Visa in card, type '12' → `#card-cvv-error` empty (silent while typing). Skip retesting anything from earlier iterations."
+    -agent: "testing"
+    -message: "✅ ITERATION 2026-07-13(h) TESTING COMPLETE — ALL 3 TASKS FULLY WORKING. Comprehensive Playwright testing executed all test scenarios from review_request at 1920×1080 viewport. RESULTS: ✅ Task 1 (SMS consent removed): All 3 assertions passed — #sms-consent element null, no 'SMS order updates' text in body, no input[name='sms_consent'] in DOM. ✅ Task 2 (Card brand icons INSIDE input group): All 4 assertions passed — #card-brands has 'card-brands-inside' class, parent has 'input-group' class, typing valid Visa highlights only Visa icon (1 active), other 3 icons dimmed. ✅ Task 3 (Validation errors centered under input): All 13 sub-tests passed — light mode shows 'Invalid card number' centered/bold/red (rgb(220,38,38))/transparent background/positioned 1.15px under input, dark mode shows correct color (rgb(252,165,165)), expiry field shows 'Expired' centered/bold/red/positioned 2.58px under input, CVV silent while typing (2 of 3 digits). Total: 20/20 tests passed. Screenshot: test_c_dark_mode_invalid_card.png. NO ISSUES FOUND. All iteration 2026-07-13(h) tasks verified working correctly. Ready for user acceptance."
+
+# ────────────────────── PREVIOUS ITERATION (2026-07-13 g) ──────────────────────
 
 frontend:
   - task: "Checkout — brand icons now ABOVE the Card Number label (not below)"
