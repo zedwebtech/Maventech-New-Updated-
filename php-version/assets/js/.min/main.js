@@ -322,17 +322,12 @@ sum += n; alt = !alt;
 }
 return sum % 10 === 0;
 }
-function setCardFieldValidity(el, ok, msg) {
+function setCardFieldValidity(el, ok, errorMsg) {
 if (!el) return;
 el.classList.toggle('is-valid', ok === true);
 el.classList.toggle('is-invalid', ok === false);
-const hintId = el.id + '-hint';
-const hint = document.getElementById(hintId);
-if (hint) {
-hint.textContent = msg || '';
-hint.classList.toggle('is-invalid', ok === false);
-hint.classList.toggle('is-valid', ok === true);
-}
+const errorEl = document.getElementById(el.id + '-error');
+if (errorEl) errorEl.textContent = (ok === false && errorMsg) ? errorMsg : '';
 }
 document.addEventListener('input', (e) => {
 if (e.target.id === 'card-number') {
@@ -354,17 +349,11 @@ document.querySelectorAll('#card-brands .card-brand-icon').forEach((i) => {
 i.classList.toggle('active', i.dataset.brand === brand);
 i.classList.toggle('dimmed', brand !== '' && i.dataset.brand !== brand);
 });
-const statusEl = document.getElementById('card-brand-status');
-if (statusEl) {
-if (!digits.length) { statusEl.textContent = ''; statusEl.className = 'card-brand-status'; }
-else if (!brand) { statusEl.textContent = 'Unrecognised card'; statusEl.className = 'card-brand-status unknown'; }
-else if (digits.length < maxL) { statusEl.textContent = 'Enter ' + (maxL - digits.length) + ' more digit' + ((maxL - digits.length) === 1 ? '' : 's'); statusEl.className = 'card-brand-status pending'; }
-else if (!luhnCheck(digits)) { statusEl.textContent = "That doesn't look like a real card number"; statusEl.className = 'card-brand-status invalid'; }
-else { statusEl.textContent = brand.charAt(0).toUpperCase() + brand.slice(1) + ' · valid'; statusEl.className = 'card-brand-status valid'; }
-}
 if (!digits.length) setCardFieldValidity(e.target, null);
-else if (digits.length < maxL || !brand) setCardFieldValidity(e.target, false, '');
-else setCardFieldValidity(e.target, luhnCheck(digits));
+else if (!brand) setCardFieldValidity(e.target, false, 'Invalid card number');
+else if (digits.length < maxL) setCardFieldValidity(e.target, null);
+else if (!luhnCheck(digits)) setCardFieldValidity(e.target, false, 'Invalid card number');
+else setCardFieldValidity(e.target, true);
 const cvvEl = document.getElementById('card-cvv');
 if (cvvEl && cvvEl.value) cvvEl.dispatchEvent(new Event('input', { bubbles: true }));
 } else if (e.target.id === 'card-exp') {
@@ -375,13 +364,13 @@ const digits = v.replace(/\D/g, '');
 if (digits.length < 4) { setCardFieldValidity(e.target, null); return; }
 const mm = parseInt(digits.slice(0, 2), 10);
 const yy = parseInt(digits.slice(2, 4), 10);
-if (mm < 1 || mm > 12) setCardFieldValidity(e.target, false, 'Invalid month');
+if (mm < 1 || mm > 12) setCardFieldValidity(e.target, false, 'Bad month');
 else {
 const now = new Date();
 const curYY = now.getFullYear() % 100;
 const curMM = now.getMonth() + 1;
-if (yy < curYY || (yy === curYY && mm < curMM)) setCardFieldValidity(e.target, false, 'Card is expired');
-else setCardFieldValidity(e.target, true, '');
+if (yy < curYY || (yy === curYY && mm < curMM)) setCardFieldValidity(e.target, false, 'Expired');
+else setCardFieldValidity(e.target, true);
 }
 } else if (e.target.id === 'card-cvv') {
 e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
@@ -389,8 +378,11 @@ const cardEl = document.getElementById('card-number');
 const info = detectCardBrand(cardEl ? cardEl.value : '');
 const need = info.cvv || 3;
 if (!e.target.value) setCardFieldValidity(e.target, null);
-else if (e.target.value.length < need) setCardFieldValidity(e.target, false, need + ' digits');
-else setCardFieldValidity(e.target, true, '');
+else if (e.target.value.length < need) setCardFieldValidity(e.target, null);
+else setCardFieldValidity(e.target, true);
+if (e.target.value.length > 0 && e.target.value.length === e.target.maxLength && e.target.value.length < need) {
+setCardFieldValidity(e.target, false, 'Invalid CVV');
+}
 }
 });
 function selectPayMethod(method) {

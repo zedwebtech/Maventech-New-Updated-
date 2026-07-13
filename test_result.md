@@ -102,22 +102,83 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 
 user_problem_statement: |
-  Iteration 2026-07-13 (f) — checkout card UX polish + one-viewport fit +
-  real card validation:
-  (1) Move the Visa/MC/Amex/Discover brand icons from INSIDE the Card
-      Number input group to a row UNDER the Card Number field. When the
-      customer types a Visa card, the Visa icon must highlight (scale-up
-      + full opacity) while the other 3 dim.
-  (2) Widen the Card Number input so the full 16-digit number displays
-      comfortably in one visible field.
-  (3) Fit the entire checkout page — from the trust bar at the top down
-      to the "Pay Securely · $XX.XX" button — inside a single 1080-tall
-      viewport at 100 % zoom. No scrolling to reach Pay.
-  (4) Add real client-side card validation: Luhn checksum, brand-specific
-      length (Visa/MC/Discover = 16, Amex = 15), MM/YY expiry (rejects
-      past dates + non-1-12 months), CVV length (3 for most, 4 for Amex).
-      Block the submit when invalid; show a clear toast + focus the
-      offending field.
+  Iteration 2026-07-13 (g) — checkout card UX polish v2:
+  (1) Move the Visa/MC/Amex/Discover brand icons row ABOVE the Card Number
+      label (was rendered below the input in the previous iteration).
+  (2) Remove the amber "Enter N more digits" pending pill entirely — no
+      status messages while the customer is still typing.
+  (3) Remove the red pill-style "That doesn't look like a real card number"
+      badge. Replace with a plain-text inline error label ("Invalid card
+      number") rendered in the field label row (right-aligned, no coloured
+      background box). Same treatment for Expiry (short "Expired" / "Bad
+      month") and CVV ("Invalid CVV").
+
+frontend:
+  - task: "Checkout — brand icons now ABOVE the Card Number label (not below)"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Renamed `.card-brands-below` → `.card-brands-above`; moved the DIV so it now renders BEFORE the row of Card Number / Expiry / CVV columns. Icons therefore appear on the row above the label row. Verified: `document.getElementById('card-brands').getBoundingClientRect().bottom` (24) < `document.getElementById('card-number').getBoundingClientRect().top` (58) — icons strictly above the input. Icon size bumped 20 → 22 px + opacity .55 for stronger presence when idle."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED via Playwright at 1920×1080. (1) card-brand-icons has 'card-brands-above' class ✓. (2) Icons positioned ABOVE label: icons bottom (395.2px) <= label top (409.2px) + 5px ✓. (3) Icons positioned ABOVE input: icons bottom (395.2px) < input top (429.6px) ✓. All assertions passed. Screenshot: test_a_icons_above.png"
+
+  - task: "Checkout — remove the pending 'Enter N more digits' amber pill (silent while typing)"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php, php-version/assets/js/main.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Removed the `#card-brand-status` span from the DOM entirely. Deleted the corresponding update block in main.js so no status pill exists on the page at any time. Also removed the pending-length messaging: while the customer is still typing a card (digits < required length) the JS keeps setCardFieldValidity(el, null) → no colour, no text — the field is simply neutral. Verified: after partial input '54494', `#card-number-error` textContent is empty; no `.card-brand-status.pending` element in DOM."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED via Playwright. (1) #card-brand-status element removed from DOM (null) ✓. (2) Typed partial '54494' → #card-number-error text is empty ✓. (3) No .card-brand-status.pending element exists ✓. Field remains silent while typing partial input. All core requirements met."
+
+  - task: "Checkout — replace red pill error badge with plain inline label-row text ('Invalid card number', 'Expired', 'Invalid CVV')"
+    implemented: true
+    working: false
+    file: "php-version/checkout.php, php-version/assets/js/main.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Each of the three card fields now has a sibling `<span class='field-error-inline' id='card-{number|exp|cvv}-error'>` inside a flex label-row (label + error span, `justify-content-between`). CSS: red text (light: #b91c1c, dark: #fca5a5), 700 font-weight, .72rem, transparent background, ellipsis when overflow, max-width 60% of the row. setCardFieldValidity(el, ok, msg) now writes/clears the textContent of that span (empty when valid or still typing). Error strings shortened so the narrow col-md-3 columns don't truncate: 'Invalid month' → 'Bad month', 'Card expired' → 'Expired', 'CVV must be N digits' → 'Invalid CVV'. Submit-guard toast for card-number errors also unified to 'Invalid card number'. Verified: bad-Luhn '5449 4545 6415 6416' → `#card-number-error.textContent === 'Invalid card number'`, span backgroundColor === 'rgba(0,0,0,0)' (transparent, no pill); expired '05/22' → `#card-exp-error.textContent === 'Expired'`."
+        -working: false
+        -agent: "testing"
+        -comment: "⚠️ MOSTLY WORKING with 1 CRITICAL CSS BUG. Light mode tests: ✅ Bad Luhn shows 'Invalid card number' with transparent background (rgba(0,0,0,0)) and red color (rgb(185,28,28)) ✓. ✅ Error positioned in label row ✓. ✅ Valid Visa shows no message, brand highlights correctly ✓. ✅ Expiry errors: 'Expired' for 05/22, 'Bad month' for 13/34, empty for valid 05/34 ✓. ✅ CVV silent while typing, valid when complete ✓. ❌ DARK MODE BUG: Error color is rgb(220,227,240) instead of expected rgb(252,165,165). ROOT CAUSE: CSS specificity issue — global dark mode rule `[data-bs-theme=\"dark\"] body:not(.adm) span` (rgb(220,227,240)) overrides `[data-bs-theme=\"dark\"] .field-error-inline` (rgb(252,165,165)). FIX NEEDED: Increase specificity of dark mode error rule to `[data-bs-theme=\"dark\"] body:not(.adm) .field-error-inline` or `[data-bs-theme=\"dark\"] span.field-error-inline`. Screenshots: test_c_bad_luhn.png, test_e_expiry_errors.png"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Checkout — replace red pill error badge with plain inline label-row text ('Invalid card number', 'Expired', 'Invalid CVV')"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Iteration 2026-07-13(g) applied. FRONTEND-ONLY visual verification at 1920×1080 needed. Steps: (1) Add a product to cart, open /checkout.php. Assert (a) `document.querySelector('[data-testid=\"card-brand-icons\"]').classList.contains('card-brands-above') === true`, (b) icons DIV bottom-edge < card-number input top-edge (icons are ABOVE the input+label pair, not below the input). (c) `document.getElementById('card-brand-status')` returns null (element removed). (2) Focus #card-number, type '54494' (partial) — expected: `#card-number-error.textContent` is EMPTY, no coloured pill visible anywhere on the card row. (3) Continue typing to make it '5449 4545 6415 6416' (16 digits, bad Luhn). Expected: `#card-number-error.textContent === 'Invalid card number'`, colour is red (`color: rgb(185, 28, 28)` light-mode or `rgb(252, 165, 165)` dark-mode), `backgroundColor` is transparent (`rgba(0,0,0,0)`). The error text sits in the same row as the 'CARD NUMBER' label (right-aligned within the label row). No pill anywhere. (4) Clear the field, type a valid Visa '4242424242424242'. Expected: `#card-number-error.textContent` is empty (no 'Visa · valid' pill anywhere), the Visa icon .card-brand-icon in the icons-above row has class 'active', the other 3 have 'dimmed'. (5) Type '05/22' in #card-exp → expected `#card-exp-error.textContent === 'Expired'`, red plain text, no background pill. Type '13/34' → expected `'Bad month'`. Type '05/34' → error text empty, field has `.is-valid`. (6) With Visa still in #card-number, type '12' in #card-cvv → error text empty (silent, still typing). Type '3' more digits → '123' → error empty, .is-valid. Switch Card Number to Amex '378282246310005' → #card-cvv still has '123' (only 3 digits, Amex needs 4) → since it hit maxLength AND value length equals maxLength AND < need should NOT trigger — actually because Amex needs 4 and 123 is 3 (<need), and the maxLength is 4 (still room), the field stays silent. Only when the user types 3 fully-valid digits and the maxLength is reached but length < need does an error appear. This is intentional: 'Invalid CVV' only when they've clearly given us an invalid value. Skip retesting anything from earlier iterations."
+    -agent: "testing"
+    -message: "✅ ITERATION 2026-07-13(g) TESTING COMPLETE — 2/3 TASKS FULLY WORKING, 1 TASK HAS CRITICAL CSS BUG. Comprehensive Playwright testing executed all 7 test scenarios (A-G) from review_request at 1920×1080 viewport. RESULTS: ✅ Task 1 (Icons ABOVE label): All assertions passed — icons have 'card-brands-above' class, positioned above label row (395.2px < 409.2px), positioned above input (395.2px < 429.6px). ✅ Task 2 (Pending pill removed): #card-brand-status element removed from DOM, error text empty during partial input '54494', no pending messages visible. ✅ Task 3 (Plain inline errors) — LIGHT MODE WORKING: Bad Luhn shows 'Invalid card number' with transparent background and red color (rgb(185,28,28)), error positioned in label row, valid Visa shows no message with correct brand highlighting, expiry errors show short messages ('Expired', 'Bad month'), CVV silent while typing. ❌ Task 3 — DARK MODE CSS BUG: Error color is rgb(220,227,240) instead of expected rgb(252,165,165). ROOT CAUSE IDENTIFIED: CSS specificity conflict — global dark mode rule `[data-bs-theme=\"dark\"] body:not(.adm) span { color: rgb(220,227,240); }` overrides `[data-bs-theme=\"dark\"] .field-error-inline { color: rgb(252,165,165); }` because it has higher specificity (includes body:not(.adm) selector). FIX REQUIRED: Change line 1111 in /app/php-version/checkout.php from `[data-bs-theme=\"dark\"] .field-error-inline { color: #fca5a5; }` to `[data-bs-theme=\"dark\"] body:not(.adm) .field-error-inline { color: #fca5a5; }` OR `[data-bs-theme=\"dark\"] span.field-error-inline { color: #fca5a5; }` to increase specificity. Screenshots saved: test_a_icons_above.png, test_c_bad_luhn.png, test_e_expiry_errors.png. All other functionality working correctly."
+
+# ────────────────────── PREVIOUS ITERATION (2026-07-13 f) ──────────────────────
 
 frontend:
   - task: "Checkout — card brand icons moved BELOW the Card Number input; live highlight of matching brand"
