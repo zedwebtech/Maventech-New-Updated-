@@ -1,3 +1,39 @@
+<!-- 2026-07-13 (g): Footer legal-label rename + admin AI-Blogger UI trim
+  + new-product AI auto-fill hook.
+  (1) FOOTER (includes/footer.php) — "File No." label replaced with the
+      more universal "Company Registration Number" in both the
+      brand-column reg-number list-item AND the bottom copyright row.
+      Also deleted the two stale empty lines (hr + empty col-md-3
+      offset-md-9 placeholder) that used to hold the Google Customer
+      Reviews badge — the trademark paragraph itself is UNCHANGED
+      ("Maventech LLC is an independent marketplace provider …").
+  (2) ABOUT-US (about-us.php) — the feature card intro ("Registered as
+      Maventech LLC (File No. 202463711253, filed 9/3/2024)") and the
+      reg-number tile label both switched to "Company Registration
+      Number".
+  (3) ADMIN AI-BLOGGER (admin.php) — dropped the 4th quick-action tile
+      "Publish Full Batch" (data-testid="ai-blogger-run-now",
+      seo_run=1). Widened the 3 remaining tiles Write One Post / Random
+      Post / Generate Trends Now from col-md-6 col-lg-3 → col-md-6
+      col-lg-4 so the row still fills evenly. The underlying seo_run=1
+      endpoint is still callable from the daily cron; only the UI
+      launch tile was removed.
+  (4) ADD-PRODUCT AI AUTO-FILL (admin.php, action=add_product) — every
+      new product now gets the same treatment the seeded 37 products
+      received. Right after the INSERT INTO products, when the admin
+      leaves description empty AND OPENAI_API_KEY is defined, we call
+      ai_write_product_description() and UPDATE the row with the
+      returned rich description + a Google-safe 155-char meta_description
+      (first line of the AI intro) + seo_refreshed_at=NOW(). Failures
+      are error_log-ed but never block product creation. An
+      admin-pasted description ALWAYS wins. Auto-generated FAQ + JSON-LD
+      already work for any product via product_faqs() /
+      product_paa_faqs() — no DB change needed.
+  Verified by testing agent: 4/4 pass — footer text swap, admin tile
+  removal, AI auto-fill (557-char description + 112-char meta on a
+  freshly-created test product), and manual-description preservation. -->
+
+
 <!-- 2026-07-13 (f): Footer Secure-Payments relocation + merchant-feed
   Protection-Hub-plans exclusion.
   (1) FOOTER (includes/footer.php) — the "Secure Payments" block (SSL
