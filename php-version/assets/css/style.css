@@ -1871,6 +1871,20 @@ footer p:has(> a[href^="tel:"]), footer p:has(> a[href^="mailto:"]) { margin-bot
 .co-watermark svg { width: 300px; height: 300px; }
 [data-bs-theme="dark"] .co-watermark { opacity: .07; filter: brightness(1.9); }
 .co-banner > *:not(.co-watermark) { position: relative; z-index: 1; }
+/* Suppress the site-wide bouncing / spinning brand-mark animation ONLY on
+   the checkout summary panel — a static, calm logo reads more trust-worthy
+   during a payment step than a bouncing one. */
+body[data-brand-motion="bounce"] .co-summary-head .logo-3d .brand-mark,
+body[data-brand-motion="bounce"] .co-summary-head .logo-3d > img:first-of-type,
+body[data-brand-motion="bounce"] .co-banner .logo-3d .brand-mark,
+body[data-brand-motion="bounce"] .co-banner .logo-3d > img:first-of-type {
+  animation: none !important;
+  transform: none !important;
+}
+body[data-brand-motion="bounce"] .co-summary-head .logo-3d::before,
+body[data-brand-motion="bounce"] .co-banner .logo-3d::before {
+  animation: none !important;
+}
 .co-summary-sticky { position: sticky; top: 16px; }
 .receipt-amount { font-size: 1.6rem; letter-spacing: -.5px; line-height: 1.1; }
 

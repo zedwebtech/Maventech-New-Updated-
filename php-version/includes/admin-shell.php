@@ -2112,6 +2112,32 @@ document.addEventListener('click', function(e){
 .adm-bell-mute { background:none; border:0; padding:2px 6px; color:var(--muted); cursor:pointer; font-size:11px; line-height:1; }
 .adm-bell-mute:hover { color:#06b6d4; }
 .adm-bell-mute.muted { color:#ef4444; }
+
+/* ============================================================
+   Flash Deal panel — theme-aware so the yellow/pink light background
+   in the Edit-Product modal doesn't wash-out on dark mode.
+   ============================================================ */
+.flash-deal-panel {
+  border: 1px dashed #ef4444;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff1f2 0%, #fef3c7 100%);
+}
+.flash-deal-title  { color: #b91c1c; }
+.flash-deal-badge  { background: #ef4444; color: #fff; font-size: 9.5px; letter-spacing: .5px; }
+.flash-deal-tagline { color: #64748b; }
+[data-bs-theme="dark"] .flash-deal-panel {
+  background: linear-gradient(135deg, #1f1a1c 0%, #24211a 100%);
+  border-color: #ef4444;
+  color: #f3f4f6;
+}
+[data-bs-theme="dark"] .flash-deal-panel .form-label { color: #f9fafb !important; }
+[data-bs-theme="dark"] .flash-deal-panel .form-select {
+  background-color: #0f172a; color: #f3f4f6; border-color: #334155;
+}
+[data-bs-theme="dark"] .flash-deal-panel small,
+[data-bs-theme="dark"] .flash-deal-tagline { color: #cbd5e1 !important; }
+[data-bs-theme="dark"] .flash-deal-title { color: #fca5a5; }
+[data-bs-theme="dark"] .flash-deal-panel strong { color: #fef2f2; }
 </style>
 <script>
 (function () {

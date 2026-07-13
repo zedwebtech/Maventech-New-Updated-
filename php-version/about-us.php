@@ -114,8 +114,10 @@ $features = [
       </div>
     </div>
 
-    <!-- Stats -->
-    <div class="row g-3 mt-4" data-testid="about-stats">
+    <!-- Stats — centered so the 3-tile row sits balanced in the middle of
+         the container instead of hugging the left edge with dead-space on
+         the right (col-6 col-lg-3 × 3 = 75% width). -->
+    <div class="row g-3 mt-4 justify-content-center" data-testid="about-stats">
       <?php foreach ($stats as $s): ?>
         <div class="col-6 col-lg-3">
           <div class="card text-center p-4 h-100">

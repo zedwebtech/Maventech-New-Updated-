@@ -8558,15 +8558,14 @@ elseif ($tab === 'products'):
                Closes the full SEO loop in one click: price change →
                IndexNow → Shopping ad refresh → blog post.
                ============================================================ -->
-          <div class="mt-3 p-3" data-testid="flash-deal-panel"
-               style="border:1px dashed #ef4444;border-radius:12px;background:linear-gradient(135deg,#fff1f2 0%,#fef3c7 100%);">
+          <div class="mt-3 p-3 flash-deal-panel" data-testid="flash-deal-panel">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
               <div>
-                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2" style="color:#b91c1c;">
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2 flash-deal-title">
                   <i class="bi bi-lightning-charge-fill"></i> Flash Deal
-                  <span class="badge" style="background:#ef4444;color:#fff;font-size:9.5px;letter-spacing:.5px;">AUTO SEO LOOP</span>
+                  <span class="badge flash-deal-badge">AUTO SEO LOOP</span>
                 </h6>
-                <small class="text-secondary">Drop the price, pin a sale window, fire IndexNow on the Shopping feeds, and publish a "Today only — N% off" AI blog post — all in one click.</small>
+                <small class="flash-deal-tagline">Drop the price, pin a sale window, fire IndexNow on the Shopping feeds, and publish a "Today only — N% off" AI blog post — all in one click.</small>
               </div>
             </div>
             <form method="post" class="row g-2 align-items-end"

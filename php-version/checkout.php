@@ -774,9 +774,9 @@ include __DIR__ . '/includes/header.php';
               <i class="bi bi-credit-card-2-front text-primary fs-5"></i>
               <span class="fw-bold">Card</span>
             </div>
-            <div class="d-flex gap-1 mt-2 ps-4">
-              <img src="assets/images/payments/visa.svg" alt="Visa" class="pay-icon pay-icon-sm"><img src="assets/images/payments/mastercard.svg" alt="Mastercard" class="pay-icon pay-icon-sm"><img src="assets/images/payments/amex.svg" alt="American Express" class="pay-icon pay-icon-sm"><img src="assets/images/payments/discover.svg" alt="Discover" class="pay-icon pay-icon-sm">
-            </div>
+            <?php /* Payment brand logos removed here per UX request (2026-07-13) —
+                     they now render only inside the Card Number input group below
+                     to reduce visual repetition on the tile. */ ?>
           </div>
         </div>
         <?php endif; ?>
@@ -794,14 +794,16 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
       </div>
       <!-- Card details drop-down (shown when Card selected). Fields have NO name attrs —
-           they are never posted to our server; the charge is confirmed on Stripe's PCI-compliant page. -->
+           they are never posted to our server; the charge is confirmed on Stripe's PCI-compliant page.
+           Layout: 3 columns on md+ (Card Number spans 6, Expiry 3, CVV 3) so the whole card row
+           fits on a single line desktop-side, per UX request 2026-07-13. -->
       <div id="card-form" class="card-form-reveal mb-2<?= $defaultPM !== 'card' ? ' d-none' : '' ?>" data-testid="card-details-form">
         <div class="row g-2">
-          <div class="col-12">
+          <div class="col-md-6 col-12">
             <label class="form-label">Card Number</label>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-credit-card-2-front text-primary"></i></span>
-              <input id="card-number" class="form-control" inputmode="numeric" autocomplete="cc-number" maxlength="19" data-testid="card-number-input" aria-label="Card number">
+              <input id="card-number" class="form-control" inputmode="numeric" autocomplete="cc-number" maxlength="19" data-testid="card-number-input" aria-label="Card number" placeholder="1234 5678 9012 3456">
               <span class="input-group-text card-brands" id="card-brands" data-testid="card-brand-icons">
                 <img src="assets/images/payments/visa.svg" alt="Visa" data-brand="visa" class="card-brand-icon">
                 <img src="assets/images/payments/mastercard.svg" alt="Mastercard" data-brand="mastercard" class="card-brand-icon">
@@ -810,11 +812,11 @@ include __DIR__ . '/includes/header.php';
               </span>
             </div>
           </div>
-          <div class="col-7">
+          <div class="col-md-3 col-7">
             <label class="form-label">Expiry Date</label>
             <input id="card-exp" class="form-control" inputmode="numeric" autocomplete="cc-exp" maxlength="5" data-testid="card-exp-input" aria-label="Card expiry date" placeholder="MM/YY">
           </div>
-          <div class="col-5">
+          <div class="col-md-3 col-5">
             <label class="form-label">CVV</label>
             <div class="input-group">
               <input id="card-cvv" type="password" class="form-control" inputmode="numeric" autocomplete="cc-csc" maxlength="4" data-testid="card-cvv-input" aria-label="Card CVV" placeholder="CVV">

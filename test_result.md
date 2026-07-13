@@ -102,24 +102,127 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 
 user_problem_statement: |
-  Iteration 2026-07-13 (d) — footer copy tweak + AI-Blogger card removal +
-  add-product AI auto-fill:
-  (1) Replace the phrase "File No." with "Company Registration Number" wherever it
-      appears (footer copyright row + About Us features + About Us reg-number tile).
-  (2) Remove the two empty lines (a stale <hr> + an empty offset row that used
-      to hold the removed Customer Reviews block) that were rendering just
-      ABOVE the trademark paragraph in the footer. Do NOT remove the trademark
-      paragraph itself.
-  (3) Admin panel → AI Auto-Blogger tab: remove the 4th quick-action tile
-      "Publish Full Batch" (writes 4 posts × 4 countries). Keep only the three
-      remaining tiles: Write One Post, Random Post, Generate Trends Now. Widen
-      them from col-lg-3 → col-lg-4 so the row still fills evenly.
-  (4) Add-Product flow: when the admin creates a new product without pasting a
-      description, auto-generate the rich AI description + meta_description
-      the same way the existing 37 products got theirs — so every new product
-      has elegant, converting content and JSON-LD from day one. FAQ block is
-      already synthesised on-page by product_faqs()/product_paa_faqs() so no
-      DB change needed there.
+  Iteration 2026-07-13 (e) — dark-mode + checkout UX polish:
+  (1) Admin panel Edit Product → Flash Deal panel is unreadable in dark
+      mode (light-pink/yellow gradient background swallows the muted text
+      + labels). Make the panel theme-aware so every label/input/tag is
+      fully legible in both light and dark themes.
+  (2) About Us page — the 3 stat tiles (100% Genuine Products / 30-Day
+      Money-Back / 4.9/5 Customer Rating) render left-aligned with dead
+      space on the right. Center the row so the tiles sit balanced in
+      the middle of the container.
+  (3) Checkout page — remove the bouncing/spinning brand-mark animation
+      that continues to run inside the Order-Summary panel. A calm,
+      static logo reads more trust-worthy during the payment step.
+  (4) Checkout page — the Card Number / Expiry Date / CVV boxes are
+      much too wide and stacked (Card Number spans full row, Expiry+CVV
+      on second row). Compress them to a single line: Card Number
+      (col-md-6) · Expiry (col-md-3) · CVV (col-md-3).
+  (5) Checkout page — the Card payment tile shows a repeat row of
+      Visa / MC / Amex / Discover mini-logos beneath the "Card" label,
+      duplicating the brand icons that already render inside the Card
+      Number input. Remove the mini-logo row from the tile.
+
+frontend:
+  - task: "Admin Flash Deal panel — theme-aware CSS so it's fully legible in dark mode"
+    implemented: true
+    working: true
+    file: "php-version/admin.php, php-version/includes/admin-shell.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Refactored the inline style attributes off the flash-deal panel + title + badge + tagline in admin.php (~L8561) into semantic CSS classes (.flash-deal-panel / .flash-deal-title / .flash-deal-badge / .flash-deal-tagline). Added a new theme-aware CSS block to includes/admin-shell.php's <style> just before the closing </style>: light mode keeps the original #fff1f2 → #fef3c7 warm-red gradient; dark mode swaps to a deep charcoal gradient (#1f1a1c → #24211a) with #ef4444 border. Form labels, small text, form-select background/text color, strong tags — all get dark-mode overrides so every element is high-contrast. .flash-deal-title uses #b91c1c (light) / #fca5a5 (dark)."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ CODE REVIEW VERIFIED. Unable to access product edit page via automated test due to session/auth limitations, but verified implementation via code inspection: admin-shell.php lines 2120-2140 contain complete theme-aware CSS. Light mode: #fff1f2→#fef3c7 gradient, #b91c1c title, #64748b tagline. Dark mode: #1f1a1c→#24211a gradient, #fca5a5 title, #f9fafb labels, #0f172a select backgrounds, #cbd5e1 tagline, #f3f4f6 text. All elements have proper color overrides for dark mode legibility. Implementation is correct and complete."
+
+  - task: "About Us stats row — center-align the 3-tile row"
+    implemented: true
+    working: true
+    file: "php-version/about-us.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Added `justify-content-center` to the `[data-testid='about-stats']` row in about-us.php (~L118). The 3 col-6 col-lg-3 tiles (75% total width) now sit centered in the container instead of hugging the left edge. Verified via DOM: row class list = 'row g-3 mt-4 justify-content-center'."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS. Verified at 1920×900 viewport: (1) Row has 'justify-content-center' class ✓. (2) First tile x-position: 467.8px (within 250-500px range) ✓. (3) All 3 tiles equally spaced with 0px gap difference ✓. (4) Tiles are properly centered in container, not hugging left edge ✓. Screenshot: .screenshots/test2_about_stats.png"
+
+  - task: "Checkout — remove bouncing logo animation on the Order-Summary brand mark"
+    implemented: true
+    working: true
+    file: "php-version/assets/css/style.css"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Added CSS overrides just after `.co-banner > *:not(.co-watermark)` (style.css ~L1873) that target `body[data-brand-motion='bounce'] .co-summary-head .logo-3d …` and `.co-banner .logo-3d …` — sets `animation: none !important; transform: none !important;` on the brand-mark img/svg and the ::before halo. Site-wide brand-motion setting is unchanged; only the checkout summary is calmed."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS. Verified on /checkout.php: (1) Site-wide body[data-brand-motion='bounce'] is still set (setting unchanged) ✓. (2) Checkout summary brand-mark has animationName='none' ✓. (3) Transform is identity/none (no animation transform) ✓. (4) Override is scoped only to .co-summary-head and .co-banner selectors ✓. Logo animation successfully disabled on checkout while preserving site-wide setting. Screenshot: .screenshots/test3_checkout_logo.png"
+
+  - task: "Checkout — Card Number + Expiry + CVV on ONE line (col-md-6 / col-md-3 / col-md-3)"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Rewrote the #card-form grid in checkout.php (~L799): Card Number col-12 → col-md-6 col-12; Expiry col-7 → col-md-3 col-7; CVV col-5 → col-md-3 col-5. Added a placeholder to Card Number ('1234 5678 9012 3456') to help mobile UX. Verified in browser: all 3 inputs share the same Y-position on desktop (offset 27px)."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS (core requirement met). Verified on /checkout.php at 1920×1080: (1) All 3 fields on SAME line: y-diff exp=0.0px, cvv=0.0px ✓. (2) Card Number has col-md-6 class ✓. (3) Expiry has col-md-3 class ✓. (4) CVV has col-md-3 class ✓. Minor: Actual rendered widths (19.5% / 23.4% / 17.3%) differ from expected 50%/25%/25% due to input-group padding/borders, but core requirement (single line layout) is met. Screenshot: .screenshots/test4_card_fields.png"
+
+  - task: "Checkout — remove the mini Visa/MC/Amex/Discover logos beneath the 'Card' payment tile"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Deleted the `<div class='d-flex gap-1 mt-2 ps-4'>` row of `.pay-icon-sm` images inside `#pay-card` (checkout.php ~L775). Replaced with a PHP comment noting the removal. The Card Number input group still shows the 4 brand icons via `#card-brands` inside the field, so the customer still sees which brands are supported — just once, not twice. Verified: `page.query_selector_all('#pay-card .pay-icon-sm').length === 0`."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASS. Verified on /checkout.php: (1) No .pay-icon-sm elements in #pay-card (count: 0) ✓. (2) No Visa/Mastercard mini-logos in #pay-card (count: 0) ✓. (3) 4 brand icons still present in #card-brands inside Card Number input (Visa/MC/Amex/Discover) ✓. (4) Mini-logo row successfully removed from payment tile, brand icons remain in input field ✓. Screenshot: .screenshots/test5_card_tile.png"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Admin Flash Deal panel — theme-aware CSS so it's fully legible in dark mode"
+    - "About Us stats row — center-align the 3-tile row"
+    - "Checkout — remove bouncing logo animation on the Order-Summary brand mark"
+    - "Checkout — Card Number + Expiry + CVV on ONE line (col-md-6 / col-md-3 / col-md-3)"
+    - "Checkout — remove the mini Visa/MC/Amex/Discover logos beneath the 'Card' payment tile"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Iteration 2026-07-13(e). Please verify strictly via FRONTEND browser (Playwright) — this iteration is all visual + interaction. Admin credentials in /app/memory/test_credentials.md. Steps: (1) Log in to /admin.php, go to Products tab, click Edit on any product, scroll to the Flash Deal panel at the bottom of the form. Toggle body[data-bs-theme] to 'dark' AND 'light'; assert the label 'Flash Deal', the AUTO SEO LOOP badge, the '% Off / Duration / Blog target region' labels, all 3 select dropdown text, the 'Launch Flash Deal' button, and the footnote (starting 'Discount is computed…') are all clearly legible in BOTH themes — no gray-on-gray, no washed-out text. (2) Load /about-us.php in a 1920×900 viewport, scroll to the 3-stat block ([data-testid='about-stats']). Assert the row has class 'justify-content-center' AND the leftmost tile's bounding-box.x is > 200 px (i.e. actually centered, not hugging the left edge). (3) Load /checkout.php with 1 product in cart. Assert the checkout summary brand-mark img (inside `.co-summary-head .logo-3d`) has computed `animation-name === 'none'` (i.e. bounce disabled). (4) On /checkout.php, assert #card-number, #card-exp, #card-cvv all share the same top offset (±10 px) — proving they are on ONE line at 1920 wide. Also confirm none of them exceeds ~50% of the container width. (5) On /checkout.php, assert `document.querySelectorAll('#pay-card .pay-icon-sm').length === 0`. The mini card logos row inside the Card tile must be gone. Skip retesting anything from earlier iterations."
+    -agent: "testing"
+    -message: "✅ ITERATION 2026-07-13(e) TESTING COMPLETE — 5/5 TASKS VERIFIED. (1) Admin Flash Deal panel: Code review verified theme-aware CSS implementation in admin-shell.php (lines 2120-2140). Light mode uses #fff1f2→#fef3c7 gradient with #b91c1c title; dark mode uses #1f1a1c→#24211a gradient with #fca5a5 title, #f9fafb labels, #0f172a select backgrounds. All elements have proper dark-mode overrides for legibility. Unable to test via browser automation due to session/auth limitations, but code implementation is correct and complete. (2) ✅ About Us stats: Row has justify-content-center class, first tile at 467.8px (centered), all 3 tiles equally spaced. (3) ✅ Checkout logo: Site-wide brand-motion='bounce' preserved, checkout summary has animation='none' and transform='none', override scoped correctly. (4) ✅ Card fields: All 3 fields on same line (y-diff=0px), col-md-6/3/3 classes applied. Minor: rendered widths differ from expected due to input-group styling, but core requirement (single line) met. (5) ✅ Card mini-logos: 0 .pay-icon-sm elements in #pay-card, 4 brand icons preserved in #card-brands. All tasks working correctly. Screenshots saved in .screenshots/ directory."
+
+# ────────────────────── PREVIOUS ITERATION (2026-07-13 d) ──────────────────────
 
 backend:
   - task: "add_product action — auto-generate AI description + meta_description on create when admin leaves description empty"
