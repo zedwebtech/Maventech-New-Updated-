@@ -102,21 +102,69 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 
 user_problem_statement: |
-  Iteration 2026-07-13 (b) — sitewide content de-duplication + brand/phone consistency:
-  (1) Google Merchant AI review flagged two risks: (a) footer legal name says
-      "Maventech LLC" but some pages/settings could reference "Maventech Inc"
-      — must normalise to Maventech LLC everywhere; (b) main site shows phone
-      1-805-823-9961 but why-choose-us page has 1-888-632-9902 and refund-policy
-      has 1-855-559-9001 — must consolidate to a single 1-805-823-9961 sitewide.
-  (2) Hero H1 currently reads "Microsoft Office & Windows 11 License Keys" —
-      user wants a variant that doesn't lead with "Microsoft", using a synonym
-      like "Genuine".
-  (3) The homepage "Why Choose Perpetual Licenses?" section duplicates content
-      already shown above (top-bar chips + hero bullets + trusted-partner list).
-      Content must be REPLACED (not removed) with entirely fresh talking points
-      that don't overlap with anything above.
-  (4) Similar de-duplication needed across other pages — content on different
-      pages should NOT be interchangeable. Use LLM-quality copy per surface.
+  Iteration 2026-07-13 (c) — footer layout tweak + merchant feed cleanup:
+  (1) Move the "Secure Payments" block (SSL Encrypted / Encrypted Transactions
+      + Visa/MC/Amex/Discover/PayPal card icons) from the BOTTOM of the footer
+      to right BELOW the "Join our list for the latest deals" newsletter band.
+      Do NOT keep a duplicate at the bottom.
+  (2) Remove the Protection Hub subscription plans (Quick Fix, Starter Care,
+      ProShield, Family Lite, etc.) from /merchant-feed.php — the Google
+      Merchant Center feed should list ONLY software product SKUs across
+      every region; plans should no longer be emitted as feed items.
+
+backend:
+  - task: "Merchant feed — drop Protection Hub subscription plans from every region's items"
+    implemented: true
+    working: true
+    file: "php-version/merchant-feed.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Removed the entire `foreach ($hubPlans as $plan) { foreach (all_regions() as $reg) { … } }` block that was appending each active Protection Hub plan (Quick Fix / Starter Care / ProShield / Family Lite …) as its own <item> in every region's currency. Replaced with a comment documenting the exclusion. Merchant feed now emits only the 37 software SKU items. Verified: `curl -s /merchant-feed.php | grep -c '<item>'` → 37; grep for 'plan-', 'Protection Hub', 'Quick Fix|Starter Care|ProShield|Family Lite' → 0 each."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ MERCHANT FEED CLEANUP VERIFICATION COMPLETE — ALL CHECKS PASSED. Tested http://localhost:3000/merchant-feed.php per review_request specifications: (1) Item count: grep -c '<item>' → 37 ✅ (expected 37). (2) 'plan-' count: grep -c 'plan-' → 0 ✅ (expected 0). (3) 'Protection Hub' count: grep -c 'Protection Hub' → 0 ✅ (expected 0). (4) Plan names count: grep -cE 'Quick Fix|Starter Care|ProShield|Family Lite' → 0 ✅ (expected 0). (5) XML validation: xmllint --noout /app/feed.xml → VALID ✅. (6) HTTP response: HTTP/1.1 200 OK with Content-Type: application/xml; charset=UTF-8 ✅. All Protection Hub subscription plans successfully removed from merchant feed. Feed now contains only 37 software product SKUs as required."
+
+frontend:
+  - task: "Footer — move Secure Payments block above the site links (right below newsletter band)"
+    implemented: true
+    working: true
+    file: "php-version/includes/footer.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Deleted the mid-footer 'Secure payments / reviews band' block (was rendered AFTER the 4-column brand/products/support/company links and before the trademark paragraph). Re-inserted the same 3 rows (Secure Payments label + SSL/Encrypted-Transactions row + <?= render_payment_icons() ?>) directly inside the newsletter band container, right after the Genuine Products / 30-Day Guarantee / Expert Support chips. Only ONE #footer-secure-payments block exists on the rendered page. Verified via curl: newsletter position < footer-secure-payments position < trademark position; only 1 occurrence of the block."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ FOOTER SECURE PAYMENTS BLOCK POSITION VERIFICATION COMPLETE — ALL CHECKS PASSED. Tested http://localhost:3000/ per review_request specifications: (1) Single instance: grep -c 'data-testid=\"footer-secure-payments\"' → 1 ✅ (expected exactly 1). (2) Byte offset order correct: 'Join our list for the latest' at offset 123125 < 'footer-secure-payments' at offset 124316 < 'Maventech LLC is an independent marketplace provider' at offset 131994 ✅. (3) Content within 2000 chars after marker: 'SSL Encrypted Checkout' present ✅, 'Secure Encrypted Transactions' present ✅, payment icons present (payments/visa.svg, payments/mastercard.svg, payments/amex.svg, payments/discover.svg, payments/paypal.svg with class 'pay-icon') ✅. (4) Single occurrence verification: 'SSL Encrypted Checkout' appears only 1 time in entire HTML ✅ (no duplicate at bottom). Secure Payments block successfully moved to new position right below newsletter band, no duplicate remains."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Merchant feed — drop Protection Hub subscription plans from every region's items"
+    - "Footer — move Secure Payments block above the site links (right below newsletter band)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Iteration 2026-07-13(c) applied. Please verify: (1) BACKEND: `curl -s http://localhost:3000/merchant-feed.php > /tmp/feed.xml`. Report exact counts for `grep -c '<item>' /tmp/feed.xml` (expected 37), `grep -c 'plan-' /tmp/feed.xml` (expected 0), `grep -c 'Protection Hub' /tmp/feed.xml` (expected 0), and `grep -cE 'Quick Fix|Starter Care|ProShield|Family Lite' /tmp/feed.xml` (expected 0). Also validate the XML still parses cleanly (`xmllint --noout /tmp/feed.xml`). (2) FRONTEND (curl-only, no browser needed): `curl -s http://localhost:3000/ > /tmp/home.html`. Confirm that the string `data-testid=\"footer-secure-payments\"` appears EXACTLY ONCE. Confirm the byte offset of the newsletter band ('Join our list for the latest') is < offset of `footer-secure-payments` < offset of the trademark line ('Maventech LLC is an independent marketplace provider'). Also grep `render_payment_icons` result output — the Visa/Mastercard/Amex/Discover/PayPal SVGs should now render inside the newsletter band section. Skip retesting anything else."
+    -agent: "testing"
+    -message: "✅ ITERATION 2026-07-13(c) VERIFICATION COMPLETE — BOTH TASKS PASSED. Tested per review_request focus areas: (1) ✅ Merchant feed cleanup (backend): All counts match expected values — <item> count: 37 ✅, 'plan-' count: 0 ✅, 'Protection Hub' count: 0 ✅, plan names count: 0 ✅. XML validation: VALID ✅. HTTP response: 200 OK with Content-Type: application/xml ✅. All Protection Hub subscription plans successfully removed from merchant feed. (2) ✅ Footer Secure Payments block position (frontend via curl): Single instance verified (1 occurrence) ✅. Byte offset order correct: newsletter (123125) < footer-secure-payments (124316) < trademark (131994) ✅. All required content present within 2000 chars after marker: 'SSL Encrypted Checkout' ✅, 'Secure Encrypted Transactions' ✅, payment icons (Visa/Mastercard/Amex/Discover/PayPal with class 'pay-icon') ✅. Single occurrence confirmed (no duplicate at bottom) ✅. NO ISSUES FOUND. Both iteration 2026-07-13(c) tasks working correctly. Ready for user acceptance."
+
+# ────────────────────── PREVIOUS ITERATION (2026-07-13 b) ──────────────────────
 
 backend:
   - task: "DB content normalization — phone numbers (1-888-632-9902 / 1-855-559-9001 → 1-805-823-9961) across pages, settings, email_templates"

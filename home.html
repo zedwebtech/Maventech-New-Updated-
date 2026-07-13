@@ -1,0 +1,2146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+    <script>
+    /* Performance: defer ALL third-party tracking (GTM, gtag/GA4/Ads, Bing UET,
+       Clarity) until the FIRST user interaction or ~3s after load — whichever
+       comes first. Cuts Total Blocking Time / main-thread work on first paint
+       without losing analytics (real users interact; idle fallback covers the
+       rest). Trackers register a fn via window.__mvTrk.push(fn). */
+    (function(){
+      // Buffering stubs so conversion events (gtag('event','purchase'), uetq.push)
+      // fired before the real tags load are queued and flushed later — gtag is a
+      // dataLayer pusher and UET reads the pre-existing uetq array, so nothing is lost.
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function(){ window.dataLayer.push(arguments); };
+      window.uetq = window.uetq || [];
+
+      window.__mvTrk = window.__mvTrk || [];
+      var fired = false;
+      var evts = ['scroll','mousemove','mousedown','touchstart','keydown','pointerdown'];
+      function cleanup(){ evts.forEach(function(e){ window.removeEventListener(e, run, true); }); }
+      function run(){
+        if (fired) return; fired = true; cleanup();
+        var q = window.__mvTrk;
+        window.__mvTrk = { push: function(fn){ try { fn(); } catch(e){} } };
+        for (var i=0;i<q.length;i++){ try { q[i](); } catch(e){} }
+      }
+      evts.forEach(function(e){ window.addEventListener(e, run, {passive:true, capture:true}); });
+      window.addEventListener('load', function(){ setTimeout(run, 3000); });
+      window.__mvLoadTrackers = run;
+    })();
+  </script>
+      <!-- Google Tag Manager (deferred until first interaction / idle) -->
+  <script>window.__mvTrk.push(function(){
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N6Q7FKS2');
+  });</script>
+  <!-- End Google Tag Manager -->
+    <script>
+    // Apply saved theme BEFORE styles render — prevents light-mode flicker on every navigation.
+    // Honour the server-rendered data-bs-theme first (when the user is
+    // logged in we already have their DB-saved choice).  Only fall back
+    // to localStorage / prefers-color-scheme when the server didn't set it.
+    (function () {
+      try {
+        var html = document.documentElement;
+        if (html.getAttribute('data-bs-theme')) return;     // already set server-side
+        var t = localStorage.getItem('uc_theme');
+        if (t !== 'dark' && t !== 'light') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+        }
+        html.setAttribute('data-bs-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+    <style id="critical-theme-pre-paint">
+    :root { color-scheme: light dark; }
+    html, body { background: #FFFFFF; color: #0F172A; }
+    html[data-bs-theme="dark"], html[data-bs-theme="dark"] body {
+      background: #050B1B !important; color: #E5ECFA !important;
+      color-scheme: dark;
+    }
+    /* Text-selection highlight — Bootstrap's default `::selection` is
+       light blue with light text, which renders nearly invisible on the
+       checkout's dark navy form fields.  Override for both themes.
+       Light-mode alpha matches the body-selection rule in style.css
+       (.22) so admin / public / form inputs share one consistent tint. */
+    ::selection { background: rgba(11, 92, 255, .22); color: #0F172A; }
+    html[data-bs-theme="dark"] ::selection { background: rgba(96, 165, 250, .55); color: #FFFFFF; }
+    /* Form-field selection inside dark mode (checkout inputs, textareas,
+       selects) — same crisp white-on-blue contrast so the user can SEE
+       what they've highlighted while filling in name / email / address. */
+    html[data-bs-theme="dark"] input::selection,
+    html[data-bs-theme="dark"] textarea::selection,
+    html[data-bs-theme="dark"] select::selection { background: rgba(96, 165, 250, .55); color: #FFFFFF; }
+  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microsoft Office &amp; Windows 11 Keys | Maventech</title>
+  <meta name="description" content="Buy genuine Microsoft Office 2024, Windows 11 and antivirus product keys at transparent, competitive prices. One-time purchase — no subscription — with a…">
+  <meta name="robots" content="index, follow">
+    <meta name="keywords" content="Maventech genuine software licenses, buy Microsoft Office product key, Microsoft Office one-time purchase, Windows 11 Pro product key, Windows 10 Pro product key, Microsoft Project Professional product key, Microsoft Visio Professional product key, Bitdefender activation key, McAfee Premium product key, Norton 360 activation code, cheap genuine software license, digital download Microsoft software, digital delivery software keys, no subscription software license, lifetime activation Microsoft software, independent Microsoft software reseller, software product key email delivery, Antivirus product key, buy Antivirus license, Microsoft Apps product key, buy Microsoft Apps license, Bitdefender product key, buy Bitdefender license, McAfee product key, buy McAfee license, Microsoft Project product key, buy Microsoft Project license, Microsoft Visio product key, buy Microsoft Visio license, Microsoft Office product key, buy Microsoft Office license, Office 2019 for Mac product key, buy Office 2019 for Mac license, Office 2019 for PC product key, buy Office 2019 for PC license, Office 2021 for Mac product key, buy Office 2021 for Mac license, Office 2021 for PC product key, buy Office 2021 for PC license, Office 2024 for Mac product key, buy Office 2024 for Mac license, Office 2024 for PC product key, buy Office 2024 for PC license, Office for Mac product key, buy Office for Mac license, Office for PC product key, buy Office for PC license, Windows OS product key, buy Windows OS license, Windows 10 product key, buy Windows 10 license, Windows 11 product key, buy Windows 11 license, Microsoft software store 2026, lowest price Microsoft Office keys, Maventech homepage, shop genuine Microsoft software online">
+    <link rel="canonical" href="http://localhost:3000/">
+    <link rel="alternate" hreflang="en-US" href="http://localhost:3000/">
+    <link rel="alternate" hreflang="en-GB" href="http://localhost:3000/uk/">
+    <link rel="alternate" hreflang="en-AU" href="http://localhost:3000/au/">
+    <link rel="alternate" hreflang="en-CA" href="http://localhost:3000/ca/">
+    <link rel="alternate" hreflang="en" href="http://localhost:3000/eu/">
+    <link rel="alternate" hreflang="x-default" href="http://localhost:3000/">
+    <!-- Favicon set — modern browsers prefer SVG (crisp at any size); older
+       Bing / Yandex / SEO-audit crawlers explicitly look for /favicon.ico. -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon/apple-touch-icon.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <meta name="theme-color" content="#0B5CFF">
+  <!-- PWA: lets visitors install the storefront to their home screen on
+       iOS / Android.  Manifest generated dynamically so it always tracks
+       the live Company Info settings (brand name, theme colour, etc). -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Maventech">
+              <!-- ====================== Open Graph / Twitter / LinkedIn ====================== -->
+  <meta property="og:site_name"   content="Maventech">
+  <meta property="og:type"        content="website">
+  <meta property="og:title"       content="Microsoft Office &amp; Windows 11 Keys | Maventech">
+  <meta property="og:description" content="Buy genuine Microsoft Office 2024, Windows 11 and antivirus product keys at transparent, competitive prices. One-time purchase — no subscription — with a…">
+  <meta property="og:url"         content="http://localhost:3000/">
+  <meta property="og:locale"      content="en_US">
+  <meta property="og:image"        content="http://localhost:3000/og-default.png">
+  <meta property="og:image:secure_url" content="http://localhost:3000/og-default.png">
+  <meta property="og:image:alt"    content="Microsoft Office &amp; Windows 11 Keys | Maventech">
+  <meta property="og:image:width"  content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type"   content="image/png">
+  
+  
+  
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="Microsoft Office &amp; Windows 11 Keys | Maventech">
+  <meta name="twitter:description" content="Buy genuine Microsoft Office 2024, Windows 11 and antivirus product keys at transparent, competitive prices. One-time purchase — no subscription — with a…">
+  <meta name="twitter:image"       content="http://localhost:3000/og-default.png">
+  <meta name="twitter:image:alt"   content="Microsoft Office &amp; Windows 11 Keys | Maventech">
+    <!-- LinkedIn / Discord respect Open Graph above; Slack and iMessage prefer
+       the Twitter set, so all major chat surfaces get a rich preview. -->
+  <!-- ===================== /Open Graph / Twitter / LinkedIn ===================== -->
+  <!-- Structured data: Organization + WebSite + (optional) LocalBusiness for AEO/GEO -->
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"http://localhost:3000/#organization","name":"Maventech","legalName":"Maventech LLC","url":"http://localhost:3000/","logo":"http://localhost:3000/uploads/company/logo-mark.png","email":"services@maventechsoftware.com","address":{"@type":"PostalAddress","streetAddress":"135 CAROLINA ST G2","addressLocality":"CA 94590","addressCountry":"US"},"slogan":"Genuine software product keys. Digital delivery by email.","description":"Authorized independent reseller of genuine software product keys (Microsoft, Bitdefender, Norton, McAfee, Adobe, Autodesk and more) with digital delivery by email to Australia, Canada, Europe, United Kingdom, United States. All trademarks are the property of their respective owners.","brand":{"@id":"http://localhost:3000/#brand"},"sameAs":["http://localhost:3000/about-us.php"],"contactPoint":[{"@type":"ContactPoint","telephone":"1-805-823-9961","contactType":"customer service","availableLanguage":["English"],"areaServed":["US","GB","AU","CA"]}],"areaServed":[{"@type":"Country","name":"Australia"},{"@type":"Country","name":"Canada"},{"@type":"Country","name":"Europe"},{"@type":"Country","name":"United Kingdom"},{"@type":"Country","name":"United States"}],"currenciesAccepted":"AUD, CAD, EUR, GBP, USD","knowsAbout":["Bitdefender","McAfee","Microsoft"],"subjectOf":[{"@type":"CreativeWork","name":"AI Discovery Manifest (llms.txt)","url":"http://localhost:3000/llms.txt","encodingFormat":"text/markdown","about":{"@id":"http://localhost:3000/#organization"}},{"@type":"CreativeWork","name":"AI Agent Manifest (agents.json)","url":"http://localhost:3000/agents.json","encodingFormat":"application/json","about":{"@id":"http://localhost:3000/#organization"}}]},{"@type":"Brand","@id":"http://localhost:3000/#brand","name":"Maventech","logo":"http://localhost:3000/uploads/company/logo-mark.png","slogan":"Genuine software product keys. Digital delivery by email.","url":"http://localhost:3000/"},{"@type":"LocalBusiness","@id":"http://localhost:3000/#localbusiness","name":"Maventech","url":"http://localhost:3000/","image":"http://localhost:3000/uploads/company/logo-mark.png","telephone":"1-805-823-9961","email":"services@maventechsoftware.com","address":{"@type":"PostalAddress","streetAddress":"135 CAROLINA ST G2","addressLocality":"CA 94590","addressCountry":"US"},"priceRange":"$$","currenciesAccepted":"AUD, CAD, EUR, GBP, USD","paymentAccepted":"Credit Card, Stripe, Apple Pay, Google Pay","areaServed":[{"@type":"Country","name":"Australia"},{"@type":"Country","name":"Canada"},{"@type":"Country","name":"Europe"},{"@type":"Country","name":"United Kingdom"},{"@type":"Country","name":"United States"}],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"09:00","closes":"18:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":["Saturday"],"opens":"10:00","closes":"14:00"}]},{"@type":"WebSite","@id":"http://localhost:3000/#website","name":"Maventech","url":"http://localhost:3000/","publisher":{"@id":"http://localhost:3000/#organization"},"inLanguage":"en","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"http://localhost:3000/shop.php?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
+          <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","@id":"http://localhost:3000/#website","url":"http://localhost:3000/","name":"Maventech","inLanguage":"en","publisher":{"@id":"http://localhost:3000/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"http://localhost:3000/shop.php?q={search_term_string}"},"query-input":"required name=search_term_string"}}</script>
+                    <!-- Performance: ALL CSS / JS / fonts are self-hosted (same-origin) so there
+       are zero third-party DNS + TLS round-trips on first paint. Bootstrap,
+       Bootstrap-Icons (subsetted to the ~310 icons we actually use → 130KB→23KB)
+       and the Inter/Manrope variable fonts all ship from /assets/vendor and are
+       cached immutably for a year. -->
+  <link href="assets/vendor/bootstrap.min.css?v=1783923259" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" href="/assets/vendor/fonts/Inter.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/assets/vendor/fonts/bootstrap-icons-subset.woff2" crossorigin>
+  <link href="assets/vendor/fonts.css?v=1783923259" rel="stylesheet">
+    <link href="assets/vendor/bootstrap-icons.min.css?v=1783923259" rel="stylesheet">
+  <link href="assets/css/style.min.css?v=1783923259" rel="stylesheet">
+  <!-- scroll3d.css is a progressive-enhancement (scroll reveal + tilt) — load it
+       async so it never blocks first render (PageSpeed: render-blocking CSS). -->
+  <link rel="preload" as="style" href="assets/css/scroll3d.css?v=1783923259" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="assets/css/scroll3d.css?v=1783923259" rel="stylesheet"></noscript>
+  <link rel="preload" as="style" href="assets/css/dark-mode-polish.css?v=1783923259" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="assets/css/dark-mode-polish.css?v=1783923259" rel="stylesheet"></noscript>
+  <script>window.SITE_PHONE = '1-805-823-9961'; window.CART_SLUGS = [];</script>
+
+  
+    <!-- Google tag (gtag.js) — deferred; covers Google tag (GT-) + GA4 + Google Ads -->
+  <script>window.__mvTrk.push(function(){
+    var s=document.createElement('script');s.async=true;
+    s.src='https://www.googletagmanager.com/gtag/js?id=GT-TQV4X72G';
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    window.gtag = window.gtag || gtag;
+    gtag('js', new Date());
+    gtag('config', 'GT-TQV4X72G');          });</script>
+  
+  
+    <!-- Microsoft Clarity — deferred (heatmaps + session replay; signals quality to Bing Ads) -->
+  <script type="text/javascript">window.__mvTrk.push(function(){
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xcp5vd09fb");
+  });</script>
+  
+</head>
+<body data-brand-motion="bounce" data-brand-vibe="classic">
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N6Q7FKS2"
+height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+
+<!-- Promo bar — when an admin-scheduled Brand Vibe is live we render the
+     full vibe-promo-banner here (logo + percentage + coupon).  The
+     fallback static MAVEN10 strip was retired in Feb 2026 because the
+     top deal-bar (further below) now carries the default promo — having
+     both was redundant and made the page header feel cluttered. -->
+
+<!-- Trust bar (sticky-top so it stays visible while the user scrolls; the main
+     navbar sticks below it so neither ever covers the other). -->
+<div class="trustbar trustbar-sticky py-1 px-3 d-none d-md-block">
+  <div class="container d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-3 align-items-center flex-wrap">
+      <span><i class="bi bi-patch-check-fill text-success me-1"></i>Authentic Software Store</span>
+      <span><i class="bi bi-shield-check text-primary me-1"></i>30-Day Money-Back Guarantee</span>
+      <!-- Inline promo strip: admin-toggleable (Company Info → Show promo bar). -->
+          </div>
+    <div class="d-flex gap-2 align-items-center trustbar-right">
+      <!-- Trust + age + phone — wrapped in dedicated classes so the dark-mode
+           override block can tune them for crisp contrast on BOTH themes
+           (Bootstrap's text-bg-warning + bg-white both wash out against the
+           Zoom-navy topbar). -->
+      <span class="trustbar-store-pill" data-testid="trustbar-store">
+        <i class="bi bi-star-fill"></i>Trusted Software Store
+      </span>
+      <span class="trustbar-age-pill" data-testid="trustbar-age">2 <small>YRS</small></span>
+      <a href="tel:+18058239961" class="trustbar-phone-link" data-testid="trustbar-phone">
+        <i class="bi bi-telephone-fill me-1"></i>1-805-823-9961      </a>
+
+      <span class="trustbar-divider" aria-hidden="true"></span>
+
+            <div class="dropdown trustbar-currency" data-testid="trustbar-currency">
+        <button class="trustbar-utility-btn dropdown-toggle" data-bs-toggle="dropdown" data-testid="currency-selector" style="white-space:nowrap;">
+                    USD        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+                      <li><a class="dropdown-item " href="/au/" data-testid="country-opt-AU" onclick="document.cookie='mv_region_manual=1;path=/;max-age=31536000;SameSite=Lax'">🇦🇺 Australia <span class="text-secondary small">(AUD)</span></a></li>
+                      <li><a class="dropdown-item " href="/ca/" data-testid="country-opt-CA" onclick="document.cookie='mv_region_manual=1;path=/;max-age=31536000;SameSite=Lax'">🇨🇦 Canada <span class="text-secondary small">(CAD)</span></a></li>
+                      <li><a class="dropdown-item " href="/eu/" data-testid="country-opt-EU" onclick="document.cookie='mv_region_manual=1;path=/;max-age=31536000;SameSite=Lax'">🇪🇺 Europe <span class="text-secondary small">(EUR)</span></a></li>
+                      <li><a class="dropdown-item " href="/uk/" data-testid="country-opt-UK" onclick="document.cookie='mv_region_manual=1;path=/;max-age=31536000;SameSite=Lax'">🇬🇧 United Kingdom <span class="text-secondary small">(GBP)</span></a></li>
+                      <li><a class="dropdown-item active" href="/" data-testid="country-opt-US" onclick="document.cookie='mv_region_manual=1;path=/;max-age=31536000;SameSite=Lax'">🇺🇸 United States <span class="text-secondary small">(USD)</span></a></li>
+                  </ul>
+      </div>
+
+      <button type="button" class="trustbar-utility-btn trustbar-utility-icon" onclick="toggleTheme()" title="Toggle dark mode" data-testid="theme-toggle" aria-label="Toggle dark mode"><i id="theme-icon" class="bi bi-moon"></i></button>
+    </div>
+  </div>
+</div>
+<script>
+/* Trustbar height auto-measure — the main navbar's sticky offset
+   (--trustbar-h) must equal the trustbar's ACTUAL rendered height on
+   every viewport, or the two overlap on sticky scroll. This runs once
+   on load and again on resize (throttled via rAF), and sets the CSS
+   variable on :root so .navbar-below-trustbar's `top` follows it
+   pixel-perfectly regardless of future content changes. */
+(function(){
+  var tb = document.querySelector('.trustbar-sticky');
+  if (!tb) return;
+  var pending = 0;
+  function sync(){
+    var h = Math.round(tb.getBoundingClientRect().height);
+    if (h > 0) document.documentElement.style.setProperty('--trustbar-h', h + 'px');
+  }
+  function onResize(){
+    if (pending) cancelAnimationFrame(pending);
+    pending = requestAnimationFrame(function(){ pending = 0; sync(); });
+  }
+  sync();
+  window.addEventListener('resize', onResize, { passive: true });
+  window.addEventListener('load', sync);
+})();
+</script>
+
+<!-- Mobile-only promo chip (sits above the navbar on phones; the trustbar
+     itself is hidden on mobile, so this carries the "Save 10% • CODE •
+     Shop Now" nudge to the 60-70% of traffic that's mobile). -->
+<!-- Mobile promo bar removed per request — keep markup in case it's
+     re-enabled later, but hidden via CSS. -->
+<div class="mobile-promo d-none" data-testid="mobile-promo" hidden>
+  <a href="shop.php" class="mobile-promo-link" data-testid="mobile-promo-link">
+    <i class="bi bi-tag-fill mobile-promo-icon"></i>
+    <span class="mobile-promo-cta">Shop Now <i class="bi bi-chevron-right"></i></span>
+  </a>
+</div>
+
+<!-- Main navbar -->
+<nav class="navbar navbar-expand-lg bg-body border-bottom sticky-top navbar-below-trustbar">
+  <div class="container position-relative">
+    <a class="navbar-brand logo-3d d-flex align-items-center gap-2" href="index.php" data-testid="brand-logo">
+              <picture><source srcset="uploads/company/logo-mark.webp" type="image/webp"><img src="uploads/company/logo-mark.png" alt="Maventech" style="height:42px;width:auto;max-width:140px;object-fit:contain;" width="140" height="42" decoding="async" fetchpriority="high"></picture>            <span class="brand-stack">
+                <span class="brand-text d-block lh-1"><span class="brand-grad">Maventech</span></span>
+              </span>
+    </a>
+    <div class="d-flex align-items-center gap-2 d-lg-none ms-auto me-2">
+      <a href="cart.php" class="btn btn-sm btn-primary rounded-pill position-relative" data-testid="cart-button-mobile" aria-label="View cart" title="View cart">
+        <i class="bi bi-cart3" aria-hidden="true"></i>
+        <span class="cart-count-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" data-testid="cart-count-mobile">0</span>
+      </a>
+    </div>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Open navigation menu" data-testid="navbar-toggler">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <!-- Mobile-only header inside the open hamburger: X close on the right
+           + Theme toggle on the left.  Desktop hides this entire row because
+           the trustbar above already carries currency/theme; on phones the
+           trustbar is collapsed away, so the user has no way to switch
+           theme or close the menu without scrolling to a link. -->
+      <div class="d-flex d-lg-none align-items-center justify-content-between gap-2 mb-2 pb-2 border-bottom" data-testid="mobile-nav-header">
+        <button type="button" class="trustbar-utility-btn trustbar-utility-icon"
+                onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode"
+                data-testid="theme-toggle-mobile"
+                style="background:var(--bs-tertiary-bg);border:1px solid var(--bs-border-color);color:var(--bs-body-color);border-radius:999px;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">
+          <i id="theme-icon-mobile" class="bi bi-moon"></i>
+        </button>
+        <div class="dropdown" data-testid="trustbar-currency-mobile">
+          <button class="trustbar-utility-btn dropdown-toggle" data-bs-toggle="dropdown"
+                  data-testid="currency-selector-mobile"
+                  data-bs-display="static"
+                  aria-expanded="false"
+                  style="background:var(--bs-tertiary-bg);border:1px solid var(--bs-border-color);color:var(--bs-body-color);border-radius:999px;padding:6px 12px;font-size:.85rem;font-weight:600;">
+                        USD          </button>
+          <ul class="dropdown-menu mv-mobile-currency-menu shadow-sm" style="min-width:220px;max-width:calc(100vw - 32px);">
+                          <li><a class="dropdown-item " href="/au/" data-testid="country-opt-mobile-AU" onclick="document.cookie='mv_region_manual=1;path=/;max-age=31536000;SameSite=Lax'">🇦🇺 Australia <span class="text-secondary small">(AUD)</span></a></li>
+                          <li><a class="dropdown-item " href="/ca/" data-testid="country-opt-mobile-CA" onclick="document.cookie='mv_region_manual=1;path=/;max-age=31536000;SameSite=Lax'">🇨🇦 Canada <span class="text-secondary small">(CAD)</span></a></li>
+                          <li><a class="dropdown-item " href="/eu/" data-testid="country-opt-mobile-EU" onclick="document.cookie='mv_region_manual=1;path=/;max-age=31536000;SameSite=Lax'">🇪🇺 Europe <span class="text-secondary small">(EUR)</span></a></li>
+                          <li><a class="dropdown-item " href="/uk/" data-testid="country-opt-mobile-UK" onclick="document.cookie='mv_region_manual=1;path=/;max-age=31536000;SameSite=Lax'">🇬🇧 United Kingdom <span class="text-secondary small">(GBP)</span></a></li>
+                          <li><a class="dropdown-item active" href="/" data-testid="country-opt-mobile-US" onclick="document.cookie='mv_region_manual=1;path=/;max-age=31536000;SameSite=Lax'">🇺🇸 United States <span class="text-secondary small">(USD)</span></a></li>
+                      </ul>
+        </div>
+        <button type="button" class="btn-close" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-label="Close navigation menu"
+                data-testid="navbar-close-x"
+                style="margin-left:auto;"></button>
+      </div>
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item dropdown position-static">
+          <a class="nav-link dropdown-toggle fw-semibold" href="#" data-bs-toggle="dropdown" data-testid="nav-microsoft">Microsoft Products</a>
+          <div class="dropdown-menu mega p-3 shadow">
+            <div class="row g-4">
+                              <div class="col-6 col-lg-3">
+                  <div class="mega-heading mb-2">OFFICE FOR PC</div>
+                                      <a class="mega-year" href="category.php?slug=office-2024-pc" data-testid="menu-office-2024-pc">Office 2024 for PC</a>
+                                      <a class="mega-year" href="category.php?slug=office-2021-pc" data-testid="menu-office-2021-pc">Office 2021 for PC</a>
+                                      <a class="mega-year" href="category.php?slug=office-2019-pc" data-testid="menu-office-2019-pc">Office 2019 for PC</a>
+                                    <a class="mega-link fw-bold text-primary mt-2" href="category.php?slug=office-pc" data-testid="menu-all-office-pc">All Office For Pc <i class="bi bi-arrow-right"></i></a>
+                </div>
+                              <div class="col-6 col-lg-3">
+                  <div class="mega-heading mb-2">OFFICE FOR MAC</div>
+                                      <a class="mega-year" href="category.php?slug=office-2024-mac" data-testid="menu-office-2024-mac">Office 2024 for Mac</a>
+                                      <a class="mega-year" href="category.php?slug=office-2021-mac" data-testid="menu-office-2021-mac">Office 2021 for Mac</a>
+                                      <a class="mega-year" href="category.php?slug=office-2019-mac" data-testid="menu-office-2019-mac">Office 2019 for Mac</a>
+                                    <a class="mega-link fw-bold text-primary mt-2" href="category.php?slug=office-mac" data-testid="menu-all-office-mac">All Office For Mac <i class="bi bi-arrow-right"></i></a>
+                </div>
+                              <div class="col-6 col-lg-3">
+                  <div class="mega-heading mb-2">WINDOWS</div>
+                                      <a class="mega-year" href="category.php?slug=windows-11" data-testid="menu-windows-11">Windows 11</a>
+                                      <a class="mega-year" href="category.php?slug=windows-10" data-testid="menu-windows-10">Windows 10</a>
+                                    <a class="mega-link fw-bold text-primary mt-2" href="category.php?slug=windows" data-testid="menu-all-windows">All Windows <i class="bi bi-arrow-right"></i></a>
+                </div>
+                              <div class="col-6 col-lg-3">
+                  <div class="mega-heading mb-2">APPS</div>
+                                      <a class="mega-year" href="category.php?slug=microsoft-project" data-testid="menu-microsoft-project">Microsoft Project</a>
+                                      <a class="mega-year" href="category.php?slug=microsoft-visio" data-testid="menu-microsoft-visio">Microsoft Visio</a>
+                                    <a class="mega-link fw-bold text-primary mt-2" href="category.php?slug=apps" data-testid="menu-all-apps">All Apps <i class="bi bi-arrow-right"></i></a>
+                </div>
+                          </div>
+            <div class="mega-promo mt-4 pt-3 row g-3 align-items-center" data-testid="menu-promo"><div class="col-lg-7"><div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-boxes text-primary"></i><span class="fw-semibold">Volume Pricing</span></div><small class="text-secondary d-block mb-2" style="font-size:.72rem;">Exclusive discounts on bulk licenses for teams and businesses.</small><a href="contact.php" class="btn btn-sm btn-primary rounded-pill" style="padding:.28rem .85rem;font-size:.76rem;" data-testid="menu-request-quote">Request a Quote</a></div><div class="col-lg-5 text-lg-end"><div class="fw-semibold small" style="font-size:.82rem;">Have a Question?</div><small class="text-secondary d-block" style="font-size:.7rem;">Call Mon–Fri 9 AM–6 PM EST</small><a href="tel:+18058239961" class="fw-semibold text-decoration-none" style="font-size:.82rem;">1-805-823-9961</a> <small class="text-secondary" style="font-size:.72rem;">or</small> <a href="#" onclick="toggleChat();return false;" class="fw-semibold text-decoration-none text-primary" style="font-size:.78rem;">chat with a sales expert</a></div></div>            <div class="mt-3 pt-2 border-top d-flex flex-wrap gap-2 align-items-center">
+              <span class="small fw-semibold text-secondary me-1"><i class="bi bi-collection-fill text-primary me-1"></i>Topic hubs:</span>
+              <a href="hub/microsoft-office" class="badge text-decoration-none" data-testid="menu-hub-office" style="background:#dc26261c;color:#dc2626;border:1px solid #dc26264a;padding:4px 10px;font-size:11px;font-weight:600;">Microsoft Office guide</a>
+              <a href="hub/windows" class="badge text-decoration-none" data-testid="menu-hub-windows" style="background:#0078d41c;color:#0078d4;border:1px solid #0078d44a;padding:4px 10px;font-size:11px;font-weight:600;">Windows guide</a>
+              <a href="page.php?slug=disclaimer" class="text-decoration-none small ms-auto" data-testid="menu-disclaimer-ms"><i class="bi bi-info-circle me-1"></i>Disclaimer</a>
+            </div>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle fw-semibold" href="#" data-bs-toggle="dropdown" data-testid="nav-antivirus">Antivirus</a>
+          <div class="dropdown-menu p-3 shadow antivirus-menu" style="min-width: 260px;">
+            <div class="mega-heading mb-1">ANTIVIRUS</div>
+                          <a class="mega-year" href="category.php?slug=bitdefender" data-testid="menu-bitdefender">Bitdefender</a>
+                          <a class="mega-year" href="category.php?slug=mcafee" data-testid="menu-mcafee">McAfee</a>
+                        <a class="mega-link fw-bold text-primary mt-2" href="category.php?slug=antivirus" data-testid="menu-all-antivirus">All Antivirus <i class="bi bi-arrow-right"></i></a>
+            <a class="mega-link mt-1" href="page.php?slug=disclaimer" data-testid="menu-disclaimer-av"><i class="bi bi-info-circle me-1"></i>Disclaimer</a>
+            <div class="mt-2 pt-2 border-top">
+              <a href="hub/antivirus" class="badge text-decoration-none" data-testid="menu-hub-antivirus" style="background:#16a34a1c;color:#16a34a;border:1px solid #16a34a4a;padding:4px 10px;font-size:11px;font-weight:600;"><i class="bi bi-collection-fill me-1"></i>Antivirus topic hub</a>
+            </div>
+            <div class="mega-promo mt-3 pt-3" data-testid="menu-promo"><div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-boxes text-primary"></i><span class="fw-semibold">Volume Pricing</span></div><small class="text-secondary d-block mb-2" style="font-size:.72rem;">Exclusive discounts on bulk licenses for teams and businesses.</small><a href="contact.php" class="btn btn-sm btn-primary rounded-pill" style="padding:.28rem .85rem;font-size:.76rem;" data-testid="menu-request-quote">Request a Quote</a><div class="mt-3"><div class="fw-semibold small" style="font-size:.82rem;">Have a Question?</div><small class="text-secondary d-block" style="font-size:.7rem;">Call Mon–Fri 9 AM–6 PM EST</small><a href="tel:+18058239961" class="fw-semibold text-decoration-none" style="font-size:.82rem;">1-805-823-9961</a> <small class="text-secondary" style="font-size:.72rem;">or</small> <a href="#" onclick="toggleChat();return false;" class="fw-semibold text-decoration-none text-primary" style="font-size:.78rem;">chat with a sales expert</a></div></div>          </div>
+        </li>
+                <li class="nav-item"><a class="nav-link fw-semibold" href="contact.php">Request a Quote</a></li>
+        <li class="nav-item"><a class="nav-link fw-semibold" href="shop.php" data-testid="nav-shop">Shop</a></li>
+        <li class="nav-item"><a class="nav-link fw-semibold" href="blog.php">Blog</a></li>
+        <li class="nav-item"><a class="nav-link fw-semibold" href="track-order.php" data-testid="nav-track-order"><i class="bi bi-truck me-1"></i>Track Order</a></li>
+      </ul>
+      <div class="d-flex align-items-center gap-2 flex-nowrap" data-testid="navbar-actions" style="white-space:nowrap;">
+                <button class="btn btn-sm btn-outline-primary rounded-pill flex-shrink-0" onclick="openAskAiModal()" data-testid="ask-ai-btn" style="white-space:nowrap;"><i class="bi bi-stars me-1"></i>Ask AI</button>
+        <a href="cart.php" class="btn btn-sm btn-primary rounded-pill position-relative flex-shrink-0" data-testid="cart-button" style="white-space:nowrap;">
+          <i class="bi bi-cart3 me-1"></i>Cart
+          <span class="cart-count-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" data-testid="cart-count">0</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <!-- Mobile fixed contact strip — stays still inside the sticky header -->
+  <div class="mobile-contact-strip d-lg-none w-100" data-testid="mobile-contact-strip">
+    <div class="container d-flex align-items-center justify-content-between gap-2 py-1">
+      <div class="lh-sm">
+        <div class="fw-bold" style="font-size:.74rem;">Have a Question?</div>
+        <div class="text-secondary" style="font-size:.62rem;">Call Mon–Fri 9 AM–6 PM EST</div>
+      </div>
+      <div class="d-flex gap-2 flex-shrink-0">
+        <a href="tel:+18058239961" class="btn btn-sm rounded-pill fw-bold phone-cta-mobile" data-testid="mobile-call-btn"><i class="bi bi-telephone-fill me-1"></i>1-805-823-9961</a>
+        <button class="btn btn-sm btn-primary rounded-pill fw-bold" style="font-size:.7rem;" onclick="toggleChat()" data-testid="mobile-chat-btn"><i class="bi bi-chat-dots-fill me-1"></i>Chat</button>
+      </div>
+    </div>
+  </div>
+</nav>
+<!-- Top promo strip moved INLINE into the trustbar above — no separate
+     floating bar anymore. -->
+
+<!-- Independent-reseller disclosure below the nav removed at user request —
+     the top-of-page trust-topbar ("Independent Distributor of Surplus
+     Volume Licenses.") already carries the compliance signal, and the
+     product/home pages have their own inline disclaimers. -->
+<main id="main-content" role="main">
+<!-- Hero -->
+<section class="hero hero--zoom-navy py-5">
+  <span class="hero-stars" aria-hidden="true"></span>
+  <div class="container">
+    <div class="row align-items-center g-4 g-lg-5">
+      <div class="col-lg-7">
+        <span class="hero-badge mb-3"><i class="bi bi-patch-check-fill me-1"></i>Authentic · Verified · Trusted</span>
+        <h1 class="display-4">Genuine Office Suite &amp; <span class="accent">Windows 11 License Keys</span></h1>
+        <p class="text-secondary fs-5 mt-3">Direct-from-source product keys — one-time payment, no recurring bills, delivered to your inbox.</p>
+        <ul class="list-unstyled d-grid gap-2 my-4">
+          <li><i class="bi bi-check-circle-fill text-success me-2"></i>100% authentic keys, sourced through legitimate channels</li>
+          <li><i class="bi bi-check-circle-fill text-success me-2"></i>Perpetual access — no subscription</li>
+          <li><i class="bi bi-check-circle-fill text-success me-2"></i>30-day money-back guarantee</li>
+        </ul>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="shop.php" class="btn btn-hero-cta btn-lg rounded-pill px-4" data-testid="hero-shop-now">Shop Now <i class="bi bi-arrow-right"></i></a>
+          <a href="category.php?slug=office" class="btn btn-hero-ghost btn-lg rounded-pill px-4">Compare Editions</a>
+        </div>
+        <div class="d-flex gap-5 mt-5 flex-wrap hero-stats">
+          <div><div class="fs-3 fw-bold">24/7</div><small class="text-secondary">Order Support</small></div>
+          <div><div class="fs-3 fw-bold">30-Day</div><small class="text-secondary">Money-Back Guarantee</small></div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+                <div class="hero-showcase mx-auto" data-testid="hero-showcase">
+          <div class="hero-showcase-frame">
+            <div class="hero-art" aria-hidden="true">
+              <span class="hero-art-glow glow-1"></span>
+              <span class="hero-art-glow glow-2"></span>
+              <span class="hero-brand-watermark"><svg class="brand-mark" width="340" height="340" viewBox="0 0 48 48" fill="none" aria-hidden="true" role="img" data-brand-mark="1"><defs><linearGradient id="lgrad340_cad63e5114691acc389ca692163573bf" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0"   stop-color="#0B5CFF"/><stop offset=".45" stop-color="#4480FF"/><stop offset="1"   stop-color="#0848CC"/></linearGradient><radialGradient id="lgrad340_cad63e5114691acc389ca692163573bf_hl" cx=".25" cy=".15" r=".75"><stop offset="0" stop-color="rgba(255,255,255,.32)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></radialGradient></defs><rect x="1.5" y="1.5" width="45" height="45" rx="13" fill="url(#lgrad340_cad63e5114691acc389ca692163573bf)"/><rect x="1.5" y="1.5" width="45" height="45" rx="13" fill="url(#lgrad340_cad63e5114691acc389ca692163573bf_hl)"/><text x="24" y="24" text-anchor="middle" dominant-baseline="central" font-family="Inter,Manrope,Segoe UI,Arial,sans-serif" font-weight="800" font-size="197" fill="#fff" letter-spacing="-1">M</text><circle cx="40" cy="38" r="2.4" fill="#79A6FF" opacity=".92"/></svg></span>
+              <span class="hero-tile tile-1"><img src="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fword.png&amp;w=96" srcset="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fword.png&amp;w=96 1x, img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fword.png&amp;w=192 2x" alt="Microsoft Word" width="48" height="48" decoding="async"></span>
+              <span class="hero-tile tile-2"><img src="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fexcel.png&amp;w=96" srcset="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fexcel.png&amp;w=96 1x, img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fexcel.png&amp;w=192 2x" alt="Microsoft Excel" width="48" height="48" decoding="async"></span>
+              <span class="hero-tile tile-3"><img src="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fpowerpoint.png&amp;w=96" srcset="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fpowerpoint.png&amp;w=96 1x, img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fpowerpoint.png&amp;w=192 2x" alt="Microsoft PowerPoint" width="48" height="48" decoding="async"></span>
+              <span class="hero-tile tile-4"><img src="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Foutlook.png&amp;w=96" srcset="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Foutlook.png&amp;w=96 1x, img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Foutlook.png&amp;w=192 2x" alt="Microsoft Outlook" width="48" height="48" decoding="async"></span>
+              <span class="hero-ring"></span>
+              <span class="hero-podium"></span>
+            </div>
+              <div class="hero-stage" data-testid="hero-stage">
+              <div class="hero-abstract" data-testid="hero-abstract">
+                <span class="orb-halo"></span>
+                                  <span class="hero-big-icon active" data-testid="hero-big-icon-0"><img src="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fword.png&amp;w=200" srcset="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fword.png&amp;w=200 1x, img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fword.png&amp;w=400 2x" alt="Microsoft Word" title="Microsoft Word" loading="eager" decoding="async" width="200" height="200" fetchpriority="high"></span>
+                                  <span class="hero-big-icon" data-testid="hero-big-icon-1"><img src="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fexcel.png&amp;w=200" srcset="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fexcel.png&amp;w=200 1x, img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fexcel.png&amp;w=400 2x" alt="Microsoft Excel" title="Microsoft Excel" loading="lazy" decoding="async" width="200" height="200" ></span>
+                                  <span class="hero-big-icon" data-testid="hero-big-icon-2"><img src="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fpowerpoint.png&amp;w=200" srcset="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fpowerpoint.png&amp;w=200 1x, img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Fpowerpoint.png&amp;w=400 2x" alt="Microsoft PowerPoint" title="Microsoft PowerPoint" loading="lazy" decoding="async" width="200" height="200" ></span>
+                                  <span class="hero-big-icon" data-testid="hero-big-icon-3"><img src="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Foutlook.png&amp;w=200" srcset="img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Foutlook.png&amp;w=200 1x, img.php?s=assets%2Fimages%2Fbrand-watermarks%2Fmicrosoft-suite%2Foutlook.png&amp;w=400 2x" alt="Microsoft Outlook" title="Microsoft Outlook" loading="lazy" decoding="async" width="200" height="200" ></span>
+                                  <span class="hero-big-icon" data-testid="hero-big-icon-4"><img src="assets/images/os/windows.svg" alt="Microsoft Windows" title="Microsoft Windows" loading="lazy" decoding="async" width="200" height="200" ></span>
+                                <div class="glass-card gc-code">
+                  <div class="gc-dots"><i></i><i></i><i></i></div>
+                  <div class="gc-line w-75"></div>
+                  <div class="gc-line w-50"></div>
+                  <div class="gc-line w-100"></div>
+                  <div class="gc-line w-25"></div>
+                </div>
+                <div class="glass-card gc-key">
+                  <span class="gc-key-icon"><i class="bi bi-key-fill"></i></span>
+                  <span class="gc-key-text">
+                    <span class="gc-key-title">LICENSE KEY</span>
+                    <span class="gc-key-code">XXXXX-XXXXX-XXXXX</span>
+                  </span>
+                  <i class="bi bi-patch-check-fill gc-check"></i>
+                </div>
+                <span class="cube cb-1"></span>
+                <span class="cube cb-2"></span>
+                <span class="cube cb-3"></span>
+              </div>
+            </div>
+            <a href="shop.php" id="hero-photo-link" class="hero-photo-link" aria-label="Browse all software deals" title="Browse all software deals" data-testid="hero-photo-link"></a>
+            <span class="hero-delivery-pill" data-testid="hero-delivery-pill"><i class="bi bi-envelope-check"></i>Digital delivery by email</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust strip — clean badge band shown between hero and the next section.
+     Wrapped in .trust-strip-band so the dark-mode override block can give
+     it a subtle tinted background + brighter labels/icons (the previous
+     transparent .text-secondary version washed out against the deep-navy
+     page). -->
+<div class="trust-strip-band border-bottom py-3" data-testid="trust-strip-band">
+  <div class="container d-flex justify-content-center gap-4 flex-wrap small trust-strip-row">
+    <span class="trust-strip-item"><i class="bi bi-shield-check"></i>SSL Secured</span>
+    <span class="trust-strip-item"><i class="bi bi-check2-circle"></i>30-Day Guarantee</span>
+    <span class="trust-strip-item"><i class="bi bi-patch-check"></i>100% Authentic Product Guarantee</span>
+  </div>
+</div>
+
+<!-- Google Merchant Center compliance: a positively-framed authorized-reseller
+     trust pill.  The full first-sale-doctrine legal disclosure lives on
+     /about-us.php + the footer + the inline notice below Add-to-Cart on
+     every product page — so nothing is hidden, just repositioned. -->
+<section class="pt-4">
+  <div class="container text-center">
+    <div class="home-disc-pill d-inline-flex align-items-center gap-3 px-4 py-2 text-start" data-testid="home-authorized-reseller-pill" role="note">
+      <span class="logo-mark home-disc-mark"><i class="bi bi-shield-check"></i></span>
+      <div class="lh-sm">
+        <div class="fw-bold small">Authorized Independent Reseller</div>
+        <small class="text-secondary" style="font-size:.74rem;">Genuine, previously-licensed software product keys sourced through legitimate distribution channels. Business-to-business and consumer procurement, backed by our 30-day money-back guarantee.</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Ask AI teaser — compact, centered -->
+<section class="pt-4">
+  <div class="container text-center">
+    <div class="ask-ai-pill d-inline-flex align-items-center gap-3 px-4 py-2" data-testid="ask-ai-teaser">
+      <span class="logo-mark ask-ai-mark"><i class="bi bi-stars"></i></span>
+      <div class="text-start lh-sm">
+        <div class="fw-bold small">Ask Maventech AI</div>
+        <small class="text-secondary fst-italic" style="font-size:.74rem;">"Which Office is right for my Mac?"</small>
+      </div>
+      <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="openAskAiModal()" data-testid="ask-ai-try-btn">Try it <i class="bi bi-arrow-right ms-1"></i></button>
+    </div>
+  </div>
+</section>
+
+<!-- Welcome back / personalized strip -->
+<section class="py-4">
+  <div class="container">
+    <div class="card p-3" data-testid="welcome-back-strip">
+      <span class="eyebrow">TAILORED FOR RETURNING USERS</span>
+      <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+        <div>
+          <h2 class="h4 fw-bold mb-1 mt-1">Welcome back — explore Office 2024 software</h2>
+          <small class="text-secondary">Find the best tools for your PC. Digital delivery by email on all products.</small>
+        </div>
+        <a href="category.php?slug=office-2024-pc" class="btn btn-outline-primary btn-sm rounded-pill px-3">Shop now</a>
+      </div>
+      <div class="row g-3">
+                  <div class="col-lg-3 col-sm-6">
+            <a href="product.php?slug=microsoft-office-home-2024-pc" class="card h-100 p-3 text-decoration-none">
+              <div class="d-flex gap-2 align-items-center">
+                <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=72" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=72 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=144 2x" alt="Microsoft Office Home 2024 (PC) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office Home 2024 (PC) (Digital Key)" style="width:54px;height:54px;object-fit:contain;" class="bg-body-tertiary rounded p-1" loading="lazy" decoding="async" width="54" height="54">
+                <div>
+                  <div class="small fw-semibold text-body lh-sm">Microsoft Office Home 2024 (PC) (Digital Key)</div>
+                  <span class="fw-bold text-primary small">$126.99</span>
+                </div>
+              </div>
+            </a>
+          </div>
+                  <div class="col-lg-3 col-sm-6">
+            <a href="product.php?slug=microsoft-office-2024-professional-plus-windows" class="card h-100 p-3 text-decoration-none">
+              <div class="d-flex gap-2 align-items-center">
+                <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=72" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=72 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=144 2x" alt="Microsoft Office 2024 Professional Plus (Windows) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office 2024 Professional Plus (Windows) (Digital Key)" style="width:54px;height:54px;object-fit:contain;" class="bg-body-tertiary rounded p-1" loading="lazy" decoding="async" width="54" height="54">
+                <div>
+                  <div class="small fw-semibold text-body lh-sm">Microsoft Office 2024 Professional Plus (Windows) (Digital Key)</div>
+                  <span class="fw-bold text-primary small">$209.99</span>
+                </div>
+              </div>
+            </a>
+          </div>
+                  <div class="col-lg-3 col-sm-6">
+            <a href="product.php?slug=microsoft-office-home-business-2024-pc" class="card h-100 p-3 text-decoration-none">
+              <div class="d-flex gap-2 align-items-center">
+                <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=72" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=72 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=144 2x" alt="Microsoft Office Home &amp; Business 2024 (PC) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office Home &amp; Business 2024 (PC) (Digital Key)" style="width:54px;height:54px;object-fit:contain;" class="bg-body-tertiary rounded p-1" loading="lazy" decoding="async" width="54" height="54">
+                <div>
+                  <div class="small fw-semibold text-body lh-sm">Microsoft Office Home &amp; Business 2024 (PC) (Digital Key)</div>
+                  <span class="fw-bold text-primary small">$228.99</span>
+                </div>
+              </div>
+            </a>
+          </div>
+                  <div class="col-lg-3 col-sm-6">
+            <a href="product.php?slug=microsoft-project-2024-professional-pc" class="card h-100 p-3 text-decoration-none">
+              <div class="d-flex gap-2 align-items-center">
+                <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-project-2024-professional-pc.webp&amp;w=72" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-project-2024-professional-pc.webp&amp;w=72 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-project-2024-professional-pc.webp&amp;w=144 2x" alt="Microsoft Project 2024 Professional (PC) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Project 2024 Professional (PC) (Digital Key)" style="width:54px;height:54px;object-fit:contain;" class="bg-body-tertiary rounded p-1" loading="lazy" decoding="async" width="54" height="54">
+                <div>
+                  <div class="small fw-semibold text-body lh-sm">Microsoft Project 2024 Professional (PC) (Digital Key)</div>
+                  <span class="fw-bold text-primary small">$199.99</span>
+                </div>
+              </div>
+            </a>
+          </div>
+              </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust badges row -->
+<section class="py-4">
+  <div class="container">
+    <div class="row g-3 text-center" data-testid="trust-badges-row">
+              <div class="col-lg-2 col-md-4 col-6">
+          <div class="card h-100 py-3 px-2">
+            <i class="bi bi-patch-check-fill text-primary fs-4"></i>
+            <div class="small fw-bold mt-1">Genuine Licenses</div>
+            <small class="text-secondary" style="font-size:.7rem;">100% Authentic Guarantee</small>
+          </div>
+        </div>
+              <div class="col-lg-2 col-md-4 col-6">
+          <div class="card h-100 py-3 px-2">
+            <i class="bi bi-envelope-check text-primary fs-4"></i>
+            <div class="small fw-bold mt-1">Digital Delivery</div>
+            <small class="text-secondary" style="font-size:.7rem;">By Email</small>
+          </div>
+        </div>
+              <div class="col-lg-2 col-md-4 col-6">
+          <div class="card h-100 py-3 px-2">
+            <i class="bi bi-infinity text-primary fs-4"></i>
+            <div class="small fw-bold mt-1">One-Time Purchase</div>
+            <small class="text-secondary" style="font-size:.7rem;">No Subscription</small>
+          </div>
+        </div>
+              <div class="col-lg-2 col-md-4 col-6">
+          <div class="card h-100 py-3 px-2">
+            <i class="bi bi-headset text-primary fs-4"></i>
+            <div class="small fw-bold mt-1">Order Support</div>
+            <small class="text-secondary" style="font-size:.7rem;">Mon-Sat, 9 AM - 6 PM EST</small>
+          </div>
+        </div>
+              <div class="col-lg-2 col-md-4 col-6">
+          <div class="card h-100 py-3 px-2">
+            <i class="bi bi-shield-lock-fill text-primary fs-4"></i>
+            <div class="small fw-bold mt-1">SSL Secured</div>
+            <small class="text-secondary" style="font-size:.7rem;">Safe Checkout</small>
+          </div>
+        </div>
+              <div class="col-lg-2 col-md-4 col-6">
+          <div class="card h-100 py-3 px-2">
+            <i class="bi bi-arrow-counterclockwise text-primary fs-4"></i>
+            <div class="small fw-bold mt-1">30-Day Guarantee</div>
+            <small class="text-secondary" style="font-size:.7rem;">Full Refund</small>
+          </div>
+        </div>
+          </div>
+  </div>
+</section>
+
+<!-- Categories: one-line scrollable browse bar -->
+<section class="py-4 browse-strip">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <span class="browse-label flex-shrink-0"><i class="bi bi-compass me-1"></i>Browse</span>
+      <div class="overflow-auto flex-grow-1 browse-scroll" style="scrollbar-width:thin; min-width:0;" data-testid="browse-toggle-bar">
+        <div class="d-flex gap-2 pb-2" style="width:max-content;">
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=office-2024-pc" data-testid="browse-chip-office-2024-pc">Office 2024 (PC)</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=office-2024-mac" data-testid="browse-chip-office-2024-mac">Office 2024 (Mac)</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=office-2021-pc" data-testid="browse-chip-office-2021-pc">Office 2021 (PC)</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=office-2021-mac" data-testid="browse-chip-office-2021-mac">Office 2021 (Mac)</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=office-2019-pc" data-testid="browse-chip-office-2019-pc">Office 2019 (PC)</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=office-2019-mac" data-testid="browse-chip-office-2019-mac">Office 2019 (Mac)</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=office-pc" data-testid="browse-chip-office-pc">Office for Windows</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=office-mac" data-testid="browse-chip-office-mac">Office for Mac</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=office" data-testid="browse-chip-office">Microsoft Office</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=windows-11" data-testid="browse-chip-windows-11">Windows 11</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=windows-10" data-testid="browse-chip-windows-10">Windows 10</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=windows" data-testid="browse-chip-windows">Windows OS</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=microsoft-project" data-testid="browse-chip-microsoft-project">Microsoft Project</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=microsoft-visio" data-testid="browse-chip-microsoft-visio">Microsoft Visio</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=apps" data-testid="browse-chip-apps">Microsoft Apps</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=bitdefender" data-testid="browse-chip-bitdefender">Bitdefender</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=mcafee" data-testid="browse-chip-mcafee">McAfee Antivirus</a>
+                      <a class="cat-chip flex-shrink-0" href="category.php?slug=antivirus" data-testid="browse-chip-antivirus">Antivirus</a>
+                  </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured products — featured spotlight + stacked side picks -->
+<section class="py-5 bg-soft">
+  <div class="container">
+    <div class="text-center mb-4">
+      <span class="eyebrow">FEATURED</span>
+      <h2 class="fw-bold mt-1 mb-1">Featured Products</h2>
+      <small class="text-secondary">4 products available · <a href="shop.php" class="text-decoration-none fw-semibold">View All <i class="bi bi-arrow-right"></i></a></small>
+    </div>
+            <div class="row g-4 align-items-stretch" data-testid="bestseller-grid">
+      <div class="col-lg-7">
+        <div class="card spotlight-card h-100 p-4 position-relative" data-testid="bestseller-spotlight">
+          <div class="row g-4 align-items-center h-100">
+            <div class="col-sm-5">
+              <a href="product.php?slug=microsoft-office-2024-professional-plus-windows" class="d-block">
+                <div class="spotlight-img-wrap rounded-4 p-3 position-relative">
+                  <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=240" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=240 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=480 2x" alt="Microsoft Office 2024 Professional Plus (Windows) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office 2024 Professional Plus (Windows) (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+                </div>
+              </a>
+            </div>
+            <div class="col-sm-7">
+              <h3 class="h4 fw-bold mb-2"><a href="product.php?slug=microsoft-office-2024-professional-plus-windows" class="text-decoration-none text-body">Microsoft Office 2024 Professional Plus (Windows) (Digital Key)</a></h3>
+              <p class="small text-secondary mb-3">Genuine one-time purchase — no subscription — with a step-by-step activation guide and a 30-day money-back guarantee.</p>
+              <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                <span class="fw-bold text-primary fs-3 lh-1">$209.99</span>
+              </div>
+              <div class="surplus-price-label mb-3">Direct Price</div>
+              <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-primary rounded-pill px-4 add-to-cart-btn" data-slug="microsoft-office-2024-professional-plus-windows" data-testid="add-to-cart-microsoft-office-2024-professional-plus-windows"><i class="bi bi-cart-plus me-1"></i>Add to Cart</button>
+                <a href="product.php?slug=microsoft-office-2024-professional-plus-windows" class="btn btn-outline-secondary rounded-pill px-4" data-testid="spotlight-view-details">View Details</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="d-grid gap-3 h-100 align-content-stretch" data-testid="bestseller-side-list">
+                      <div class="card side-product-row p-3 d-flex flex-row align-items-center gap-3" data-testid="side-seller-microsoft-office-home-2024-pc">
+              <a href="product.php?slug=microsoft-office-home-2024-pc" class="side-thumb">
+                <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=240" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=240 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=480 2x" alt="Microsoft Office Home 2024 (PC) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office Home 2024 (PC) (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+              </a>
+              <div class="flex-grow-1 min-w-0">
+                <a href="product.php?slug=microsoft-office-home-2024-pc" class="text-decoration-none text-body fw-bold small d-block">Microsoft Office Home 2024 (PC) (Digital Key)</a>
+                <span class="fw-bold text-primary">$126.99</span>
+              </div>
+              <button class="btn btn-sm btn-primary rounded-circle side-add add-to-cart-btn" data-slug="microsoft-office-home-2024-pc" aria-label="Add Microsoft Office Home 2024 (PC) (Digital Key) to cart" data-testid="add-to-cart-microsoft-office-home-2024-pc"><i class="bi bi-cart-plus"></i></button>
+            </div>
+                      <div class="card side-product-row p-3 d-flex flex-row align-items-center gap-3" data-testid="side-seller-microsoft-office-home-business-2024-pc">
+              <a href="product.php?slug=microsoft-office-home-business-2024-pc" class="side-thumb">
+                <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=240" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=240 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=480 2x" alt="Microsoft Office Home &amp; Business 2024 (PC) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office Home &amp; Business 2024 (PC) (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+              </a>
+              <div class="flex-grow-1 min-w-0">
+                <a href="product.php?slug=microsoft-office-home-business-2024-pc" class="text-decoration-none text-body fw-bold small d-block">Microsoft Office Home &amp; Business 2024 (PC) (Digital Key)</a>
+                <span class="fw-bold text-primary">$228.99</span>
+              </div>
+              <button class="btn btn-sm btn-primary rounded-circle side-add add-to-cart-btn" data-slug="microsoft-office-home-business-2024-pc" aria-label="Add Microsoft Office Home &amp; Business 2024 (PC) (Digital Key) to cart" data-testid="add-to-cart-microsoft-office-home-business-2024-pc"><i class="bi bi-cart-plus"></i></button>
+            </div>
+                      <div class="card side-product-row p-3 d-flex flex-row align-items-center gap-3" data-testid="side-seller-microsoft-office-2021-professional-plus-windows">
+              <a href="product.php?slug=microsoft-office-2021-professional-plus-windows" class="side-thumb">
+                <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-professional-plus-windows.webp&amp;w=240" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-professional-plus-windows.webp&amp;w=240 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-professional-plus-windows.webp&amp;w=480 2x" alt="Microsoft Office 2021 Professional Plus (Windows) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office 2021 Professional Plus (Windows) (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+              </a>
+              <div class="flex-grow-1 min-w-0">
+                <a href="product.php?slug=microsoft-office-2021-professional-plus-windows" class="text-decoration-none text-body fw-bold small d-block">Microsoft Office 2021 Professional Plus (Windows) (Digital Key)</a>
+                <span class="fw-bold text-primary">$154.99</span>
+              </div>
+              <button class="btn btn-sm btn-primary rounded-circle side-add add-to-cart-btn" data-slug="microsoft-office-2021-professional-plus-windows" aria-label="Add Microsoft Office 2021 Professional Plus (Windows) (Digital Key) to cart" data-testid="add-to-cart-microsoft-office-2021-professional-plus-windows"><i class="bi bi-cart-plus"></i></button>
+            </div>
+                  </div>
+      </div>
+    </div>
+      </div>
+</section>
+
+<!-- Picked for you -->
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="fw-bold mb-0">Picked for you <span class="badge text-bg-primary align-middle" style="font-size:.6rem;">AI</span></h2>
+        <small class="text-secondary">Based on your interest in Windows &amp; Office 2024</small>
+      </div>
+      <a href="shop.php" class="text-decoration-none fw-semibold">View All <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="scroll-strip d-flex gap-3 overflow-auto pb-3" data-testid="picked-for-you">
+              <div class="card product-card tilt-3d strip-card flex-shrink-0 position-relative" data-testid="strip-card-microsoft-office-2024-professional-plus-windows">
+                    <a href="product.php?slug=microsoft-office-2024-professional-plus-windows" class="d-block">
+            <div class="strip-img">
+              <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=200" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=200 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=400 2x" alt="Microsoft Office 2024 Professional Plus (Windows) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office 2024 Professional Plus (Windows) (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+            </div>
+          </a>
+          <div class="card-body d-flex flex-column p-3">
+            <a href="product.php?slug=microsoft-office-2024-professional-plus-windows" class="text-decoration-none text-body fw-semibold product-title mb-2">Microsoft Office 2024 Professional Plus (Windows) (Digital Key)</a>
+            <div class="mt-auto d-flex align-items-center justify-content-between">
+              <span class="fw-bold text-primary">$209.99</span>
+              <button class="btn btn-sm btn-primary rounded-pill add-to-cart-btn" data-slug="microsoft-office-2024-professional-plus-windows" data-testid="add-to-cart-microsoft-office-2024-professional-plus-windows"><i class="bi bi-cart-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+              <div class="card product-card tilt-3d strip-card flex-shrink-0 position-relative" data-testid="strip-card-microsoft-office-2024-professional-plus-lifetime-license-windows-pc">
+                    <a href="product.php?slug=microsoft-office-2024-professional-plus-lifetime-license-windows-pc" class="d-block">
+            <div class="strip-img">
+              <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=200" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=200 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2024-professional-plus-windows.webp&amp;w=400 2x" alt="Microsoft Office 2024 Professional Plus Windows PC (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office 2024 Professional Plus Windows PC (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+            </div>
+          </a>
+          <div class="card-body d-flex flex-column p-3">
+            <a href="product.php?slug=microsoft-office-2024-professional-plus-lifetime-license-windows-pc" class="text-decoration-none text-body fw-semibold product-title mb-2">Microsoft Office 2024 Professional Plus Windows PC (Digital Key)</a>
+            <div class="mt-auto d-flex align-items-center justify-content-between">
+              <span class="fw-bold text-primary">$219.99</span>
+              <button class="btn btn-sm btn-primary rounded-pill add-to-cart-btn" data-slug="microsoft-office-2024-professional-plus-lifetime-license-windows-pc" data-testid="add-to-cart-microsoft-office-2024-professional-plus-lifetime-license-windows-pc"><i class="bi bi-cart-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+              <div class="card product-card tilt-3d strip-card flex-shrink-0 position-relative" data-testid="strip-card-microsoft-office-home-2024-pc">
+                    <a href="product.php?slug=microsoft-office-home-2024-pc" class="d-block">
+            <div class="strip-img">
+              <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=200" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=200 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=400 2x" alt="Microsoft Office Home 2024 (PC) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office Home 2024 (PC) (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+            </div>
+          </a>
+          <div class="card-body d-flex flex-column p-3">
+            <a href="product.php?slug=microsoft-office-home-2024-pc" class="text-decoration-none text-body fw-semibold product-title mb-2">Microsoft Office Home 2024 (PC) (Digital Key)</a>
+            <div class="mt-auto d-flex align-items-center justify-content-between">
+              <span class="fw-bold text-primary">$126.99</span>
+              <button class="btn btn-sm btn-primary rounded-pill add-to-cart-btn" data-slug="microsoft-office-home-2024-pc" data-testid="add-to-cart-microsoft-office-home-2024-pc"><i class="bi bi-cart-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+              <div class="card product-card tilt-3d strip-card flex-shrink-0 position-relative" data-testid="strip-card-microsoft-office-home-business-2024-pc">
+                    <a href="product.php?slug=microsoft-office-home-business-2024-pc" class="d-block">
+            <div class="strip-img">
+              <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=200" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=200 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=400 2x" alt="Microsoft Office Home &amp; Business 2024 (PC) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office Home &amp; Business 2024 (PC) (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+            </div>
+          </a>
+          <div class="card-body d-flex flex-column p-3">
+            <a href="product.php?slug=microsoft-office-home-business-2024-pc" class="text-decoration-none text-body fw-semibold product-title mb-2">Microsoft Office Home &amp; Business 2024 (PC) (Digital Key)</a>
+            <div class="mt-auto d-flex align-items-center justify-content-between">
+              <span class="fw-bold text-primary">$228.99</span>
+              <button class="btn btn-sm btn-primary rounded-pill add-to-cart-btn" data-slug="microsoft-office-home-business-2024-pc" data-testid="add-to-cart-microsoft-office-home-business-2024-pc"><i class="bi bi-cart-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+              <div class="card product-card tilt-3d strip-card flex-shrink-0 position-relative" data-testid="strip-card-microsoft-office-2021-home-business-windows">
+                    <a href="product.php?slug=microsoft-office-2021-home-business-windows" class="d-block">
+            <div class="strip-img">
+              <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-home-business-windows.webp&amp;w=200" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-home-business-windows.webp&amp;w=200 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-home-business-windows.webp&amp;w=400 2x" alt="Microsoft Office 2021 Home &amp; Business (Windows) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office 2021 Home &amp; Business (Windows) (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+            </div>
+          </a>
+          <div class="card-body d-flex flex-column p-3">
+            <a href="product.php?slug=microsoft-office-2021-home-business-windows" class="text-decoration-none text-body fw-semibold product-title mb-2">Microsoft Office 2021 Home &amp; Business (Windows) (Digital Key)</a>
+            <div class="mt-auto d-flex align-items-center justify-content-between">
+              <span class="fw-bold text-primary">$184.99</span>
+              <button class="btn btn-sm btn-primary rounded-pill add-to-cart-btn" data-slug="microsoft-office-2021-home-business-windows" data-testid="add-to-cart-microsoft-office-2021-home-business-windows"><i class="bi bi-cart-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+              <div class="card product-card tilt-3d strip-card flex-shrink-0 position-relative" data-testid="strip-card-microsoft-office-2021-professional-plus-windows">
+                    <a href="product.php?slug=microsoft-office-2021-professional-plus-windows" class="d-block">
+            <div class="strip-img">
+              <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-professional-plus-windows.webp&amp;w=200" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-professional-plus-windows.webp&amp;w=200 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-professional-plus-windows.webp&amp;w=400 2x" alt="Microsoft Office 2021 Professional Plus (Windows) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office 2021 Professional Plus (Windows) (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+            </div>
+          </a>
+          <div class="card-body d-flex flex-column p-3">
+            <a href="product.php?slug=microsoft-office-2021-professional-plus-windows" class="text-decoration-none text-body fw-semibold product-title mb-2">Microsoft Office 2021 Professional Plus (Windows) (Digital Key)</a>
+            <div class="mt-auto d-flex align-items-center justify-content-between">
+              <span class="fw-bold text-primary">$154.99</span>
+              <button class="btn btn-sm btn-primary rounded-pill add-to-cart-btn" data-slug="microsoft-office-2021-professional-plus-windows" data-testid="add-to-cart-microsoft-office-2021-professional-plus-windows"><i class="bi bi-cart-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+              <div class="card product-card tilt-3d strip-card flex-shrink-0 position-relative" data-testid="strip-card-microsoft-office-2021-home-student-windows">
+                    <a href="product.php?slug=microsoft-office-2021-home-student-windows" class="d-block">
+            <div class="strip-img">
+              <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-home-student-windows.webp&amp;w=200" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-home-student-windows.webp&amp;w=200 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-2021-home-student-windows.webp&amp;w=400 2x" alt="Microsoft Office 2021 Home &amp; Student (Windows) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office 2021 Home &amp; Student (Windows) (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+            </div>
+          </a>
+          <div class="card-body d-flex flex-column p-3">
+            <a href="product.php?slug=microsoft-office-2021-home-student-windows" class="text-decoration-none text-body fw-semibold product-title mb-2">Microsoft Office 2021 Home &amp; Student (Windows) (Digital Key)</a>
+            <div class="mt-auto d-flex align-items-center justify-content-between">
+              <span class="fw-bold text-primary">$109.99</span>
+              <button class="btn btn-sm btn-primary rounded-pill add-to-cart-btn" data-slug="microsoft-office-2021-home-student-windows" data-testid="add-to-cart-microsoft-office-2021-home-student-windows"><i class="bi bi-cart-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+              <div class="card product-card tilt-3d strip-card flex-shrink-0 position-relative" data-testid="strip-card-microsoft-word-2021-windows">
+                    <a href="product.php?slug=microsoft-word-2021-windows" class="d-block">
+            <div class="strip-img">
+              <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-word-2021-windows.webp&amp;w=200" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-word-2021-windows.webp&amp;w=200 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-word-2021-windows.webp&amp;w=400 2x" alt="Microsoft Word 2021 (Windows) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Word 2021 (Windows) (Digital Key)" loading="lazy" decoding="async" width="200" height="200">
+            </div>
+          </a>
+          <div class="card-body d-flex flex-column p-3">
+            <a href="product.php?slug=microsoft-word-2021-windows" class="text-decoration-none text-body fw-semibold product-title mb-2">Microsoft Word 2021 (Windows) (Digital Key)</a>
+            <div class="mt-auto d-flex align-items-center justify-content-between">
+              <span class="fw-bold text-primary">$105.30</span>
+              <button class="btn btn-sm btn-primary rounded-pill add-to-cart-btn" data-slug="microsoft-word-2021-windows" data-testid="add-to-cart-microsoft-word-2021-windows"><i class="bi bi-cart-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+          </div>
+  </div>
+</section>
+
+<!-- For Every Business -->
+<section class="py-5 bg-soft">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-4">
+        <div class="rounded-4 text-white p-3 position-relative overflow-hidden biz-card" data-testid="business-card">
+          <div class="biz-glow"></div>
+          <span class="badge rounded-pill text-bg-warning text-dark fw-bold mb-2" style="font-size:.62rem; letter-spacing:.12em;">VOLUME LICENSING</span>
+          <h3 class="fw-bold h4 mb-1">For Every <span class="text-warning">Business</span></h3>
+          <p class="small opacity-75 mb-3">Professional tools for teams of all sizes. Volume discounts available.</p>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="biz-chip"><i class="bi bi-headset me-1"></i>Priority Support</span>
+            <span class="biz-chip"><i class="bi bi-tags-fill me-1"></i>Bulk Discounts</span>
+          </div>
+          <a href="contact.php" class="btn btn-light btn-sm rounded-pill px-4 fw-semibold">Contact Sales <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="row g-3 h-100">
+                      <div class="col-sm-6">
+    <div class="card product-card tilt-3d h-100 position-relative" data-testid="product-card-microsoft-office-home-2024-pc">
+      <span class="badge badge-promo position-absolute start-0 m-2" style="z-index:3;">Best Seller</span>
+      <a href="product.php?slug=microsoft-office-home-2024-pc" class="text-decoration-none">
+        <div class="ratio ratio-1x1 bg-body-tertiary rounded-top product-img-wrap">
+          <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=320" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=320 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-pc.webp&amp;w=640 2x" alt="Microsoft Office Home 2024 (PC) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office Home 2024 (PC) (Digital Key)" class="object-fit-contain p-3" loading="lazy" decoding="async" width="320" height="320">
+        </div>
+      </a>
+      <div class="card-body d-flex flex-column">
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+          <span class="badge os-badge"><img src="assets/images/os/windows.svg" alt="Windows platform" class="os-icon me-1" width="14" height="14">Windows</span>
+          <span class="product-rating product-rating-card small" data-testid="product-rating-microsoft-office-home-2024-pc" aria-label="5.0 out of 5 stars, 3 reviews">
+              <span class="text-warning"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+              <span class="text-secondary ms-1">(3)</span>
+            </span>
+        </div>
+        <a href="product.php?slug=microsoft-office-home-2024-pc" class="text-decoration-none text-body fw-semibold product-title mb-1">Microsoft Office Home 2024 (PC) (Digital Key)</a>
+        
+        <div class="mb-2"><span class="pc-stock-pill is-in" data-testid="stock-avail-microsoft-office-home-2024-pc"><i class="bi bi-check-circle-fill me-1"></i>In stock</span></div>
+        <small class="text-secondary pc-meta mb-1"><i class="bi bi-envelope-check text-primary me-1"></i>Digital delivery by email · One-time purchase</small>
+        <div class="mb-2"><span class="dd-badge dd-badge-sm" data-testid="dd-delivery-badge"><svg class="dd-badge-ico" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 6.854-1.5 1.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 8.793V5.5a.5.5 0 0 1 1 0v3.293l.646-.647a.5.5 0 0 1 .708.708z"/></svg>Digital Delivery Only</span></div>
+        <div class="pc-price-row d-flex flex-column gap-1 mt-auto pt-2">
+          <span class="surplus-price-label align-self-start" data-testid="card-surplus-label-microsoft-office-home-2024-pc">Direct Price</span>
+          <div class="lh-1 d-flex align-items-baseline gap-2"><span class="fw-bold text-primary fs-5">$126.99</span><span class="text-secondary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="card-currency-microsoft-office-home-2024-pc">USD</span></div>
+        </div>
+        <div class="pc-btn-row d-flex gap-2 pt-2">
+          <button class="pc-btn pc-btn-cart add-to-cart-btn" data-slug="microsoft-office-home-2024-pc" data-testid="add-to-cart-microsoft-office-home-2024-pc" aria-label="Add to cart"><i class="bi bi-cart-plus"></i><span class="pc-btn-label">Add</span></button>
+           <button class="pc-btn pc-btn-buy buy-now-btn" data-slug="microsoft-office-home-2024-pc" data-testid="buy-now-microsoft-office-home-2024-pc" aria-label="Buy now"><i class="bi bi-lightning-charge-fill"></i><span class="pc-btn-label">Buy</span></button>
+        </div>
+      </div>
+    </div></div>
+                      <div class="col-sm-6">
+    <div class="card product-card tilt-3d h-100 position-relative" data-testid="product-card-microsoft-office-home-business-2024-pc">
+      <span class="badge badge-promo position-absolute start-0 m-2" style="z-index:3;">Hot Pick</span>
+      <a href="product.php?slug=microsoft-office-home-business-2024-pc" class="text-decoration-none">
+        <div class="ratio ratio-1x1 bg-body-tertiary rounded-top product-img-wrap">
+          <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=320" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=320 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-business-2024-pc.webp&amp;w=640 2x" alt="Microsoft Office Home &amp; Business 2024 (PC) (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Microsoft Office Home &amp; Business 2024 (PC) (Digital Key)" class="object-fit-contain p-3" loading="lazy" decoding="async" width="320" height="320">
+        </div>
+      </a>
+      <div class="card-body d-flex flex-column">
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+          <span class="badge os-badge"><img src="assets/images/os/windows.svg" alt="Windows platform" class="os-icon me-1" width="14" height="14">Windows</span>
+          <span class="product-rating product-rating-card small" data-testid="product-rating-microsoft-office-home-business-2024-pc" aria-label="4.7 out of 5 stars, 3 reviews">
+              <span class="text-warning"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></span>
+              <span class="text-secondary ms-1">(3)</span>
+            </span>
+        </div>
+        <a href="product.php?slug=microsoft-office-home-business-2024-pc" class="text-decoration-none text-body fw-semibold product-title mb-1">Microsoft Office Home &amp; Business 2024 (PC) (Digital Key)</a>
+        
+        <div class="mb-2"><span class="pc-stock-pill is-in" data-testid="stock-avail-microsoft-office-home-business-2024-pc"><i class="bi bi-check-circle-fill me-1"></i>In stock</span></div>
+        <small class="text-secondary pc-meta mb-1"><i class="bi bi-envelope-check text-primary me-1"></i>Digital delivery by email · One-time purchase</small>
+        <div class="mb-2"><span class="dd-badge dd-badge-sm" data-testid="dd-delivery-badge"><svg class="dd-badge-ico" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 6.854-1.5 1.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 8.793V5.5a.5.5 0 0 1 1 0v3.293l.646-.647a.5.5 0 0 1 .708.708z"/></svg>Digital Delivery Only</span></div>
+        <div class="pc-price-row d-flex flex-column gap-1 mt-auto pt-2">
+          <span class="surplus-price-label align-self-start" data-testid="card-surplus-label-microsoft-office-home-business-2024-pc">Direct Price</span>
+          <div class="lh-1 d-flex align-items-baseline gap-2"><span class="fw-bold text-primary fs-5">$228.99</span><span class="text-secondary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="card-currency-microsoft-office-home-business-2024-pc">USD</span></div>
+        </div>
+        <div class="pc-btn-row d-flex gap-2 pt-2">
+          <button class="pc-btn pc-btn-cart add-to-cart-btn" data-slug="microsoft-office-home-business-2024-pc" data-testid="add-to-cart-microsoft-office-home-business-2024-pc" aria-label="Add to cart"><i class="bi bi-cart-plus"></i><span class="pc-btn-label">Add</span></button>
+           <button class="pc-btn pc-btn-buy buy-now-btn" data-slug="microsoft-office-home-business-2024-pc" data-testid="buy-now-microsoft-office-home-business-2024-pc" aria-label="Buy now"><i class="bi bi-lightning-charge-fill"></i><span class="pc-btn-label">Buy</span></button>
+        </div>
+      </div>
+    </div></div>
+                      <div class="col-sm-6">
+    <div class="card product-card tilt-3d h-100 position-relative" data-testid="product-card-microsoft-office-home-2024-mac">
+      <span class="badge badge-promo position-absolute start-0 m-2" style="z-index:3;">Hot Pick</span>
+      <a href="product.php?slug=microsoft-office-home-2024-mac" class="text-decoration-none">
+        <div class="ratio ratio-1x1 bg-body-tertiary rounded-top product-img-wrap">
+          <img src="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-mac.webp&amp;w=320" srcset="img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-mac.webp&amp;w=320 1x, img.php?s=uploads%2Fproducts%2Fmicrosoft-office-home-2024-mac.webp&amp;w=640 2x" alt="Microsoft Office Home 2024 (Mac) (Digital Key) digital product key - genuine one-time purchase for Mac, digital delivery by email | Maventech" title="Microsoft Office Home 2024 (Mac) (Digital Key)" class="object-fit-contain p-3" loading="lazy" decoding="async" width="320" height="320">
+        </div>
+      </a>
+      <div class="card-body d-flex flex-column">
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+          <span class="badge os-badge"><img src="assets/images/os/macos.svg" alt="Mac platform" class="os-icon me-1" width="14" height="14">Mac</span>
+          <span class="product-rating product-rating-card small" data-testid="product-rating-microsoft-office-home-2024-mac" aria-label="5.0 out of 5 stars, 3 reviews">
+              <span class="text-warning"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+              <span class="text-secondary ms-1">(3)</span>
+            </span>
+        </div>
+        <a href="product.php?slug=microsoft-office-home-2024-mac" class="text-decoration-none text-body fw-semibold product-title mb-1">Microsoft Office Home 2024 (Mac) (Digital Key)</a>
+        
+        <div class="mb-2"><span class="pc-stock-pill is-in" data-testid="stock-avail-microsoft-office-home-2024-mac"><i class="bi bi-check-circle-fill me-1"></i>In stock</span></div>
+        <small class="text-secondary pc-meta mb-1"><i class="bi bi-envelope-check text-primary me-1"></i>Digital delivery by email · One-time purchase</small>
+        <div class="mb-2"><span class="dd-badge dd-badge-sm" data-testid="dd-delivery-badge"><svg class="dd-badge-ico" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 6.854-1.5 1.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 8.793V5.5a.5.5 0 0 1 1 0v3.293l.646-.647a.5.5 0 0 1 .708.708z"/></svg>Digital Delivery Only</span></div>
+        <div class="pc-price-row d-flex flex-column gap-1 mt-auto pt-2">
+          <span class="surplus-price-label align-self-start" data-testid="card-surplus-label-microsoft-office-home-2024-mac">Direct Price</span>
+          <div class="lh-1 d-flex align-items-baseline gap-2"><span class="fw-bold text-primary fs-5">$126.99</span><span class="text-secondary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="card-currency-microsoft-office-home-2024-mac">USD</span></div>
+        </div>
+        <div class="pc-btn-row d-flex gap-2 pt-2">
+          <button class="pc-btn pc-btn-cart add-to-cart-btn" data-slug="microsoft-office-home-2024-mac" data-testid="add-to-cart-microsoft-office-home-2024-mac" aria-label="Add to cart"><i class="bi bi-cart-plus"></i><span class="pc-btn-label">Add</span></button>
+           <button class="pc-btn pc-btn-buy buy-now-btn" data-slug="microsoft-office-home-2024-mac" data-testid="buy-now-microsoft-office-home-2024-mac" aria-label="Buy now"><i class="bi bi-lightning-charge-fill"></i><span class="pc-btn-label">Buy</span></button>
+        </div>
+      </div>
+    </div></div>
+                      <div class="col-sm-6">
+    <div class="card product-card tilt-3d h-100 position-relative" data-testid="product-card-windows-11-home">
+      
+      <a href="product.php?slug=windows-11-home" class="text-decoration-none">
+        <div class="ratio ratio-1x1 bg-body-tertiary rounded-top product-img-wrap">
+          <img src="img.php?s=uploads%2Fproducts%2Fwindows-11-home.webp&amp;w=320" srcset="img.php?s=uploads%2Fproducts%2Fwindows-11-home.webp&amp;w=320 1x, img.php?s=uploads%2Fproducts%2Fwindows-11-home.webp&amp;w=640 2x" alt="Windows 11 Home (Digital Key) digital product key - genuine one-time purchase for Windows, digital delivery by email | Maventech" title="Windows 11 Home (Digital Key)" class="object-fit-contain p-3" loading="lazy" decoding="async" width="320" height="320">
+        </div>
+      </a>
+      <div class="card-body d-flex flex-column">
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+          <span class="badge os-badge"><img src="assets/images/os/windows.svg" alt="Windows platform" class="os-icon me-1" width="14" height="14">Windows</span>
+          <span class="product-rating product-rating-card small" data-testid="product-rating-windows-11-home" aria-label="4.7 out of 5 stars, 3 reviews">
+              <span class="text-warning"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></span>
+              <span class="text-secondary ms-1">(3)</span>
+            </span>
+        </div>
+        <a href="product.php?slug=windows-11-home" class="text-decoration-none text-body fw-semibold product-title mb-1">Windows 11 Home (Digital Key)</a>
+        
+        <div class="mb-2"><span class="pc-stock-pill is-in" data-testid="stock-avail-windows-11-home"><i class="bi bi-check-circle-fill me-1"></i>In stock</span></div>
+        <small class="text-secondary pc-meta mb-1"><i class="bi bi-envelope-check text-primary me-1"></i>Digital delivery by email · One-time purchase</small>
+        <div class="mb-2"><span class="dd-badge dd-badge-sm" data-testid="dd-delivery-badge"><svg class="dd-badge-ico" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 6.854-1.5 1.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 8.793V5.5a.5.5 0 0 1 1 0v3.293l.646-.647a.5.5 0 0 1 .708.708z"/></svg>Digital Delivery Only</span></div>
+        <div class="pc-price-row d-flex flex-column gap-1 mt-auto pt-2">
+          <span class="surplus-price-label align-self-start" data-testid="card-surplus-label-windows-11-home">Direct Price</span>
+          <div class="lh-1 d-flex align-items-baseline gap-2"><span class="fw-bold text-primary fs-5">$59.99</span><span class="text-secondary" style="font-size:.6rem;font-weight:600;letter-spacing:.04em;" data-testid="card-currency-windows-11-home">USD</span></div>
+        </div>
+        <div class="pc-btn-row d-flex gap-2 pt-2">
+          <button class="pc-btn pc-btn-cart add-to-cart-btn" data-slug="windows-11-home" data-testid="add-to-cart-windows-11-home" aria-label="Add to cart"><i class="bi bi-cart-plus"></i><span class="pc-btn-label">Add</span></button>
+           <button class="pc-btn pc-btn-buy buy-now-btn" data-slug="windows-11-home" data-testid="buy-now-windows-11-home" aria-label="Buy now"><i class="bi bi-lightning-charge-fill"></i><span class="pc-btn-label">Buy</span></button>
+        </div>
+      </div>
+    </div></div>
+                  </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="eyebrow">SIMPLE PROCESS</span>
+      <h2 class="fw-bold mt-1">How It Works</h2>
+      <p class="text-secondary mx-auto" style="max-width:560px;">Get your authentic Microsoft Office license in four simple steps. Professional support available throughout the process.</p>
+    </div>
+    <div class="row g-4" data-testid="how-it-works">
+              <div class="col-lg-3 col-sm-6">
+          <div class="card h-100 p-3">
+            <div class="fs-3 fw-bold text-primary opacity-50">01</div>
+            <h3 class="h6 fw-bold mt-1">Choose Your Edition</h3>
+            <small class="text-secondary">Browse our selection and pick the Microsoft Office edition that fits your needs.</small>
+          </div>
+        </div>
+              <div class="col-lg-3 col-sm-6">
+          <div class="card h-100 p-3">
+            <div class="fs-3 fw-bold text-primary opacity-50">02</div>
+            <h3 class="h6 fw-bold mt-1">Secure Checkout</h3>
+            <small class="text-secondary">Complete your purchase through our SSL-secured payment with multiple options.</small>
+          </div>
+        </div>
+              <div class="col-lg-3 col-sm-6">
+          <div class="card h-100 p-3">
+            <div class="fs-3 fw-bold text-primary opacity-50">03</div>
+            <h3 class="h6 fw-bold mt-1">Digital Delivery</h3>
+            <small class="text-secondary">Receive your product key by email once the order is processed. See Shipping &amp; Delivery for full timing.</small>
+          </div>
+        </div>
+              <div class="col-lg-3 col-sm-6">
+          <div class="card h-100 p-3">
+            <div class="fs-3 fw-bold text-primary opacity-50">04</div>
+            <h3 class="h6 fw-bold mt-1">Download & Activate</h3>
+            <small class="text-secondary">Download directly from Microsoft, enter your key, and start using Office.</small>
+          </div>
+        </div>
+          </div>
+  </div>
+</section>
+
+<!-- Trusted by thousands stats -->
+<section class="py-5 bg-soft">
+  <div class="container text-center">
+    <h2 class="fw-bold">Trusted by Thousands of Customers</h2>
+    <p class="text-secondary">Join satisfied customers who chose authentic Microsoft Office software</p>
+    <div class="row g-4 mt-2" data-testid="trusted-stats">
+              <div class="col-md-4 col-6"><div class="fs-2 fw-bold text-primary">2+ Yrs</div><small class="text-secondary">In Business</small></div>
+              <div class="col-md-4 col-6"><div class="fs-2 fw-bold text-primary">30-Day</div><small class="text-secondary">Money-Back</small></div>
+              <div class="col-md-4 col-6"><div class="fs-2 fw-bold text-primary">100%</div><small class="text-secondary">Genuine Keys</small></div>
+          </div>
+
+          <div class="mt-5" data-testid="home-customer-reviews">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-3 mb-4">
+          <div class="text-warning fs-4 lh-1" aria-hidden="true"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></div>
+          <div class="text-start">
+            <div class="fw-bold fs-4">4.8 out of 5</div>
+            <small class="text-secondary">Based on 90 verified customer reviews</small>
+          </div>
+        </div>
+
+        <div class="row g-4">
+                      <div class="col-lg-4 col-md-6">
+              <div class="card p-3 h-100 text-start home-review-card" data-testid="home-review-card">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star text-secondary"></i>
+                                    <span class="badge text-bg-success ms-auto"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                </div>
+                <p class="text-body small mb-3 home-review-text">"Good price, fast delivery, clear activation steps. One-time purchase — exactly what I wanted, no subscription."</p>
+                <div class="d-flex align-items-center gap-2 mt-auto">
+                  <div class="avatar-circle">JA</div>
+                  <div>
+                    <div class="fw-semibold small">Jason W.</div>
+                    <small class="text-secondary">Verified Customer</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+                      <div class="col-lg-4 col-md-6">
+              <div class="card p-3 h-100 text-start home-review-card" data-testid="home-review-card">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star text-secondary"></i>
+                                    <span class="badge text-bg-success ms-auto"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                </div>
+                <p class="text-body small mb-3 home-review-text">"Everything worked as expected. Great value and quick email delivery."</p>
+                <div class="d-flex align-items-center gap-2 mt-auto">
+                  <div class="avatar-circle">PR</div>
+                  <div>
+                    <div class="fw-semibold small">Priya K.</div>
+                    <small class="text-secondary">Verified Customer</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+                      <div class="col-lg-4 col-md-6">
+              <div class="card p-3 h-100 text-start home-review-card" data-testid="home-review-card">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                    <span class="badge text-bg-success ms-auto"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                </div>
+                <p class="text-body small mb-3 home-review-text">"Perfect. Bought last week, still going strong. No subscription nag emails."</p>
+                <div class="d-flex align-items-center gap-2 mt-auto">
+                  <div class="avatar-circle">CH</div>
+                  <div>
+                    <div class="fw-semibold small">Chris H.</div>
+                    <small class="text-secondary">Verified Customer</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+                      <div class="col-lg-4 col-md-6">
+              <div class="card p-3 h-100 text-start home-review-card" data-testid="home-review-card">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star text-secondary"></i>
+                                    <span class="badge text-bg-success ms-auto"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                </div>
+                <p class="text-body small mb-3 home-review-text">"Everything worked as expected. Great value and quick email delivery."</p>
+                <div class="d-flex align-items-center gap-2 mt-auto">
+                  <div class="avatar-circle">PR</div>
+                  <div>
+                    <div class="fw-semibold small">Priya K.</div>
+                    <small class="text-secondary">Verified Customer</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+                      <div class="col-lg-4 col-md-6">
+              <div class="card p-3 h-100 text-start home-review-card" data-testid="home-review-card">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                    <span class="badge text-bg-success ms-auto"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                </div>
+                <p class="text-body small mb-3 home-review-text">"Was skeptical about buying online — genuine product, activates directly with the vendor. Would buy again."</p>
+                <div class="d-flex align-items-center gap-2 mt-auto">
+                  <div class="avatar-circle">EM</div>
+                  <div>
+                    <div class="fw-semibold small">Emma L.</div>
+                    <small class="text-secondary">Verified Customer</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+                      <div class="col-lg-4 col-md-6">
+              <div class="card p-3 h-100 text-start home-review-card" data-testid="home-review-card">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                      <i class="bi bi-star-fill text-warning"></i>
+                                    <span class="badge text-bg-success ms-auto"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                </div>
+                <p class="text-body small mb-3 home-review-text">"Legit key, activated instantly. Support helped me with a small activation question over chat within minutes."</p>
+                <div class="d-flex align-items-center gap-2 mt-auto">
+                  <div class="avatar-circle">MI</div>
+                  <div>
+                    <div class="fw-semibold small">Michael R.</div>
+                    <small class="text-secondary">Verified Customer</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+                  </div>
+
+        <a href="reviews.php" class="btn btn-outline-primary rounded-pill px-4 mt-4" data-testid="view-all-reviews-btn">
+          <i class="bi bi-chat-square-quote me-1"></i>Read all 90 reviews        </a>
+      </div>
+      </div>
+</section>
+
+<!-- Beyond-the-basics perks: intentionally covers post-purchase value NOT
+     already promised in the top-bar / hero / trusted-partner block. -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="eyebrow">MORE THAN A LICENCE SHOP</span>
+      <h2 class="fw-bold mt-1">Beyond the Basics — What You Also Get</h2>
+      <p class="text-secondary mx-auto" style="max-width:620px;">Post-purchase perks most resellers never mention — from a self-serve dashboard to invoicing-ready receipts and human agents who pick up on the first ring.</p>
+    </div>
+    <div class="row g-4" data-testid="why-choose-grid">
+              <div class="col-lg-4 col-sm-6">
+          <div class="card h-100 p-3">
+            <i class="bi bi-person-workspace text-primary fs-3"></i>
+            <h3 class="h6 fw-bold mt-2">Self-Serve Account Dashboard</h3>
+            <small class="text-secondary">Sign in anytime to redownload your keys, view PDF receipts, and manage every licence you have ever bought — even from a new device.</small>
+          </div>
+        </div>
+              <div class="col-lg-4 col-sm-6">
+          <div class="card h-100 p-3">
+            <i class="bi bi-headset text-primary fs-3"></i>
+            <h3 class="h6 fw-bold mt-2">Real Human Support</h3>
+            <small class="text-secondary">No chatbot loops. Chat, call, or email a trained agent Mon-Sat 9 AM to 6 PM EST — most tickets close on the first touch.</small>
+          </div>
+        </div>
+              <div class="col-lg-4 col-sm-6">
+          <div class="card h-100 p-3">
+            <i class="bi bi-file-earmark-text text-primary fs-3"></i>
+            <h3 class="h6 fw-bold mt-2">Business-Friendly Invoicing</h3>
+            <small class="text-secondary">Every order ships with a VAT / GST itemised PDF invoice. Verified companies unlock net-30 terms and reseller-tax exemptions.</small>
+          </div>
+        </div>
+              <div class="col-lg-4 col-sm-6">
+          <div class="card h-100 p-3">
+            <i class="bi bi-shield-fill-check text-primary fs-3"></i>
+            <h3 class="h6 fw-bold mt-2">Fraud-Shielded Payments</h3>
+            <small class="text-secondary">3-D Secure at checkout, PCI-DSS Level 1 processing via Stripe, and a zero-liability chargeback shield covering every purchase.</small>
+          </div>
+        </div>
+              <div class="col-lg-4 col-sm-6">
+          <div class="card h-100 p-3">
+            <i class="bi bi-arrow-left-right text-primary fs-3"></i>
+            <h3 class="h6 fw-bold mt-2">Move Licences Between PCs</h3>
+            <small class="text-secondary">Upgraded your machine? We walk you through Microsoft's deactivate-and-reassign flow so your key follows you — at no extra charge.</small>
+          </div>
+        </div>
+              <div class="col-lg-4 col-sm-6">
+          <div class="card h-100 p-3">
+            <i class="bi bi-people-fill text-primary fs-3"></i>
+            <h3 class="h6 fw-bold mt-2">Volume Pricing for Teams</h3>
+            <small class="text-secondary">Buying 5 seats or more? Save up to 22 % across the cart and get a dedicated account rep for future top-ups.</small>
+          </div>
+        </div>
+          </div>
+  </div>
+</section>
+
+<!-- Testimonials / customer reviews intentionally removed (no reviews shown site-wide) -->
+
+<!-- Your Trusted Software Partner -->
+<section class="py-5" data-testid="trusted-partner-section">
+  <div class="container">
+    <div class="row g-4 g-lg-5 align-items-center justify-content-center">
+      <div class="col-lg-10">
+        <h2 class="fw-bold">Your Trusted Software Partner</h2>
+        <p class="text-secondary mt-3">At Maventech, we're committed to providing genuine Microsoft software at competitive prices. Our team of experts ensures every customer receives the support they need for a seamless experience.</p>
+        <p class="text-secondary">We focus on fast, reliable order fulfillment — making sure your genuine license key is delivered promptly and that you have a clear, step-by-step digital activation guide for every purchase.</p>
+        <div class="row g-2 small mt-2">
+                      <div class="col-sm-6"><i class="bi bi-check-circle-fill text-success me-2"></i>Authorized independent reseller of genuine software product keys</div>
+                      <div class="col-sm-6"><i class="bi bi-check-circle-fill text-success me-2"></i>Trusted by businesses, schools and freelancers worldwide</div>
+                      <div class="col-sm-6"><i class="bi bi-check-circle-fill text-success me-2"></i>Digital delivery by email after order verification</div>
+                      <div class="col-sm-6"><i class="bi bi-check-circle-fill text-success me-2"></i>Step-by-step digital activation guide included</div>
+                      <div class="col-sm-6"><i class="bi bi-check-circle-fill text-success me-2"></i>Customer service Mon-Sat, 9 AM - 6 PM EST</div>
+                      <div class="col-sm-6"><i class="bi bi-check-circle-fill text-success me-2"></i>30-day money-back guarantee</div>
+                  </div>
+        <a href="about-us.php" class="btn btn-outline-primary rounded-pill px-4 mt-4">Learn More About Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-5 bg-soft">
+  <div class="container" style="max-width: 860px;">
+    <div class="text-center mb-4">
+      <h2 class="fw-bold">Frequently Asked Questions</h2>
+      <p class="text-secondary">Get answers to common questions about our authentic Microsoft Office licenses</p>
+    </div>
+    <div class="accordion" id="faqAcc">
+              <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button " type="button" data-bs-toggle="collapse" data-bs-target="#faq0">Are these genuine Microsoft Office licenses?</button>
+          </h2>
+          <div id="faq0" class="accordion-collapse collapse show" data-bs-parent="#faqAcc">
+            <div class="accordion-body small text-secondary">Yes, all our licenses are genuine and sourced from authorized software clearing houses. Every license key is verified for authenticity before delivery.</div>
+          </div>
+        </div>
+              <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">What is a perpetual license?</button>
+          </h2>
+          <div id="faq1" class="accordion-collapse collapse " data-bs-parent="#faqAcc">
+            <div class="accordion-body small text-secondary">A perpetual license means you own the software forever with a one-time purchase. There are no recurring subscription fees, and you can use the software for as long as you want.</div>
+          </div>
+        </div>
+              <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">How quickly will I receive my license key?</button>
+          </h2>
+          <div id="faq2" class="accordion-collapse collapse " data-bs-parent="#faqAcc">
+            <div class="accordion-body small text-secondary">License keys are delivered via email within 15-30 minutes of successful payment confirmation. You will receive download instructions along with your activation key.</div>
+          </div>
+        </div>
+              <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">Can I install this on multiple computers?</button>
+          </h2>
+          <div id="faq3" class="accordion-collapse collapse " data-bs-parent="#faqAcc">
+            <div class="accordion-body small text-secondary">Each license is valid for one device. If you need licenses for multiple computers, please contact our sales team for volume discounts.</div>
+          </div>
+        </div>
+              <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">What if I need technical support?</button>
+          </h2>
+          <div id="faq4" class="accordion-collapse collapse " data-bs-parent="#faqAcc">
+            <div class="accordion-body small text-secondary">Our expert support team is available Monday through Saturday, 9 AM to 6 PM EST. We provide free professional support for installation, activation, and any issues you may encounter.</div>
+          </div>
+        </div>
+              <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">Is my payment information secure?</button>
+          </h2>
+          <div id="faq5" class="accordion-collapse collapse " data-bs-parent="#faqAcc">
+            <div class="accordion-body small text-secondary">Absolutely. Our checkout is SSL-encrypted and PCI-compliant. We never store your payment details on our servers and use trusted payment processors for all transactions.</div>
+          </div>
+        </div>
+          </div>
+    <div class="text-center mt-4 small">
+      <span class="text-secondary">Still have questions? We're here to help.</span>
+      <a href="contact.php" class="btn btn-sm btn-primary rounded-pill px-3 ms-2">Contact Support</a>
+      <a href="mailto:services@maventechsoftware.com" class="btn btn-sm btn-outline-primary rounded-pill px-3 ms-1">Email Us</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA band -->
+<section class="py-5">
+  <div class="container">
+    <div class="rounded-4 text-center text-white p-4" style="background: linear-gradient(120deg, #2a1430 0%, #1b2240 50%, #0e4f5c 100%);" data-testid="cta-band">
+      <h2 class="fw-bold">Get Your Microsoft Office License Today</h2>
+      <p class="opacity-75 mx-auto" style="max-width:540px;">Authentic perpetual licenses with professional support.</p>
+      <div class="d-flex justify-content-center gap-4 flex-wrap small my-3 opacity-75">
+        <span><i class="bi bi-check-circle me-1"></i>Genuine Licenses</span>
+        <span><i class="bi bi-download me-1"></i>Instant Download</span>
+        <span><i class="bi bi-headset me-1"></i>Professional Support</span>
+        <span><i class="bi bi-shield-lock me-1"></i>Secure Checkout</span>
+      </div>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <a href="shop.php" class="btn btn-light rounded-pill px-4 fw-semibold">Browse Products</a>
+        <a href="category.php?slug=office" class="btn btn-outline-light rounded-pill px-4">Compare Editions</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Blog -->
+<section class="py-5 bg-soft">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <span class="eyebrow">FROM OUR BLOG</span>
+        <h2 class="fw-bold mb-0 mt-1">Tips &amp; Guides</h2>
+        <small class="text-secondary">Get the most out of your Microsoft software with our helpful articles and guides.</small>
+      </div>
+      <a href="blog.php" class="text-decoration-none fw-semibold flex-shrink-0">View All Articles <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="row g-3">
+              <div class="col-lg-4 col-md-6">
+          <a href="blog-post.php?id=ai-trends-20260713-microsoft-excel-2021-windows" class="card h-100 text-decoration-none blog-card">
+            <div class="blog-card-img" style="height:150px;">
+              <img src="/uploads/blog/ai-trends-20260713-microsoft-excel-2021-windows.webp" alt="Why Excel 2021 Still Powers Serious Data Work in 2026" loading="lazy" decoding="async" width="400" height="225">
+            </div>
+            <div class="card-body p-3">
+              <small class="text-secondary" style="font-size:.72rem;">Jul 13, 2026 · 5 min read</small>
+              <h6 class="fw-bold mt-2 text-body blog-card-title">Why Excel 2021 Still Powers Serious Data Work in 2026</h6>
+            </div>
+          </a>
+        </div>
+          </div>
+  </div>
+</section>
+
+</main><!-- /#main-content (opened in header.php) -->
+<footer class="footer-dark pt-0 pb-4 mt-5">
+
+  <!-- Newsletter band -->
+  <div class="border-bottom border-secondary-subtle" style="border-color: rgba(255,255,255,.12) !important;">
+    <div class="container text-center py-5">
+      <h2 class="text-white fw-bold fs-2">Join our list for the latest deals &amp; product updates</h2>
+      <p class="small mb-4">Subscribe and receive exclusive weekly deals straight to your inbox!</p>
+      <form class="d-flex gap-2 mx-auto" style="max-width: 420px;" onsubmit="subscribeNewsletter(event)">
+        <input type="email" required class="form-control rounded-pill px-3" placeholder="Enter your email" data-testid="newsletter-email">
+        <button class="btn btn-primary rounded-pill px-4 fw-semibold" type="submit" data-testid="newsletter-join">Join</button>
+      </form>
+      <div class="d-flex justify-content-center gap-4 flex-wrap small mt-4">
+        <span><i class="bi bi-patch-check-fill text-success me-1"></i>Genuine Products</span>
+        <span><i class="bi bi-shield-check text-primary me-1"></i>30-Day Guarantee</span>
+        <span><i class="bi bi-headset text-primary me-1"></i>Expert Support</span>
+      </div>
+      <!-- Secure Payments block — moved here from the bottom of the footer so
+           the trust-signal + accepted-card icons sit right next to the newsletter
+           CTA where shoppers are most likely to look before subscribing. -->
+      <div class="mt-4 pt-3" data-testid="footer-secure-payments">
+        <div class="text-white small fw-bold mb-2"><i class="bi bi-lock-fill text-success me-1"></i>Secure Payments</div>
+        <div class="d-flex gap-3 small mb-3 flex-wrap justify-content-center">
+          <span><i class="bi bi-lock-fill text-success me-1"></i>SSL Encrypted Checkout</span>
+          <span><i class="bi bi-shield-fill-check text-info me-1"></i>Secure Encrypted Transactions</span>
+        </div>
+        <div class="d-flex gap-2 flex-wrap justify-content-center" data-testid="footer-pay-icons">
+          <img src="assets/images/payments/visa.svg" alt="Visa" title="Visa" class="pay-icon" loading="lazy" decoding="async" width="36" height="24"><img src="assets/images/payments/mastercard.svg" alt="Mastercard" title="Mastercard" class="pay-icon" loading="lazy" decoding="async" width="36" height="24"><img src="assets/images/payments/amex.svg" alt="American Express" title="American Express" class="pay-icon" loading="lazy" decoding="async" width="36" height="24"><img src="assets/images/payments/discover.svg" alt="Discover" title="Discover" class="pay-icon" loading="lazy" decoding="async" width="36" height="24"><img src="assets/images/payments/paypal.svg" alt="PayPal" title="PayPal" class="pay-icon" loading="lazy" decoding="async" width="36" height="24">        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container pt-5">
+    <div class="row g-4">
+      <!-- Brand column -->
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+                      <picture><source srcset="uploads/company/logo-mark.webp" type="image/webp"><img src="uploads/company/logo-mark.png" alt="Maventech" style="height:42px;width:auto;max-width:140px;object-fit:contain;" width="140" height="42" loading="lazy" decoding="async"></picture>                    <span>
+                        <span class="brand-text d-block lh-1 text-white"><span class="brand-grad">Maventech</span></span>
+                      </span>
+        </div>
+        <p class="small mb-3" style="line-height:1.55;">Your trusted source for genuine Microsoft Office licenses at competitive prices. One-time purchase — no recurring fees.</p>
+
+        <!-- Contact block: tight vertical rhythm, aligned icons -->
+        <ul class="list-unstyled small mb-3 footer-contact-list">
+          <li><i class="bi bi-telephone-fill text-info"></i><a href="tel:+18058239961">1-805-823-9961</a></li>
+          <li><i class="bi bi-envelope-fill text-info"></i><a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a></li>
+          <li><i class="bi bi-geo-alt-fill text-info"></i>135 CAROLINA ST G2, VALLEJO, CA 94590</li>
+          <li><i class="bi bi-clock-fill text-info"></i>Mon-Sat, 9 AM - 6 PM EST</li>
+          <li data-testid="footer-reg-number"><i class="bi bi-patch-check-fill text-info"></i>File No. 202463711253 · Filed 9/3/2024</li>        </ul>
+
+        <!-- Google Maps + socials on the same visual row for compactness -->
+        <div class="d-flex align-items-center flex-wrap gap-3 mb-3">
+          <a href="https://www.google.com/maps/search/?api=1&query=135+CAROLINA+ST+G2%2C+VALLEJO%2C+CA+94590" target="_blank" rel="noopener" class="btn btn-sm btn-outline-light rounded-pill gmap-btn" data-testid="footer-gmap-btn">
+            <span class="gmap-pin"><i class="bi bi-geo-alt-fill"></i></span>View on Google Maps
+          </a>
+          <div class="d-flex gap-2">
+                          <a href="#top" aria-label="Facebook" class="social-circle"><i class="bi bi-facebook"></i></a>
+                          <a href="#top" aria-label="Twitter" class="social-circle"><i class="bi bi-twitter-x"></i></a>
+                          <a href="#top" aria-label="LinkedIn" class="social-circle"><i class="bi bi-linkedin"></i></a>
+                          <a href="#top" aria-label="Instagram" class="social-circle"><i class="bi bi-instagram"></i></a>
+                      </div>
+        </div>
+
+        <!-- Compliance disclaimer -->
+        <p class="small mb-0 fst-italic" style="line-height:1.5;color:#94a3b8;font-size:.78rem;" data-testid="footer-brand-disclaimer">
+          <strong>Disclaimer:</strong> Maventech LLC is an independent reseller of authentic software licenses. All product names, logos, and brands are property of their respective owners.
+        </p>
+      </div>
+
+      <!-- Products -->
+      <div class="col-lg-2 col-md-4 col-6">
+        <h3 class="h6 text-white fw-bold mb-3">Products</h3>
+        <ul class="list-unstyled small d-grid gap-2">
+          <li><a href="category.php?slug=office-2024-pc">Microsoft Office 2024</a></li>
+          <li><a href="category.php?slug=office-2021-pc">Microsoft Office 2021</a></li>
+          <li><a href="category.php?slug=office-2019-pc">Microsoft Office 2019</a></li>
+          <li><a href="category.php?slug=microsoft-project">Microsoft Project</a></li>
+          <li><a href="category.php?slug=microsoft-visio">Microsoft Visio</a></li>
+          <li><a href="category.php?slug=office-mac">Office for Mac</a></li>
+          <li><a href="category.php?slug=windows">Windows OS</a></li>
+        </ul>
+      </div>
+
+      <!-- Support -->
+      <div class="col-lg-3 col-md-4 col-6">
+        <h3 class="h6 text-white fw-bold mb-3">Support</h3>
+        <ul class="list-unstyled small d-grid gap-2">
+          <li><a href="account.php">My Account</a></li>
+          <li><a href="track-order.php" data-testid="footer-order-history-link">Track Order &amp; Receipts</a></li>
+          <li><a href="support.php">Support Center</a></li>
+          <li><a href="page.php?slug=help-center">Help Center</a></li>
+          <li><a href="page.php?slug=installation-guide">Installation Guide</a></li>
+          <li><a href="page.php?slug=activation-help">Activation Help</a></li>
+          <li><a href="page.php?slug=faqs">FAQs</a></li>
+          <li><a href="contact.php">Contact Us</a></li>
+          <li><a href="return-policy.php">Return Policy</a></li>
+          <li><a href="protection-hub.php" data-testid="footer-protection-hub"><i class="bi bi-shield-shaded me-1"></i>Protection Hub</a></li>
+        </ul>
+      </div>
+
+      <!-- Company -->
+      <div class="col-lg-3 col-md-4 col-6">
+        <h3 class="h6 text-white fw-bold mb-3">Company</h3>
+        <ul class="list-unstyled small d-grid gap-2">
+          <li><a href="about-us.php">About Us</a></li>
+          <li><a href="page.php?slug=why-choose-us">Why Choose Us</a></li>
+          <li><a href="reviews.php">Customer Reviews</a></li>
+          <li><a href="blog.php">Blog</a></li>
+                      <li><a href="brand.php?slug=bitdefender" data-testid="footer-brand-bitdefender">Bitdefender Hub</a></li>
+                      <li><a href="brand.php?slug=mcafee" data-testid="footer-brand-mcafee">McAfee Hub</a></li>
+                      <li><a href="brand.php?slug=microsoft" data-testid="footer-brand-microsoft">Microsoft Hub</a></li>
+                    <li><a href="press-kit.php" data-testid="footer-press-kit">Press Kit &amp; Embeds</a></li>
+          <li><a href="sitemap.php" data-testid="footer-company-sitemap">Site Map</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Secure payments moved to the top of the footer (right below the
+         newsletter band). Keeping only the customer-reviews / trademark row here. -->
+    <hr class="border-secondary my-4">
+    <div class="row g-4 align-items-center text-center text-md-start">
+      <div class="col-md-3 text-md-center offset-md-9">
+              </div>
+    </div>
+
+    <!-- Trademark + legal -->
+    <hr class="border-secondary my-4">
+
+    <p class="small text-center mx-auto" style="max-width: 820px;">Maventech LLC is an independent marketplace provider of genuine, surplus product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
+
+    <div class="d-flex justify-content-center flex-wrap gap-2 small mb-3">
+              <a href="page.php?slug=privacy-policy">Privacy Policy</a><span aria-hidden="true" style="color:#94a3b8;">|</span>              <a href="page.php?slug=terms-of-service">Terms of Service</a><span aria-hidden="true" style="color:#94a3b8;">|</span>              <a href="refund-policy.php">Refund Policy</a><span aria-hidden="true" style="color:#94a3b8;">|</span>              <a href="return-policy.php">Return Policy</a><span aria-hidden="true" style="color:#94a3b8;">|</span>              <a href="shipping-delivery.php">Shipping & Delivery</a><span aria-hidden="true" style="color:#94a3b8;">|</span>              <a href="page.php?slug=payment-policy">Payment Policy</a><span aria-hidden="true" style="color:#94a3b8;">|</span>              <a href="page.php?slug=cookie-policy">Cookie Policy</a><span aria-hidden="true" style="color:#94a3b8;">|</span>              <a href="page.php?slug=do-not-sell">Do Not Sell My Info</a><span aria-hidden="true" style="color:#94a3b8;">|</span>              <a href="page.php?slug=disclaimer">Legal Disclaimer</a><span aria-hidden="true" style="color:#94a3b8;">|</span>              <a href="sitemap.php">Sitemap</a>          </div>
+    <div class="text-center small">© 2026 Maventech LLC. All rights reserved. · File No. 202463711253</div>
+  </div>
+</footer>
+
+<!-- Google Customer Reviews badge — deferred until first interaction / idle
+     (same gate as GTM). Rationale (PageSpeed Mob 2026-07-08): the widget
+     runs a 57 ms forced reflow inside its internal init, so leaving it
+     with a plain `defer` still ate into LCP. Delaying to the __mvTrk
+     interaction/3 s-post-load gate removes it from the initial critical
+     path entirely — no visible UX regression (the badge still appears
+     within seconds for any real user who scrolls / clicks). -->
+<script>
+  window.__mvTrk = window.__mvTrk || [];
+  window.__mvTrk.push(function () {
+    var s = document.createElement('script');
+    s.src = 'https://www.gstatic.com/shopping/merchant/merchantwidget.js';
+    s.async = true;
+    s.id = 'merchantWidgetScript';
+    s.onload = function () {
+      if (typeof merchantwidget === 'undefined') return;
+      merchantwidget.start({
+        merchant_id: 5815017210,
+        position: "BOTTOM_LEFT"
+      });
+      var _mwT = setInterval(function () {
+        var f = document.getElementById('merchantwidgetiframe');
+        if (f) { f.setAttribute('title', 'Google Customer Reviews'); clearInterval(_mwT); }
+      }, 400);
+      setTimeout(function () { clearInterval(_mwT); }, 12000);
+    };
+    document.head.appendChild(s);
+  });
+</script>
+<!-- end Google Customer Reviews badge -->
+
+<!-- ============================================================
+     Global "Ask AI" modal — real Claude-Haiku-powered Q&A about the store.
+     Triggered by the header "Ask AI" button and the hero teaser "Try it" pill.
+     Independent from the live-chat widget (which is the human-support flow).
+     ============================================================ -->
+<div id="ask-ai-modal" class="ask-ai-modal" role="dialog" aria-modal="true" aria-labelledby="ask-ai-modal-title" data-testid="ask-ai-modal">
+  <div class="ask-ai-modal-backdrop" onclick="closeAskAiModal()"></div>
+  <div class="ask-ai-modal-card">
+    <div class="ask-ai-modal-head">
+      <div class="ask-ai-modal-avatar"><i class="bi bi-stars"></i></div>
+      <div class="ask-ai-modal-meta">
+        <div class="ask-ai-modal-title" id="ask-ai-modal-title">Ask Maventech AI</div>
+        <div class="ask-ai-modal-sub"><span class="ask-ai-dot"></span>Powered by Claude · Instant answers about delivery, licences, refunds &amp; more</div>
+      </div>
+      <button type="button" class="ask-ai-modal-close" onclick="closeAskAiModal()" aria-label="Close" data-testid="ask-ai-modal-close"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="ask-ai-modal-chips" data-testid="ask-ai-modal-chips">
+      <button type="button" class="ask-ai-modal-chip" data-q="Which Office is right for my Mac?">Which Office for Mac?</button>
+      <button type="button" class="ask-ai-modal-chip" data-q="How long does delivery take?">Delivery time?</button>
+      <button type="button" class="ask-ai-modal-chip" data-q="What is your refund policy?">Refund policy?</button>
+      <button type="button" class="ask-ai-modal-chip" data-q="Is this a one-time purchase or subscription?">One-time or subscription?</button>
+    </div>
+    <div id="ask-ai-modal-thread" class="ask-ai-modal-thread" data-testid="ask-ai-modal-thread"></div>
+    <form id="ask-ai-modal-form" class="ask-ai-modal-form" onsubmit="askAiModalSubmit(event)" autocomplete="off">
+      <input type="text" id="ask-ai-modal-input" name="ask_ai_question" class="form-control" placeholder="Ask anything about our store…" maxlength="500" autocomplete="off" data-testid="ask-ai-modal-input" required>
+      <button type="submit" class="ask-ai-modal-send" data-testid="ask-ai-modal-send" aria-label="Send"><i class="bi bi-send-fill"></i></button>
+    </form>
+    <div class="ask-ai-modal-footer">
+      <i class="bi bi-info-circle me-1"></i>For order-specific help, use the <a href="#" onclick="closeAskAiModal(); toggleChat(); return false;">live chat</a>.
+    </div>
+  </div>
+</div>
+
+<style>
+.ask-ai-modal {
+  position: fixed; inset: 0; z-index: 1090;
+  display: none; align-items: flex-end; justify-content: center;
+}
+.ask-ai-modal.open { display: flex; }
+@media (min-width: 768px) { .ask-ai-modal { align-items: center; } }
+.ask-ai-modal-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(2,6,23,.55); backdrop-filter: blur(4px);
+  animation: aaFade .25s ease;
+}
+@keyframes aaFade { from { opacity: 0; } to { opacity: 1; } }
+.ask-ai-modal-card {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 560px;
+  max-height: 90vh; display: flex; flex-direction: column;
+  background: var(--bs-body-bg, #fff); color: var(--bs-body-color);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -20px 60px rgba(2,6,23,.35);
+  animation: aaSlide .3s cubic-bezier(.22,.61,.36,1);
+  overflow: hidden;
+}
+@media (min-width: 768px) { .ask-ai-modal-card { border-radius: 22px; margin: 1rem; } }
+@keyframes aaSlide { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.ask-ai-modal-head {
+  display: flex; align-items: center; gap: .8rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(135deg, rgba(6,182,212,.10), rgba(45,212,191,.06));
+  border-bottom: 1px solid var(--bs-border-color);
+}
+.ask-ai-modal-avatar {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 1.2rem;
+  background: linear-gradient(135deg, #06b6d4, #2dd4bf);
+  box-shadow: 0 6px 14px rgba(6,182,212,.35);
+}
+.ask-ai-modal-meta { flex: 1 1 auto; min-width: 0; line-height: 1.25; }
+.ask-ai-modal-title { font-weight: 700; font-size: 1.02rem; }
+.ask-ai-modal-sub { font-size: .74rem; color: var(--bs-secondary-color); }
+.ask-ai-dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: #10b981; margin-right: 5px; vertical-align: 1px;
+  box-shadow: 0 0 0 3px rgba(16,185,129,.18);
+  animation: aaPulse 1.8s ease-in-out infinite;
+}
+@keyframes aaPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.25);opacity:.7} }
+.ask-ai-modal-close {
+  background: transparent; border: 0; color: var(--bs-secondary-color);
+  font-size: 1.05rem; padding: .3rem .55rem; border-radius: 8px;
+  transition: background-color .15s ease, color .15s ease;
+}
+.ask-ai-modal-close:hover { background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+.ask-ai-modal-chips {
+  display: flex; gap: .4rem; padding: .75rem 1.1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  overflow-x: auto; scrollbar-width: thin;
+}
+.ask-ai-modal-chip {
+  flex-shrink: 0; font-size: .76rem; font-weight: 600;
+  padding: .35rem .8rem; border-radius: 999px;
+  background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color);
+  color: var(--bs-body-color); cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.ask-ai-modal-chip:hover { background: rgba(6,182,212,.1); border-color: rgba(6,182,212,.4); color: #0891b2; }
+.ask-ai-modal-thread {
+  flex: 1 1 auto; overflow-y: auto; padding: 1rem 1.1rem;
+  display: flex; flex-direction: column; gap: .7rem;
+  min-height: 180px; max-height: 45vh;
+}
+.ask-ai-msg {
+  display: flex; gap: .55rem; align-items: flex-start;
+  animation: aaMsgIn .3s cubic-bezier(.22,.61,.36,1);
+}
+@keyframes aaMsgIn { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+.ask-ai-msg-avatar {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .8rem; color: #fff;
+}
+.ask-ai-msg.you { flex-direction: row-reverse; }
+.ask-ai-msg.you .ask-ai-msg-avatar { background: linear-gradient(135deg, #64748b, #94a3b8); }
+.ask-ai-msg.ai .ask-ai-msg-avatar { background: linear-gradient(135deg, #06b6d4, #2dd4bf); }
+.ask-ai-msg-bubble {
+  max-width: 78%; padding: .55rem .85rem; border-radius: 14px;
+  font-size: .87rem; line-height: 1.5;
+  background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color);
+  white-space: pre-wrap;
+}
+.ask-ai-msg.you .ask-ai-msg-bubble {
+  background: linear-gradient(135deg, #0891b2, #06b6d4); color: #fff; border-color: transparent;
+}
+.ask-ai-msg.error .ask-ai-msg-bubble {
+  background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.35); color: #b91c1c;
+}
+[data-bs-theme="dark"] .ask-ai-msg.error .ask-ai-msg-bubble { color: #fca5a5; }
+.ask-ai-typing { display: inline-flex; gap: 4px; }
+.ask-ai-typing span {
+  width: 6px; height: 6px; border-radius: 50%; background: #06b6d4;
+  animation: aaTypingDot 1.2s ease-in-out infinite;
+}
+.ask-ai-typing span:nth-child(2) { animation-delay: .15s; }
+.ask-ai-typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes aaTypingDot { 0%,60%,100%{transform:translateY(0);opacity:.55} 30%{transform:translateY(-5px);opacity:1} }
+.ask-ai-modal-form {
+  display: flex; gap: .5rem; padding: .8rem 1.1rem;
+  border-top: 1px solid var(--bs-border-color);
+}
+.ask-ai-modal-form .form-control {
+  border-radius: 12px; padding: .6rem .9rem; font-size: .92rem;
+}
+.ask-ai-modal-send {
+  border: 0; background: linear-gradient(135deg, #06b6d4, #2dd4bf);
+  color: #fff; width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 14px rgba(6,182,212,.35);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.ask-ai-modal-send:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(6,182,212,.45); }
+.ask-ai-modal-send:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.ask-ai-modal-footer {
+  padding: .6rem 1.1rem; font-size: .74rem; color: var(--bs-secondary-color);
+  border-top: 1px solid var(--bs-border-color); background: var(--bs-tertiary-bg);
+}
+</style>
+
+<script>
+(function () {
+  // ============================================================
+  // Global Ask AI modal wiring — real LLM Q&A (not the live chat).
+  // ============================================================
+  var __askAiHasGreeted = false;
+
+  function openAskAiModal(seedQ) {
+    var m = document.getElementById('ask-ai-modal');
+    if (!m) return;
+    m.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (!__askAiHasGreeted) {
+      __appendAskAiMsg('ai', "Hi! I'm the store assistant. Ask me anything about products, delivery, licences or refunds — I'll answer instantly.");
+      __askAiHasGreeted = true;
+    }
+    setTimeout(function () {
+      var i = document.getElementById('ask-ai-modal-input');
+      if (i) i.focus();
+      if (seedQ) { i.value = seedQ; __askAiModalSend(seedQ); }
+    }, 100);
+  }
+  window.openAskAiModal = openAskAiModal;
+  function closeAskAiModal() {
+    var m = document.getElementById('ask-ai-modal');
+    if (!m) return;
+    m.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  window.closeAskAiModal = closeAskAiModal;
+
+  function __appendAskAiMsg(who, text, cls) {
+    var t = document.getElementById('ask-ai-modal-thread');
+    if (!t) return null;
+    var wrap = document.createElement('div');
+    wrap.className = 'ask-ai-msg ' + who + (cls ? ' ' + cls : '');
+    var av  = document.createElement('div');
+    av.className = 'ask-ai-msg-avatar';
+    av.innerHTML = who === 'you' ? '<i class="bi bi-person-fill"></i>' : '<i class="bi bi-stars"></i>';
+    var bub = document.createElement('div');
+    bub.className = 'ask-ai-msg-bubble';
+    bub.textContent = text;
+    wrap.appendChild(av); wrap.appendChild(bub);
+    t.appendChild(wrap);
+    t.scrollTop = t.scrollHeight;
+    return bub;
+  }
+
+  async function __askAiModalSend(question) {
+    var inp = document.getElementById('ask-ai-modal-input');
+    var btn = document.querySelector('.ask-ai-modal-send');
+    __appendAskAiMsg('you', question);
+    if (inp) inp.value = '';
+    if (btn) btn.disabled = true;
+    var typing = __appendAskAiMsg('ai', '');
+    if (typing) typing.innerHTML = '<span class="ask-ai-typing"><span></span><span></span><span></span></span>';
+    try {
+      var r = await fetch('ajax/ask-ai-general.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ question: question }),
+      });
+      var j = await r.json();
+      if (typing && typing.parentElement) typing.parentElement.remove();
+      if (j.ok && j.answer) {
+        __appendAskAiMsg('ai', j.answer);
+      } else {
+        __appendAskAiMsg('ai', j.error || "Sorry — I couldn't answer that. Please try live chat.", 'error');
+      }
+    } catch (err) {
+      if (typing && typing.parentElement) typing.parentElement.remove();
+      __appendAskAiMsg('ai', 'Network hiccup — please try again in a moment.', 'error');
+    }
+    if (btn) btn.disabled = false;
+    if (inp) inp.focus();
+  }
+
+  window.askAiModalSubmit = function (ev) {
+    ev.preventDefault();
+    var inp = document.getElementById('ask-ai-modal-input');
+    if (!inp) return false;
+    var q = (inp.value || '').trim();
+    if (!q) return false;
+    __askAiModalSend(q);
+    return false;
+  };
+
+  // Chip clicks -> seed the input & send.
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest('.ask-ai-modal-chip');
+    if (chip) {
+      var q = chip.getAttribute('data-q') || chip.textContent.trim();
+      if (q) __askAiModalSend(q);
+    }
+  });
+
+  // ESC key closes the modal.
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      var m = document.getElementById('ask-ai-modal');
+      if (m && m.classList.contains('open')) closeAskAiModal();
+    }
+  });
+
+  // Convenience: expose openAskAiModal via a data attribute for buttons that
+  // used to call toggleChat().
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-open-ask-ai]');
+    if (t) { e.preventDefault(); openAskAiModal(t.getAttribute('data-open-ask-ai') || ''); }
+  });
+})();
+</script>
+
+<!-- AI chat widget -->
+<button id="chat-bubble" onclick="toggleChat()" aria-label="Open chat" data-testid="chat-bubble">
+  <i class="bi bi-chat-dots"></i>
+  <!-- Tiny bell + unread count overlay; surfaces the moment an admin replies
+       while the panel is closed.  Disappears once the customer opens chat
+       or starts typing a reply. -->
+  <span id="chat-bell" class="chat-bell" style="display:none;" data-testid="chat-bell" aria-hidden="true">
+    <i class="bi bi-bell-fill"></i>
+    <span id="chat-bell-count" class="chat-bell-count" data-testid="chat-bell-count">1</span>
+  </span>
+</button>
+
+<script>
+/* ============================================================
+   Draggable chat bubble — the customer can drag the "Chat" bubble to any
+   edge of the viewport and it snaps to the nearest side. Position is
+   persisted per browser via localStorage. Works with both mouse + touch.
+   Small movements (< 5px) are treated as clicks (open chat), so accidental
+   drag doesn't hijack the click handler.
+   ============================================================ */
+(function () {
+  var bubble = document.getElementById('chat-bubble');
+  if (!bubble) return;
+
+  var STORAGE_KEY = 'mv_chat_bubble_pos';
+  var MARGIN      = 18;   // min px from any viewport edge
+  var CLICK_SLOP  = 5;    // px moved before it's a "drag" not a click
+
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function applyPos(x, y) {
+    // Snap so the bubble stays fully on-screen.
+    var w = bubble.offsetWidth, h = bubble.offsetHeight;
+    x = clamp(x, MARGIN, window.innerWidth  - w - MARGIN);
+    y = clamp(y, MARGIN, window.innerHeight - h - MARGIN);
+    bubble.style.left   = x + 'px';
+    bubble.style.top    = y + 'px';
+    bubble.style.right  = 'auto';
+    bubble.style.bottom = 'auto';
+  }
+  function savePos() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        left: parseFloat(bubble.style.left) || 0,
+        top:  parseFloat(bubble.style.top)  || 0,
+      }));
+    } catch (_) {}
+  }
+  function restorePos() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var p = JSON.parse(raw);
+      if (p && typeof p.left === 'number' && typeof p.top === 'number') applyPos(p.left, p.top);
+    } catch (_) {}
+  }
+  restorePos();
+
+  var dragging = false, moved = false;
+  var startPX = 0, startPY = 0, startBX = 0, startBY = 0;
+
+  function onDown(ev) {
+    var t = (ev.touches && ev.touches[0]) || ev;
+    dragging = true; moved = false;
+    startPX = t.clientX; startPY = t.clientY;
+    var r = bubble.getBoundingClientRect();
+    startBX = r.left; startBY = r.top;
+    bubble.classList.add('is-dragging');
+    // Prevent text selection while dragging.
+    document.body.style.userSelect = 'none';
+  }
+  function onMove(ev) {
+    if (!dragging) return;
+    var t = (ev.touches && ev.touches[0]) || ev;
+    var dx = t.clientX - startPX, dy = t.clientY - startPY;
+    if (!moved && (Math.abs(dx) > CLICK_SLOP || Math.abs(dy) > CLICK_SLOP)) moved = true;
+    if (moved) {
+      applyPos(startBX + dx, startBY + dy);
+      if (ev.preventDefault) ev.preventDefault();
+    }
+  }
+  function onUp(ev) {
+    if (!dragging) return;
+    dragging = false;
+    bubble.classList.remove('is-dragging');
+    document.body.style.userSelect = '';
+    if (moved) {
+      savePos();
+      // Consume the click that would otherwise fire (Safari/iOS especially).
+      if (ev && ev.type === 'mouseup') {
+        var kill = function (e) { e.stopPropagation(); e.preventDefault(); bubble.removeEventListener('click', kill, true); };
+        bubble.addEventListener('click', kill, true);
+      }
+    }
+  }
+
+  bubble.addEventListener('mousedown',  onDown);
+  bubble.addEventListener('touchstart', onDown, { passive: true });
+  document.addEventListener('mousemove', onMove, { passive: false });
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('mouseup',   onUp);
+  document.addEventListener('touchend',  onUp);
+  document.addEventListener('touchcancel', onUp);
+  // Keep on-screen on window resize / orientation change.
+  window.addEventListener('resize', function () {
+    var r = bubble.getBoundingClientRect();
+    if (r.left < 0 || r.top < 0 || r.right > window.innerWidth || r.bottom > window.innerHeight) {
+      applyPos(r.left, r.top);
+      savePos();
+    }
+  });
+})();
+</script>
+<style>
+/* Give the chat bubble a subtle visual affordance for drag: the cursor
+   changes to grab, and there's a nicer pressed state during a drag. */
+#chat-bubble { cursor: grab; touch-action: none; user-select: none; }
+#chat-bubble.is-dragging { cursor: grabbing; transform: scale(1.08); box-shadow: 0 14px 32px rgba(6,182,212,.55); transition: none; }
+</style>
+<!-- Messenger-style admin-reply preview — slides in to the LEFT of the
+     chat bubble whenever an admin reply lands while the panel is closed,
+     so the customer can see what the agent said before opening chat.
+     Clicking it opens the chat immediately.  Auto-fades when the chat
+     opens or the customer starts replying. -->
+<div id="chat-msg-preview" class="chat-msg-preview" style="display:none;" onclick="openChatFromPreview()" data-testid="chat-msg-preview" role="button" tabindex="0">
+  <div class="chat-msg-preview-head">
+    <span class="chat-msg-preview-avatar"><i class="bi bi-headset"></i></span>
+    <div class="chat-msg-preview-meta">
+      <div class="chat-msg-preview-name">Maventech Support</div>
+      <div class="chat-msg-preview-sub"><span class="chat-online-dot"></span>just now</div>
+    </div>
+    <button class="chat-msg-preview-close" type="button" onclick="event.stopPropagation(); hideChatMsgPreview();" aria-label="Dismiss preview" data-testid="chat-msg-preview-close"><i class="bi bi-x"></i></button>
+  </div>
+  <div class="chat-msg-preview-body" id="chat-msg-preview-body" data-testid="chat-msg-preview-body">—</div>
+  <div class="chat-msg-preview-cta">Tap to reply →</div>
+</div>
+<div id="chat-panel" data-testid="chat-panel">
+  <div id="chat-head" class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="chat-head-btn chat-head-back" onclick="toggleChat()" aria-label="Minimize chat" data-testid="chat-back"><i class="bi bi-chevron-left"></i></button>
+      <span class="chat-avatar chat-avatar-photo"><img src="https://images.pexels.com/photos/7709255/pexels-photo-7709255.jpeg?auto=compress&cs=tinysrgb&w=160&h=160&fit=crop" alt="Addie" loading="lazy" decoding="async"></span>
+      <div class="lh-sm">
+        <div class="chat-head-name" data-testid="chat-head-name">Addie</div>
+        <small class="chat-head-sub">The team can also help</small>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-1">
+      <button type="button" class="chat-head-btn" onclick="toggleChat()" aria-label="More options" data-testid="chat-menu"><i class="bi bi-three-dots"></i></button>
+      <button type="button" class="chat-head-btn" onclick="toggleChat()" aria-label="Close chat" data-testid="chat-close"><i class="bi bi-x-lg"></i></button>
+    </div>
+  </div>
+  <div id="chat-body">
+    <!-- Addie greeting — always shown at the top of the thread.  Mirrors the
+         friendly first-touch message; the 3-field contact form sits right
+         below it on first open. -->
+    <div class="chat-addie-greeting" id="chat-addie-greeting" data-testid="chat-addie-greeting">
+      <div class="chat-msg bot chat-addie-bubble"><strong>Need help with your order? 👋</strong><br>Chat with an order specialist about your Maventech order or license delivery.</div>
+      <div class="chat-addie-meta">Addie • Just now</div>
+    </div>
+    <!-- AI welcome + quick chips kept in markup for ProAssist auto-open flows
+         but hidden by default until JS detects the customer is already
+         identified (proLeadId, returning lead, etc.). -->
+    <div class="chat-msg bot" id="chat-welcome-msg" data-testid="chat-default-message" style="display:none;">Need help with your order or license delivery? Chat with an order specialist and we'll help with products, pricing, delivery or activation.</div>
+    <div class="chat-chips" id="chat-chips" data-testid="chat-chips" style="display:none;">
+      <button class="chat-chip" onclick="quickAsk('Which Office is right for my Mac?')" data-testid="chat-chip-mac"><i class="bi bi-apple me-1"></i>Office for Mac</button>
+      <button class="chat-chip" onclick="quickAsk('What is the best deal on Office 2024 right now?')" data-testid="chat-chip-deal"><i class="bi bi-tags me-1"></i>Best deals on Office 2024</button>
+      <button class="chat-chip" onclick="quickAsk('How do I activate my license key after purchase?')" data-testid="chat-chip-activate"><i class="bi bi-key me-1"></i>Activation help</button>
+      <button class="chat-chip" onclick="quickAsk('Do your licenses expire or need a subscription?')" data-testid="chat-chip-license"><i class="bi bi-infinity me-1"></i>License validity</button>
+    </div>
+
+    <!-- ====================================================================
+         INITIAL VIEW (iteration 20): chat opens straight to the contact
+         form — just 3 fields (full name, email, phone) and ONE blue send
+         arrow button.  No "type a message" box yet.  Once the customer
+         submits, this card is hidden and we reveal:
+           (a) a "Thanks for contacting the support team" agent greeting
+           (b) the message input box (chat-input-row below)
+         The customer's real question is then routed straight to admin
+         lead management — no AI auto-replies in between.
+         ==================================================================== -->
+    <div id="chat-lead-form" class="chat-lead-card" style="display:block;" data-testid="chat-lead-form">
+      <div class="chat-lead-title" data-testid="chat-lead-title">Tell us how to reach you, and a support agent will get back in a few minutes.</div>
+      <div class="chat-lead-field-row">
+        <input id="lead-name"  class="form-control form-control-sm chat-lead-input" placeholder="Full name"      data-testid="lead-name"  autocomplete="name">
+      </div>
+      <div class="chat-lead-field-row">
+        <input id="lead-email" type="email" class="form-control form-control-sm chat-lead-input" placeholder="Email address" data-testid="lead-email" autocomplete="email">
+      </div>
+      <div class="chat-lead-field-row chat-lead-row-send">
+        <input id="lead-phone" class="form-control form-control-sm chat-lead-input" placeholder="Phone number"   data-testid="lead-phone" autocomplete="tel">
+        <button type="button"
+                class="chat-lead-send-btn"
+                onclick="submitLead('chat')"
+                data-testid="lead-send-btn"
+                aria-label="Send to support">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </div>
+      <div id="chat-lead-error" class="chat-lead-error" style="display:none;" data-testid="chat-lead-error"></div>
+      <!-- Backwards-compat hidden button so older test scripts that click
+           [data-testid=lead-chat-btn] still trigger submitLead('chat'). -->
+      <button type="button" class="d-none" onclick="submitLead('chat')" data-testid="lead-chat-btn"></button>
+    </div>
+    <!-- ProAssist install-call scheduler — shown when JS detects a ProAssist
+         purchaser with no booking yet.  Customer picks timezone → date → time.
+         Bookings convert to IST in the admin panel. -->
+    <div id="pa-sched-card" class="pa-sched-card" style="display:none;" data-testid="pa-sched-card">
+      <div class="pa-sched-header">
+        <i class="bi bi-calendar-check"></i>
+        <div>
+          <div class="pa-sched-title" data-testid="pa-sched-title">Schedule a callback</div>
+          <div class="pa-sched-sub" data-testid="pa-sched-sub">Pick a time that works for you</div>
+        </div>
+      </div>
+      <div class="pa-sched-step">
+        <div class="pa-sched-step-label">Your time zone</div>
+        <select id="pa-sched-tz" class="pa-sched-tz-select" data-testid="pa-sched-tz-select" aria-label="Time zone"></select>
+      </div>
+      <div class="pa-sched-step">
+        <div class="pa-sched-step-label">Select a date</div>
+        <div class="pa-sched-dates" id="pa-sched-dates" data-testid="pa-sched-dates"></div>
+      </div>
+      <div class="pa-sched-step" id="pa-sched-times-step" style="display:none;">
+        <div class="pa-sched-step-label">Available times <span class="pa-sched-tz" id="pa-sched-times-tz"></span></div>
+        <div class="pa-sched-times" id="pa-sched-times" data-testid="pa-sched-times"></div>
+        <button type="button" class="pa-sched-back" onclick="paSchedBackToDates()" data-testid="pa-sched-back">&larr; Back to dates</button>
+      </div>
+      <div class="pa-sched-error" id="pa-sched-error" style="display:none;" data-testid="pa-sched-error"></div>
+    </div>
+    <!-- Confirmed-booking card (shown after a successful book / on reopen). -->
+    <div id="pa-sched-confirm" class="pa-sched-confirm" style="display:none;" data-testid="pa-sched-confirm"></div>
+  </div>
+  <div id="chat-typing" class="chat-typing" style="display:none;" data-testid="chat-admin-typing">
+    <div class="chat-typing-bubble">
+      <span class="chat-typing-dot"></span>
+      <span class="chat-typing-dot"></span>
+      <span class="chat-typing-dot"></span>
+      <span class="chat-typing-text">Live agent is typing…</span>
+    </div>
+  </div>
+  <form id="chat-input-row" class="chat-input-row d-none p-2" onsubmit="sendChat(event)" data-testid="chat-input-row">
+    <div class="chat-composer">
+      <input id="chat-input" class="chat-input" placeholder="Ask a question…" autocomplete="off" data-testid="chat-input">
+      <div class="chat-composer-tools">
+        <button type="button" class="chat-tool-btn" id="chat-attach-btn" onclick="chatAttachClick()" aria-label="Attach a file" title="Attach a file" data-testid="chat-attach-btn"><i class="bi bi-paperclip"></i></button>
+        <button type="button" class="chat-tool-btn chat-mic-tip" id="chat-mic-btn" onclick="chatToggleVoice()" aria-label="Voice to text (speak in any language, replies appear in English)" title="🎙️ Speak in any language — replies appear in English" data-tip="Speak in any language — replies appear in English" data-testid="chat-mic-btn"><i class="bi bi-mic-fill"></i></button>
+        <button type="button" class="chat-tool-btn" id="chat-emoji-btn" onclick="chatToggleEmoji(event)" aria-label="Insert emoji" title="Insert emoji" data-testid="chat-emoji-btn"><i class="bi bi-emoji-smile"></i></button>
+        <span class="chat-voice-timer" id="chat-voice-timer" style="display:none;" data-testid="chat-voice-timer"><span class="chat-voice-rec-dot"></span><span id="chat-voice-time">0:00</span></span>
+        <button class="chat-send-btn ms-auto" type="submit" aria-label="Send" data-testid="chat-send"><i class="bi bi-arrow-up"></i></button>
+      </div>
+    </div>
+    <input type="file" id="chat-file-input" class="d-none" data-testid="chat-file-input" accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip">
+    <div class="chat-emoji-panel" id="chat-emoji-panel" style="display:none;" data-testid="chat-emoji-panel"></div>
+    <div class="chat-attach-status" id="chat-attach-status" style="display:none;" data-testid="chat-attach-status"></div>
+  </form>
+  <div class="chat-talk-band" data-testid="chat-talk-band">Prefer to talk?<a href="tel:+18058239961" class="chat-talk-phone" data-testid="chat-talk-phone"><i class="bi bi-telephone-fill chat-talk-phone-ring"></i>1-805-823-9961</a></div>
+</div>
+
+<!--
+   Defer non-critical JS so the browser can render the hero + nav before
+   parsing/executing.  `defer` keeps the original execution order
+   (Bootstrap → main.js) and waits until DOMContentLoaded — same behaviour
+   as the previous blocking <script> but with no parser pause.  This is
+   the single biggest Core-Web-Vitals win for a server-rendered site.
+-->
+<script defer src="assets/vendor/bootstrap.bundle.min.js?v=1783923259"></script>
+<script defer src="assets/js/main.js?v=1783923259"></script>
+<!-- 3D scroll effects (reveal-on-scroll + subtle pointer tilt; reduced-motion aware) -->
+<!-- `defer` added 2026-07-07 — PageSpeed Insights (desktop + mobile) flagged
+     this script as render-blocking (~590 ms savings). scroll3d.js only wires
+     up IntersectionObservers + mouseenter handlers, none of which need to
+     run before DOMContentLoaded, so `defer` is fully safe here. Also
+     eliminates a script-eval spike that was contributing to Total Blocking
+     Time (was 550 ms). -->
+<script defer src="assets/js/scroll3d.js?v=1783925326"></script>
+
+<!--
+   Lazy-load + async-decode every image that's not already in the initial
+   viewport.  Saves bandwidth on long product pages and improves LCP for
+   the few images that DO need to load eagerly above the fold.  Runs once
+   on DOMContentLoaded; the IntersectionObserver branch upgrades the
+   "lazy" attribute to a real observer for browsers that need it.
+-->
+<script>
+(function(){
+  function applyLazy(){
+    var vh = window.innerHeight || 800;
+    document.querySelectorAll('img:not([loading]):not([data-eager])').forEach(function(img){
+      var rect = img.getBoundingClientRect();
+      // First-viewport images stay eager (LCP candidates); everything else
+      // is marked lazy + async-decode so the main thread doesn't block.
+      if (rect.top > vh) {
+        img.loading = 'lazy';
+        img.decoding = 'async';
+      } else {
+        // Hint to the browser this is high-priority LCP material.
+        img.fetchPriority = 'high';
+      }
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyLazy, { once: true });
+  } else {
+    applyLazy();
+  }
+})();
+</script>
+</body>
+</html>

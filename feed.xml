@@ -1,0 +1,1834 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Maventech — Software Product Feed</title>
+    <link>http://localhost:3000</link>
+    <atom:link href="http://localhost:3000/merchant-feed.php" rel="self" type="application/rss+xml"/>
+    <description>Genuine digital software product keys delivered by email — Microsoft Office, Windows, Bitdefender, Norton, McAfee, Adobe and more. Maventech is an authorized independent reseller of previously-licensed software product keys.</description>
+    <language>en-US</language>
+    <lastBuildDate>Mon, 13 Jul 2026 07:14:48 GMT</lastBuildDate>
+    <item>
+      <g:id>1</g:id>
+      <g:title>Microsoft Office 2024 Professional Plus (Windows) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office 2024 Professional Plus (Windows) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-2024-professional-plus-windows</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-2024-professional-plus-windows.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>209.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-04377215</g:mpn>
+      <g:sku>SKU-04377215</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint, Outlook, Access</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+      <g:custom_label_2>Best Seller</g:custom_label_2>
+    </item>
+    <item>
+      <g:id>2</g:id>
+      <g:title>Microsoft Office 2024 Professional Plus Windows PC (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office 2024 Professional Plus Windows PC (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-2024-professional-plus-lifetime-license-windows-pc</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-2024-professional-plus-windows.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>219.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-71CDA4E3</g:mpn>
+      <g:sku>SKU-71CDA4E3</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint, Outlook, Access</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>3</g:id>
+      <g:title>Microsoft Office Home 2024 (PC) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office Home 2024 (PC) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-home-2024-pc</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-home-2024-pc.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>126.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-0F64EAAC</g:mpn>
+      <g:sku>SKU-0F64EAAC</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+      <g:custom_label_2>Best Seller</g:custom_label_2>
+    </item>
+    <item>
+      <g:id>4</g:id>
+      <g:title>Microsoft Office Home &amp; Business 2024 (PC) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office Home &amp; Business 2024 (PC) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-home-business-2024-pc</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-home-business-2024-pc.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>228.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-253726E9</g:mpn>
+      <g:sku>SKU-253726E9</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint, Outlook</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+      <g:custom_label_2>Hot Pick</g:custom_label_2>
+    </item>
+    <item>
+      <g:id>5</g:id>
+      <g:title>Microsoft Office 2021 Home &amp; Business (Windows) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office 2021 Home &amp; Business (Windows) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-2021-home-business-windows</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-2021-home-business-windows.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>184.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-7CA3B9C1</g:mpn>
+      <g:sku>SKU-7CA3B9C1</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint, Outlook</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>6</g:id>
+      <g:title>Microsoft Office 2021 Professional Plus (Windows) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office 2021 Professional Plus (Windows) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-2021-professional-plus-windows</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-2021-professional-plus-windows.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>154.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-7D271F29</g:mpn>
+      <g:sku>SKU-7D271F29</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint, Outlook, Access</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+      <g:custom_label_2>Best Seller</g:custom_label_2>
+    </item>
+    <item>
+      <g:id>7</g:id>
+      <g:title>Microsoft Office 2021 Home &amp; Student (Windows) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office 2021 Home &amp; Student (Windows) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-2021-home-student-windows</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-2021-home-student-windows.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>109.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-95EF0342</g:mpn>
+      <g:sku>SKU-95EF0342</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>8</g:id>
+      <g:title>Microsoft Word 2021 (Windows) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Word 2021 (Windows) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-word-2021-windows</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-word-2021-windows.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>105.30 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-4E4FFA60</g:mpn>
+      <g:sku>SKU-4E4FFA60</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>9</g:id>
+      <g:title>Microsoft Excel 2021 (Windows) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Excel 2021 (Windows) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-excel-2021-windows</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-excel-2021-windows.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>111.95 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-C3CFEF0D</g:mpn>
+      <g:sku>SKU-C3CFEF0D</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Excel</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>10</g:id>
+      <g:title>Microsoft Office 2019 Home &amp; Student (Windows) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office 2019 Home &amp; Student (Windows) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-2019-home-student-windows</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-2019-home-student-windows.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>89.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-2A473431</g:mpn>
+      <g:sku>SKU-2A473431</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>11</g:id>
+      <g:title>Microsoft Office 2019 Home &amp; Business (PC) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office 2019 Home &amp; Business (PC) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-2019-home-business-pc</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-2019-home-business-pc.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>149.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-1D9CB946</g:mpn>
+      <g:sku>SKU-1D9CB946</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint, Outlook</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>12</g:id>
+      <g:title>Microsoft Office 2019 Professional Plus (Windows) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office 2019 Professional Plus (Windows) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-2019-professional-plus-windows</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-2019-professional-plus-windows.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>129.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-D983C7E2</g:mpn>
+      <g:sku>SKU-D983C7E2</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint, Outlook, Access</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+      <g:custom_label_2>Best Seller</g:custom_label_2>
+    </item>
+    <item>
+      <g:id>13</g:id>
+      <g:title>Microsoft Office Home &amp; Business 2024 (Mac) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office Home &amp; Business 2024 (Mac) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-home-business-2024-mac</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-home-business-2024-mac.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>194.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-48D5F446</g:mpn>
+      <g:sku>SKU-48D5F446</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint, Outlook</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>14</g:id>
+      <g:title>Microsoft Office Home 2024 (Mac) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office Home 2024 (Mac) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-home-2024-mac</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-home-2024-mac.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>126.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-93BF0180</g:mpn>
+      <g:sku>SKU-93BF0180</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+      <g:custom_label_2>Hot Pick</g:custom_label_2>
+    </item>
+    <item>
+      <g:id>15</g:id>
+      <g:title>Microsoft Office 2021 Home &amp; Student (Mac) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office 2021 Home &amp; Student (Mac) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-2021-home-student-mac</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-2021-home-student-mac.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>114.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-A65BC424</g:mpn>
+      <g:sku>SKU-A65BC424</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>16</g:id>
+      <g:title>Microsoft Office 2021 Home &amp; Business (Mac) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office 2021 Home &amp; Business (Mac) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-2021-home-business-mac</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-2021-home-business-mac.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>174.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-2FE8BE6E</g:mpn>
+      <g:sku>SKU-2FE8BE6E</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint, Outlook</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>17</g:id>
+      <g:title>Microsoft Word 2021 (Mac) No Subscription (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Word 2021 (Mac) No Subscription (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-word-2021-mac-lifetime-license-no-subscription</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-word-2021-mac-lifetime-license-no-subscription.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>117.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-68E3855E</g:mpn>
+      <g:sku>SKU-68E3855E</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>18</g:id>
+      <g:title>Microsoft Excel 2021 (Mac) No Subscription (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Excel 2021 (Mac) No Subscription (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-excel-2021-mac-lifetime-license-no-subscription</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-excel-2021-mac-lifetime-license-no-subscription.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>119.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-B7C9A47C</g:mpn>
+      <g:sku>SKU-B7C9A47C</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Excel</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>19</g:id>
+      <g:title>Microsoft Office Home And Business 2019 (Mac) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office Home And Business 2019 (Mac) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-home-and-business-2019-mac</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-home-and-business-2019-mac.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>124.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-72B817C3</g:mpn>
+      <g:sku>SKU-72B817C3</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint, Outlook</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>20</g:id>
+      <g:title>Microsoft Office Home And Student 2019 (Mac) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Office Home And Student 2019 (Mac) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-office-home-and-student-2019-mac</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-office-home-and-student-2019-mac.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>94.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-AF38DA9F</g:mpn>
+      <g:sku>SKU-AF38DA9F</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Includes Word, Excel, Powerpoint</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>21</g:id>
+      <g:title>Windows 11 Home (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Windows 11 Home (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=windows-11-home</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/windows-11-home.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>59.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-58625CF0</g:mpn>
+      <g:sku>SKU-58625CF0</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Operating Systems</g:product_type>
+      <g:google_product_category>5127</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>22</g:id>
+      <g:title>Windows 11 Pro (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Windows 11 Pro (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=windows-11-pro</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/windows-11-pro.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>79.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-DD7C7A56</g:mpn>
+      <g:sku>SKU-DD7C7A56</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Operating Systems</g:product_type>
+      <g:google_product_category>5127</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+      <g:custom_label_2>Best Seller</g:custom_label_2>
+    </item>
+    <item>
+      <g:id>23</g:id>
+      <g:title>Windows 10 Home (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Windows 10 Home (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=windows-10-home</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/windows-10-home.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>49.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-83CA6BCF</g:mpn>
+      <g:sku>SKU-83CA6BCF</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Operating Systems</g:product_type>
+      <g:google_product_category>5127</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>24</g:id>
+      <g:title>Windows 10 Pro (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Windows 10 Pro (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=windows-10-pro</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/windows-10-pro.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>69.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-C807BFDF</g:mpn>
+      <g:sku>SKU-C807BFDF</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Operating Systems</g:product_type>
+      <g:google_product_category>5127</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+      <g:custom_label_2>Best Seller</g:custom_label_2>
+    </item>
+    <item>
+      <g:id>25</g:id>
+      <g:title>Microsoft Project 2024 Professional (PC) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Project 2024 Professional (PC) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-project-2024-professional-pc</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-project-2024-professional-pc.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>199.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-8DA49D6A</g:mpn>
+      <g:sku>SKU-8DA49D6A</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+      <g:custom_label_2>Best Seller</g:custom_label_2>
+    </item>
+    <item>
+      <g:id>26</g:id>
+      <g:title>Microsoft Project Professional 2021 (PC) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Project Professional 2021 (PC) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-project-professional-2021-pc</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-project-professional-2021-pc.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>159.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-58BB62DF</g:mpn>
+      <g:sku>SKU-58BB62DF</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>27</g:id>
+      <g:title>MS Project Professional 2019 (PC) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for MS Project Professional 2019 (PC) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=ms-project-professional-2019-pc</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/ms-project-professional-2019-pc.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>129.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-4FAF9699</g:mpn>
+      <g:sku>SKU-4FAF9699</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>28</g:id>
+      <g:title>Microsoft Visio 2024 Professional (Windows PC) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Visio 2024 Professional (Windows PC) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-visio-2024-professional-windows-pc</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-visio-2024-professional-windows-pc.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>199.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-0EF1E74E</g:mpn>
+      <g:sku>SKU-0EF1E74E</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>29</g:id>
+      <g:title>Microsoft Visio 2021 Professional (Windows PC) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for Microsoft Visio 2021 Professional (Windows PC) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=microsoft-visio-2021-professional-windows-pc</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/microsoft-visio-2021-professional-windows-pc.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>169.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-F96E899E</g:mpn>
+      <g:sku>SKU-F96E899E</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>30</g:id>
+      <g:title>MS Visio Professional 2019 (PC) (Digital Key)</g:title>
+      <g:description>Genuine Microsoft product key for MS Visio Professional 2019 (PC) (Digital Key). Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=ms-visio-professional-2019-pc</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/ms-visio-professional-2019-pc.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>149.99 USD</g:price>
+      <g:brand>Microsoft</g:brand>
+      <g:mpn>SKU-4005073B</g:mpn>
+      <g:sku>SKU-4005073B</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Microsoft license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Microsoft</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>31</g:id>
+      <g:title>Bitdefender Premium VPN — Unlimited Devices, 1 Year</g:title>
+      <g:description>Genuine Bitdefender product key for Bitdefender Premium VPN — Unlimited Devices, 1 Year. Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=bitdefender-premium-vpn-unlimited-devices-1-year</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/bitdefender-premium-vpn-unlimited-devices-1-year.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>49.99 USD</g:price>
+      <g:brand>Bitdefender</g:brand>
+      <g:mpn>SKU-9A2DB69A</g:mpn>
+      <g:sku>SKU-9A2DB69A</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Antivirus &amp; Security Software</g:product_type>
+      <g:google_product_category>5299</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Bitdefender license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Bitdefender</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>32</g:id>
+      <g:title>Bitdefender Antivirus for Mac — 1 Mac, 1 Year</g:title>
+      <g:description>Genuine Bitdefender product key for Bitdefender Antivirus for Mac — 1 Mac, 1 Year. Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=bitdefender-antivirus-for-mac-1-mac-1-year</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/bitdefender-antivirus-for-mac-1-mac-1-year.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>29.99 USD</g:price>
+      <g:brand>Bitdefender</g:brand>
+      <g:mpn>SKU-2C0BD827</g:mpn>
+      <g:sku>SKU-2C0BD827</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Antivirus &amp; Security Software</g:product_type>
+      <g:google_product_category>5299</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Bitdefender license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Bitdefender</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>33</g:id>
+      <g:title>Bitdefender Antivirus for Mac — 1 Mac, 2 Years</g:title>
+      <g:description>Genuine Bitdefender product key for Bitdefender Antivirus for Mac — 1 Mac, 2 Years. Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=bitdefender-antivirus-for-mac-1-mac-2-years</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/bitdefender-antivirus-for-mac-1-mac-2-years.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>49.99 USD</g:price>
+      <g:brand>Bitdefender</g:brand>
+      <g:mpn>SKU-1E105BE9</g:mpn>
+      <g:sku>SKU-1E105BE9</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Antivirus &amp; Security Software</g:product_type>
+      <g:google_product_category>5299</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Bitdefender license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Bitdefender</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>34</g:id>
+      <g:title>Bitdefender Antivirus for Mac — 3 Mac, 1 Year</g:title>
+      <g:description>Genuine Bitdefender product key for Bitdefender Antivirus for Mac — 3 Mac, 1 Year. Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=bitdefender-antivirus-for-mac-3-mac-1-year</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/bitdefender-antivirus-for-mac-3-mac-1-year.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>49.99 USD</g:price>
+      <g:brand>Bitdefender</g:brand>
+      <g:mpn>SKU-484FB06F</g:mpn>
+      <g:sku>SKU-484FB06F</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Antivirus &amp; Security Software</g:product_type>
+      <g:google_product_category>5299</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Bitdefender license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Bitdefender</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>35</g:id>
+      <g:title>Bitdefender Antivirus for Mac — 3 Mac, 2 Years</g:title>
+      <g:description>Genuine Bitdefender product key for Bitdefender Antivirus for Mac — 3 Mac, 2 Years. Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=bitdefender-antivirus-for-mac-3-mac-2-years</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/bitdefender-antivirus-for-mac-3-mac-2-years.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>79.99 USD</g:price>
+      <g:brand>Bitdefender</g:brand>
+      <g:mpn>SKU-73230F17</g:mpn>
+      <g:sku>SKU-73230F17</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Antivirus &amp; Security Software</g:product_type>
+      <g:google_product_category>5299</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Mac</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Bitdefender license for 1 Mac device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Bitdefender</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>36</g:id>
+      <g:title>Bitdefender Small Office Security — 5 Devices, 1 Year</g:title>
+      <g:description>Genuine Bitdefender product key for Bitdefender Small Office Security — 5 Devices, 1 Year. Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=bitdefender-small-office-security-5-devices-1-year</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/bitdefender-small-office-security-5-devices-1-year.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>89.99 USD</g:price>
+      <g:brand>Bitdefender</g:brand>
+      <g:mpn>SKU-3CDBADC9</g:mpn>
+      <g:sku>SKU-3CDBADC9</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Business &amp; Productivity Software</g:product_type>
+      <g:google_product_category>315</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine Bitdefender license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>Bitdefender</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+    </item>
+    <item>
+      <g:id>37</g:id>
+      <g:title>McAfee+ Premium Individual - 1-Year / Unlimited Devices - USA</g:title>
+      <g:description>Genuine McAfee product key for McAfee+ Premium Individual - 1-Year / Unlimited Devices - USA. Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by Maventech, an authorized independent reseller of previously-licensed software product keys.</g:description>
+      <g:link>http://localhost:3000/product.php?slug=mcafee-premium-individual-1-year-unlimited-devices-usa</g:link>
+      <g:image_link>http://localhost:3000/uploads/products/mcafee-premium-individual-1-year-unlimited-devices-usa.webp</g:image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>39.99 USD</g:price>
+      <g:brand>McAfee</g:brand>
+      <g:mpn>SKU-86C9E0D2</g:mpn>
+      <g:sku>SKU-86C9E0D2</g:sku>
+      <g:identifier_exists>yes</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Software &gt; Antivirus &amp; Security Software</g:product_type>
+      <g:google_product_category>5299</g:google_product_category>
+      <g:product_detail>
+        <g:section_name>Compatibility</g:section_name>
+        <g:attribute_name>Operating System</g:attribute_name>
+        <g:attribute_value>Windows</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>License Type</g:attribute_name>
+        <g:attribute_value>Lifetime</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Licensing</g:section_name>
+        <g:attribute_name>Number of Devices</g:attribute_name>
+        <g:attribute_value>1 device</g:attribute_value>
+      </g:product_detail>
+      <g:product_detail>
+        <g:section_name>Delivery</g:section_name>
+        <g:attribute_name>Activation Method</g:attribute_name>
+        <g:attribute_value>Digital download — emailed product key</g:attribute_value>
+      </g:product_detail>
+      <g:product_highlight>Genuine McAfee license for 1 Windows device</g:product_highlight>
+      <g:product_highlight>One-time purchase, no recurring fee</g:product_highlight>
+      <g:product_highlight>Digital delivery by email </g:product_highlight>
+      <g:product_highlight>30-day money-back guarantee with certified expert support</g:product_highlight>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Digital download (instant by email)</g:service>
+        <g:price>0.00 USD</g:price>
+      </g:shipping>
+      <g:shipping_weight>0 kg</g:shipping_weight>
+      <g:return_policy_label>maventech-30-day-refund</g:return_policy_label>
+      <g:custom_label_0>McAfee</g:custom_label_0>
+      <g:custom_label_1>US</g:custom_label_1>
+      <g:custom_label_2>Hot Pick</g:custom_label_2>
+    </item>
+  </channel>
+</rss>

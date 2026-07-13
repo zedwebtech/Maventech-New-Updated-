@@ -16,6 +16,19 @@
         <span><i class="bi bi-shield-check text-primary me-1"></i>30-Day Guarantee</span>
         <span><i class="bi bi-headset text-primary me-1"></i>Expert Support</span>
       </div>
+      <!-- Secure Payments block — moved here from the bottom of the footer so
+           the trust-signal + accepted-card icons sit right next to the newsletter
+           CTA where shoppers are most likely to look before subscribing. -->
+      <div class="mt-4 pt-3" data-testid="footer-secure-payments">
+        <div class="text-white small fw-bold mb-2"><i class="bi bi-lock-fill text-success me-1"></i>Secure Payments</div>
+        <div class="d-flex gap-3 small mb-3 flex-wrap justify-content-center">
+          <span><i class="bi bi-lock-fill text-success me-1"></i>SSL Encrypted Checkout</span>
+          <span><i class="bi bi-shield-fill-check text-info me-1"></i>Secure Encrypted Transactions</span>
+        </div>
+        <div class="d-flex gap-2 flex-wrap justify-content-center" data-testid="footer-pay-icons">
+          <?= render_payment_icons() ?>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -127,20 +140,11 @@
       </div>
     </div>
 
-    <!-- Secure payments / reviews band -->
+    <!-- Secure payments moved to the top of the footer (right below the
+         newsletter band). Keeping only the customer-reviews / trademark row here. -->
     <hr class="border-secondary my-4">
     <div class="row g-4 align-items-center text-center text-md-start">
-      <div class="col-md-5">
-        <div class="text-white small fw-bold mb-2"><i class="bi bi-lock-fill text-success me-1"></i>Secure Payments</div>
-        <div class="d-flex gap-3 small mb-3 flex-wrap justify-content-center justify-content-md-start">
-          <span><i class="bi bi-lock-fill text-success me-1"></i>SSL Encrypted Checkout</span>
-          <span><i class="bi bi-shield-fill-check text-info me-1"></i>Secure Encrypted Transactions</span>
-        </div>
-        <div class="d-flex gap-2 flex-wrap justify-content-center justify-content-md-start" data-testid="footer-pay-icons">
-          <?= render_payment_icons() ?>
-        </div>
-      </div>
-      <div class="col-md-3 text-md-center">
+      <div class="col-md-3 text-md-center offset-md-9">
         <?php /* Customer Reviews footer block removed — no reviews shown site-wide */ ?>
       </div>
     </div>
