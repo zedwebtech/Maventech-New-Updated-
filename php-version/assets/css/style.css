@@ -1709,6 +1709,28 @@ footer p:has(> a[href^="tel:"]), footer p:has(> a[href^="mailto:"]) { margin-bot
   footer .col-lg-2 h3, footer .col-lg-3 h3 { margin-top: .1rem; }
 }
 
+/* Copyright line — stack the reg-number below on mobile so the two long
+   phrases never collide / wrap awkwardly on 320-414px screens. On tablet
+   and desktop we keep the inline layout with the middle-dot separator. */
+.footer-copyright { line-height: 1.55; }
+.footer-copyright .footer-copyright-main,
+.footer-copyright .footer-copyright-reg { display: inline; }
+@media (max-width: 575.98px) {
+  .footer-copyright .footer-copyright-sep { display: none; }
+  .footer-copyright .footer-copyright-reg {
+    display: block;
+    margin-top: .35rem;
+    font-size: .78rem;
+    color: #94a3b8;
+  }
+}
+/* Contact-list reg-number pill: allow the long number to break onto its
+   own line under the label on very narrow screens (iPhone SE etc.). */
+.footer-contact-list li[data-testid="footer-reg-number"] { word-break: break-word; }
+@media (max-width: 375px) {
+  .footer-contact-list li[data-testid="footer-reg-number"] { font-size: .78rem; }
+}
+
 
 /* Unavailable variant options: blurred + non-interactive */
 .variant-blur {

@@ -182,8 +182,13 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   <style id="critical-theme-pre-paint">
     :root { color-scheme: light dark; }
     html, body { background: #FFFFFF; color: #0F172A; }
+    /* Match dark-mode-polish.css's #131525 base color EXACTLY so the very
+       first paint (this inline CSS) shows the same background the polish
+       stylesheet later applies. Previously used #050B1B, which caused a
+       visible "near-black → dark navy" flicker on every navigation once
+       dark-mode-polish.css finished loading. */
     html[data-bs-theme="dark"], html[data-bs-theme="dark"] body {
-      background: #050B1B !important; color: #E5ECFA !important;
+      background: #131525 !important; color: #E5ECFA !important;
       color-scheme: dark;
     }
     /* Text-selection highlight — Bootstrap's default `::selection` is
@@ -607,21 +612,20 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   <?php
     // bootstrap-icons + style.css stay SYNCHRONOUS — they affect the visible
     // layout/icons, so deferring them caused a large CLS.
-    // dark-mode-polish.css, however, contains ONLY [data-bs-theme="dark"] rules.
-    // For the default (light) theme it changes nothing, so deferring it off the
-    // critical path is zero-CLS-risk and reclaims render-blocking time.  The
-    // core dark theme itself lives in style.css (still synchronous), so even
-    // dark-mode users see no layout shift — only late-applied colour polish.
+    // dark-mode-polish.css was previously deferred, but it sets a different
+    // dark background (#131525 with radial gradients) than the critical
+    // inline CSS. That mismatch caused a visible dark→dark FOUC flash on
+    // every navigation. Loading it synchronously ensures the polished bg
+    // is applied on the very first paint (no repaint = no flicker).
     $darkCss = 'assets/css/dark-mode-polish.css?v=' . esc(@filemtime(__DIR__ . '/../assets/css/dark-mode-polish.css'));
   ?>
   <link href="<?= 'assets/vendor/bootstrap-icons.min.css?v=' . esc(@filemtime(__DIR__ . '/../assets/vendor/bootstrap-icons.min.css')) ?>" rel="stylesheet">
   <link href="<?= esc(min_css_url(__DIR__ . '/../assets/css/style.css', 'assets/css/style.css')) ?>" rel="stylesheet">
+  <link href="<?= $darkCss ?>" rel="stylesheet">
   <!-- scroll3d.css is a progressive-enhancement (scroll reveal + tilt) — load it
        async so it never blocks first render (PageSpeed: render-blocking CSS). -->
   <link rel="preload" as="style" href="assets/css/scroll3d.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/css/scroll3d.css')) ?>" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link href="assets/css/scroll3d.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/css/scroll3d.css')) ?>" rel="stylesheet"></noscript>
-  <link rel="preload" as="style" href="<?= $darkCss ?>" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link href="<?= $darkCss ?>" rel="stylesheet"></noscript>
   <script>window.SITE_PHONE = '<?= esc($brandPhone) ?>'; window.CART_SLUGS = <?= json_encode(array_keys(cart())) ?>;</script>
 
   <?php

@@ -158,7 +158,13 @@
         <a href="<?= $lh ?>"><?= $ll ?></a><?= $idx < count($legal) - 1 ? '<span aria-hidden="true" style="color:#94a3b8;">|</span>' : '' ?>
       <?php endforeach; ?>
     </div>
-    <div class="text-center small">© <?= date('Y') ?> <?= esc($brandLegalName) ?>. All rights reserved.<?php if ($brandRegNumber): ?> · Company Registration Number: <?= esc($brandRegNumber) ?><?php endif; ?></div>
+    <div class="text-center small footer-copyright" data-testid="footer-copyright">
+      <span class="footer-copyright-main">© <?= date('Y') ?> <?= esc($brandLegalName) ?>. All rights reserved.</span>
+      <?php if ($brandRegNumber): ?>
+        <span class="footer-copyright-sep" aria-hidden="true"> · </span>
+        <span class="footer-copyright-reg" data-testid="footer-copyright-reg">Company Registration Number: <?= esc($brandRegNumber) ?></span>
+      <?php endif; ?>
+    </div>
   </div>
 </footer>
 
