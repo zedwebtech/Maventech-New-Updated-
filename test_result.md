@@ -1051,7 +1051,7 @@ frontend:
           ✅ BUG FIX VERIFICATION COMPLETE - ALL 4 SECTIONS PASSED
           
           SECTION 1 — External preview URL (through Cloudflare): ✅ PASS
-          - curl -sk -i https://pricing-display-3.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301) ✅
+          - curl -sk -i https://show-preview-44.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301) ✅
           - x-powered-by: PHP/8.2.31 header present ✅
           - Body contains "Maventech" (site title) ✅
           - Body contains "Microsoft" (hero copy) ✅
@@ -1493,7 +1493,7 @@ agent_communication:
     -agent: "main"
     -message: |
       COMPREHENSIVE UI TESTING REQUEST — Test the installation guide feature end-to-end via browser automation.
-      Focus ONLY on the new installation guide feature. Test at https://pricing-display-3.preview.emergentagent.com
+      Focus ONLY on the new installation guide feature. Test at https://show-preview-44.preview.emergentagent.com
       
       PART 1-4: Test native guide pages, product page block, order history page, and admin filter.
 
@@ -2132,7 +2132,7 @@ frontend:
         -agent: "testing"
         -comment: |
           COMPREHENSIVE GOOGLE ADS/MERCHANT COMPLIANCE TESTING COMPLETE
-          Tested 10 critical compliance items on preview URL: https://pricing-display-3.preview.emergentagent.com
+          Tested 10 critical compliance items on preview URL: https://show-preview-44.preview.emergentagent.com
           
           CRITICAL FAILURES (MUST FIX):
           
@@ -2240,7 +2240,7 @@ agent_communication:
     -message: |
       ✅ GOOGLE ADS/MERCHANT COMPLIANCE TESTING COMPLETE — 1 CRITICAL FAILURE FOUND
       
-      Tested all 10 compliance items from the review request on preview URL: https://pricing-display-3.preview.emergentagent.com
+      Tested all 10 compliance items from the review request on preview URL: https://show-preview-44.preview.emergentagent.com
       
       CRITICAL FAILURE (MUST FIX IMMEDIATELY):
       ✗ "Save up to 10%" discount badge appears in top navigation bar
@@ -2484,7 +2484,7 @@ agent_communication:
 
       PLEASE VERIFY at http://localhost:3000/ (preview) and via curl with faked host headers (we can't test their real Apache, but we can validate the intent of router.php + inspect .htaccess statically):
 
-        (a) Preview host unchanged: GET https://pricing-display-3.preview.emergentagent.com/ → HTTP 200 (no redirect). Also confirm curl -si -H "Host: 58485f15-d8bc-415a-9027-8cd21a31434f.preview.emergentagent.com" http://127.0.0.1:3000/ → 200.
+        (a) Preview host unchanged: GET https://show-preview-44.preview.emergentagent.com/ → HTTP 200 (no redirect). Also confirm curl -si -H "Host: 58485f15-d8bc-415a-9027-8cd21a31434f.preview.emergentagent.com" http://127.0.0.1:3000/ → 200.
 
         (b) Router redirect direction for a real-world host — simulate an HTTPS request behind a proxy. Send curl -si -H "Host: www.maventechsoftware.com" -H "X-Forwarded-Proto: https" http://127.0.0.1:3000/. Expected: HTTP/1.1 301 Moved Permanently with `Location: https://maventechsoftware.com/` (www stripped, HTTPS preserved). Then curl -si -H "Host: maventechsoftware.com" -H "X-Forwarded-Proto: https" http://127.0.0.1:3000/ → HTTP 200 (naked passes through, no redirect).
 
@@ -2514,7 +2514,7 @@ agent_communication:
 
       User report: clicking the "open in new tab" arrow on the Emergent preview panel opens a broken page. Cause was router.php redirecting the preview host (bdc5651e-…preview.emergentagent.com) 301 → http://www.bdc5651e-…preview.emergentagent.com/ (that www. host doesn't resolve).
       Fix applied in /app/php-version/router.php lines 65-73: broadened the canonical-host-redirect bypass to cover any *.emergentagent.com (and *.emergent.host) host, and to also honour X-Forwarded-Host (Cloudflare/ingress) with any :port suffix stripped. Localhost bypass unchanged. No other files touched.
-      Please verify at https://pricing-display-3.preview.emergentagent.com/ (and via internal curl at http://localhost:3000/):
+      Please verify at https://show-preview-44.preview.emergentagent.com/ (and via internal curl at http://localhost:3000/):
         (a) GET / returns HTTP 200 (no 301 to a www.* host).
         (b) Homepage renders full HTML — title contains "Maventech" / "Microsoft Office", hero section present.
         (c) A few other key routes still return 200: /shop.php, /product.php?slug=windows-11-pro, /cart.php, /install-guide.php?slug=microsoft-office-2024-professional-plus-windows.
@@ -2608,7 +2608,7 @@ agent_communication:
       TEST RESULTS:
       
       SECTION 1 — External preview URL (through Cloudflare): ✅ PASS
-      - curl -sk -i https://pricing-display-3.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301 to www.*)
+      - curl -sk -i https://show-preview-44.preview.emergentagent.com/ returns HTTP/2 200 (NOT 301 to www.*)
       - x-powered-by: PHP/8.2.31 header present
       - Body contains "Maventech" (site title) and "Microsoft" (hero copy)
       - Full HTML rendered, not an empty body or redirect page
@@ -2893,7 +2893,7 @@ frontend:
           VERIFICATION RESULTS (per review request):
           
           TEST 1: ✅ LOGIN FLOW — PASS
-          - Navigated to https://pricing-display-3.preview.emergentagent.com/login.php
+          - Navigated to https://show-preview-44.preview.emergentagent.com/login.php
           - Filled credentials: admin@maventechsoftware.com / Admin@UC2026!
           - Clicked "Log In" button
           - Result: Successfully redirected to /admin.php?tab=dashboard ✅
@@ -2946,12 +2946,12 @@ test_plan:
 
 agent_communication:
     -agent: "main"
-    -message: "Please verify admin login. Preview URL: https://pricing-display-3.preview.emergentagent.com/login.php - Enter email admin@maventechsoftware.com and password Admin@UC2026! then click Log In. It should redirect to /admin.php with the admin control panel visible (sidebar with Dashboard/Users/Company Info/etc.). Also confirm the Google Ads Smart-Bidding Blueprint status card renders under Admin -> Company Info tab (data-testid=google-ads-blueprint-card). Report only login pass/fail and whether the blueprint card is visible."
+    -message: "Please verify admin login. Preview URL: https://show-preview-44.preview.emergentagent.com/login.php - Enter email admin@maventechsoftware.com and password Admin@UC2026! then click Log In. It should redirect to /admin.php with the admin control panel visible (sidebar with Dashboard/Users/Company Info/etc.). Also confirm the Google Ads Smart-Bidding Blueprint status card renders under Admin -> Company Info tab (data-testid=google-ads-blueprint-card). Report only login pass/fail and whether the blueprint card is visible."
     -agent: "testing"
     -message: |
       ✅ ADMIN LOGIN BUG FIX VERIFICATION COMPLETE — ALL TESTS PASSED
       
-      Verified the admin login bug fix on preview pod (https://pricing-display-3.preview.emergentagent.com):
+      Verified the admin login bug fix on preview pod (https://show-preview-44.preview.emergentagent.com):
       
       1. ✅ LOGIN FLOW: Successfully logged in with admin@maventechsoftware.com / Admin@UC2026! — redirected to /admin.php?tab=dashboard with full admin control panel visible (sidebar with Dashboard, Users, Company Info, Orders, etc.). NO "Invalid username/email or password" error.
       
@@ -2994,7 +2994,7 @@ test_plan:
 agent_communication:
     -agent: "main"
     -message: |
-      Please verify 3 things on the Maventech PHP storefront preview URL (https://pricing-display-3.preview.emergentagent.com):
+      Please verify 3 things on the Maventech PHP storefront preview URL (https://show-preview-44.preview.emergentagent.com):
 
       1) **Protection Hub card layout** — go to /protection-hub.php. On each of the 4 plan cards (Quick Fix, Starter Care, Pro Shield, Lifetime Elite), the plan icon + plan name + tagline + price MUST all be centered horizontally within the card. Feature bullets below can remain left-aligned. Confirm the inline logo (bi-lightning-charge-fill / bi-shield-check / bi-shield-shaded / bi-gem) sits directly above the plan name, both centered.
 
@@ -3042,7 +3042,7 @@ frontend:
         -comment: |
           ✅ COMPREHENSIVE MOBILE CURRENCY DROPDOWN TESTING COMPLETE — ALL TESTS PASSED
           
-          Tested on preview URL: https://pricing-display-3.preview.emergentagent.com
+          Tested on preview URL: https://show-preview-44.preview.emergentagent.com
           Viewport: 390x844 (iPhone 14)
           
           TEST 1 — Mobile currency dropdown clipping (HIGHEST PRIORITY): ✅ PASS
@@ -3090,7 +3090,7 @@ frontend:
         -comment: |
           ✅ PROTECTION HUB CENTERED LAYOUT VERIFICATION COMPLETE — ALL TESTS PASSED
           
-          Tested on preview URL: https://pricing-display-3.preview.emergentagent.com/protection-hub.php
+          Tested on preview URL: https://show-preview-44.preview.emergentagent.com/protection-hub.php
           Viewport: 1920x900 (Desktop)
           
           TEST 2a — Protection Hub centered layout: ✅ PASS
@@ -3140,7 +3140,7 @@ frontend:
         -comment: |
           ✅ CHECKOUT THUMBNAIL VERIFICATION COMPLETE — ALL TESTS PASSED
           
-          Tested on preview URL: https://pricing-display-3.preview.emergentagent.com/checkout.php
+          Tested on preview URL: https://show-preview-44.preview.emergentagent.com/checkout.php
           Viewport: 1920x900 (Desktop)
           
           TEST 2b — Checkout thumbnail matches plan icon: ✅ PASS
@@ -3185,7 +3185,7 @@ frontend:
         -comment: |
           ✅ MERCHANT CENTER FEED VERIFICATION COMPLETE — ALL TESTS PASSED
           
-          Tested on preview URL: https://pricing-display-3.preview.emergentagent.com/merchant-feed.php
+          Tested on preview URL: https://show-preview-44.preview.emergentagent.com/merchant-feed.php
           
           TEST 2c — Merchant Center feed contains Protection Hub plans: ✅ PASS
           
@@ -3232,7 +3232,7 @@ frontend:
     -message: |
       ✅ COMPREHENSIVE VERIFICATION COMPLETE — ALL 4 TESTS PASSED (2026-07-05)
       
-      Tested TWO specific fixes on Maventech PHP storefront preview URL: https://pricing-display-3.preview.emergentagent.com
+      Tested TWO specific fixes on Maventech PHP storefront preview URL: https://show-preview-44.preview.emergentagent.com
       
       ═══════════════════════════════════════════════════════════════════════════════
       TEST 1 — Mobile currency dropdown clipping (HIGHEST PRIORITY): ✅ PASS
