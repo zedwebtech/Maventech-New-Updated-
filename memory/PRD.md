@@ -1,3 +1,17 @@
+<!-- 2026-07-13 (b): Checkout Payment method — mutually-exclusive detail
+  panels. When the customer picks Card, only the Card Number / Expiry / CVV
+  reveal is shown. When they pick PayPal, the Card fields hide and a new
+  "PayPal Checkout" info panel appears instead (explains they'll be
+  redirected to PayPal to authorise). Submit button also swaps: "Pay
+  Securely" for Card, "PayPal · Continue" for PayPal. Initial state
+  respects the POSTed payment_method (defaults to Card) — including the
+  Card/PayPal tile "active" ring, the pm_radio checked state, and the
+  visibility of #card-form / #paypal-info / #btn-pay-card / #btn-pay-paypal.
+  All swapping is driven by the existing selectPayMethod() JS in main.js
+  which was already toggling both panels — we simply added the missing
+  #paypal-info div + wired the initial-state PHP. -->
+
+
 <!-- 2026-07-13: Checkout UX overhaul + order-success QR caption tweak.
   (1) Order Success page: shortened the QR block caption from
   "View your license keys & installation guide on any phone" to

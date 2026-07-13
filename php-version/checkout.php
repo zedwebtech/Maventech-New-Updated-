@@ -735,7 +735,8 @@ include __DIR__ . '/includes/header.php';
 
   <form method="post" class="row g-3 align-items-start">
     <input type="hidden" name="pro" value="<?= $proAssist ? '1' : '0' ?>">
-    <input type="hidden" name="payment_method" id="payment-method-input" value="card">
+    <?php $defaultPM = (($_POST['payment_method'] ?? 'card') === 'paypal') ? 'paypal' : 'card'; ?>
+    <input type="hidden" name="payment_method" id="payment-method-input" value="<?= $defaultPM ?>">
     <input type="hidden" name="email_override" id="email-override-input" value="0">
     <input type="hidden" name="address_override" id="address-override-input" value="0">
 
@@ -767,9 +768,9 @@ include __DIR__ . '/includes/header.php';
       <div class="row g-2 mb-2">
         <?php if ($_cardEnabled): ?>
         <div class="<?= $_paypalEnabled ? 'col-sm-6' : 'col-12' ?>">
-          <div id="pay-card" class="pay-option pay-tile active p-2 h-100" onclick="selectPayMethod('card')" data-testid="pay-method-card">
+          <div id="pay-card" class="pay-option pay-tile <?= $defaultPM === 'card' ? 'active' : '' ?> p-2 h-100" onclick="selectPayMethod('card')" data-testid="pay-method-card">
             <div class="d-flex align-items-center gap-2">
-              <input type="radio" class="form-check-input mt-0" name="pm_radio" checked onclick="selectPayMethod('card')">
+              <input type="radio" class="form-check-input mt-0" name="pm_radio" <?= $defaultPM === 'card' ? 'checked' : '' ?> onclick="selectPayMethod('card')">
               <i class="bi bi-credit-card-2-front text-primary fs-5"></i>
               <span class="fw-bold">Card</span>
             </div>
@@ -781,9 +782,9 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
         <?php if ($_paypalEnabled): ?>
         <div class="<?= $_cardEnabled ? 'col-sm-6' : 'col-12' ?>">
-          <div id="pay-paypal" class="pay-option pay-tile paypal p-2 h-100" onclick="selectPayMethod('paypal')" data-testid="pay-method-paypal">
+          <div id="pay-paypal" class="pay-option pay-tile paypal <?= $defaultPM === 'paypal' ? 'active' : '' ?> p-2 h-100" onclick="selectPayMethod('paypal')" data-testid="pay-method-paypal">
             <div class="d-flex align-items-center gap-2">
-              <input type="radio" class="form-check-input mt-0" name="pm_radio" onclick="selectPayMethod('paypal')">
+              <input type="radio" class="form-check-input mt-0" name="pm_radio" <?= $defaultPM === 'paypal' ? 'checked' : '' ?> onclick="selectPayMethod('paypal')">
               <img src="assets/images/payments/paypal.svg" alt="PayPal" class="pay-icon pay-icon-sm">
               <span class="fw-bold"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span></span>
             </div>
@@ -794,7 +795,7 @@ include __DIR__ . '/includes/header.php';
       </div>
       <!-- Card details drop-down (shown when Card selected). Fields have NO name attrs —
            they are never posted to our server; the charge is confirmed on Stripe's PCI-compliant page. -->
-      <div id="card-form" class="card-form-reveal mb-2" data-testid="card-details-form">
+      <div id="card-form" class="card-form-reveal mb-2<?= $defaultPM !== 'card' ? ' d-none' : '' ?>" data-testid="card-details-form">
         <div class="row g-2">
           <div class="col-12">
             <label class="form-label">Card Number</label>
@@ -822,6 +823,21 @@ include __DIR__ . '/includes/header.php';
           </div>
         </div>
         <div class="small text-secondary mt-2"><i class="bi bi-shield-lock-fill text-success me-1"></i>Your card is verified &amp; charged on Stripe's PCI-compliant secure page — we never store card data.</div>
+      </div>
+      <!-- PayPal info drop-down (shown when PayPal is selected). No card fields —
+           the customer is redirected to PayPal's own secure checkout to authorise the payment. -->
+      <div id="paypal-info" class="card-form-reveal mb-2<?= $defaultPM !== 'paypal' ? ' d-none' : '' ?>" data-testid="paypal-info-panel">
+        <div class="paypal-info-box p-3 rounded-3">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <img src="assets/images/payments/paypal.svg" alt="PayPal" style="height:22px;">
+            <span class="fw-bold"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span> Checkout</span>
+          </div>
+          <ul class="list-unstyled mb-0 small text-secondary" style="line-height:1.6;">
+            <li><i class="bi bi-check2-circle text-success me-1"></i>Click <strong>Continue with PayPal</strong> below — you'll be securely redirected to PayPal to log in and confirm.</li>
+            <li><i class="bi bi-check2-circle text-success me-1"></i>Pay with your PayPal balance, bank account, or any card linked to PayPal.</li>
+            <li><i class="bi bi-shield-lock-fill text-success me-1"></i>Your card &amp; bank details stay with PayPal — we never see them.</li>
+          </ul>
+        </div>
       </div>
       <hr class="co-merge-divider my-4">
       <!-- Your Details — merged into the SAME card, now BELOW Payment -->
@@ -901,10 +917,10 @@ include __DIR__ . '/includes/header.php';
         </div>
       </div>
       <?php if ($_cardEnabled): ?>
-      <button id="btn-pay-card" type="submit" class="btn btn-primary btn-lg rounded-pill w-100 mt-3" data-testid="checkout-pay-button">Pay Securely · <?= format_price($total) ?></button>
+      <button id="btn-pay-card" type="submit" class="btn btn-primary btn-lg rounded-pill w-100 mt-3<?= $defaultPM !== 'card' ? ' d-none' : '' ?>" data-testid="checkout-pay-button">Pay Securely · <?= format_price($total) ?></button>
       <?php endif; ?>
       <?php if ($_paypalEnabled): ?>
-      <button id="btn-pay-paypal" type="submit" class="btn btn-paypal btn-lg rounded-pill w-100 mt-3 <?= $_cardEnabled ? 'd-none' : '' ?>" data-testid="checkout-paypal-button"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span> · Continue <?= format_price($total) ?></button>
+      <button id="btn-pay-paypal" type="submit" class="btn btn-paypal btn-lg rounded-pill w-100 mt-3<?= $defaultPM !== 'paypal' ? ' d-none' : '' ?>" data-testid="checkout-paypal-button"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span> · Continue <?= format_price($total) ?></button>
       <?php endif; ?>
       <div class="text-center small text-secondary mt-2"><i class="bi bi-shield-lock me-1"></i>256-bit SSL · Powered by Stripe — card details are entered on the secure payment page</div>
       <div class="text-center mt-1" style="font-size:.72rem;">By placing your order, you agree to our <a href="page.php?slug=terms-of-service">Terms</a> and <a href="page.php?slug=privacy-policy">Privacy Policy</a></div>
@@ -1004,6 +1020,15 @@ include __DIR__ . '/includes/header.php';
   box-shadow: 0 0 0 3px rgba(6,182,212,.12);
 }
 .co-merge-divider { margin: 1.6rem 0; }
+/* PayPal info panel (shown when PayPal payment method is selected) */
+.paypal-info-box {
+  background: linear-gradient(135deg, rgba(0,48,135,.05), rgba(0,112,186,.08));
+  border: 1px solid rgba(0,112,186,.25);
+}
+[data-bs-theme="dark"] .paypal-info-box {
+  background: linear-gradient(135deg, rgba(0,48,135,.18), rgba(0,112,186,.22));
+  border-color: rgba(0,112,186,.45);
+}
 </style>
 <script>
 /* Region-aware checkout address form. The PHP $REGION_FORMS config is the
