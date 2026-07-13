@@ -1,3 +1,25 @@
+<!-- 2026-07-13 (l): Address auto-suggest — v3 fix for dropdown getting
+  clipped behind the Pay Securely button.
+  Root cause: the checkout Payment card has a scroll-tilt effect
+  (.card.co-banner.s3d-tilt) that applies a matrix3d() transform on
+  scroll. Per CSS spec, ANY non-none transform on an ancestor creates
+  a new stacking context AND makes descendant position:fixed anchor
+  to that ancestor instead of the viewport. That was skewing the
+  panel's position AND trapping it below sibling elements even with
+  z-index 2000.
+  Fix: on IIFE init, `document.body.appendChild(panel)` — the
+  suggestion panel is moved OUT of the transformed .co-banner. It
+  now has position: fixed, z-index: 2000 anchored to the viewport
+  properly, and the show() function recomputes its left/top/width
+  from the input's getBoundingClientRect() on every open + on
+  window scroll + resize.
+  Verified by frontend testing agent: 10/10 tests pass — panel
+  parent=BODY, position=fixed, z-index=2000, aligned within 0.01px,
+  paints ON TOP at overlap with Pay button, repositions correctly
+  on 200px scroll, and the previous "stays-closed-after-selection"
+  behaviour still works. -->
+
+
 <!-- 2026-07-13 (k): Card validation bug fix — error placement + silent-
   while-typing.
   (1) Error message MOVED back INLINE next to the CARD NUMBER label
