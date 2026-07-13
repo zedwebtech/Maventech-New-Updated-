@@ -1,3 +1,28 @@
+<!-- 2026-07-13 (f): Footer Secure-Payments relocation + merchant-feed
+  Protection-Hub-plans exclusion.
+  (1) FOOTER (includes/footer.php) — the "Secure Payments" block (SSL
+      Encrypted Checkout + Secure Encrypted Transactions row +
+      render_payment_icons() row of Visa / MC / Amex / Discover / PayPal
+      SVGs) was rendered in a `.row .col-md-5` block AFTER the 4-column
+      site-links grid and before the trademark paragraph. Moved that
+      entire block to a new .mt-4 container INSIDE the top newsletter
+      band, directly under the Genuine Products / 30-Day Guarantee /
+      Expert Support chip row. Deleted the old bottom instance so the
+      block appears exactly ONCE on the page. Verified byte-offset
+      ordering: newsletter (123125) < secure-payments (124316) <
+      trademark (131994).
+  (2) MERCHANT FEED (merchant-feed.php) — removed the entire
+      Protection-Hub-plans emission loop (was appending one <item> per
+      active plan × per region, so Quick Fix / Starter Care / ProShield
+      Lite / Family Lite / Ultimate were being served to Google Merchant
+      Center as feed rows in USD/CAD/GBP/AUD/EUR). Feed now emits ONLY
+      the 37 software SKU items. Verified: `grep -c '<item>'` = 37,
+      `grep -c 'plan-'` = 0, `grep -c 'Protection Hub'` = 0, plan-name
+      grep = 0. XML still validates via xmllint. Plans remain marketed
+      through /protection-hub.php on-site — they just don't enter the
+      Google feed anymore. -->
+
+
 <!-- 2026-07-13 (e): Sitewide brand/phone consistency + hero + content de-dup
   fixes flagged by Google Merchant AI review (see maventech-review.html).
   (1) DB PHONE NORMALIZATION — bulk REPLACE across three tables removed
