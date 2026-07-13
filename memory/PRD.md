@@ -1,3 +1,31 @@
+<!-- 2026-07-13 (j): Checkout card UX polish v2 — icons above, no
+  pending pill, plain-text inline errors.
+  (1) BRAND ICONS ABOVE (checkout.php) — renamed .card-brands-below →
+      .card-brands-above and moved the icons DIV to render BEFORE the
+      Card Number / Expiry / CVV row. So the accepted-brand icons now
+      sit above the field labels. Verified: icons.bottom (397px) <
+      label.top (411px).
+  (2) STATUS PILL REMOVED (checkout.php + main.js) — deleted the entire
+      #card-brand-status span from the DOM and its JS block. No more
+      amber "Enter N more digits" nag while typing. Field stays neutral
+      (no colour, no message) until the customer types something
+      unambiguously wrong.
+  (3) PLAIN INLINE ERRORS (checkout.php + main.js) — each of card-number
+      / card-exp / card-cvv now has a sibling <span class="field-error-
+      inline" id="{id}-error"> inside a flex label-row (label left,
+      error right). Red plain text (light #b91c1c, dark #fca5a5 !important
+      via body:not(.adm) specificity fix), transparent background,
+      .72rem, ellipsis if overflow. setCardFieldValidity(el, ok, msg)
+      writes the textContent — empty when valid or still typing. Error
+      strings kept short so narrow col-md-3 columns don't truncate:
+      "Invalid card number" · "Expired" · "Bad month" · "Invalid CVV".
+      Submit-guard toast strings unified too.
+  Verified by frontend testing agent: 7/7 test scenarios pass (icons-
+  above position + light-mode Luhn error + dark-mode Luhn error color
+  rgb(252,165,165) + partial-input silence + valid-Visa silence +
+  Expiry "Expired"/"Bad month" + CVV silence-while-typing). -->
+
+
 <!-- 2026-07-13 (i): Checkout card UX polish + one-viewport fit + real
   client-side card validation.
   (1) CARD-BRAND ICONS RELOCATED (checkout.php + main.js) — removed the
