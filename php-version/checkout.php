@@ -774,9 +774,15 @@ include __DIR__ . '/includes/header.php';
               <i class="bi bi-credit-card-2-front text-primary fs-5"></i>
               <span class="fw-bold">Card</span>
             </div>
-            <?php /* Payment brand logos removed here per UX request (2026-07-13) —
-                     they now render only inside the Card Number input group below
-                     to reduce visual repetition on the tile. */ ?>
+            <!-- Accepted-brand icons render directly UNDER the Card tile so the customer
+                 sees which brands are supported the moment they pick "Card". Each icon
+                 lights up (scale-up + full opacity) as it matches the typed number. -->
+            <div class="card-brands-tile" id="card-brands" data-testid="card-brand-icons">
+              <img src="assets/images/payments/visa.svg"       alt="Visa"             data-brand="visa"       class="card-brand-icon">
+              <img src="assets/images/payments/mastercard.svg" alt="Mastercard"       data-brand="mastercard" class="card-brand-icon">
+              <img src="assets/images/payments/amex.svg"       alt="American Express" data-brand="amex"       class="card-brand-icon">
+              <img src="assets/images/payments/discover.svg"   alt="Discover"         data-brand="discover"   class="card-brand-icon">
+            </div>
           </div>
         </div>
         <?php endif; ?>
@@ -805,12 +811,6 @@ include __DIR__ . '/includes/header.php';
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-credit-card-2-front text-primary"></i></span>
               <input id="card-number" class="form-control" inputmode="numeric" autocomplete="cc-number" maxlength="19" data-testid="card-number-input" aria-label="Card number" placeholder="1234 5678 9012 3456">
-              <span class="input-group-text card-brands-inside" id="card-brands" data-testid="card-brand-icons">
-                <img src="assets/images/payments/visa.svg"       alt="Visa"       data-brand="visa"       class="card-brand-icon">
-                <img src="assets/images/payments/mastercard.svg" alt="Mastercard" data-brand="mastercard" class="card-brand-icon">
-                <img src="assets/images/payments/amex.svg"       alt="American Express" data-brand="amex" class="card-brand-icon">
-                <img src="assets/images/payments/discover.svg"   alt="Discover"   data-brand="discover"   class="card-brand-icon">
-              </span>
             </div>
             <div class="field-error-under" id="card-number-error" data-testid="card-number-error" aria-live="polite"></div>
           </div>
@@ -1064,20 +1064,21 @@ form .row.g-3 { --bs-gutter-y: .75rem; }
 #card-number { font-size: .95rem; letter-spacing: .04em; }
 
 /* ============================================================
-   Card-brand icons INSIDE the Card Number input group (right side).
-   As the customer types, the matching brand highlights (full opacity +
-   subtle scale-up + cyan glow) while the others dim/desaturate.
+   Card-brand icons UNDER the "Card" payment tile — the customer sees
+   the accepted brands the moment they select the Card payment method,
+   and each icon lights up (full opacity + scale + cyan glow) as it
+   matches the typed card number.
    ============================================================ */
-.card-brands-inside {
-  display: inline-flex; align-items: center; gap: .3rem;
-  padding: 0 .55rem;
+.card-brands-tile {
+  display: flex; align-items: center; gap: .3rem;
+  margin-top: .55rem; padding-left: 1.75rem; /* aligns with the "Card" label after the radio */
 }
-.card-brands-inside .card-brand-icon {
+.card-brands-tile .card-brand-icon {
   height: 18px; width: auto; border-radius: 3px; opacity: .55;
   transition: opacity .18s ease, transform .18s ease, box-shadow .18s ease, filter .18s ease;
 }
-.card-brands-inside .card-brand-icon.dimmed { opacity: .18; filter: grayscale(100%); }
-.card-brands-inside .card-brand-icon.active {
+.card-brands-tile .card-brand-icon.dimmed { opacity: .2; filter: grayscale(100%); }
+.card-brands-tile .card-brand-icon.active {
   opacity: 1; transform: scale(1.2);
   box-shadow: 0 2px 8px rgba(6,182,212,.45);
 }

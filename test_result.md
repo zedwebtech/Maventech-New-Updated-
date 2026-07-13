@@ -102,18 +102,47 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 
 user_problem_statement: |
-  Iteration 2026-07-13 (h) — final checkout polish:
-  (1) Remove the "I agree to receive SMS order updates & delivery
-      notifications from Maventech. Msg & data rates may apply. Reply
-      STOP to opt out." consent checkbox at the bottom of the details
-      section.
-  (2) Move the accepted-brand icons row (Visa/MC/Amex/Discover) back
-      INSIDE the Card Number input group (right side overlay) — this
-      is the classic Stripe-style layout the customer expects. Icons
-      still highlight the matching brand as digits are typed.
-  (3) When card / expiry / CVV are invalid, show the error message
-      CENTERED under the input in bold red text (no pill, no box).
-      Same for all three card fields.
+  Iteration 2026-07-13 (i) — reposition card brand icons: move them from
+  inside the Card Number input group to a small row UNDER the "Card"
+  payment tile (top-left tile in the Payment section). They should still
+  light up the matching brand when the customer types a Visa/MC/Amex/
+  Discover number.
+
+frontend:
+  - task: "Checkout — card brand icons moved UNDER the Card payment tile (below the 'Card' label)"
+    implemented: true
+    working: true
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Removed the `.card-brands-inside` span from inside the Card Number input-group. Added a new `<div class='card-brands-tile' id='card-brands'>` inside the `#pay-card` tile, right after the 'Card' label row. CSS: `.card-brands-tile` uses display:flex, gap .3rem, margin-top .55rem, padding-left 1.75rem (so it aligns with the 'Card' text after the radio button). Icons are 18px tall, base opacity .55, .dimmed → .2 opacity + grayscale, .active → 1 opacity + scale 1.2 + cyan glow. Verified: card-brands is INSIDE #pay-card and NOT inside any .input-group; typing Visa `4242424242424242` → visa .card-brand-icon has class 'active', the other 3 have 'dimmed'; the Card Number input group is now clean (no icon overlay)."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED via Playwright at 1920×1080. ALL 9 ASSERTIONS PASSED. (1) document.getElementById('card-brands').classList.contains('card-brands-tile') === true ✓. (2) document.getElementById('card-brands').closest('#pay-card') !== null ✓ (icons inside Card payment tile). (3) document.getElementById('card-brands').closest('.input-group') === null ✓ (icons NOT inside Card Number input-group). (4) Position: icons top (344.5px) < Card Number label top (390.7px) ✓ (icons render ABOVE the label). (5) Position: icons top (344.5px) > 'Card' fw-bold label bottom (332.9px) ✓ (icons sit BETWEEN 'Card' label and Card Number field). (6) Typing valid Visa '4242424242424242' → exactly ONE .card-brand-icon.active with data-brand='visa' ✓, other 3 icons (mastercard, amex, discover) have class 'dimmed' ✓. (7) Card Number input group contains NO img.card-brand-icon children (count: 0) ✓. (8) Typing Amex '378282246310005' → .card-brand-icon.active data-brand='amex' ✓. (9) Clear #card-number → no icon has class 'active' (0) and no icon has class 'dimmed' (0) ✓ (all 4 return to base state). Screenshot: test_iteration_i_card_icons_under_tile.png. Card brand icons successfully repositioned under the Card payment tile with full live-highlighting functionality working correctly."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Iteration 2026-07-13(i) applied. FRONTEND visual verification at 1920×1080. Steps: (1) Add product to cart, open /checkout.php. (2) Assert `document.getElementById('card-brands').classList.contains('card-brands-tile') === true`. (3) Assert `document.getElementById('card-brands').closest('#pay-card') !== null` (icons live INSIDE the Card payment tile). (4) Assert `document.getElementById('card-brands').closest('.input-group') === null` (icons NO LONGER inside the Card Number input group). (5) Position check: the icons row `getBoundingClientRect().top` must be ABOVE the CARD NUMBER label (i.e. between the 'Card' text of the tile and the Card Number label). (6) Type a valid Visa '4242424242424242' — assert exactly ONE `.card-brand-icon.active` with `data-brand='visa'` in `#card-brands` and 3 with class 'dimmed'. (7) Confirm the Card Number input group contains ONLY the credit-card lock icon + the input (no brand icons overlay inside). Skip retesting anything from earlier iterations."
+    -agent: "testing"
+    -message: "✅ ITERATION 2026-07-13(i) TESTING COMPLETE — TASK FULLY WORKING. Comprehensive Playwright testing executed all 9 assertions from review_request at 1920×1080 viewport. RESULTS: ✅ All 9/9 tests passed. Card brand icons successfully repositioned UNDER the Card payment tile (not inside the Card Number input group). Icons positioned correctly BETWEEN the 'Card' fw-bold label and the 'CARD NUMBER' label. Live highlighting working perfectly: typing Visa '4242424242424242' activates only the Visa icon and dims the other 3 (mastercard, amex, discover); typing Amex '378282246310005' activates only the Amex icon; clearing the field returns all 4 icons to base state (no active, no dimmed). Card Number input group is clean with NO card-brand-icon children. Screenshot: test_iteration_i_card_icons_under_tile.png. NO ISSUES FOUND. Iteration 2026-07-13(i) task verified working correctly. Ready for user acceptance."
+
+# ────────────────────── PREVIOUS ITERATION (2026-07-13 h) ──────────────────────
 
 frontend:
   - task: "Checkout — remove SMS consent checkbox at bottom of Your Details"
