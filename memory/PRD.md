@@ -1,3 +1,40 @@
+<!-- 2026-07-13 (i): Checkout card UX polish + one-viewport fit + real
+  client-side card validation.
+  (1) CARD-BRAND ICONS RELOCATED (checkout.php + main.js) — removed the
+      brand-icons cluster from inside the Card Number input group;
+      added a new `.card-brands-below` row directly under the input
+      containing the 4 SVGs + a live `#card-brand-status` pill. The
+      Card Number input is now full-width within its col-md-6.
+  (2) LIVE BRAND DETECTION + LUHN VALIDATION (main.js) — detectCardBrand()
+      upgraded to real BIN regexes returning { brand, len, cvv } for
+      Visa / MC / Amex / Discover. Added luhnCheck(). Every keystroke
+      on #card-number reformats digits (4-4-4-4 or Amex 4-6-5), toggles
+      the matching brand icon to .active + others to .dimmed, and
+      updates the status pill (pending / unknown / invalid / valid).
+      Also drives per-field .is-valid / .is-invalid + hint text on
+      #card-exp (rejects past MM/YY + non-1-12 months) and #card-cvv
+      (needs 3 for most, 4 for Amex).
+  (3) COMPACT CHECKOUT CSS (checkout.php <style>) — shrunk vertical
+      padding on co-banner cards, co-head, co-num, form labels &
+      controls, row gutters, pay-tile, paypal-info-box, and the
+      merge divider so the entire page (trust bar → Pay Securely
+      button) fits inside a 1920×1080 viewport at 100% zoom. Verified:
+      Pay button bottom y = 1045.3 px (< 1080).
+  (4) SUBMIT-GUARD (checkout.php + mvValidateCheckoutOnSubmit()) —
+      the checkout <form> now has onsubmit='return mvValidateCheckoutOnSubmit'.
+      The guard runs ONLY when the selected payment method is card
+      (PayPal path is untouched). Blocks submit on: empty number,
+      unsupported brand, incomplete digits, Luhn-fail, expired, wrong
+      CVV length. On failure: focuses the offending input, applies
+      .is-invalid, and shows a red top-center toast with the specific
+      reason.
+  Verified by the frontend testing agent: 10/10 scenarios pass —
+  Visa BIN detection, bad-Luhn rejection, Amex 4-6-5 reformatting,
+  expiry past/future checks, CVV length swap on brand change,
+  1080px viewport fit, blocked-empty-submit, blocked-incomplete
+  submit, valid-submit → success page. -->
+
+
 <!-- 2026-07-13 (h): Dark-mode + checkout UX polish.
   (1) ADMIN FLASH DEAL PANEL (admin.php + includes/admin-shell.php) —
       the light-pink/yellow gradient background was washing out labels
