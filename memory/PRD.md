@@ -1,3 +1,45 @@
+<!-- 2026-07-13 (d): Ask-AI real-LLM launch + de-dup + console warning fixes.
+  (1) NEW ENDPOINT ajax/ask-ai-general.php — POST {question} → JSON
+      {ok, answer, ms}. Rate-limit 8/min/IP. System prompt gives Claude
+      Haiku 4.5 (via Emergent LLM proxy) grounded store facts: brand,
+      delivery policy (digital email, same day / max 24h), refund policy
+      (30-day money-back), payment methods, support hours, top-12 products.
+      Persists to product_ai_chats with product_slug='__site__' for admin
+      review. VERIFIED by testing agent: 6/6 backend tests pass (happy-path
+      delivery + refund, empty-question validation, 500-char cap, rate
+      limit, DB persistence).
+  (2) NEW GLOBAL MODAL #ask-ai-modal (includes/footer.php) — real LLM
+      Q&A widget with 4 suggestion chips (Which Office for Mac?, Delivery
+      time?, Refund policy?, One-time or subscription?), typing indicator,
+      thread of Q&A bubbles, ESC-to-close, mobile-first bottom-sheet
+      layout, desktop centered modal. Footer link 'live chat' opens the
+      human-support panel for order-specific help.
+  (3) Header 'Ask AI' button (includes/header.php) + hero 'Try it' teaser
+      (index.php) rewired: onclick='toggleChat()' → 'openAskAiModal()'.
+      No more accidentally-opens-chat.
+  (4) DRAGGABLE #chat-bubble (includes/footer.php) — mousedown/touchstart
+      begins drag, viewport-clamped translate, 5px slop separates click
+      from drag, position persists via localStorage 'mv_chat_bubble_pos'.
+      Cursor grab/grabbing. Verified: dragged from (1838,818) → (569,369).
+  (5) HERO COPY de-repetition (index.php + includes/header.php) — badge
+      'Genuine Microsoft Products' → 'Authentic · Verified · Trusted';
+      H1 dropped leading 'Genuine'; subtitle rewritten to 'Direct-from-
+      source product keys — one-time payment, no recurring bills,
+      delivered to your inbox.'; first bullet rewritten. Top-bar strip
+      'Genuine Microsoft Products' → 'Authentic Software Store'.
+  (6) CONSOLE WARNINGS fixed:
+      - scroll3d.js line 105 null-deref: added inner 'if (!rect) return;'
+        inside rAF callback (both /assets/js/scroll3d.js and .min/).
+      - apple-mobile-web-app-capable deprecation: added the paired
+        <meta name='mobile-web-app-capable' content='yes'> in both
+        includes/header.php AND includes/admin-shell.php.
+      - form field a11y: added missing autocomplete on checkout fields
+        (email/first_name/last_name/address/address2/city/country/state/
+        zip), aria-label + id on card-number/card-exp/card-cvv (fields
+        intentionally have no name — Stripe handles them), and
+        name+autocomplete=off+aria-label on the coupon input. -->
+
+
 <!-- 2026-07-13 (c): Homepage + footer copy hygiene — de-duplicated three
   areas that were saying the same thing twice.
   (1) Footer (includes/footer.php): removed the small "Subscribe for Deals"
