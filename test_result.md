@@ -102,13 +102,108 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 
 user_problem_statement: |
-  Scan manuals.winandoffice.com and, for every product we sell, capture the
-  Activation/Sign-in URL, the Installation Guide URL, and the one-click Installer
-  Download URL (English, 64-bit). Save them into each product (activation_url /
-  install_guide_url / installer_url, mode switched to 'manual') so they appear in
-  the delivery email + order/account pages, and add a UI block on the product page.
-  Products with no exact manual → closest manual. Bitdefender + McAfee → skipped
-  (no manuals on the site).
+  Iteration 2026-07-13 (bug fixes + enhancements):
+  (1) "Ask AI" button + hero "Try it" teaser were opening the live-chat panel;
+      they should instead open a REAL AI Q&A modal that answers store questions
+      via Claude (Emergent LLM key). Make the chat bubble draggable (mouse/touch).
+  (2) Homepage hero has "Genuine" repeated 4+ times (badge, H1, subtitle,
+      bullet). Rewrite so each line is unique.
+  (3) Fix console warnings: apple-mobile-web-app-capable deprecation, scroll3d.js
+      "Cannot read properties of null (reading 'left')" TypeError, form fields
+      missing id/name/autocomplete attributes.
+
+backend:
+  - task: "New /ajax/ask-ai-general.php endpoint — global Ask AI Q&A powered by Claude Haiku 4.5 via Emergent LLM proxy"
+    implemented: true
+    working: true
+    file: "php-version/ajax/ask-ai-general.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Created new endpoint POST /ajax/ask-ai-general.php. Reads {question}, rate-limits 8/min per IP, builds a store-scoped system prompt (brand, delivery policy, refund policy, payment methods, support hours, top-12 products) and calls Claude Haiku 4.5 via OPENAI_BASE_URL + OPENAI_API_KEY (Emergent LLM proxy). Persists Q&A turn to product_ai_chats with product_slug='__site__' for admin review. Returns { ok, answer, ms }. EMERGENT_LLM_KEY seeded into /app/php-version/.env + /app/backend/.env. Verified via curl: returns a real Claude-authored answer to 'How long does delivery take?'."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ COMPREHENSIVE BACKEND API VERIFICATION COMPLETE — ALL 6 TESTS PASSED. Tested POST /ajax/ask-ai-general.php endpoint with comprehensive test suite: (1) Happy-path delivery question: HTTP 200, ok=true, real Claude response mentioning 'digital', 'email', 'same business day', '24 hours' (NOT generic fallback), latency 1765ms ✅. (2) Happy-path refund policy question: HTTP 200, ok=true, real Claude response mentioning '30-day money-back guarantee' ✅. (3) Empty question validation: HTTP 200, ok=false, error='Please ask a question.' ✅. (4) Question over 500 chars (600 char test): HTTP 200, ok=false, error='Please keep questions under 500 characters.' ✅. (5) Rate limit test: Sent 10 rapid requests, 9th request correctly rate-limited with error='You're asking quickly — please give it a moment, then try again.' ✅. (6) Persistence sanity check: Database query confirmed records exist in product_ai_chats with product_slug='__site__', questions and answers persisted correctly ✅. LLM integration working correctly via Emergent proxy (OPENAI_API_KEY loaded from /app/php-version/.env EMERGENT_LLM_KEY, OPENAI_BASE_URL auto-set to https://integrations.emergentagent.com/llm/v1 by config.php). All validation, rate limiting, LLM response quality, and persistence mechanisms verified and working as expected."
+
+frontend:
+  - task: "Global Ask AI modal — real LLM Q&A widget replacing the toggleChat() launcher"
+    implemented: true
+    working: "NA"
+    file: "php-version/includes/footer.php, php-version/includes/header.php, php-version/index.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Added #ask-ai-modal in footer.php with suggestion chips, thread, typing indicator, send button, and a footer link that opens live chat only for order-specific help. openAskAiModal()/closeAskAiModal()/askAiModalSubmit() JS wired. Header 'Ask AI' button (includes/header.php:980) and hero 'Try it' teaser (index.php:171) changed from onclick='toggleChat()' → 'openAskAiModal()'. Modal calls /ajax/ask-ai-general.php. Verified via Playwright: modal opens on Ask AI click, greeting shown, real Claude answer received for 'How long does delivery take?'."
+
+  - task: "Draggable chat bubble (mouse + touch) with per-browser localStorage persistence"
+    implemented: true
+    working: "NA"
+    file: "php-version/includes/footer.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Added drag handler on #chat-bubble: mousedown/touchstart begins drag, mousemove/touchmove updates left/top (clamped to viewport with 18px margin, so it never falls off-screen), mouseup/touchend saves position to localStorage('mv_chat_bubble_pos'). Drag threshold of 5px separates click-to-open-chat from drag-to-move. Cursor changes to grab/grabbing. Verified: chat bubble dragged from (1838,818) to (569,369)."
+
+  - task: "Hero copy — remove 'Genuine' repetition across badge, H1, subtitle, bullet, and top-bar strip"
+    implemented: true
+    working: "NA"
+    file: "php-version/index.php, php-version/includes/header.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Rewrote hero: badge 'Genuine Microsoft Products' → 'Authentic · Verified · Trusted'; H1 'Genuine Microsoft Office & …' → 'Microsoft Office & …'; subtitle 'Genuine Microsoft product keys — one-time purchase, no subscription.' → 'Direct-from-source product keys — one-time payment, no recurring bills, delivered to your inbox.'; first bullet 'Genuine Microsoft product keys' → '100% authentic keys, sourced through legitimate channels'. Top-bar (header.php:743) 'Genuine Microsoft Products' → 'Authentic Software Store'. Verified visually — no 'Genuine' repetition in hero section."
+
+  - task: "Console warning fixes — scroll3d.js null-safety, apple-mobile-web-app-capable meta pair, form field autocomplete/name/id attrs"
+    implemented: true
+    working: "NA"
+    file: "php-version/assets/js/scroll3d.js, php-version/assets/js/.min/scroll3d.js, php-version/includes/header.php, php-version/includes/admin-shell.php, php-version/checkout.php, php-version/includes/checkout-summary-partial.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "(a) scroll3d.js: added 'if (!rect) return;' guard INSIDE the requestAnimationFrame callback (line 105 of unminified src, matching line in .min/) so a mouseleave that nulls rect between scheduling and callback no longer throws 'Cannot read properties of null (reading left)'. (b) Added <meta name='mobile-web-app-capable' content='yes'> alongside the legacy apple-mobile-web-app-capable in both includes/header.php and includes/admin-shell.php — silences the Chrome deprecation warning. (c) Added missing autocomplete on checkout fields (email/first_name/last_name/address/address2/city/country/state/zip) and aria-label + name/id on card-number/card-exp/card-cvv + name+autocomplete=off+aria-label on coupon input. Verified: no console errors captured after page load + hero-showcase mousemove."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "New /ajax/ask-ai-general.php endpoint — global Ask AI Q&A powered by Claude Haiku 4.5 via Emergent LLM proxy"
+    - "Global Ask AI modal — real LLM Q&A widget replacing the toggleChat() launcher"
+    - "Draggable chat bubble (mouse + touch) with per-browser localStorage persistence"
+    - "Hero copy — remove 'Genuine' repetition across badge, H1, subtitle, bullet, and top-bar strip"
+    - "Console warning fixes — scroll3d.js null-safety, apple-mobile-web-app-capable meta pair, form field autocomplete/name/id attrs"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Iteration 2026-07-13 changes applied. Please verify: (1) Header 'Ask AI' button + hero 'Try it' teaser open the new #ask-ai-modal (NOT the chat panel), the modal successfully calls /ajax/ask-ai-general.php and displays a real Claude-authored answer (test with 'How long does delivery take?', 'What is your refund policy?'). (2) Chat bubble (#chat-bubble) is draggable by mouse — grab it and drop it anywhere on the viewport; the position persists across reloads (localStorage 'mv_chat_bubble_pos'). Touch drag should also work. (3) Homepage hero shows the new copy: badge 'Authentic · Verified · Trusted', H1 without 'Genuine', new subtitle 'Direct-from-source product keys — one-time payment, no recurring bills, delivered to your inbox.', first bullet '100% authentic keys, sourced through legitimate channels'. Top-bar strip shows 'Authentic Software Store' (not 'Genuine Microsoft Products'). (4) Console should show NO 'apple-mobile-web-app-capable is deprecated' warning + NO scroll3d.js null 'left' TypeError on hero-showcase hover/mousemove. Please skip re-testing anything not in current_focus."
+    -agent: "testing"
+    -message: "✅ BACKEND TESTING COMPLETE — /ajax/ask-ai-general.php endpoint fully verified and working. All 6 comprehensive tests passed: (1) Happy-path delivery question returns real Claude response with correct context (digital delivery, email, same business day, 24h). (2) Happy-path refund policy question returns real Claude response mentioning 30-day money-back guarantee. (3) Empty question validation working correctly. (4) 500-character limit validation working correctly. (5) Rate limiting working (8 requests per 60s per IP, 9th request correctly rate-limited). (6) Database persistence verified - records saved to product_ai_chats with product_slug='__site__'. LLM integration via Emergent proxy working correctly. NO ISSUES FOUND. Frontend tasks (Ask AI modal, draggable chat bubble, hero copy, console warnings) were NOT tested as per instructions - these are UI/frontend tasks and should be verified by main agent or user. Backend API is production-ready."
+
+# ────────────────────── HISTORICAL / PRIOR TESTING DATA ──────────────────────
+# The section below preserves all previous test runs for context.
+
+historical_user_problem_statement: |
 
 backend:
   - task: "Seed per-product manual URLs (activation / install-guide / installer) from manuals.winandoffice.com"

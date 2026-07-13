@@ -55,11 +55,11 @@ include __DIR__ . '/includes/header.php';
   <div class="container">
     <div class="row align-items-center g-4 g-lg-5">
       <div class="col-lg-7">
-        <span class="hero-badge mb-3"><i class="bi bi-patch-check-fill me-1"></i>Genuine Microsoft Products</span>
-        <h1 class="display-4">Genuine Microsoft Office &amp; <span class="accent">Windows 11 License Keys</span></h1>
-        <p class="text-secondary fs-5 mt-3">Genuine Microsoft product keys — one-time purchase, no subscription.</p>
+        <span class="hero-badge mb-3"><i class="bi bi-patch-check-fill me-1"></i>Authentic · Verified · Trusted</span>
+        <h1 class="display-4">Microsoft Office &amp; <span class="accent">Windows 11 License Keys</span></h1>
+        <p class="text-secondary fs-5 mt-3">Direct-from-source product keys — one-time payment, no recurring bills, delivered to your inbox.</p>
         <ul class="list-unstyled d-grid gap-2 my-4">
-          <li><i class="bi bi-check-circle-fill text-success me-2"></i>Genuine Microsoft product keys</li>
+          <li><i class="bi bi-check-circle-fill text-success me-2"></i>100% authentic keys, sourced through legitimate channels</li>
           <li><i class="bi bi-check-circle-fill text-success me-2"></i>Perpetual access — no subscription</li>
           <li><i class="bi bi-check-circle-fill text-success me-2"></i>30-day money-back guarantee</li>
         </ul>
@@ -168,7 +168,7 @@ include __DIR__ . '/includes/header.php';
         <div class="fw-bold small">Ask <?= esc($brandName ?? SITE_BRAND) ?> AI</div>
         <small class="text-secondary fst-italic" style="font-size:.74rem;">"Which Office is right for my Mac?"</small>
       </div>
-      <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="toggleChat()" data-testid="ask-ai-try-btn">Try it <i class="bi bi-arrow-right ms-1"></i></button>
+      <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="openAskAiModal()" data-testid="ask-ai-try-btn">Try it <i class="bi bi-arrow-right ms-1"></i></button>
     </div>
   </div>
 </section>

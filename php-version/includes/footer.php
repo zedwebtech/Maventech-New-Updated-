@@ -207,6 +207,281 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
 <!-- end Google Customer Reviews badge -->
 <?php endif; ?>
 
+<!-- ============================================================
+     Global "Ask AI" modal — real Claude-Haiku-powered Q&A about the store.
+     Triggered by the header "Ask AI" button and the hero teaser "Try it" pill.
+     Independent from the live-chat widget (which is the human-support flow).
+     ============================================================ -->
+<div id="ask-ai-modal" class="ask-ai-modal" role="dialog" aria-modal="true" aria-labelledby="ask-ai-modal-title" data-testid="ask-ai-modal">
+  <div class="ask-ai-modal-backdrop" onclick="closeAskAiModal()"></div>
+  <div class="ask-ai-modal-card">
+    <div class="ask-ai-modal-head">
+      <div class="ask-ai-modal-avatar"><i class="bi bi-stars"></i></div>
+      <div class="ask-ai-modal-meta">
+        <div class="ask-ai-modal-title" id="ask-ai-modal-title">Ask <?= esc(defined('SITE_BRAND') ? SITE_BRAND : 'Maventech') ?> AI</div>
+        <div class="ask-ai-modal-sub"><span class="ask-ai-dot"></span>Powered by Claude · Instant answers about delivery, licences, refunds &amp; more</div>
+      </div>
+      <button type="button" class="ask-ai-modal-close" onclick="closeAskAiModal()" aria-label="Close" data-testid="ask-ai-modal-close"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="ask-ai-modal-chips" data-testid="ask-ai-modal-chips">
+      <button type="button" class="ask-ai-modal-chip" data-q="Which Office is right for my Mac?">Which Office for Mac?</button>
+      <button type="button" class="ask-ai-modal-chip" data-q="How long does delivery take?">Delivery time?</button>
+      <button type="button" class="ask-ai-modal-chip" data-q="What is your refund policy?">Refund policy?</button>
+      <button type="button" class="ask-ai-modal-chip" data-q="Is this a one-time purchase or subscription?">One-time or subscription?</button>
+    </div>
+    <div id="ask-ai-modal-thread" class="ask-ai-modal-thread" data-testid="ask-ai-modal-thread"></div>
+    <form id="ask-ai-modal-form" class="ask-ai-modal-form" onsubmit="askAiModalSubmit(event)" autocomplete="off">
+      <input type="text" id="ask-ai-modal-input" name="ask_ai_question" class="form-control" placeholder="Ask anything about our store…" maxlength="500" autocomplete="off" data-testid="ask-ai-modal-input" required>
+      <button type="submit" class="ask-ai-modal-send" data-testid="ask-ai-modal-send" aria-label="Send"><i class="bi bi-send-fill"></i></button>
+    </form>
+    <div class="ask-ai-modal-footer">
+      <i class="bi bi-info-circle me-1"></i>For order-specific help, use the <a href="#" onclick="closeAskAiModal(); toggleChat(); return false;">live chat</a>.
+    </div>
+  </div>
+</div>
+
+<style>
+.ask-ai-modal {
+  position: fixed; inset: 0; z-index: 1090;
+  display: none; align-items: flex-end; justify-content: center;
+}
+.ask-ai-modal.open { display: flex; }
+@media (min-width: 768px) { .ask-ai-modal { align-items: center; } }
+.ask-ai-modal-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(2,6,23,.55); backdrop-filter: blur(4px);
+  animation: aaFade .25s ease;
+}
+@keyframes aaFade { from { opacity: 0; } to { opacity: 1; } }
+.ask-ai-modal-card {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 560px;
+  max-height: 90vh; display: flex; flex-direction: column;
+  background: var(--bs-body-bg, #fff); color: var(--bs-body-color);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -20px 60px rgba(2,6,23,.35);
+  animation: aaSlide .3s cubic-bezier(.22,.61,.36,1);
+  overflow: hidden;
+}
+@media (min-width: 768px) { .ask-ai-modal-card { border-radius: 22px; margin: 1rem; } }
+@keyframes aaSlide { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.ask-ai-modal-head {
+  display: flex; align-items: center; gap: .8rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(135deg, rgba(6,182,212,.10), rgba(45,212,191,.06));
+  border-bottom: 1px solid var(--bs-border-color);
+}
+.ask-ai-modal-avatar {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 1.2rem;
+  background: linear-gradient(135deg, #06b6d4, #2dd4bf);
+  box-shadow: 0 6px 14px rgba(6,182,212,.35);
+}
+.ask-ai-modal-meta { flex: 1 1 auto; min-width: 0; line-height: 1.25; }
+.ask-ai-modal-title { font-weight: 700; font-size: 1.02rem; }
+.ask-ai-modal-sub { font-size: .74rem; color: var(--bs-secondary-color); }
+.ask-ai-dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: #10b981; margin-right: 5px; vertical-align: 1px;
+  box-shadow: 0 0 0 3px rgba(16,185,129,.18);
+  animation: aaPulse 1.8s ease-in-out infinite;
+}
+@keyframes aaPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.25);opacity:.7} }
+.ask-ai-modal-close {
+  background: transparent; border: 0; color: var(--bs-secondary-color);
+  font-size: 1.05rem; padding: .3rem .55rem; border-radius: 8px;
+  transition: background-color .15s ease, color .15s ease;
+}
+.ask-ai-modal-close:hover { background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+.ask-ai-modal-chips {
+  display: flex; gap: .4rem; padding: .75rem 1.1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  overflow-x: auto; scrollbar-width: thin;
+}
+.ask-ai-modal-chip {
+  flex-shrink: 0; font-size: .76rem; font-weight: 600;
+  padding: .35rem .8rem; border-radius: 999px;
+  background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color);
+  color: var(--bs-body-color); cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.ask-ai-modal-chip:hover { background: rgba(6,182,212,.1); border-color: rgba(6,182,212,.4); color: #0891b2; }
+.ask-ai-modal-thread {
+  flex: 1 1 auto; overflow-y: auto; padding: 1rem 1.1rem;
+  display: flex; flex-direction: column; gap: .7rem;
+  min-height: 180px; max-height: 45vh;
+}
+.ask-ai-msg {
+  display: flex; gap: .55rem; align-items: flex-start;
+  animation: aaMsgIn .3s cubic-bezier(.22,.61,.36,1);
+}
+@keyframes aaMsgIn { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+.ask-ai-msg-avatar {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .8rem; color: #fff;
+}
+.ask-ai-msg.you { flex-direction: row-reverse; }
+.ask-ai-msg.you .ask-ai-msg-avatar { background: linear-gradient(135deg, #64748b, #94a3b8); }
+.ask-ai-msg.ai .ask-ai-msg-avatar { background: linear-gradient(135deg, #06b6d4, #2dd4bf); }
+.ask-ai-msg-bubble {
+  max-width: 78%; padding: .55rem .85rem; border-radius: 14px;
+  font-size: .87rem; line-height: 1.5;
+  background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color);
+  white-space: pre-wrap;
+}
+.ask-ai-msg.you .ask-ai-msg-bubble {
+  background: linear-gradient(135deg, #0891b2, #06b6d4); color: #fff; border-color: transparent;
+}
+.ask-ai-msg.error .ask-ai-msg-bubble {
+  background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.35); color: #b91c1c;
+}
+[data-bs-theme="dark"] .ask-ai-msg.error .ask-ai-msg-bubble { color: #fca5a5; }
+.ask-ai-typing { display: inline-flex; gap: 4px; }
+.ask-ai-typing span {
+  width: 6px; height: 6px; border-radius: 50%; background: #06b6d4;
+  animation: aaTypingDot 1.2s ease-in-out infinite;
+}
+.ask-ai-typing span:nth-child(2) { animation-delay: .15s; }
+.ask-ai-typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes aaTypingDot { 0%,60%,100%{transform:translateY(0);opacity:.55} 30%{transform:translateY(-5px);opacity:1} }
+.ask-ai-modal-form {
+  display: flex; gap: .5rem; padding: .8rem 1.1rem;
+  border-top: 1px solid var(--bs-border-color);
+}
+.ask-ai-modal-form .form-control {
+  border-radius: 12px; padding: .6rem .9rem; font-size: .92rem;
+}
+.ask-ai-modal-send {
+  border: 0; background: linear-gradient(135deg, #06b6d4, #2dd4bf);
+  color: #fff; width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 14px rgba(6,182,212,.35);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.ask-ai-modal-send:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(6,182,212,.45); }
+.ask-ai-modal-send:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.ask-ai-modal-footer {
+  padding: .6rem 1.1rem; font-size: .74rem; color: var(--bs-secondary-color);
+  border-top: 1px solid var(--bs-border-color); background: var(--bs-tertiary-bg);
+}
+</style>
+
+<script>
+(function () {
+  // ============================================================
+  // Global Ask AI modal wiring — real LLM Q&A (not the live chat).
+  // ============================================================
+  var __askAiHasGreeted = false;
+
+  function openAskAiModal(seedQ) {
+    var m = document.getElementById('ask-ai-modal');
+    if (!m) return;
+    m.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (!__askAiHasGreeted) {
+      __appendAskAiMsg('ai', "Hi! I'm the store assistant. Ask me anything about products, delivery, licences or refunds — I'll answer instantly.");
+      __askAiHasGreeted = true;
+    }
+    setTimeout(function () {
+      var i = document.getElementById('ask-ai-modal-input');
+      if (i) i.focus();
+      if (seedQ) { i.value = seedQ; __askAiModalSend(seedQ); }
+    }, 100);
+  }
+  window.openAskAiModal = openAskAiModal;
+  function closeAskAiModal() {
+    var m = document.getElementById('ask-ai-modal');
+    if (!m) return;
+    m.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  window.closeAskAiModal = closeAskAiModal;
+
+  function __appendAskAiMsg(who, text, cls) {
+    var t = document.getElementById('ask-ai-modal-thread');
+    if (!t) return null;
+    var wrap = document.createElement('div');
+    wrap.className = 'ask-ai-msg ' + who + (cls ? ' ' + cls : '');
+    var av  = document.createElement('div');
+    av.className = 'ask-ai-msg-avatar';
+    av.innerHTML = who === 'you' ? '<i class="bi bi-person-fill"></i>' : '<i class="bi bi-stars"></i>';
+    var bub = document.createElement('div');
+    bub.className = 'ask-ai-msg-bubble';
+    bub.textContent = text;
+    wrap.appendChild(av); wrap.appendChild(bub);
+    t.appendChild(wrap);
+    t.scrollTop = t.scrollHeight;
+    return bub;
+  }
+
+  async function __askAiModalSend(question) {
+    var inp = document.getElementById('ask-ai-modal-input');
+    var btn = document.querySelector('.ask-ai-modal-send');
+    __appendAskAiMsg('you', question);
+    if (inp) inp.value = '';
+    if (btn) btn.disabled = true;
+    var typing = __appendAskAiMsg('ai', '');
+    if (typing) typing.innerHTML = '<span class="ask-ai-typing"><span></span><span></span><span></span></span>';
+    try {
+      var r = await fetch('ajax/ask-ai-general.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ question: question }),
+      });
+      var j = await r.json();
+      if (typing && typing.parentElement) typing.parentElement.remove();
+      if (j.ok && j.answer) {
+        __appendAskAiMsg('ai', j.answer);
+      } else {
+        __appendAskAiMsg('ai', j.error || "Sorry — I couldn't answer that. Please try live chat.", 'error');
+      }
+    } catch (err) {
+      if (typing && typing.parentElement) typing.parentElement.remove();
+      __appendAskAiMsg('ai', 'Network hiccup — please try again in a moment.', 'error');
+    }
+    if (btn) btn.disabled = false;
+    if (inp) inp.focus();
+  }
+
+  window.askAiModalSubmit = function (ev) {
+    ev.preventDefault();
+    var inp = document.getElementById('ask-ai-modal-input');
+    if (!inp) return false;
+    var q = (inp.value || '').trim();
+    if (!q) return false;
+    __askAiModalSend(q);
+    return false;
+  };
+
+  // Chip clicks -> seed the input & send.
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest('.ask-ai-modal-chip');
+    if (chip) {
+      var q = chip.getAttribute('data-q') || chip.textContent.trim();
+      if (q) __askAiModalSend(q);
+    }
+  });
+
+  // ESC key closes the modal.
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      var m = document.getElementById('ask-ai-modal');
+      if (m && m.classList.contains('open')) closeAskAiModal();
+    }
+  });
+
+  // Convenience: expose openAskAiModal via a data attribute for buttons that
+  // used to call toggleChat().
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-open-ask-ai]');
+    if (t) { e.preventDefault(); openAskAiModal(t.getAttribute('data-open-ask-ai') || ''); }
+  });
+})();
+</script>
+
 <!-- AI chat widget -->
 <button id="chat-bubble" onclick="toggleChat()" aria-label="Open chat" data-testid="chat-bubble">
   <i class="bi bi-chat-dots"></i>
@@ -218,6 +493,113 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
     <span id="chat-bell-count" class="chat-bell-count" data-testid="chat-bell-count">1</span>
   </span>
 </button>
+
+<script>
+/* ============================================================
+   Draggable chat bubble — the customer can drag the "Chat" bubble to any
+   edge of the viewport and it snaps to the nearest side. Position is
+   persisted per browser via localStorage. Works with both mouse + touch.
+   Small movements (< 5px) are treated as clicks (open chat), so accidental
+   drag doesn't hijack the click handler.
+   ============================================================ */
+(function () {
+  var bubble = document.getElementById('chat-bubble');
+  if (!bubble) return;
+
+  var STORAGE_KEY = 'mv_chat_bubble_pos';
+  var MARGIN      = 18;   // min px from any viewport edge
+  var CLICK_SLOP  = 5;    // px moved before it's a "drag" not a click
+
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function applyPos(x, y) {
+    // Snap so the bubble stays fully on-screen.
+    var w = bubble.offsetWidth, h = bubble.offsetHeight;
+    x = clamp(x, MARGIN, window.innerWidth  - w - MARGIN);
+    y = clamp(y, MARGIN, window.innerHeight - h - MARGIN);
+    bubble.style.left   = x + 'px';
+    bubble.style.top    = y + 'px';
+    bubble.style.right  = 'auto';
+    bubble.style.bottom = 'auto';
+  }
+  function savePos() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        left: parseFloat(bubble.style.left) || 0,
+        top:  parseFloat(bubble.style.top)  || 0,
+      }));
+    } catch (_) {}
+  }
+  function restorePos() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var p = JSON.parse(raw);
+      if (p && typeof p.left === 'number' && typeof p.top === 'number') applyPos(p.left, p.top);
+    } catch (_) {}
+  }
+  restorePos();
+
+  var dragging = false, moved = false;
+  var startPX = 0, startPY = 0, startBX = 0, startBY = 0;
+
+  function onDown(ev) {
+    var t = (ev.touches && ev.touches[0]) || ev;
+    dragging = true; moved = false;
+    startPX = t.clientX; startPY = t.clientY;
+    var r = bubble.getBoundingClientRect();
+    startBX = r.left; startBY = r.top;
+    bubble.classList.add('is-dragging');
+    // Prevent text selection while dragging.
+    document.body.style.userSelect = 'none';
+  }
+  function onMove(ev) {
+    if (!dragging) return;
+    var t = (ev.touches && ev.touches[0]) || ev;
+    var dx = t.clientX - startPX, dy = t.clientY - startPY;
+    if (!moved && (Math.abs(dx) > CLICK_SLOP || Math.abs(dy) > CLICK_SLOP)) moved = true;
+    if (moved) {
+      applyPos(startBX + dx, startBY + dy);
+      if (ev.preventDefault) ev.preventDefault();
+    }
+  }
+  function onUp(ev) {
+    if (!dragging) return;
+    dragging = false;
+    bubble.classList.remove('is-dragging');
+    document.body.style.userSelect = '';
+    if (moved) {
+      savePos();
+      // Consume the click that would otherwise fire (Safari/iOS especially).
+      if (ev && ev.type === 'mouseup') {
+        var kill = function (e) { e.stopPropagation(); e.preventDefault(); bubble.removeEventListener('click', kill, true); };
+        bubble.addEventListener('click', kill, true);
+      }
+    }
+  }
+
+  bubble.addEventListener('mousedown',  onDown);
+  bubble.addEventListener('touchstart', onDown, { passive: true });
+  document.addEventListener('mousemove', onMove, { passive: false });
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('mouseup',   onUp);
+  document.addEventListener('touchend',  onUp);
+  document.addEventListener('touchcancel', onUp);
+  // Keep on-screen on window resize / orientation change.
+  window.addEventListener('resize', function () {
+    var r = bubble.getBoundingClientRect();
+    if (r.left < 0 || r.top < 0 || r.right > window.innerWidth || r.bottom > window.innerHeight) {
+      applyPos(r.left, r.top);
+      savePos();
+    }
+  });
+})();
+</script>
+<style>
+/* Give the chat bubble a subtle visual affordance for drag: the cursor
+   changes to grab, and there's a nicer pressed state during a drag. */
+#chat-bubble { cursor: grab; touch-action: none; user-select: none; }
+#chat-bubble.is-dragging { cursor: grabbing; transform: scale(1.08); box-shadow: 0 14px 32px rgba(6,182,212,.55); transition: none; }
+</style>
 <!-- Messenger-style admin-reply preview — slides in to the LEFT of the
      chat bubble whenever an admin reply lands while the panel is closed,
      so the customer can see what the agent said before opening chat.

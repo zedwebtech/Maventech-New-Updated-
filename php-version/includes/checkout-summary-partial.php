@@ -135,7 +135,7 @@ if ($_planItem):
   </div>
 <?php else: ?>
   <div class="input-group input-group-sm mb-2" style="max-width: 320px;">
-    <input id="coupon-input" class="form-control" placeholder="Coupon code" data-testid="coupon-input">
+    <input id="coupon-input" name="coupon_code" class="form-control" placeholder="Coupon code" autocomplete="off" data-testid="coupon-input" aria-label="Coupon code">
     <button type="button" class="btn btn-outline-primary" onclick="applyCoupon(document.getElementById('coupon-input').value)" data-testid="coupon-apply">Apply</button>
   </div>
 <?php endif; ?>

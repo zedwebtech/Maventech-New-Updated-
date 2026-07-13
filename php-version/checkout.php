@@ -801,7 +801,7 @@ include __DIR__ . '/includes/header.php';
             <label class="form-label">Card Number</label>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-credit-card-2-front text-primary"></i></span>
-              <input id="card-number" class="form-control" inputmode="numeric" autocomplete="cc-number" maxlength="19" data-testid="card-number-input">
+              <input id="card-number" class="form-control" inputmode="numeric" autocomplete="cc-number" maxlength="19" data-testid="card-number-input" aria-label="Card number">
               <span class="input-group-text card-brands" id="card-brands" data-testid="card-brand-icons">
                 <img src="assets/images/payments/visa.svg" alt="Visa" data-brand="visa" class="card-brand-icon">
                 <img src="assets/images/payments/mastercard.svg" alt="Mastercard" data-brand="mastercard" class="card-brand-icon">
@@ -812,12 +812,12 @@ include __DIR__ . '/includes/header.php';
           </div>
           <div class="col-7">
             <label class="form-label">Expiry Date</label>
-            <input id="card-exp" class="form-control" inputmode="numeric" autocomplete="cc-exp" maxlength="5" data-testid="card-exp-input">
+            <input id="card-exp" class="form-control" inputmode="numeric" autocomplete="cc-exp" maxlength="5" data-testid="card-exp-input" aria-label="Card expiry date" placeholder="MM/YY">
           </div>
           <div class="col-5">
             <label class="form-label">CVV</label>
             <div class="input-group">
-              <input id="card-cvv" type="password" class="form-control" inputmode="numeric" autocomplete="cc-csc" maxlength="4" data-testid="card-cvv-input">
+              <input id="card-cvv" type="password" class="form-control" inputmode="numeric" autocomplete="cc-csc" maxlength="4" data-testid="card-cvv-input" aria-label="Card CVV" placeholder="CVV">
               <span class="input-group-text" title="3-4 digit code on the back of your card"><i class="bi bi-question-circle text-secondary"></i></span>
             </div>
           </div>
@@ -852,7 +852,7 @@ include __DIR__ . '/includes/header.php';
       <div class="row g-2">
         <div class="col-md-6">
           <label class="form-label">Email Address *</label>
-          <input type="email" name="email" required class="form-control" value="<?= esc($_POST['email'] ?? '') ?>" data-testid="checkout-email" id="checkout-email">
+          <input type="email" name="email" required autocomplete="email" class="form-control" value="<?= esc($_POST['email'] ?? '') ?>" data-testid="checkout-email" id="checkout-email">
           <div id="checkout-email-hint" class="checkout-hint" style="display:none;" data-testid="checkout-email-hint"></div>
         </div>
         <div class="col-md-6">
@@ -880,35 +880,35 @@ include __DIR__ . '/includes/header.php';
             <input name="phone" required class="form-control" value="<?= esc($_POST['phone'] ?? '') ?>" data-testid="phone-number-input" placeholder="Phone number" inputmode="tel" autocomplete="tel-national">
           </div>
         </div>
-        <div class="col-md-6"><label class="form-label">First Name *</label><input name="first_name" required class="form-control" value="<?= esc($_POST['first_name'] ?? '') ?>"></div>
-        <div class="col-md-6"><label class="form-label">Last Name *</label><input name="last_name" required class="form-control" value="<?= esc($_POST['last_name'] ?? '') ?>"></div>
-        <div class="col-md-8"><label class="form-label">Address *</label><input name="address" required class="form-control" value="<?= esc($_POST['address'] ?? '') ?>" id="checkout-address" data-testid="checkout-address">
+        <div class="col-md-6"><label class="form-label">First Name *</label><input name="first_name" autocomplete="given-name" required class="form-control" value="<?= esc($_POST['first_name'] ?? '') ?>"></div>
+        <div class="col-md-6"><label class="form-label">Last Name *</label><input name="last_name" autocomplete="family-name" required class="form-control" value="<?= esc($_POST['last_name'] ?? '') ?>"></div>
+        <div class="col-md-8"><label class="form-label">Address *</label><input name="address" autocomplete="address-line1" required class="form-control" value="<?= esc($_POST['address'] ?? '') ?>" id="checkout-address" data-testid="checkout-address">
           <div id="checkout-address-hint" class="checkout-hint" style="display:none;" data-testid="checkout-address-hint"></div>
         </div>
-        <div class="col-md-4"><label class="form-label">Address Line 2</label><input name="address2" class="form-control" value="<?= esc($_POST['address2'] ?? '') ?>"></div>
+        <div class="col-md-4"><label class="form-label">Address Line 2</label><input name="address2" autocomplete="address-line2" class="form-control" value="<?= esc($_POST['address2'] ?? '') ?>"></div>
         <div class="col-md-3 col-6">
           <label class="form-label">Country *</label>
-          <select name="country" id="co-country" class="form-select" onchange="mvSwitchCheckoutCountry(this.value)" data-testid="country-select">
+          <select name="country" autocomplete="country" id="co-country" class="form-select" onchange="mvSwitchCheckoutCountry(this.value)" data-testid="country-select">
             <?php foreach ($ALL_COUNTRIES as $c => $n): ?>
               <option value="<?= $c ?>" <?= $formCC === $c ? 'selected' : '' ?>><?= esc($n) ?></option>
             <?php endforeach; ?>
           </select>
         </div>
-        <div class="col-md-3 col-6"><label class="form-label">City *</label><input name="city" required class="form-control" value="<?= esc($_POST['city'] ?? '') ?>"></div>
+        <div class="col-md-3 col-6"><label class="form-label">City *</label><input name="city" autocomplete="address-level2" required class="form-control" value="<?= esc($_POST['city'] ?? '') ?>"></div>
         <div class="col-md-3 col-6" id="co-region-wrap">
           <label class="form-label" id="co-region-label"><?= esc($rf['region_label']) ?><?= $rf['region_required'] ? ' *' : '' ?></label>
           <?php if (!empty($rf['regions'])): ?>
-          <select name="state" <?= $rf['region_required'] ? 'required' : '' ?> class="form-select" data-testid="state-select">
+          <select name="state" autocomplete="address-level1" <?= $rf['region_required'] ? 'required' : '' ?> class="form-select" data-testid="state-select">
             <option value="">Select</option>
             <?php foreach ($rf['regions'] as $st): ?>
               <option value="<?= $st ?>" <?= ($_POST['state'] ?? '') === $st ? 'selected' : '' ?>><?= $st ?></option>
             <?php endforeach; ?>
           </select>
           <?php else: ?>
-          <input name="state" <?= $rf['region_required'] ? 'required' : '' ?> class="form-control" value="<?= esc($_POST['state'] ?? '') ?>" data-testid="state-select" placeholder="<?= esc($rf['region_label']) ?>">
+          <input name="state" autocomplete="address-level1" <?= $rf['region_required'] ? 'required' : '' ?> class="form-control" value="<?= esc($_POST['state'] ?? '') ?>" data-testid="state-select" placeholder="<?= esc($rf['region_label']) ?>">
           <?php endif; ?>
         </div>
-        <div class="col-md-3 col-6"><label class="form-label" id="co-postal-label"><?= esc($rf['postal_label']) ?> *</label><input name="zip" required class="form-control" value="<?= esc($_POST['zip'] ?? '') ?>" id="co-postal" placeholder="<?= esc($rf['postal_ph']) ?>" data-testid="zip-input"></div>
+        <div class="col-md-3 col-6"><label class="form-label" id="co-postal-label"><?= esc($rf['postal_label']) ?> *</label><input name="zip" autocomplete="postal-code" required class="form-control" value="<?= esc($_POST['zip'] ?? '') ?>" id="co-postal" placeholder="<?= esc($rf['postal_ph']) ?>" data-testid="zip-input"></div>
         <div class="col-12">
           <div class="form-check mb-0">
             <input class="form-check-input" type="checkbox" name="sms_consent" id="sms-consent" value="1" <?= !empty($_POST['sms_consent']) ? 'checked' : '' ?> data-testid="sms-consent">

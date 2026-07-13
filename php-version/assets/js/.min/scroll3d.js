@@ -78,6 +78,7 @@ if (raf || !rect) return;
 var cx = e.clientX, cy = e.clientY;
 raf = requestAnimationFrame(function () {
 raf = null;
+if (!rect) return;
 var px = (cx - rect.left) / rect.width - 0.5;
 var py = (cy - rect.top) / rect.height - 0.5;
 el.classList.add('s3d-tilting');

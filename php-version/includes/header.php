@@ -231,6 +231,7 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
        iOS / Android.  Manifest generated dynamically so it always tracks
        the live Company Info settings (brand name, theme colour, etc). -->
   <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="<?= esc(preg_replace('/\s+software\s*$/i', '', $brandName)) ?>">
@@ -740,7 +741,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
 <div class="trustbar trustbar-sticky py-1 px-3 d-none d-md-block">
   <div class="container d-flex justify-content-between align-items-center">
     <div class="d-flex gap-3 align-items-center flex-wrap">
-      <span><i class="bi bi-patch-check-fill text-success me-1"></i>Genuine Microsoft Products</span>
+      <span><i class="bi bi-patch-check-fill text-success me-1"></i>Authentic Software Store</span>
       <span><i class="bi bi-shield-check text-primary me-1"></i>30-Day Money-Back Guarantee</span>
       <!-- Inline promo strip: admin-toggleable (Company Info → Show promo bar). -->
       <?php if ($_promoBarOn): ?>
@@ -977,7 +978,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
         <?php /* Phone, Currency selector and Theme toggle now live in the
                 topbar (right side) so the main nav has room to breathe.
                 Only Ask AI + Cart remain here as the primary CTAs. */ ?>
-        <button class="btn btn-sm btn-outline-primary rounded-pill flex-shrink-0" onclick="toggleChat()" data-testid="ask-ai-btn" style="white-space:nowrap;"><i class="bi bi-stars me-1"></i>Ask AI</button>
+        <button class="btn btn-sm btn-outline-primary rounded-pill flex-shrink-0" onclick="openAskAiModal()" data-testid="ask-ai-btn" style="white-space:nowrap;"><i class="bi bi-stars me-1"></i>Ask AI</button>
         <a href="cart.php" class="btn btn-sm btn-primary rounded-pill position-relative flex-shrink-0" data-testid="cart-button" style="white-space:nowrap;">
           <i class="bi bi-cart3 me-1"></i>Cart
           <span class="cart-count-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger <?= cart_count() === 0 ? 'd-none' : '' ?>" data-testid="cart-count"><?= cart_count() ?></span>

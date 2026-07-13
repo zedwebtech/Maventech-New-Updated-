@@ -102,6 +102,10 @@
       var cx = e.clientX, cy = e.clientY;
       raf = requestAnimationFrame(function () {
         raf = null;
+        // Re-check inside rAF: mouseleave may have nulled rect between
+        // scheduling and this callback firing (fixes intermittent
+        // "Cannot read properties of null (reading 'left')" TypeError).
+        if (!rect) return;
         var px = (cx - rect.left) / rect.width - 0.5;
         var py = (cy - rect.top) / rect.height - 0.5;
         el.classList.add('s3d-tilting');

@@ -91,6 +91,7 @@ $adm_brand_logo   = function_exists('company_info') ? (company_info()['logo'] ??
 <!-- PWA: install on desktop + mobile, background notification polling -->
 <link rel="manifest" href="/admin-manifest.json">
 <meta name="theme-color" content="#06b6d4">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Maventech Admin">
