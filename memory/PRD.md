@@ -1,3 +1,24 @@
+<!-- 2026-07-13 (k): Card validation bug fix — error placement + silent-
+  while-typing.
+  (1) Error message MOVED back INLINE next to the CARD NUMBER label
+      (was rendered below the input in iteration h). Each field now
+      has a `<span class="field-error-inline">` inside a flex label-row
+      (label left, error right). Red bold plain text, no pill, no
+      background, ellipsis if the field is too narrow.
+  (2) VALIDATION IS SILENT UNTIL THE CUSTOMER HAS TYPED THE FULL LENGTH
+      of the card number (16 digits for Visa/MC/Discover, 15 for Amex).
+      Reordered the JS branches in main.js so `digits.length < maxL`
+      is checked BEFORE `!brand`. Consequence: typing "5456" (MC BIN,
+      4 digits) no longer flashes "Invalid card number" — the field
+      stays neutral until the customer completes the number. Only at
+      the maximum length does the Luhn check + brand-completeness fire.
+  Verified by frontend testing agent: 12 progressive digit-by-digit
+  scenarios pass on a bad-Luhn Mastercard (silent 1..15 digits →
+  "Invalid card number" at 16). Valid Visa 16 → no error + is-valid.
+  Amex 12/14/15 progressive path silent then valid. Error span at
+  same y-position as label (Δ 1.46px), right-aligned (Δ 0.001px). -->
+
+
 <!-- 2026-07-13 (j): Checkout card UX polish v2 — icons above, no
   pending pill, plain-text inline errors.
   (1) BRAND ICONS ABOVE (checkout.php) — renamed .card-brands-below →
