@@ -1528,3 +1528,13 @@ The store already had extensive, valid JSON-LD (Organization, LocalBusiness, Web
   2. Rewrote the `Digital download — emailed product key` string at source to use a plain hyphen ("Digital download - emailed product key"), plus fixed the channel-level `<description>` em-dash. Braces on top of the belt.
 - Verified: after regenerating locally, `grep -c $'\xe2\x80\x94'` = 0 across the whole feed, `DOMDocument::load()` parses cleanly, all 37 items carry the 9 required GMC attributes (id/title/description/link/image_link/availability/price/brand/condition), no duplicate ids, no XML control characters.
 - Next action for user: deploy to maventechsoftware.com → in Merchant Center click "Fetch now" on the `PRODUCTS SOURCE 1` feed → the two "Internal error (9, 0)" rows should clear. If any other rows fail, we can look at the specific product data in the DB.
+
+## 2026-07-14 — Bing Webmaster Tools: duplicate titles / descriptions + noindex conflicts
+- 4 SEO recommendations were flagged in Bing WMT for maventechsoftware.com. Fixed 3 that are code-level (the 4th is off-page link building):
+  1. **"Too many pages with identical meta descriptions"** — several indexable pages relied on the site-wide default `$pageDescription` because they never set their own:
+     - `subscriptions.php` was using local `$title / $description` variables (from an older revision) — silently fell back to the site default. Renamed to `$pageTitle / $pageDescription` so the includes/header.php picks them up.
+     - `sitemap.php`, `support.php`, `reviews.php` — added unique `$pageDescription` values matching each page's actual purpose (sitemap ⇒ index of every page, support ⇒ activation guides + contact, reviews ⇒ verified feedback stats).
+  2. **"Some URLs not indexed due to NOINDEX meta tags"** — sitemap-xml.php was still listing `/returns.php` and `/order-history.php` even though they set `$noIndex = true`. Bing flags this as a "conflicting signals" warning. Removed both from the sitemap (they now match their noindex directive).
+  3. **"Too many pages with identical titles"** — indirectly resolved by (1): `subscriptions.php` no longer inherits the site-default title. Also expanded the auto-noindex list in `includes/header.php` (added `inventory.php, user.php, forgot-password.php, reset-password.php, returns.php, review.php, order-view.php, order-history.php`) so those form/private pages never contribute duplicate meta to Bing's crawl.
+- 4th warning ("Not enough inbound links from high-quality domains") is off-page and requires manual outreach / PR — not a code fix.
+- All 6 modified files pass `php -l`. Deploy to live domain, then click "Investigate" → "Recheck" in Bing WMT to see the flags clear on the next crawl (typically 24-72 h).

@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 
-$pageTitle = 'Customer Reviews | ' . SITE_BRAND;
+$pageTitle       = 'Customer Reviews | ' . SITE_BRAND;
+$pageDescription = 'Read verified customer reviews of ' . SITE_BRAND . ' - real feedback on Microsoft Office keys, Windows 11 activations and antivirus purchases, plus star-by-star ratings from independent buyers.';
 
 /* ----- Write a Review (verified buyers only) ----- */
 $user = current_user();

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
-$pageTitle = 'Support Center | ' . SITE_BRAND;
+$pageTitle       = 'Support Center | ' . SITE_BRAND;
+$pageDescription = 'Step-by-step Windows & Mac activation guides, common Office error codes, live chat, phone and email support - everything you need to install and activate your genuine ' . SITE_BRAND . ' product key.';
 
 $sent = false;
 $formError = '';

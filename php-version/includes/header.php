@@ -42,7 +42,20 @@ $pageTitle       = seo_clamp_title($pageTitle, 60);
 $pageDescription = seo_clamp_description($pageDescription, 158);
 $pageTitleShort  = $pageTitleShort ?? seo_clamp_title(preg_replace('/\s+\|\s+.*$/u', '', $pageTitle), 55);
 $script = basename($_SERVER['SCRIPT_NAME'] ?? '');
-$noIndex = $noIndex ?? in_array($script, ['cart.php', 'checkout.php', 'login.php', 'register.php', 'account.php', 'admin.php', 'admin-email-preview.php', 'logout.php', 'order-success.php', '404.php'], true);
+$noIndex = $noIndex ?? in_array($script, [
+    // Transactional / session-bound pages — never surface these in Bing/Google.
+    'cart.php', 'checkout.php', 'order-success.php', 'order-view.php', 'order-history.php',
+    // Auth / account flow — nothing crawlable behind login.
+    'login.php', 'register.php', 'user.php', 'account.php',
+    'forgot-password.php', 'reset-password.php', 'logout.php',
+    // Admin panels — private staff tools.
+    'admin.php', 'admin-email-preview.php', 'inventory.php',
+    // Utility / thin form pages that would otherwise inherit the site-wide
+    // default meta and get flagged by Bing as "identical description".
+    'returns.php', 'review.php',
+    // System pages.
+    '404.php',
+], true);
 if (!isset($canonicalUrl)) {
     $canonicalPath = $script === 'index.php' ? '/' : '/' . $script;
     $canonicalSlug = isset($_GET['slug']) && $_GET['slug'] !== '' ? '?slug=' . urlencode($_GET['slug']) : '';

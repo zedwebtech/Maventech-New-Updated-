@@ -65,6 +65,19 @@ $urls     = [];
 // These don't carry a row-level `updated_at`, so today's date is a
 // safe heuristic — search engines treat `lastmod` as a soft hint.
 // ---------------------------------------------------------------
+// NOTE: only list URLs that are INDEXABLE. Every URL emitted here MUST
+// also render `<meta name="robots" content="index, follow">` on the page
+// itself — otherwise Bing / Google flag the mismatch as
+// "URL not indexed due to NOINDEX meta tag" in Webmaster Tools.
+// Pages excluded on purpose (they set noIndex=true in includes/header.php
+// or in their own controller):
+//   - /returns.php           (return-request form, thin/duplicate content)
+//   - /order-history.php     (private, login-only)
+//   - /order-view.php        (private)
+//   - /forgot-password.php, /reset-password.php, /user.php  (auth flows)
+//   - /cart.php, /checkout.php, /login.php, /register.php, /account.php
+//   - /admin.php, /inventory.php, /admin-email-preview.php  (staff only)
+//   - /404.php               (system)
 foreach ([
     ['/',                  '1.0', 'daily'],
     ['/shop.php',          '0.9', 'daily'],
@@ -76,12 +89,10 @@ foreach ([
     ['/contact.php',       '0.6', 'monthly'],
     ['/press-kit',         '0.6', 'monthly'],
     ['/support.php',       '0.6', 'monthly'],
-    ['/returns.php',       '0.5', 'monthly'],
     ['/refund-policy.php', '0.6', 'monthly'],
     ['/return-policy.php', '0.6', 'monthly'],
     ['/sitemap.php',       '0.4', 'monthly'],
     ['/track-order.php',   '0.5', 'monthly'],
-    ['/order-history.php', '0.5', 'monthly'],
 ] as [$path, $pri, $freq]) {
     $urls[] = ['loc' => $base . $path, 'lastmod' => $today, 'freq' => $freq, 'pri' => $pri, 'images' => []];
 }

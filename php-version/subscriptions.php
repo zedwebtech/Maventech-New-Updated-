@@ -46,8 +46,12 @@ $planLogos = [
     'lifetime-elite' => ['icon' => 'bi-gem',                   'color' => '#a855f7'],
 ];
 
-$title       = 'Protection Hub — Genuine Support Plans | ' . SITE_BRAND;
-$description = 'Choose the right level of hands-on support for your Windows &amp; Office licences. One-time payment plans from $29 (Quick Fix) to $199 (Lifetime Elite) — no recurring billing, no hidden fees.';
+// SEO meta — these MUST use the canonical $pageTitle / $pageDescription
+// names so includes/header.php picks them up. Using $title / $description
+// (as an earlier revision did) silently fell back to the site-wide default,
+// causing Bing Webmaster Tools to flag the page as a duplicate.
+$pageTitle       = 'Protection Hub - Genuine Support Plans | ' . SITE_BRAND;
+$pageDescription = 'Choose the right level of hands-on support for your Windows & Office licences. One-time payment plans from $29 (Quick Fix) to $199 (Lifetime Elite) - no recurring billing, no hidden fees.';
 include __DIR__ . '/includes/header.php';
 ?>
 

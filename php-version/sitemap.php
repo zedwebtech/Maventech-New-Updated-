@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
-$pageTitle = 'Sitemap | ' . SITE_BRAND;
+$pageTitle       = 'Sitemap | ' . SITE_BRAND;
+$pageDescription = 'Browse every page on ' . SITE_BRAND . ' - Microsoft Office keys, Windows 11 licenses, antivirus software, help centre articles, order tracking, and support forms - all in one organised index.';
 include __DIR__ . '/includes/header.php';
 
 // Link to the product page when the slug exists, otherwise to the category listing
