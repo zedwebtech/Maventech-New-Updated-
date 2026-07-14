@@ -231,9 +231,41 @@ function _product_highlights(array $p, string $brand): array {
 }
 
 
-// XML-safe escape (round-trips UTF-8 cleanly).
+// XML-safe escape (round-trips UTF-8 cleanly, strips characters that are
+// ILLEGAL under the XML 1.0 spec, and normalizes typographic punctuation that
+// Google Merchant Center's parser is known to reject inside narrow
+// attributes like <g:attribute_value>/<g:mpn>).
+//
+// Root cause we're guarding against: Merchant Center was reporting
+// "Internal error (9, 0)" at specific line numbers with an EMPTY Item Id
+// — meaning Google's parser choked BEFORE it could read the item's
+// <g:id>. That symptom is consistent with either
+//   (a) a control character (0x00-0x08, 0x0B, 0x0C, 0x0E-0x1F) that
+//       any strict XML 1.0 parser must reject even though PHP's
+//       htmlspecialchars() lets it through, OR
+//   (b) typographic em-dash / en-dash / smart quotes in fields where
+//       Merchant Center's line-by-line validator flags them
+//       (attribute_value, mpn, sku).
+// Both classes are fixed here at the emission boundary — a single
+// pinch-point so no future emit-site can forget.
 function feed_xml_esc(string $s): string {
-    return htmlspecialchars($s, ENT_XML1 | ENT_COMPAT, 'UTF-8');
+    // 1. Strip control chars illegal in XML 1.0 (keeps TAB / LF / CR).
+    $s = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $s) ?? $s;
+    // 2. Normalise typographic punctuation to ASCII — same visual meaning,
+    //    zero risk in Merchant Center / Bing Shopping / Meta Catalog.
+    $s = strtr($s, [
+        "\xE2\x80\x94" => '-',   // em-dash  →  hyphen-minus
+        "\xE2\x80\x93" => '-',   // en-dash  →  hyphen-minus
+        "\xE2\x80\x98" => "'",   // left single quote
+        "\xE2\x80\x99" => "'",   // right single quote
+        "\xE2\x80\x9C" => '"',   // left double quote
+        "\xE2\x80\x9D" => '"',   // right double quote
+        "\xE2\x80\xA6" => '...', // horizontal ellipsis
+        "\xC2\xA0"     => ' ',   // non-breaking space → regular space
+    ]);
+    // 3. Collapse any accidental double-spaces created by the previous step.
+    $s = preg_replace('/[ \t]{2,}/', ' ', $s) ?? $s;
+    return htmlspecialchars(trim($s), ENT_XML1 | ENT_COMPAT, 'UTF-8');
 }
 
 // Currency + ISO country code per region.
@@ -297,7 +329,7 @@ echo "  <channel>\n";
 echo "    <title>" . feed_xml_esc($feedTitle) . "</title>\n";
 echo "    <link>" . feed_xml_esc($site) . "</link>\n";
 echo "    <atom:link href=\"" . feed_xml_esc($linkRss) . "\" rel=\"self\" type=\"application/rss+xml\"/>\n";
-echo "    <description>Genuine digital software product keys delivered by email — Microsoft Office, Windows, Bitdefender, Norton, McAfee, Adobe and more. " . feed_xml_esc($brand) . " is an authorized independent reseller of previously-licensed software product keys.</description>\n";
+echo "    <description>" . feed_xml_esc('Genuine digital software product keys delivered by email - Microsoft Office, Windows, Bitdefender, Norton, McAfee, Adobe and more. ' . $brand . ' is an authorized independent reseller of previously-licensed software product keys.') . "</description>\n";
 echo "    <language>en-US</language>\n";
 echo "    <lastBuildDate>" . feed_xml_esc($updated) . "</lastBuildDate>\n";
 
@@ -399,14 +431,22 @@ foreach ($products as $p) {
        the "Specs" panel below the Shopping card.  Up to 100 allowed; we
        emit the 4 attributes shoppers actually filter on (OS / Licence /
        Devices / Activation).  Each pair MUST have section_name + attribute
-       _name + attribute_value per spec (support.google.com/merchants/answer/6324470). */
+       _name + attribute_value per spec (support.google.com/merchants/answer/6324470).
+       ---------------------------------------------------------------
+       IMPORTANT: keep every value ASCII-only (no em-dashes, no smart
+       quotes). Merchant Center previously flagged the em-dash version
+       ("Digital download — emailed product key") with an opaque
+       "Internal error (9, 0)" at the exact line of the block, so we
+       preemptively use a plain hyphen here even though feed_xml_esc()
+       now also normalises typographic punctuation at the emission
+       boundary. Belt + braces. */
     $platformDetail = trim((string)($p['platform'] ?? ''));
     $licenseDetail  = ucwords(strtolower(trim((string)($p['license_type'] ?? ''))));
     $details = [
         ['Compatibility', 'Operating System',   $platformDetail !== '' ? $platformDetail : 'Windows'],
         ['Licensing',     'License Type',       $licenseDetail !== '' ? $licenseDetail : 'Lifetime'],
         ['Licensing',     'Number of Devices',  '1 device'],
-        ['Delivery',      'Activation Method',  'Digital download — emailed product key'],
+        ['Delivery',      'Activation Method',  'Digital download - emailed product key'],
     ];
     foreach ($details as [$sect, $aName, $aVal]) {
         echo "      <g:product_detail>\n";
