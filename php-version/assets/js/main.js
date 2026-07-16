@@ -1699,14 +1699,14 @@ async function chatToggleVoice() {
 })();
 
 
-/* ── Flash Deal live countdown ───────────────────────────────────────── */
+/* ── Flash Deal live countdown (product banner + compact card ribbons) ── */
 (function () {
-  var banners = document.querySelectorAll('.flash-deal-banner[data-flash-ends]');
-  if (!banners.length) return;
+  var els = document.querySelectorAll('[data-flash-ends]');
+  if (!els.length) return;
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function tick() {
     var now = Math.floor(Date.now() / 1000);
-    banners.forEach(function (b) {
+    els.forEach(function (b) {
       var ends = parseInt(b.getAttribute('data-flash-ends'), 10) || 0;
       var left = ends - now;
       if (left <= 0) { b.style.display = 'none'; return; }
@@ -1715,6 +1715,8 @@ async function chatToggleVoice() {
       if (hh) hh.textContent = pad(h);
       if (mm) mm.textContent = pad(m);
       if (ss) ss.textContent = pad(s);
+      var compact = b.querySelector('.fd-compact');
+      if (compact) compact.textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
     });
   }
   tick();

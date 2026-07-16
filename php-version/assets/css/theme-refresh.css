@@ -126,3 +126,17 @@ hr{border-color:var(--tr-border);opacity:1;}
 .fd-unit b{font-size:1.35rem;line-height:1;font-variant-numeric:tabular-nums;font-weight:800;}
 .fd-unit i{font-style:normal;font-size:.62rem;opacity:.85;margin-top:3px;text-transform:uppercase;letter-spacing:.5px;}
 .fd-sep{font-size:1.2rem;font-weight:800;opacity:.7;}
+
+/* ── Compact Flash Deal ribbon (shop / category / grid cards) ─────────── */
+.flash-ribbon{
+  display:inline-flex;align-items:center;gap:5px;
+  background:linear-gradient(120deg,#dc2626,#ea580c);
+  color:#fff;font-weight:700;font-size:.68rem;line-height:1;
+  padding:5px 10px;border-radius:999px;white-space:nowrap;
+  box-shadow:0 4px 12px -4px rgba(220,38,38,.6);
+}
+.flash-ribbon i{font-size:.72rem;}
+.flash-ribbon .fd-compact{font-variant-numeric:tabular-nums;letter-spacing:.3px;}
+/* Grid-card overlay: pin the ribbon to the bottom-left of the product image */
+.product-img-wrap{position:relative;}
+.product-img-wrap .flash-ribbon{position:absolute;left:10px;bottom:10px;top:auto;right:auto;width:auto;height:auto;z-index:3;}

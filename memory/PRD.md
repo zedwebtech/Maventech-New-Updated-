@@ -1556,3 +1556,9 @@ The store already had extensive, valid JSON-LD (Organization, LocalBusiness, Web
 - product.php: added a live Flash Deal countdown banner under the price (renders when sale_ends_at is in the future + a real discount). Elegant red/orange gradient, animated bolt, HH:MM:SS live JS countdown (assets/js/main.js) that auto-hides on expiry. CSS in assets/css/theme-refresh.css (.flash-deal-banner...). data-testid=flash-deal-banner / flash-hh/mm/ss.
 - admin.php: new `cancel_flash_deal` action restores price to MSRP (original_price), clears sale window, pings IndexNow. Product editor Flash Deal panel now shows a green "LIVE" status row (current price / ends-at) with an "End Flash Deal" trash button (data-testid=flash-deal-cancel-btn) when a deal is active.
 - Verified e2e: banner ticks live on storefront; admin shows LIVE status + trash button; clicking End Flash Deal restored price 178.49->209.99 and cleared sale_ends_at.
+
+## 2026-06 (fork, cont.3) — Flash Deal ribbon on shop/category cards
+- Added mv_flash_ribbon($p) helper in includes/functions.php — compact "⚡ N% off · HH:MM:SS" pill, rendered only when sale_ends_at is in the future + real discount.
+- Wired into render_product_card (overlaid bottom-left of image) and render_product_row (inline in badge row). data-testid=flash-ribbon-<slug>, .fd-compact updated by the unified countdown loop in main.js (now ticks both .flash-deal-banner and any [data-flash-ends]).
+- CSS .flash-ribbon in theme-refresh.css; fixed Bootstrap .ratio>* forcing 100%×100% (was rendering as a full red circle) via top/right/width/height reset.
+- Verified live on shop.php (grid) and category.php (row) — ribbon ticks; image renders normally. Test deal cleaned up afterwards.

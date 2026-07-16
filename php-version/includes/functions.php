@@ -2290,6 +2290,24 @@ function dd_delivery_badge(string $size = ''): string
     return '<span class="' . $cls . '" data-testid="dd-delivery-badge">' . $svg . 'Digital Delivery Only</span>';
 }
 
+/**
+ * Compact Flash Deal ribbon for shop/category product cards.
+ * Renders "⚡ N% off · HH:MM:SS" only while a time-boxed deal is live
+ * (sale_ends_at in the future AND a real discount). The JS in main.js ticks
+ * every `.flash-ribbon` down and hides it on expiry. Returns '' otherwise.
+ */
+function mv_flash_ribbon(array $p): string
+{
+    $ends = !empty($p['sale_ends_at']) ? strtotime((string)$p['sale_ends_at']) : 0;
+    $pct  = (!empty($p['original_price']) && (float)$p['original_price'] > (float)$p['price'])
+        ? (int)round((1 - (float)$p['price'] / (float)$p['original_price']) * 100) : 0;
+    if ($ends <= time() || $pct <= 0) return '';
+    return '<span class="flash-ribbon" data-flash-ends="' . $ends . '" data-testid="flash-ribbon-' . esc($p['slug']) . '">'
+         . '<i class="bi bi-lightning-charge-fill"></i>' . $pct . '% off &middot; '
+         . '<b class="fd-compact">--:--:--</b></span>';
+}
+
+
 function render_product_row(array $p): string
 {
     $curCode = current_currency()['code'];
@@ -2328,6 +2346,7 @@ function render_product_row(array $p): string
             ' . $badge . '
             <span class="badge os-badge"><img src="assets/images/os/' . $osIcon . '.svg" alt="' . esc($p['platform'] ?: 'Windows') . ' platform" class="os-icon me-1" width="14" height="14">' . esc($p['platform'] ?: 'Windows') . '</span>
             ' . $save . '
+            ' . mv_flash_ribbon($p) . '
           </div>
           <a href="product.php?slug=' . esc($p['slug']) . '" class="text-decoration-none text-body fw-bold fs-6 d-block">' . esc($p['name']) . '</a>
           ' . render_product_rating($p['slug'], 'row') . '
@@ -2391,6 +2410,7 @@ function render_product_card(array $p): string
       <a href="product.php?slug=' . esc($p['slug']) . '" class="text-decoration-none">
         <div class="ratio ratio-1x1 bg-body-tertiary rounded-top product-img-wrap">
           <img ' . product_img_attrs($p['image'], 320) . ' alt="' . esc(product_img_alt($p)) . '" title="' . esc($p['name']) . '" class="object-fit-contain p-3" loading="lazy" decoding="async" width="320" height="320">
+          ' . mv_flash_ribbon($p) . '
         </div>
       </a>
       <div class="card-body d-flex flex-column">
