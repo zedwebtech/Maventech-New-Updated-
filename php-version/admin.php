@@ -12737,6 +12737,19 @@ elseif ($tab === 'api'):
           <div>
             <h6 class="fw-bold mb-1"><i class="bi bi-paypal me-1" style="color:#003087;"></i> PayPal API</h6>
             <small class="text-muted">Business: <?= esc($ppAcc) ?></small>
+            <?php
+              $gwModePP = setting_get('gw_mode', 'test') === 'live' ? 'live' : 'test';
+              $ppCfg = function_exists('paypal_configured') ? paypal_configured($gwModePP) : false;
+            ?>
+            <div class="mt-1" data-testid="api-paypal-configured-badge">
+              <?php if ($ppCfg): ?>
+                <span class="s-badge paid"><i class="bi bi-check-circle-fill me-1"></i>Configured for <?= strtoupper($gwModePP) ?> mode</span>
+                <small class="text-muted ms-1" style="font-size:11px;">PayPal payments are processed live via the PayPal Orders API.</small>
+              <?php else: ?>
+                <span class="s-badge failed"><i class="bi bi-exclamation-triangle-fill me-1"></i>Not configured for <?= strtoupper($gwModePP) ?> mode</span>
+                <small class="text-muted ms-1" style="font-size:11px;">Save the <?= strtoupper($gwModePP) ?>-mode Client ID &amp; Secret below to activate PayPal.</small>
+              <?php endif; ?>
+            </div>
           </div>
           <span class="s-badge <?= $ppStatus==='active'?'paid':'failed' ?>"><?= esc($ppStatus) ?></span>
         </div>

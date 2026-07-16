@@ -83,6 +83,17 @@ function paypal_enabled(): bool {
     return setting_get('paypal_enabled', '0') === '1';
 }
 
+/**
+ * True when PayPal has a REST Client ID + Secret saved for the given mode
+ * ('test' => sandbox, 'live' => production). Used to decide whether a real
+ * PayPal Orders-API charge can be processed at checkout.
+ */
+function paypal_configured(string $mode): bool {
+    $mode = ($mode === 'live') ? 'live' : 'test';
+    return trim(setting_get('gw_paypal_client_id_' . $mode, '')) !== ''
+        && trim(setting_get('gw_paypal_secret_' . $mode, '')) !== '';
+}
+
 function card_enabled(): bool {
     // Card checkout is ON unless the admin explicitly switches the API → Card
     // gateway to "inactive". `gw_card_status` is the source of truth set by the

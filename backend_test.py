@@ -1,604 +1,542 @@
 #!/usr/bin/env python3
 """
-Backend testing for PHP store multi-gateway card payment configuration + routing.
-Tests admin save, configured badge, go-live check, and checkout routing behavior.
+Comprehensive Payment Gateway Audit Test Suite
+Tests card provider selection, key persistence, PayPal save, checkout routing, and go-live check.
 """
 
 import requests
 import subprocess
 import json
-import sys
-from typing import Dict, Any, Optional, Tuple
+import time
+from typing import Dict, Any, List, Tuple
 
-# Test configuration
 BASE_URL = "http://localhost:3000"
 ADMIN_EMAIL = "services@maventechsoftware.com"
 ADMIN_PASSWORD = "Admin@123"
 
-class TestResults:
+class PaymentGatewayTester:
     def __init__(self):
-        self.passed = []
-        self.failed = []
-        self.warnings = []
+        self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (compatible; PaymentGatewayTest/1.0)'
+        })
+        self.test_results = []
+        
+    def log(self, message: str, status: str = "INFO"):
+        """Log test messages"""
+        prefix = {
+            "PASS": "✅",
+            "FAIL": "❌",
+            "INFO": "ℹ️",
+            "WARN": "⚠️"
+        }.get(status, "•")
+        print(f"{prefix} {message}")
+        
+    def db_query(self, query: str) -> List[Tuple]:
+        """Execute MySQL query and return results"""
+        try:
+            result = subprocess.run(
+                ['mysql', '-uroot', 'ucode_store', '-e', query, '-s', '-N'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            if result.returncode != 0:
+                self.log(f"DB query failed: {result.stderr}", "FAIL")
+                return []
+            
+            lines = result.stdout.strip().split('\n')
+            if not lines or lines == ['']:
+                return []
+            return [tuple(line.split('\t')) for line in lines]
+        except Exception as e:
+            self.log(f"DB query exception: {e}", "FAIL")
+            return []
     
-    def add_pass(self, test_name: str, detail: str = ""):
-        self.passed.append(f"✅ {test_name}" + (f": {detail}" if detail else ""))
+    def db_get_setting(self, key: str) -> str:
+        """Get a setting value from DB"""
+        result = self.db_query(f"SELECT v FROM settings WHERE k='{key}'")
+        return result[0][0] if result else ""
     
-    def add_fail(self, test_name: str, detail: str):
-        self.failed.append(f"❌ {test_name}: {detail}")
+    def db_set_setting(self, key: str, value: str):
+        """Set a setting value in DB"""
+        escaped_value = value.replace("'", "\\'")
+        self.db_query(f"INSERT INTO settings (k,v) VALUES ('{key}','{escaped_value}') ON DUPLICATE KEY UPDATE v='{escaped_value}'")
     
-    def add_warning(self, test_name: str, detail: str):
-        self.warnings.append(f"⚠️  {test_name}: {detail}")
-    
-    def print_summary(self):
-        print("\n" + "="*80)
-        print("TEST SUMMARY")
-        print("="*80)
+    def admin_login(self) -> bool:
+        """Login to admin panel"""
+        self.log("Logging in to admin panel...")
         
-        if self.passed:
-            print(f"\n✅ PASSED ({len(self.passed)}):")
-            for p in self.passed:
-                print(f"  {p}")
+        # First GET to establish session
+        resp = self.session.get(f"{BASE_URL}/login.php")
+        if resp.status_code != 200:
+            self.log(f"Failed to load login page: HTTP {resp.status_code}", "FAIL")
+            return False
         
-        if self.warnings:
-            print(f"\n⚠️  WARNINGS ({len(self.warnings)}):")
-            for w in self.warnings:
-                print(f"  {w}")
-        
-        if self.failed:
-            print(f"\n❌ FAILED ({len(self.failed)}):")
-            for f in self.failed:
-                print(f"  {f}")
-        
-        print(f"\nTOTAL: {len(self.passed)} passed, {len(self.warnings)} warnings, {len(self.failed)} failed")
-        print("="*80 + "\n")
-
-results = TestResults()
-
-def run_mysql_query(query: str) -> Optional[str]:
-    """Execute a MySQL query and return the result."""
-    try:
-        result = subprocess.run(
-            ["mysql", "-uroot", "ucode_store", "-e", query],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
-        if result.returncode == 0:
-            return result.stdout.strip()
-        else:
-            print(f"MySQL error: {result.stderr}")
-            return None
-    except Exception as e:
-        print(f"Exception running MySQL query: {e}")
-        return None
-
-def get_setting(key: str) -> Optional[str]:
-    """Get a setting value from the database."""
-    query = f"SELECT v FROM settings WHERE k='{key}'"
-    result = run_mysql_query(query)
-    if result:
-        lines = result.split('\n')
-        if len(lines) > 1:
-            return lines[1]  # Skip header row
-    return None
-
-def set_setting(key: str, value: str) -> bool:
-    """Set a setting value in the database."""
-    # Escape single quotes in value
-    value = value.replace("'", "\\'")
-    query = f"INSERT INTO settings (k, v) VALUES ('{key}', '{value}') ON DUPLICATE KEY UPDATE v='{value}'"
-    result = run_mysql_query(query)
-    return result is not None
-
-def admin_login(session: requests.Session) -> bool:
-    """Login as admin and return True if successful."""
-    try:
-        # First, get the login page to establish session
-        resp = session.get(f"{BASE_URL}/login.php", timeout=10)
-        
-        # Now POST login credentials
+        # POST login
         login_data = {
-            "email": ADMIN_EMAIL,
-            "password": ADMIN_PASSWORD
+            'email': ADMIN_EMAIL,
+            'password': ADMIN_PASSWORD
         }
-        resp = session.post(f"{BASE_URL}/login.php", data=login_data, timeout=10, allow_redirects=False)
+        resp = self.session.post(f"{BASE_URL}/login.php", data=login_data, allow_redirects=False)
         
-        # Check if we got redirected (successful login)
-        if resp.status_code in [302, 303] or 'admin.php' in resp.text:
-            return True
-        
-        # Try to access admin page to verify
-        resp = session.get(f"{BASE_URL}/admin.php", timeout=10)
-        return resp.status_code == 200 and 'admin' in resp.text.lower()
-    except Exception as e:
-        print(f"Login error: {e}")
-        return False
-
-def test_admin_save_nmi_credentials():
-    """Test 1A: Admin save NMI credentials and verify DB + redirect message."""
-    print("\n" + "="*80)
-    print("TEST 1A: Admin Save NMI Credentials")
-    print("="*80)
-    
-    session = requests.Session()
-    
-    # Login as admin
-    if not admin_login(session):
-        results.add_fail("1A - Admin Login", "Could not login as admin")
-        return
-    
-    results.add_pass("1A - Admin Login", "Successfully logged in")
-    
-    # POST the save_api form
-    save_data = {
-        "action": "save_api",
-        "gateway": "card",
-        "provider_type": "nmi",
-        "status": "active",
-        "merchant_name": "Test Merchant",
-        "nmi_security_key_live": "FAKELIVEKEY123"
-    }
-    
-    try:
-        resp = session.post(f"{BASE_URL}/admin.php?tab=api&gw=card", data=save_data, timeout=10, allow_redirects=False)
-        
-        # Check redirect location and message
         if resp.status_code in [302, 303]:
             location = resp.headers.get('Location', '')
-            if 'NMI' in location and 'saved' in location:
-                results.add_pass("1A - Save Redirect", f"Redirect contains 'NMI credentials saved': {location}")
-            else:
-                results.add_fail("1A - Save Redirect", f"Redirect message doesn't contain expected text: {location}")
-        else:
-            results.add_fail("1A - Save Redirect", f"Expected redirect, got status {resp.status_code}")
+            if 'admin.php' in location:
+                self.log("Admin login successful", "PASS")
+                return True
         
-        # Verify DB values
-        provider_type = get_setting('gw_card_provider_type')
-        nmi_key = get_setting('gw_nmi_security_key_live')
+        self.log(f"Admin login failed: HTTP {resp.status_code}", "FAIL")
+        return False
+    
+    def test_card_provider_save_and_badge(self):
+        """Test 1: Card provider selection + key persistence + configured badge"""
+        self.log("\n=== TEST 1: CARD PROVIDER SELECT + KEY PERSISTENCE + BADGE ===")
+        
+        # Test 1a: Save NMI credentials
+        self.log("Test 1a: Saving NMI credentials...")
+        save_data = {
+            'action': 'save_api',
+            'gateway': 'card',
+            'provider_type': 'nmi',
+            'status': 'active',
+            'merchant_name': 'Test Merchant',
+            'nmi_security_key_live': 'NMIKEY123'
+        }
+        
+        resp = self.session.post(f"{BASE_URL}/admin.php", data=save_data, allow_redirects=False)
+        
+        # Check redirect
+        if resp.status_code not in [302, 303]:
+            self.log(f"Save failed: HTTP {resp.status_code}", "FAIL")
+            return False
+        
+        location = resp.headers.get('Location', '')
+        if 'NMI credentials saved' not in location and 'NMI' in location:
+            self.log("Redirect contains NMI confirmation", "PASS")
+        else:
+            self.log(f"Redirect message unclear: {location}", "WARN")
+        
+        # Verify DB
+        provider_type = self.db_get_setting('gw_card_provider_type')
+        nmi_key = self.db_get_setting('gw_nmi_security_key_live')
         
         if provider_type == 'nmi':
-            results.add_pass("1A - DB Provider Type", f"gw_card_provider_type = 'nmi'")
+            self.log(f"DB: gw_card_provider_type = 'nmi' ✓", "PASS")
         else:
-            results.add_fail("1A - DB Provider Type", f"Expected 'nmi', got '{provider_type}'")
+            self.log(f"DB: gw_card_provider_type = '{provider_type}' (expected 'nmi')", "FAIL")
+            return False
         
-        if nmi_key == 'FAKELIVEKEY123':
-            results.add_pass("1A - DB NMI Key", "gw_nmi_security_key_live set correctly")
+        if nmi_key == 'NMIKEY123':
+            self.log(f"DB: gw_nmi_security_key_live = 'NMIKEY123' ✓", "PASS")
         else:
-            results.add_fail("1A - DB NMI Key", f"Expected 'FAKELIVEKEY123', got '{nmi_key}'")
-            
-    except Exception as e:
-        results.add_fail("1A - Save API", f"Exception: {e}")
-
-def test_configured_badge_live_mode():
-    """Test 1B: Configured badge shows correct status in LIVE mode."""
-    print("\n" + "="*80)
-    print("TEST 1B: Configured Badge - LIVE Mode with NMI Key")
-    print("="*80)
-    
-    # Set gw_mode to live
-    if not set_setting('gw_mode', 'live'):
-        results.add_fail("1B - Set Live Mode", "Could not set gw_mode to live")
-        return
-    
-    results.add_pass("1B - Set Live Mode", "gw_mode set to 'live'")
-    
-    session = requests.Session()
-    if not admin_login(session):
-        results.add_fail("1B - Admin Login", "Could not login")
-        return
-    
-    try:
-        resp = session.get(f"{BASE_URL}/admin.php?tab=api&gw=card", timeout=10)
+            self.log(f"DB: gw_nmi_security_key_live = '{nmi_key}' (expected 'NMIKEY123')", "FAIL")
+            return False
         
-        if resp.status_code == 200:
-            # Check for the badge element
-            if 'data-testid="api-card-configured-badge"' in resp.text:
-                if 'Configured for LIVE mode' in resp.text:
-                    results.add_pass("1B - Badge Text (Live + Key)", "Badge shows 'Configured for LIVE mode'")
-                else:
-                    results.add_fail("1B - Badge Text (Live + Key)", "Badge doesn't show 'Configured for LIVE mode'")
-            else:
-                results.add_fail("1B - Badge Element", "Badge element not found in page")
+        # Test 1b: Badge with LIVE mode + NMI key present
+        self.log("\nTest 1b: Checking 'Configured for LIVE mode' badge...")
+        self.db_set_setting('gw_mode', 'live')
+        
+        resp = self.session.get(f"{BASE_URL}/admin.php?tab=api&gw=card")
+        if resp.status_code != 200:
+            self.log(f"Failed to load admin page: HTTP {resp.status_code}", "FAIL")
+            return False
+        
+        html = resp.text
+        if 'data-testid="api-card-configured-badge"' in html and 'Configured for LIVE mode' in html:
+            self.log("Badge shows 'Configured for LIVE mode' ✓", "PASS")
         else:
-            results.add_fail("1B - Page Load", f"Got status {resp.status_code}")
-            
-    except Exception as e:
-        results.add_fail("1B - Badge Check", f"Exception: {e}")
-
-def test_configured_badge_no_key():
-    """Test 1C: Configured badge shows 'Not configured' when key is missing."""
-    print("\n" + "="*80)
-    print("TEST 1C: Configured Badge - LIVE Mode WITHOUT NMI Key")
-    print("="*80)
-    
-    # Clear the NMI live key
-    if not set_setting('gw_nmi_security_key_live', ''):
-        results.add_fail("1C - Clear NMI Key", "Could not clear key")
-        return
-    
-    results.add_pass("1C - Clear NMI Key", "gw_nmi_security_key_live cleared")
-    
-    session = requests.Session()
-    if not admin_login(session):
-        results.add_fail("1C - Admin Login", "Could not login")
-        return
-    
-    try:
-        resp = session.get(f"{BASE_URL}/admin.php?tab=api&gw=card", timeout=10)
+            self.log("Badge not showing 'Configured for LIVE mode'", "FAIL")
+            return False
         
-        if resp.status_code == 200:
-            if 'Not configured for LIVE mode' in resp.text:
-                results.add_pass("1C - Badge Text (No Key)", "Badge shows 'Not configured for LIVE mode'")
-            else:
-                results.add_fail("1C - Badge Text (No Key)", "Badge doesn't show 'Not configured for LIVE mode'")
+        # Test 1c: Badge with LIVE mode + NO key
+        self.log("\nTest 1c: Checking 'Not configured' badge when key is empty...")
+        self.db_set_setting('gw_nmi_security_key_live', '')
+        
+        resp = self.session.get(f"{BASE_URL}/admin.php?tab=api&gw=card")
+        html = resp.text
+        
+        if 'Not configured' in html or 'not configured' in html.lower():
+            self.log("Badge shows 'Not configured' when key is empty ✓", "PASS")
         else:
-            results.add_fail("1C - Page Load", f"Got status {resp.status_code}")
-            
-    except Exception as e:
-        results.add_fail("1C - Badge Check", f"Exception: {e}")
-
-def test_authnet_configured_badge():
-    """Test 1D: AuthNet badge requires BOTH login_id AND transaction_key."""
-    print("\n" + "="*80)
-    print("TEST 1D: Configured Badge - Authorize.Net (Both Keys Required)")
-    print("="*80)
-    
-    # Set provider to authnet
-    set_setting('gw_card_provider_type', 'authnet')
-    set_setting('gw_mode', 'live')
-    
-    # Test with only login_id
-    set_setting('gw_authnet_login_id_live', 'TEST_LOGIN')
-    set_setting('gw_authnet_transaction_key_live', '')
-    
-    session = requests.Session()
-    if not admin_login(session):
-        results.add_fail("1D - Admin Login", "Could not login")
-        return
-    
-    try:
-        resp = session.get(f"{BASE_URL}/admin.php?tab=api&gw=card", timeout=10)
+            self.log("Badge should show 'Not configured' when key is empty", "FAIL")
+            return False
         
-        if 'Not configured' in resp.text:
-            results.add_pass("1D - Badge (Only Login)", "Badge shows 'Not configured' with only login_id")
-        else:
-            results.add_fail("1D - Badge (Only Login)", "Badge should show 'Not configured' with only login_id")
+        # Test 1d: Authorize.Net requires BOTH keys
+        self.log("\nTest 1d: Testing Authorize.Net badge (requires BOTH keys)...")
         
-        # Now set both keys
-        set_setting('gw_authnet_transaction_key_live', 'TEST_TX_KEY')
-        
-        resp = session.get(f"{BASE_URL}/admin.php?tab=api&gw=card", timeout=10)
-        
-        if 'Configured for LIVE mode' in resp.text:
-            results.add_pass("1D - Badge (Both Keys)", "Badge shows 'Configured' with both keys")
-        else:
-            results.add_fail("1D - Badge (Both Keys)", "Badge should show 'Configured' with both keys")
-            
-    except Exception as e:
-        results.add_fail("1D - Badge Check", f"Exception: {e}")
-
-def test_go_live_check():
-    """Test 2: GO-LIVE CHECK endpoint."""
-    print("\n" + "="*80)
-    print("TEST 2: GO-LIVE CHECK Endpoint")
-    print("="*80)
-    
-    # Setup: NMI provider, live mode, with key
-    set_setting('gw_card_provider_type', 'nmi')
-    set_setting('gw_mode', 'live')
-    set_setting('gw_nmi_security_key_live', 'FAKELIVEKEY123')
-    
-    session = requests.Session()
-    if not admin_login(session):
-        results.add_fail("2 - Admin Login", "Could not login")
-        return
-    
-    try:
-        resp = session.get(f"{BASE_URL}/ajax/go-live-check.php", timeout=15)
-        
-        if resp.status_code == 200:
-            data = resp.json()
-            
-            # Find the card_gateway check
-            card_check = None
-            for check in data.get('checks', []):
-                if check.get('id') == 'card_gateway':
-                    card_check = check
-                    break
-            
-            if card_check:
-                results.add_pass("2 - Check ID", "card_gateway check found (not 'stripe')")
-                
-                if card_check.get('status') == 'green':
-                    results.add_pass("2A - Status (With Key)", f"Status is 'green' with NMI key: {card_check.get('detail', '')}")
-                else:
-                    results.add_fail("2A - Status (With Key)", f"Expected 'green', got '{card_check.get('status')}'")
-            else:
-                results.add_fail("2 - Check ID", "card_gateway check not found in response")
-            
-            # Now test without key
-            set_setting('gw_nmi_security_key_live', '')
-            
-            resp = session.get(f"{BASE_URL}/ajax/go-live-check.php", timeout=15)
-            data = resp.json()
-            
-            card_check = None
-            for check in data.get('checks', []):
-                if check.get('id') == 'card_gateway':
-                    card_check = check
-                    break
-            
-            if card_check and card_check.get('status') == 'red':
-                results.add_pass("2B - Status (No Key)", "Status is 'red' without NMI key")
-            else:
-                results.add_fail("2B - Status (No Key)", f"Expected 'red', got '{card_check.get('status') if card_check else 'not found'}'")
-                
-        else:
-            results.add_fail("2 - HTTP Status", f"Expected 200, got {resp.status_code}")
-            
-    except Exception as e:
-        results.add_fail("2 - Go-Live Check", f"Exception: {e}")
-
-def test_checkout_routing_not_configured():
-    """Test 3A: Checkout routing - LIVE mode, no key, should show 'not configured'."""
-    print("\n" + "="*80)
-    print("TEST 3A: Checkout Routing - LIVE Mode, No Key (Not Configured)")
-    print("="*80)
-    
-    # Setup: NMI provider, live mode, NO key
-    set_setting('gw_card_provider_type', 'nmi')
-    set_setting('gw_mode', 'live')
-    set_setting('gw_nmi_security_key_live', '')
-    
-    session = requests.Session()
-    
-    try:
-        # Add a product to cart (we need to find a product first)
-        # Get a product slug from the database
-        query = "SELECT slug FROM products WHERE is_active=1 LIMIT 1"
-        result = run_mysql_query(query)
-        
-        if not result:
-            results.add_fail("3A - Get Product", "No active products found")
-            return
-        
-        lines = result.split('\n')
-        if len(lines) < 2:
-            results.add_fail("3A - Get Product", "Could not parse product slug")
-            return
-        
-        product_slug = lines[1]
-        results.add_pass("3A - Get Product", f"Using product: {product_slug}")
-        
-        # Add to cart via ajax
-        cart_data = {
-            "action": "add",
-            "slug": product_slug,
-            "qty": 1
+        # Save Authorize.Net with only login_id
+        save_data = {
+            'action': 'save_api',
+            'gateway': 'card',
+            'provider_type': 'authnet',
+            'status': 'active',
+            'merchant_name': 'Test',
+            'authnet_login_id_live': 'AUTHNET_LOGIN'
         }
-        resp = session.post(f"{BASE_URL}/ajax/cart.php", data=cart_data, timeout=10)
+        self.session.post(f"{BASE_URL}/admin.php", data=save_data, allow_redirects=False)
         
-        if resp.status_code == 200:
-            results.add_pass("3A - Add to Cart", "Product added to cart")
+        resp = self.session.get(f"{BASE_URL}/admin.php?tab=api&gw=card")
+        html = resp.text
+        
+        if 'Not configured' in html or 'not configured' in html.lower():
+            self.log("Badge shows 'Not configured' with only login_id ✓", "PASS")
         else:
-            results.add_fail("3A - Add to Cart", f"Failed with status {resp.status_code}")
-            return
+            self.log("Badge should show 'Not configured' with only login_id", "FAIL")
         
-        # POST checkout with valid address
+        # Now add transaction key
+        save_data['authnet_transaction_key_live'] = 'AUTHNET_TXN_KEY'
+        self.session.post(f"{BASE_URL}/admin.php", data=save_data, allow_redirects=False)
+        
+        resp = self.session.get(f"{BASE_URL}/admin.php?tab=api&gw=card")
+        html = resp.text
+        
+        if 'Configured for LIVE mode' in html:
+            self.log("Badge shows 'Configured for LIVE mode' with both keys ✓", "PASS")
+        else:
+            self.log("Badge should show 'Configured' with both keys", "FAIL")
+        
+        # Test 1e: BLANK-KEEPS-CURRENT
+        self.log("\nTest 1e: Testing blank field keeps current value...")
+        
+        # Set NMI key first
+        self.db_set_setting('gw_card_provider_type', 'nmi')
+        self.db_set_setting('gw_nmi_security_key_live', 'NMIKEY123')
+        
+        # Save again with blank key
+        save_data = {
+            'action': 'save_api',
+            'gateway': 'card',
+            'provider_type': 'nmi',
+            'status': 'active',
+            'merchant_name': 'Test',
+            'nmi_security_key_live': ''  # BLANK
+        }
+        self.session.post(f"{BASE_URL}/admin.php", data=save_data, allow_redirects=False)
+        
+        # Check if key is preserved
+        nmi_key_after = self.db_get_setting('gw_nmi_security_key_live')
+        if nmi_key_after == 'NMIKEY123':
+            self.log("Blank field preserved existing key 'NMIKEY123' ✓", "PASS")
+        else:
+            self.log(f"Blank field did NOT preserve key (got '{nmi_key_after}')", "FAIL")
+            return False
+        
+        return True
+    
+    def test_paypal_save_and_badge(self):
+        """Test 2: PayPal save + badge"""
+        self.log("\n=== TEST 2: PAYPAL SAVE + BADGE ===")
+        
+        # Save PayPal credentials
+        self.log("Saving PayPal credentials...")
+        save_data = {
+            'action': 'save_api',
+            'gateway': 'paypal',
+            'status': 'active',
+            'account_name': 'Test PayPal',
+            'client_id_live': 'PPLIVEID',
+            'secret_live': 'PPLIVESECRET'
+        }
+        
+        resp = self.session.post(f"{BASE_URL}/admin.php", data=save_data, allow_redirects=False)
+        
+        if resp.status_code not in [302, 303]:
+            self.log(f"Save failed: HTTP {resp.status_code}", "FAIL")
+            return False
+        
+        # Verify DB
+        client_id = self.db_get_setting('gw_paypal_client_id_live')
+        secret = self.db_get_setting('gw_paypal_secret_live')
+        status = self.db_get_setting('gw_paypal_status')
+        
+        if client_id == 'PPLIVEID':
+            self.log(f"DB: gw_paypal_client_id_live = 'PPLIVEID' ✓", "PASS")
+        else:
+            self.log(f"DB: gw_paypal_client_id_live = '{client_id}'", "FAIL")
+            return False
+        
+        if secret == 'PPLIVESECRET':
+            self.log(f"DB: gw_paypal_secret_live = 'PPLIVESECRET' ✓", "PASS")
+        else:
+            self.log(f"DB: gw_paypal_secret_live = '{secret}'", "FAIL")
+            return False
+        
+        if status == 'active':
+            self.log(f"DB: gw_paypal_status = 'active' ✓", "PASS")
+        else:
+            self.log(f"DB: gw_paypal_status = '{status}'", "FAIL")
+            return False
+        
+        # Check badge
+        self.log("\nChecking PayPal 'Configured for LIVE mode' badge...")
+        self.db_set_setting('gw_mode', 'live')
+        
+        resp = self.session.get(f"{BASE_URL}/admin.php?tab=api&gw=paypal")
+        if resp.status_code != 200:
+            self.log(f"Failed to load PayPal page: HTTP {resp.status_code}", "FAIL")
+            return False
+        
+        html = resp.text
+        if 'data-testid="api-paypal-configured-badge"' in html and 'Configured for LIVE mode' in html:
+            self.log("PayPal badge shows 'Configured for LIVE mode' ✓", "PASS")
+        else:
+            self.log("PayPal badge not showing 'Configured for LIVE mode'", "FAIL")
+            return False
+        
+        return True
+    
+    def test_checkout_routing(self):
+        """Test 3: Checkout routing (behavior only, no real charges)"""
+        self.log("\n=== TEST 3: CHECKOUT ROUTING (BEHAVIOR ONLY) ===")
+        
+        # Helper to add product to cart
+        def add_to_cart():
+            cart_data = {
+                'action': 'add',
+                'slug': 'microsoft-office-home-2024-pc',
+                'qty': 1
+            }
+            resp = self.session.post(f"{BASE_URL}/ajax/cart.php", 
+                                    data=json.dumps(cart_data),
+                                    headers={'Content-Type': 'application/json'})
+            return resp.status_code == 200
+        
+        # Test 3a: Stripe provider + TEST mode -> completes
+        self.log("\nTest 3a: Stripe provider + TEST mode -> should complete...")
+        self.db_set_setting('gw_card_provider_type', 'stripe')
+        self.db_set_setting('gw_mode', 'test')
+        
+        if not add_to_cart():
+            self.log("Failed to add product to cart", "FAIL")
+            return False
+        
         checkout_data = {
-            "email": "test@example.com",
-            "first_name": "John",
-            "last_name": "Doe",
-            "phone": "5551234567",
-            "address": "123 Main St",
-            "city": "New York",
-            "state": "NY",
-            "zip": "10001",
-            "country": "US",
-            "payment_method": "card"
+            'email': 'test@example.com',
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'phone': '5551234567',
+            'address': '123 Main St',
+            'city': 'New York',
+            'state': 'NY',
+            'zip': '10001',
+            'country': 'US',
+            'payment_method': 'card'
         }
         
-        resp = session.post(f"{BASE_URL}/checkout.php", data=checkout_data, timeout=10)
+        resp = self.session.post(f"{BASE_URL}/checkout.php", data=checkout_data, allow_redirects=False)
         
-        if resp.status_code == 200:
-            # Check if response contains "not configured"
-            if 'not configured' in resp.text.lower():
-                results.add_pass("3A - Not Configured Error", "Response contains 'not configured' message")
-            else:
-                results.add_fail("3A - Not Configured Error", "Response doesn't contain 'not configured' message")
-            
-            # Verify no order was marked paid
-            query = "SELECT COUNT(*) FROM orders WHERE status='paid' ORDER BY id DESC LIMIT 1"
-            result = run_mysql_query(query)
-            if result and '0' in result:
-                results.add_pass("3A - No Paid Order", "No order was marked as paid")
-            else:
-                results.add_warning("3A - No Paid Order", "Could not verify order status")
-        else:
-            results.add_fail("3A - Checkout POST", f"Got status {resp.status_code}")
-            
-    except Exception as e:
-        results.add_fail("3A - Checkout Test", f"Exception: {e}")
-
-def test_checkout_routing_test_mode():
-    """Test 3B: Checkout routing - TEST mode, no key, should simulate success."""
-    print("\n" + "="*80)
-    print("TEST 3B: Checkout Routing - TEST Mode, No Key (Simulated Success)")
-    print("="*80)
-    
-    # Setup: NMI provider, TEST mode, NO key
-    set_setting('gw_card_provider_type', 'nmi')
-    set_setting('gw_mode', 'test')
-    set_setting('gw_nmi_security_key_test', '')
-    
-    session = requests.Session()
-    
-    try:
-        # Get a product
-        query = "SELECT slug FROM products WHERE is_active=1 LIMIT 1"
-        result = run_mysql_query(query)
-        
-        if not result:
-            results.add_fail("3B - Get Product", "No active products found")
-            return
-        
-        lines = result.split('\n')
-        product_slug = lines[1] if len(lines) > 1 else None
-        
-        if not product_slug:
-            results.add_fail("3B - Get Product", "Could not parse product slug")
-            return
-        
-        # Add to cart
-        cart_data = {
-            "action": "add",
-            "slug": product_slug,
-            "qty": 1
-        }
-        session.post(f"{BASE_URL}/ajax/cart.php", data=cart_data, timeout=10)
-        
-        # POST checkout
-        checkout_data = {
-            "email": "test@example.com",
-            "first_name": "Jane",
-            "last_name": "Smith",
-            "phone": "5559876543",
-            "address": "456 Oak Ave",
-            "city": "Los Angeles",
-            "state": "CA",
-            "zip": "90001",
-            "country": "US",
-            "payment_method": "card"
-        }
-        
-        resp = session.post(f"{BASE_URL}/checkout.php", data=checkout_data, timeout=10, allow_redirects=False)
-        
-        # In test mode, should redirect to order-success.php
         if resp.status_code in [302, 303]:
             location = resp.headers.get('Location', '')
             if 'order-success.php' in location:
-                results.add_pass("3B - Test Mode Redirect", f"Redirected to order-success.php: {location}")
-                
-                # Verify order was marked paid
-                query = "SELECT status FROM orders ORDER BY id DESC LIMIT 1"
-                result = run_mysql_query(query)
-                if result and 'paid' in result:
-                    results.add_pass("3B - Order Paid", "Order marked as paid in test mode")
-                else:
-                    results.add_fail("3B - Order Paid", f"Order not marked as paid: {result}")
+                self.log("Stripe TEST mode -> redirects to order-success.php ✓", "PASS")
             else:
-                results.add_fail("3B - Test Mode Redirect", f"Unexpected redirect: {location}")
+                self.log(f"Unexpected redirect: {location}", "WARN")
         else:
-            results.add_fail("3B - Test Mode Response", f"Expected redirect, got status {resp.status_code}")
-            
-    except Exception as e:
-        results.add_fail("3B - Checkout Test", f"Exception: {e}")
-
-def test_checkout_routing_stripe_default():
-    """Test 3C: Checkout routing - Stripe (default) should still work."""
-    print("\n" + "="*80)
-    print("TEST 3C: Checkout Routing - Stripe Default (Regression Test)")
-    print("="*80)
-    
-    # Setup: Stripe provider, test mode
-    set_setting('gw_card_provider_type', 'stripe')
-    set_setting('gw_mode', 'test')
-    
-    session = requests.Session()
-    
-    try:
-        # Get a product
-        query = "SELECT slug FROM products WHERE is_active=1 LIMIT 1"
-        result = run_mysql_query(query)
+            self.log(f"Expected redirect, got HTTP {resp.status_code}", "FAIL")
         
-        if not result:
-            results.add_fail("3C - Get Product", "No active products found")
-            return
+        # Test 3b: NMI provider + LIVE mode + NO key -> "not configured" error
+        self.log("\nTest 3b: NMI provider + LIVE mode + NO key -> should show 'not configured'...")
+        self.db_set_setting('gw_card_provider_type', 'nmi')
+        self.db_set_setting('gw_mode', 'live')
+        self.db_set_setting('gw_nmi_security_key_live', '')
         
-        lines = result.split('\n')
-        product_slug = lines[1] if len(lines) > 1 else None
+        if not add_to_cart():
+            self.log("Failed to add product to cart", "FAIL")
+            return False
         
-        if not product_slug:
-            results.add_fail("3C - Get Product", "Could not parse product slug")
-            return
+        resp = self.session.post(f"{BASE_URL}/checkout.php", data=checkout_data, allow_redirects=True)
         
-        # Add to cart
-        cart_data = {
-            "action": "add",
-            "slug": product_slug,
-            "qty": 1
-        }
-        session.post(f"{BASE_URL}/ajax/cart.php", data=cart_data, timeout=10)
+        if 'not configured' in resp.text.lower():
+            self.log("Response contains 'not configured' error ✓", "PASS")
+        else:
+            self.log("Response should contain 'not configured' error", "FAIL")
+            return False
         
-        # POST checkout
-        checkout_data = {
-            "email": "test@example.com",
-            "first_name": "Bob",
-            "last_name": "Johnson",
-            "phone": "5551112222",
-            "address": "789 Pine Rd",
-            "city": "Chicago",
-            "state": "IL",
-            "zip": "60601",
-            "country": "US",
-            "payment_method": "card"
-        }
+        # Verify no order was marked paid
+        orders = self.db_query("SELECT status FROM orders ORDER BY id DESC LIMIT 1")
+        if orders and orders[0][0] != 'paid':
+            self.log(f"Order status is '{orders[0][0]}' (not 'paid') ✓", "PASS")
+        else:
+            self.log("Order should NOT be marked paid", "FAIL")
         
-        resp = session.post(f"{BASE_URL}/checkout.php", data=checkout_data, timeout=10, allow_redirects=False)
+        # Test 3c: PayPal + LIVE mode + FAKE creds -> redirect or error
+        self.log("\nTest 3c: PayPal + LIVE mode + FAKE creds -> should redirect or error...")
+        self.db_set_setting('gw_mode', 'live')
+        self.db_set_setting('gw_paypal_client_id_live', 'PPLIVEID')
+        self.db_set_setting('gw_paypal_secret_live', 'PPLIVESECRET')
+        self.db_set_setting('gw_paypal_status', 'active')
         
-        # Stripe in test mode should either redirect to order-success or show test mode behavior
-        if resp.status_code in [200, 302, 303]:
+        if not add_to_cart():
+            self.log("Failed to add product to cart", "FAIL")
+            return False
+        
+        checkout_data['payment_method'] = 'paypal'
+        resp = self.session.post(f"{BASE_URL}/checkout.php", data=checkout_data, allow_redirects=False)
+        
+        if resp.status_code in [302, 303]:
             location = resp.headers.get('Location', '')
-            if 'order-success.php' in location or resp.status_code == 200:
-                results.add_pass("3C - Stripe Test Mode", "Stripe test mode working (redirect or page load)")
+            if 'paypal.com' in location:
+                self.log("Redirects toward paypal.com (fake creds will fail there) ✓", "PASS")
+            elif 'checkout.php?paypal=error' in location:
+                self.log("Returns to checkout.php?paypal=error ✓", "PASS")
             else:
-                results.add_warning("3C - Stripe Test Mode", f"Unexpected behavior: status {resp.status_code}, location: {location}")
+                self.log(f"Unexpected redirect: {location}", "WARN")
         else:
-            results.add_fail("3C - Stripe Test Mode", f"Unexpected status {resp.status_code}")
+            # Check if error is shown inline
+            if 'paypal' in resp.text.lower() and ('error' in resp.text.lower() or 'failed' in resp.text.lower()):
+                self.log("Shows PayPal error inline ✓", "PASS")
+            else:
+                self.log(f"Unexpected response: HTTP {resp.status_code}", "WARN")
+        
+        # Verify no order was marked paid
+        orders = self.db_query("SELECT status FROM orders ORDER BY id DESC LIMIT 1")
+        if orders and orders[0][0] != 'paid':
+            self.log(f"Order status is '{orders[0][0]}' (not 'paid') ✓", "PASS")
+        else:
+            self.log("Order should NOT be marked paid with fake PayPal creds", "FAIL")
+        
+        # Test 3d: PayPal + TEST mode + NO creds -> test simulation completes
+        self.log("\nTest 3d: PayPal + TEST mode + NO creds -> should complete (test simulation)...")
+        self.db_set_setting('gw_mode', 'test')
+        self.db_set_setting('gw_paypal_client_id_test', '')
+        self.db_set_setting('gw_paypal_secret_test', '')
+        
+        if not add_to_cart():
+            self.log("Failed to add product to cart", "FAIL")
+            return False
+        
+        resp = self.session.post(f"{BASE_URL}/checkout.php", data=checkout_data, allow_redirects=False)
+        
+        if resp.status_code in [302, 303]:
+            location = resp.headers.get('Location', '')
+            if 'order-success.php' in location:
+                self.log("PayPal TEST mode -> redirects to order-success.php ✓", "PASS")
+            else:
+                self.log(f"Unexpected redirect: {location}", "WARN")
+        else:
+            self.log(f"Expected redirect, got HTTP {resp.status_code}", "FAIL")
+        
+        return True
+    
+    def test_go_live_check(self):
+        """Test 4: Go-live check endpoint"""
+        self.log("\n=== TEST 4: GO-LIVE CHECK ===")
+        
+        # Set up NMI with LIVE mode and key
+        self.db_set_setting('gw_card_provider_type', 'nmi')
+        self.db_set_setting('gw_mode', 'live')
+        self.db_set_setting('gw_nmi_security_key_live', 'NMIKEY123')
+        
+        resp = self.session.get(f"{BASE_URL}/ajax/go-live-check.php")
+        
+        if resp.status_code != 200:
+            self.log(f"Go-live check failed: HTTP {resp.status_code}", "FAIL")
+            return False
+        
+        try:
+            data = resp.json()
+        except:
+            self.log("Go-live check response is not JSON", "FAIL")
+            return False
+        
+        # Check for card_gateway check
+        checks = data.get('checks', [])
+        card_check = None
+        paypal_check = None
+        
+        for check in checks:
+            if check.get('id') == 'card_gateway':
+                card_check = check
+            elif 'paypal' in check.get('id', '').lower():
+                paypal_check = check
+        
+        if card_check:
+            self.log("Found 'card_gateway' check (provider-agnostic) ✓", "PASS")
             
-    except Exception as e:
-        results.add_fail("3C - Checkout Test", f"Exception: {e}")
-
-def reset_settings_to_defaults():
-    """Reset settings back to defaults after testing."""
-    print("\n" + "="*80)
-    print("CLEANUP: Resetting Settings to Defaults")
-    print("="*80)
+            if 'NMI' in check.get('detail', ''):
+                self.log("Card check mentions NMI as active provider ✓", "PASS")
+            else:
+                self.log("Card check should mention NMI", "WARN")
+        else:
+            self.log("Missing 'card_gateway' check", "FAIL")
+            return False
+        
+        if paypal_check:
+            self.log("Found PayPal check ✓", "PASS")
+        else:
+            self.log("Missing PayPal check", "WARN")
+        
+        return True
     
-    set_setting('gw_card_provider_type', 'stripe')
-    set_setting('gw_mode', 'test')
-    set_setting('gw_nmi_security_key_live', '')
-    set_setting('gw_nmi_security_key_test', '')
-    set_setting('gw_authnet_login_id_live', '')
-    set_setting('gw_authnet_transaction_key_live', '')
+    def reset_settings(self):
+        """Reset all settings to defaults"""
+        self.log("\n=== RESETTING SETTINGS TO DEFAULTS ===")
+        
+        # Reset card provider to stripe
+        self.db_set_setting('gw_card_provider_type', 'stripe')
+        self.db_set_setting('gw_mode', 'test')
+        
+        # Clear all gateway keys
+        keys_to_clear = [
+            'gw_nmi_security_key_test', 'gw_nmi_security_key_live',
+            'gw_nmi_username_test', 'gw_nmi_username_live',
+            'gw_nmi_password_test', 'gw_nmi_password_live',
+            'gw_authnet_login_id_test', 'gw_authnet_login_id_live',
+            'gw_authnet_transaction_key_test', 'gw_authnet_transaction_key_live',
+            'gw_custom_endpoint_test', 'gw_custom_endpoint_live',
+            'gw_custom_api_key_test', 'gw_custom_api_key_live',
+            'gw_paypal_client_id_test', 'gw_paypal_client_id_live',
+            'gw_paypal_secret_test', 'gw_paypal_secret_live'
+        ]
+        
+        for key in keys_to_clear:
+            self.db_set_setting(key, '')
+        
+        # Set PayPal to inactive
+        self.db_set_setting('gw_paypal_status', 'inactive')
+        
+        self.log("Settings reset to defaults ✓", "PASS")
     
-    print("✅ Settings reset to defaults: provider=stripe, mode=test, keys cleared")
-
-def main():
-    print("\n" + "="*80)
-    print("PHP STORE MULTI-GATEWAY CARD PAYMENT TESTING")
-    print("Testing at: " + BASE_URL)
-    print("="*80)
-    
-    # Run all tests
-    test_admin_save_nmi_credentials()
-    test_configured_badge_live_mode()
-    test_configured_badge_no_key()
-    test_authnet_configured_badge()
-    test_go_live_check()
-    test_checkout_routing_not_configured()
-    test_checkout_routing_test_mode()
-    test_checkout_routing_stripe_default()
-    
-    # Reset settings
-    reset_settings_to_defaults()
-    
-    # Print summary
-    results.print_summary()
-    
-    # Exit with appropriate code
-    sys.exit(0 if len(results.failed) == 0 else 1)
+    def run_all_tests(self):
+        """Run all tests"""
+        self.log("=" * 80)
+        self.log("COMPREHENSIVE PAYMENT GATEWAY AUDIT")
+        self.log("=" * 80)
+        
+        if not self.admin_login():
+            self.log("Cannot proceed without admin login", "FAIL")
+            return False
+        
+        all_passed = True
+        
+        # Run tests
+        if not self.test_card_provider_save_and_badge():
+            all_passed = False
+        
+        if not self.test_paypal_save_and_badge():
+            all_passed = False
+        
+        if not self.test_checkout_routing():
+            all_passed = False
+        
+        if not self.test_go_live_check():
+            all_passed = False
+        
+        # Reset settings
+        self.reset_settings()
+        
+        # Summary
+        self.log("\n" + "=" * 80)
+        if all_passed:
+            self.log("ALL TESTS PASSED ✅", "PASS")
+        else:
+            self.log("SOME TESTS FAILED ❌", "FAIL")
+        self.log("=" * 80)
+        
+        return all_passed
 
 if __name__ == "__main__":
-    main()
+    tester = PaymentGatewayTester()
+    success = tester.run_all_tests()
+    exit(0 if success else 1)

@@ -566,12 +566,38 @@ HTML;
 
         // Which card gateway PROVIDER is active? (stripe|authnet|nmi|custom)
         // Selecting a provider in Admin → API / Payment Gateway → Card
-        // activates it as the real processor for card payments.  PayPal keeps
-        // routing through the Stripe rails for now.
+        // activates it as the real processor for card payments.
         $cardProvider = ($method === 'card') ? card_active_provider() : 'stripe';
         $directCharge = ($method === 'card' && in_array($cardProvider, ['nmi','authnet','custom'], true));
 
-        if ($directCharge && card_gateway_configured()) {
+        require_once __DIR__ . '/includes/gateways/paypal-api.php';
+
+        if ($method === 'paypal' && paypal_configured($activeMode)) {
+            // -------- Real PayPal Checkout (Orders API v2) --------
+            // Create a PayPal order and redirect the buyer to PayPal to approve.
+            // The actual capture (and marking the order paid) happens on return
+            // in paypal-return.php — we NEVER mark paid before capture COMPLETED.
+            $rbase     = rtrim(site_url(), '/');
+            $returnUrl = $rbase . '/paypal-return.php?order=' . rawurlencode($orderNumber);
+            $cancelUrl = $rbase . '/checkout.php?paypal=cancel';
+            try {
+                $pp = paypal_create_order((float)$total, current_currency()['code'], $orderNumber, $returnUrl, $cancelUrl, $activeMode);
+            } catch (Throwable $e) {
+                @error_log('[checkout paypal] ' . $e->getMessage());
+                $pp = ['ok'=>false, 'error'=>'A PayPal error occurred. Please try again.'];
+            }
+            if (!empty($pp['ok'])) {
+                // Stash the PayPal order id on our order so the return handler
+                // can capture it (prefixed PP: so it is easy to identify).
+                $pdo->prepare('UPDATE orders SET transaction_id = ?, last_activity_at = NOW() WHERE id = ?')
+                    ->execute(['PP:' . $pp['id'], $orderId]);
+                $_SESSION['mv_resume_order_id'] = $orderId;
+                header('Location: ' . $pp['approve']);
+                exit;
+            }
+            $_SESSION['mv_resume_order_id'] = $orderId;
+            $errors[] = (string)($pp['error'] ?? 'PayPal is temporarily unavailable. Please try again or choose another payment method.');
+        } elseif ($directCharge && card_gateway_configured()) {
             // -------- Server-side direct charge (NMI / Authorize.Net / Custom) --------
             $orderStmt = $pdo->prepare('SELECT * FROM orders WHERE id = ?');
             $orderStmt->execute([$orderId]);
@@ -644,7 +670,7 @@ HTML;
                     $errors[] = 'Payment declined: ' . $declineMsg;
                 }
             }
-        } elseif (!$directCharge && stripe_enabled()) {
+        } elseif ($method === 'card' && !$directCharge && stripe_enabled()) {
             // Real payment path. The key in use is mode-aware:
             //  · gw_mode='test'  ⇒ sk_test_*  ⇒ Stripe test/sandbox (no real charge)
             //  · gw_mode='live'  ⇒ sk_live_*  ⇒ real funds move
@@ -725,6 +751,12 @@ include __DIR__ . '/includes/header.php';
     </div>
     <a href="cart.php" class="ms-auto text-decoration-none small back-to-cart"><i class="bi bi-arrow-left me-1"></i>Back to Cart</a>
   </div>
+
+  <?php if (($_GET['paypal'] ?? '') === 'cancel'): ?>
+    <div class="alert alert-warning" data-testid="paypal-cancel"><i class="bi bi-info-circle me-1"></i>Your PayPal payment was cancelled — no charge was made. Your items are still here; you can try again or choose another payment method.</div>
+  <?php elseif (($_GET['paypal'] ?? '') === 'error'): ?>
+    <div class="alert alert-danger" data-testid="paypal-error"><i class="bi bi-exclamation-triangle me-1"></i>We couldn't complete your PayPal payment and no charge was made. Please try again or pay by card.</div>
+  <?php endif; ?>
 
   <?php if ($errors): ?>
     <div class="alert alert-danger"><ul class="mb-0"><?php foreach ($errors as $e): ?><li><?= esc($e) ?></li><?php endforeach; ?></ul></div>
