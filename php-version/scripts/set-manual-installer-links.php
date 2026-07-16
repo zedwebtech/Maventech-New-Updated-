@@ -43,6 +43,23 @@ $map = [
     'windows-11-home'                                                    => 'w11h',
     'windows-10-pro'                                                     => 'w10p',
     'windows-10-home'                                                    => 'w10h',
+
+    // ── Closest available manual (no exact SKU match on source site) ────────
+    // Home / Home&Business / Home&Student / single-app editions map to the
+    // nearest same-version, same-platform manual (Windows -> Standard/ProPlus,
+    // Mac -> the matching Mac manual for that year family).
+    'microsoft-office-home-business-2024-pc'                            => 'o24s',  // 2024 Standard
+    'microsoft-office-home-2024-pc'                                     => 'o24s',  // 2024 Standard
+    'microsoft-office-home-business-2024-mac'                           => 'o21hbmac', // closest Mac (2021 H&B Mac)
+    'microsoft-office-home-2024-mac'                                    => 'o21hbmac',
+    'microsoft-office-2019-home-business-pc'                            => 'o19s',  // 2019 Standard
+    'microsoft-office-2019-home-student-windows'                        => 'o19s',  // 2019 Standard
+    'microsoft-office-home-and-student-2019-mac'                        => 'o19hbmac', // 2019 H&B Mac
+    'microsoft-office-2021-home-student-mac'                            => 'o21hbmac', // 2021 H&B Mac
+    'microsoft-excel-2021-windows'                                      => 'o21pp',  // 2021 Pro Plus
+    'microsoft-word-2021-windows'                                       => 'o21pp',  // 2021 Pro Plus
+    'microsoft-excel-2021-mac-lifetime-license-no-subscription'         => 'o21hbmac',
+    'microsoft-word-2021-mac-lifetime-license-no-subscription'          => 'o21hbmac',
 ];
 
 $pdo = db();

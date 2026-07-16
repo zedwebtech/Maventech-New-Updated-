@@ -62,6 +62,22 @@ function mv_product_has_guide(?array $product): bool
     return $product && !empty($product['slug']) && mv_guide_template_for_slug((string)$product['slug']) !== null;
 }
 
+/**
+ * True when a URL is a manuals.winandoffice.com download/install-guide page.
+ * These pages provide BOTH the download link and the step-by-step install
+ * guide, so we surface them as a single "Download & Install Guide" button.
+ */
+function mv_is_manual_url(string $url): bool
+{
+    return $url !== '' && str_contains($url, 'manuals.winandoffice.com');
+}
+
+/** Button label for the installer link — combined when it's a manuals page. */
+function mv_installer_btn_label(string $url): string
+{
+    return mv_is_manual_url($url) ? 'Download & Install Guide' : 'Download installer';
+}
+
 /** Relative path to the native guide page for a slug. */
 function mv_guide_path(string $slug): string
 {

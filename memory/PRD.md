@@ -1544,3 +1544,9 @@ The store already had extensive, valid JSON-LD (Organization, LocalBusiness, Web
 - Fresh forked pod had NO php/mariadb — installed php8.2 + mariadb; app served on :3000 via yarn start -> start.sh. HTTP 200 confirmed.
 - Created `/app/php-version/scripts/set-manual-installer-links.php` (idempotent): exact slug->manual-URL map, sets installer_url only. Wired into start.sh AFTER set-official-product-links.php so it wins. 18 products updated (Office 2024/2021/2019 ProPlus/HB/HS PC+Mac exact matches, Project 2024/2021/2019, Visio 2024/2021/2019, Windows 10/11 Home/Pro). 12 no-exact-match SKUs left as-is (setup.office.com).
 - Verified in admin editor: "Installer Download URL" = https://manuals.winandoffice.com/manuals/o24pp for Office 2024 Pro Plus.
+
+## 2026-06 (fork, cont.) — Closest-match manuals + "Download & Install Guide" button
+- Extended scripts/set-manual-installer-links.php with 12 closest-match SKUs (Home/H&B/H&S/single-app editions -> nearest same-version/platform manual, e.g. 2024 H&B PC -> o24s Standard, 2024 Mac -> o21hbmac, Word/Excel 2021 Win -> o21pp). ALL 30 Microsoft (Office/Project/Visio/Windows) products now carry a manuals.winandoffice.com installer_url; 6 antivirus excluded.
+- Added mv_is_manual_url() / mv_installer_btn_label() helpers in includes/install-guides.php.
+- The installer button now reads "Download & Install Guide" (icon bi-journal-arrow-down) wherever installer_url is a manuals page, else keeps "Download installer". Applied on: product.php install block, order-success.php (2 spots), includes/email.php delivery-email cards (2 builders). Non-manual products (antivirus) keep original label.
+- Verified: product page shows green "Download & Install Guide" -> manuals/o24pp; email card helper renders combined label for manual URL and original label for bitdefender.

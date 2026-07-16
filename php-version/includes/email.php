@@ -518,7 +518,8 @@ function build_installation_guide_cards(array $assignments): string {
         $guideUrl     = trim((string)($a['install_guide_url'] ?? ''));
         $btns = '';
         if ($installerUrl !== '') {
-            $btns .= '<a href="' . esc($installerUrl) . '" style="display:inline-block;margin:4px 6px 0 0;padding:9px 18px;background:linear-gradient(135deg,#16a34a,#15803d);color:#ffffff;border-radius:999px;text-decoration:none;font-weight:700;font-size:12.5px;">&#11015; Download installer</a>';
+            $dlLabel = mv_is_manual_url($installerUrl) ? '&#11015; Download &amp; Install Guide' : '&#11015; Download installer';
+            $btns .= '<a href="' . esc($installerUrl) . '" style="display:inline-block;margin:4px 6px 0 0;padding:9px 18px;background:linear-gradient(135deg,#16a34a,#15803d);color:#ffffff;border-radius:999px;text-decoration:none;font-weight:700;font-size:12.5px;">' . $dlLabel . '</a>';
         }
         if ($actUrl !== '') {
             $btns .= '<a href="' . esc($actUrl) . '" style="display:inline-block;margin:4px 6px 0 0;padding:9px 18px;background:linear-gradient(135deg,#10b981,#047857);color:#ffffff;border-radius:999px;text-decoration:none;font-weight:700;font-size:12.5px;">&#128274; Sign in to activate</a>';
@@ -921,7 +922,8 @@ function render_products_block(array $assignments): string {
         // a "Sign in to activate" button next to a pending key is confusing.
         if ($a['key']) {
             if ($installerUrl) {
-                $buttons .= '<a href="' . esc($installerUrl) . '" style="display:inline-block;margin:4px 6px;padding:11px 22px;background:linear-gradient(135deg,#6366f1,#4338ca);color:#ffffff;border-radius:999px;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:.3px;">&#11015; Download installer</a>';
+                $dlLabel2 = mv_is_manual_url((string)$installerUrl) ? '&#11015; Download &amp; Install Guide' : '&#11015; Download installer';
+                $buttons .= '<a href="' . esc($installerUrl) . '" style="display:inline-block;margin:4px 6px;padding:11px 22px;background:linear-gradient(135deg,#6366f1,#4338ca);color:#ffffff;border-radius:999px;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:.3px;">' . $dlLabel2 . '</a>';
             }
             if ($actUrl) {
                 $buttons .= '<a href="' . esc($actUrl) . '" style="display:inline-block;margin:4px 6px;padding:11px 22px;background:linear-gradient(135deg,#10b981,#047857);color:#ffffff;border-radius:999px;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:.3px;">&#128274; Sign in to activate &rarr;</a>';

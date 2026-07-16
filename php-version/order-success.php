@@ -633,7 +633,7 @@ if ($gcrOptInEnabled && $isPaid && $gmcId !== '' && !empty($order['email'])):
                 </a>
                 <?php if (!empty($oi['installer_url'])): ?>
                   <a href="<?= esc($oi['installer_url']) ?>" target="_blank" rel="noopener" class="btn btn-sm rounded-pill" data-testid="success-installer-btn" style="font-size:.72rem;padding:4px 12px;background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;">
-                    <i class="bi bi-download me-1"></i>Download now
+                    <i class="bi <?= mv_is_manual_url((string)$oi['installer_url']) ? 'bi-journal-arrow-down' : 'bi-download' ?> me-1"></i><?= mv_is_manual_url((string)$oi['installer_url']) ? 'Download &amp; Install Guide' : 'Download now' ?>
                   </a>
                 <?php endif; ?>
               </div>
@@ -1006,7 +1006,7 @@ if ($gcrOptInEnabled && $isPaid && $gmcId !== '' && !empty($order['email'])):
               <?php endif; ?>
               <a href="<?= !empty($gi['install_guide_url']) ? esc($gi['install_guide_url']) : 'page.php?slug=installation-guide' ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary rounded-pill" data-testid="guide-installguide-btn" style="font-size:.72rem;"><i class="bi bi-book me-1"></i>Installation guide</a>
               <?php if (!empty($gi['installer_url'])): ?>
-                <a href="<?= esc($gi['installer_url']) ?>" target="_blank" rel="noopener" class="btn btn-sm rounded-pill" data-testid="guide-installer-btn" style="font-size:.72rem;background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi bi-download me-1"></i>Download installer</a>
+                <a href="<?= esc($gi['installer_url']) ?>" target="_blank" rel="noopener" class="btn btn-sm rounded-pill" data-testid="guide-installer-btn" style="font-size:.72rem;background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi <?= mv_is_manual_url((string)$gi['installer_url']) ? 'bi-journal-arrow-down' : 'bi-download' ?> me-1"></i><?= mv_is_manual_url((string)$gi['installer_url']) ? 'Download &amp; Install Guide' : 'Download installer' ?></a>
               <?php endif; ?>
             </div>
             <div class="text-secondary small" style="font-size:.78rem;line-height:1.5;"><?= installation_steps_for($gi) ?></div>
