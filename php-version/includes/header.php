@@ -635,6 +635,8 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   <link href="<?= 'assets/vendor/bootstrap-icons.min.css?v=' . esc(@filemtime(__DIR__ . '/../assets/vendor/bootstrap-icons.min.css')) ?>" rel="stylesheet">
   <link href="<?= esc(min_css_url(__DIR__ . '/../assets/css/style.css', 'assets/css/style.css')) ?>" rel="stylesheet">
   <link href="<?= $darkCss ?>" rel="stylesheet">
+  <!-- theme-refresh.css: global clean/spacious typography layer — must load LAST so it overrides. -->
+  <link href="assets/css/theme-refresh.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/css/theme-refresh.css')) ?>" rel="stylesheet">
   <!-- scroll3d.css is a progressive-enhancement (scroll reveal + tilt) — load it
        async so it never blocks first render (PageSpeed: render-blocking CSS). -->
   <link rel="preload" as="style" href="assets/css/scroll3d.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/css/scroll3d.css')) ?>" onload="this.onload=null;this.rel='stylesheet'">
