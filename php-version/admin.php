@@ -1600,7 +1600,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             setting_set('paypal_enabled', $_POST['status']==='active' ? '1' : '0');
         }
         $editTab = $_POST['gateway']==='paypal' ? 'paypal' : 'card';
-        header('Location: admin.php?tab=api&gw='.$editTab.'&msg=API+settings+saved'); exit;
+        if ($editTab === 'card') {
+            $provNames = ['stripe'=>'Stripe','authnet'=>'Authorize.Net','nmi'=>'NMI','custom'=>($labels['custom'] ?? 'Custom Gateway')];
+            $pName = $provNames[$providerType] ?? 'Card';
+            $modeNow = setting_get('gw_mode', 'test') === 'live' ? 'live' : 'test';
+            $isCfg = function_exists('card_provider_configured') ? card_provider_configured($providerType, $modeNow) : false;
+            $msg = $pName . ' credentials saved — ' . $pName . ' is now the ACTIVE card gateway'
+                 . ($isCfg ? ' and is configured for ' . strtoupper($modeNow) . ' mode.' : '. Add its ' . strtoupper($modeNow) . '-mode credentials to start processing charges.');
+            header('Location: admin.php?tab=api&gw=card&msg=' . rawurlencode($msg)); exit;
+        }
+        header('Location: admin.php?tab=api&gw='.$editTab.'&msg=' . rawurlencode('PayPal credentials saved.')); exit;
 
     } elseif ($action === 'update_lead') {
         $lid = (int)$_POST['lead_id'];
@@ -12397,6 +12406,19 @@ elseif ($tab === 'api'):
           <div>
             <h6 class="fw-bold mb-1"><i class="bi bi-credit-card-2-front text-primary me-1"></i> Card Payment API</h6>
             <small class="text-muted">Active Gateway: <strong><?= esc($cardProv) ?></strong></small>
+            <?php
+              $gwModeHdr = setting_get('gw_mode', 'test') === 'live' ? 'live' : 'test';
+              $cardCfgHdr = function_exists('card_gateway_configured') ? card_gateway_configured() : false;
+            ?>
+            <div class="mt-1" data-testid="api-card-configured-badge">
+              <?php if ($cardCfgHdr): ?>
+                <span class="s-badge paid"><i class="bi bi-check-circle-fill me-1"></i>Configured for <?= strtoupper($gwModeHdr) ?> mode</span>
+                <small class="text-muted ms-1" style="font-size:11px;">Card charges are processed through <strong><?= esc($cardProv) ?></strong>.</small>
+              <?php else: ?>
+                <span class="s-badge failed"><i class="bi bi-exclamation-triangle-fill me-1"></i>Not configured for <?= strtoupper($gwModeHdr) ?> mode</span>
+                <small class="text-muted ms-1" style="font-size:11px;">Save the <?= strtoupper($gwModeHdr) ?>-mode credentials below to activate <strong><?= esc($cardProv) ?></strong>.</small>
+              <?php endif; ?>
+            </div>
           </div>
           <span class="s-badge <?= $cardStatus==='active'?'paid':'failed' ?>"><?= esc($cardStatus) ?></span>
         </div>
@@ -12523,8 +12545,8 @@ elseif ($tab === 'api'):
 
           <!-- ============ Authorize.Net credentials ============ -->
           <div class="gw-section" data-gw-section="authnet" style="display:<?= $cardProvType==='authnet'?'block':'none' ?>;">
-            <div class="alert alert-warning py-2 small mb-3" style="font-size:12px;border-radius:8px;">
-              <i class="bi bi-info-circle me-1"></i><strong>Credentials saved here will be used once charge processing is wired.</strong> Until then, Stripe handles checkout charges. Get your credentials at <a href="https://account.authorize.net/" target="_blank" rel="noopener">account.authorize.net</a>.
+            <div class="alert alert-success py-2 small mb-3" style="font-size:12px;border-radius:8px;">
+              <i class="bi bi-check-circle me-1"></i><strong>Authorize.Net is fully wired.</strong> When selected as the active gateway, card charges are processed directly through Authorize.Net (Sandbox in Test mode, Production in Live mode). Get your credentials at <a href="https://account.authorize.net/" target="_blank" rel="noopener">account.authorize.net</a>.
             </div>
             <div class="row g-3 mb-3">
               <div class="col-md-6">
@@ -12562,8 +12584,8 @@ elseif ($tab === 'api'):
 
           <!-- ============ NMI credentials ============ -->
           <div class="gw-section" data-gw-section="nmi" style="display:<?= $cardProvType==='nmi'?'block':'none' ?>;">
-            <div class="alert alert-warning py-2 small mb-3" style="font-size:12px;border-radius:8px;">
-              <i class="bi bi-info-circle me-1"></i><strong>Credentials saved here will be used once charge processing is wired.</strong> Until then, Stripe handles checkout charges. Get your credentials in your NMI merchant portal.
+            <div class="alert alert-success py-2 small mb-3" style="font-size:12px;border-radius:8px;">
+              <i class="bi bi-check-circle me-1"></i><strong>NMI is fully wired.</strong> When selected as the active gateway, card charges are processed directly through NMI's Payment API (secure.nmi.com). The Test/Live mode is determined by which Security Key you save. Get your credentials in your NMI merchant portal.
             </div>
             <div class="row g-3 mb-3">
               <div class="col-md-6">
@@ -12602,8 +12624,8 @@ elseif ($tab === 'api'):
 
           <!-- ============ Custom / Other gateway ============ -->
           <div class="gw-section" data-gw-section="custom" style="display:<?= $cardProvType==='custom'?'block':'none' ?>;">
-            <div class="alert alert-warning py-2 small mb-3" style="font-size:12px;border-radius:8px;">
-              <i class="bi bi-info-circle me-1"></i><strong>Generic gateway placeholder</strong> — saves credentials for any future gateway you want to plug in. Charge processing requires a one-time wiring per provider; share us your API docs when ready.
+            <div class="alert alert-info py-2 small mb-3" style="font-size:12px;border-radius:8px;">
+              <i class="bi bi-info-circle me-1"></i><strong>Generic gateway.</strong> When selected as the active gateway, card charges are POSTed to your custom endpoint (JSON) and are approved only when your endpoint returns a success response (<code>{"success":true}</code>, <code>{"status":"approved"}</code>, or <code>response=1</code>). Make sure the endpoint + API key are saved for the active mode.
             </div>
             <div class="row g-2 mb-3 small">
               <div class="col-12">

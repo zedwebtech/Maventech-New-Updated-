@@ -564,7 +564,87 @@ HTML;
         unset($_SESSION['coupon']);
         unset($_SESSION['sub_plan']);
 
-        if (stripe_enabled()) {
+        // Which card gateway PROVIDER is active? (stripe|authnet|nmi|custom)
+        // Selecting a provider in Admin → API / Payment Gateway → Card
+        // activates it as the real processor for card payments.  PayPal keeps
+        // routing through the Stripe rails for now.
+        $cardProvider = ($method === 'card') ? card_active_provider() : 'stripe';
+        $directCharge = ($method === 'card' && in_array($cardProvider, ['nmi','authnet','custom'], true));
+
+        if ($directCharge && card_gateway_configured()) {
+            // -------- Server-side direct charge (NMI / Authorize.Net / Custom) --------
+            $orderStmt = $pdo->prepare('SELECT * FROM orders WHERE id = ?');
+            $orderStmt->execute([$orderId]);
+            $orderRow = $orderStmt->fetch() ?: [];
+            $cardNum = preg_replace('/\D/', '', (string)($_POST['card_number'] ?? ''));
+            $cardExp = trim((string)($_POST['card_exp'] ?? ''));
+            $cardCvv = preg_replace('/\D/', '', (string)($_POST['card_cvv'] ?? ''));
+            if ($cardNum === '' || $cardExp === '' || $cardCvv === '') {
+                $errors[] = 'Please enter your card number, expiry date and security code to complete the payment.';
+                $_SESSION['mv_resume_order_id'] = $orderId;
+            } else {
+                $billing = [
+                    'first_name' => trim((string)($_POST['first_name'] ?? '')),
+                    'last_name'  => trim((string)($_POST['last_name'] ?? '')),
+                    'address1'   => trim((string)($_POST['address'] ?? '')),
+                    'city'       => trim((string)($_POST['city'] ?? '')),
+                    'state'      => trim((string)($_POST['state'] ?? '')),
+                    'zip'        => trim((string)($_POST['zip'] ?? '')),
+                    'country'    => substr(strtoupper(trim((string)($_POST['country'] ?? 'US'))), 0, 2),
+                    'email'      => trim((string)($_POST['email'] ?? '')),
+                ];
+                try {
+                    $charge = mv_card_charge($cardProvider, $orderRow,
+                        ['number'=>$cardNum, 'exp'=>$cardExp, 'cvv'=>$cardCvv], $billing, (float)$total);
+                } catch (Throwable $e) {
+                    @error_log('[checkout ' . $cardProvider . ' charge] ' . $e->getMessage());
+                    $charge = ['status'=>'failed','error_code'=>'exception',
+                               'error_message'=>'A payment processing error occurred. No charge was made — please try again.',
+                               'transaction_id'=>'','auth_code'=>'','raw'=>[]];
+                }
+                if (($charge['status'] ?? '') === 'succeeded') {
+                    $last4 = substr($cardNum, -4);
+                    $brand = mv_detect_card_brand($cardNum);
+                    [$expMM, $expYY] = mv_parse_exp($cardExp);
+                    $pdo->prepare('UPDATE orders SET status = "paid", payment_status = "succeeded", transaction_id = ?, card_brand = ?, card_last4 = ?, card_exp = ?, last_activity_at = NOW() WHERE id = ?')
+                        ->execute([(string)($charge['transaction_id'] ?? ''), $brand, $last4, $expMM . '/' . $expYY, $orderId]);
+                    try {
+                        $pdo->prepare('INSERT INTO transaction_logs (order_id, gateway, transaction_id, amount, currency, status, raw_response) VALUES (?,?,?,?,?,?,?)')
+                            ->execute([
+                                $orderId, $cardProvider,
+                                (string)($charge['transaction_id'] ?? ''),
+                                $total, current_currency()['code'], 'succeeded',
+                                json_encode($charge['raw'] ?? [], JSON_UNESCAPED_SLASHES),
+                            ]);
+                    } catch (Throwable $e) { /* logging is best-effort */ }
+                    unset($_SESSION['mv_resume_order_id']);
+                    fulfill_order($orderId);
+                    header('Location: order-success.php?order=' . urlencode($orderNumber));
+                    exit;
+                } else {
+                    // Declined / error — log it, tag the order, keep it resumable.
+                    $declineMsg = (string)($charge['error_message'] ?? '') ?: 'Your card was declined. Please try again with a different card.';
+                    try {
+                        $pdo->prepare('INSERT INTO transaction_logs (order_id, gateway, transaction_id, amount, currency, status, raw_response) VALUES (?,?,?,?,?,?,?)')
+                            ->execute([
+                                $orderId, $cardProvider,
+                                (string)($charge['transaction_id'] ?? ''),
+                                $total, current_currency()['code'], 'failed',
+                                json_encode($charge['raw'] ?? [], JSON_UNESCAPED_SLASHES),
+                            ]);
+                    } catch (Throwable $e) { /* best-effort */ }
+                    if (function_exists('mv_mark_payment_failed')) {
+                        mv_mark_payment_failed($orderRow, [
+                            'code'           => (string)($charge['error_code'] ?? 'declined'),
+                            'message'        => $declineMsg,
+                            'transaction_id' => (string)($charge['transaction_id'] ?? ''),
+                        ]);
+                    }
+                    $_SESSION['mv_resume_order_id'] = $orderId;
+                    $errors[] = 'Payment declined: ' . $declineMsg;
+                }
+            }
+        } elseif (!$directCharge && stripe_enabled()) {
             // Real payment path. The key in use is mode-aware:
             //  · gw_mode='test'  ⇒ sk_test_*  ⇒ Stripe test/sandbox (no real charge)
             //  · gw_mode='live'  ⇒ sk_live_*  ⇒ real funds move
@@ -592,12 +672,13 @@ HTML;
                 }
             }
         }
-        if ($errors === [] && !stripe_enabled()) {
+        if ($errors === []) {
             if ($activeMode === 'live') {
                 // LIVE mode but NO real payment gateway configured for the
-                // active method. We must NEVER fake a successful charge on a
+                // active provider. We must NEVER fake a successful charge on a
                 // live store — show a clear "not configured" error and stop.
-                $errors[] = 'Payment gateway not configured. Live card/PayPal payments are currently unavailable — no charge was made. Please contact us to complete your order. (An administrator must configure a live payment gateway under Admin → API / Payment Gateway.)';
+                $provLabel = $method === 'paypal' ? 'PayPal' : strtoupper($cardProvider);
+                $errors[] = 'Payment gateway not configured. The selected ' . ($method === 'paypal' ? 'PayPal gateway' : $provLabel . ' card gateway') . ' has no live credentials saved — no charge was made. Please contact us to complete your order. (An administrator must configure the live gateway credentials under Admin → API / Payment Gateway.)';
             } else {
                 // TEST / sandbox mode (no live gateway needed): simulate a
                 // successful dummy transaction so the operator can preview the
@@ -609,7 +690,7 @@ HTML;
                     $pdo->prepare('INSERT INTO transaction_logs (order_id, gateway, transaction_id, amount, currency, status) VALUES (?,?,?,?,?,?)')
                         ->execute([
                             $orderId,
-                            $method === 'paypal' ? 'paypal' : 'card',
+                            $method === 'paypal' ? 'paypal' : $cardProvider,
                             'TEST_' . strtoupper(bin2hex(random_bytes(6))),
                             $total,
                             current_currency()['code'],
@@ -762,6 +843,15 @@ include __DIR__ . '/includes/header.php';
         <i class="bi bi-shield-lock co-head-icon ms-auto"></i>
       </div>
       <?php $_cardEnabled = card_enabled(); $_paypalEnabled = paypal_enabled(); ?>
+      <?php
+        // When the active card gateway is a direct-charge processor
+        // (NMI / Authorize.Net / Custom) the card fields MUST be posted to
+        // our server so we can charge the card server-side. For Stripe the
+        // fields stay nameless (the charge happens on Stripe's hosted page).
+        $cardActiveProvider = card_active_provider();
+        $cardDirectCharge   = in_array($cardActiveProvider, ['nmi','authnet','custom'], true);
+        $cardProviderLabels = ['nmi'=>'NMI','authnet'=>'Authorize.Net','custom'=>'our secure payment','stripe'=>'Stripe'];
+      ?>
       <?php if (!$_cardEnabled && !$_paypalEnabled): ?>
         <div class="alert alert-warning mb-3" data-testid="checkout-no-methods"><i class="bi bi-exclamation-triangle me-2"></i>No payment methods are currently available. Please contact support.</div>
       <?php endif; ?>
@@ -821,7 +911,7 @@ include __DIR__ . '/includes/header.php';
               <label class="form-label mb-1" for="card-exp">Expiry Date</label>
               <span class="field-error-inline" id="card-exp-error" data-testid="card-exp-error" aria-live="polite"></span>
             </div>
-            <input id="card-exp" class="form-control" inputmode="numeric" autocomplete="cc-exp" maxlength="5" data-testid="card-exp-input" aria-label="Card expiry date" placeholder="MM/YY">
+            <input id="card-exp" <?= $cardDirectCharge ? 'name="card_exp"' : '' ?> class="form-control" inputmode="numeric" autocomplete="cc-exp" maxlength="5" data-testid="card-exp-input" aria-label="Card expiry date" placeholder="MM/YY">
           </div>
           <div class="col-md-3 col-5">
             <div class="d-flex align-items-baseline justify-content-between">
@@ -829,12 +919,12 @@ include __DIR__ . '/includes/header.php';
               <span class="field-error-inline" id="card-cvv-error" data-testid="card-cvv-error" aria-live="polite"></span>
             </div>
             <div class="input-group">
-              <input id="card-cvv" type="password" class="form-control" inputmode="numeric" autocomplete="cc-csc" maxlength="4" data-testid="card-cvv-input" aria-label="Card CVV" placeholder="CVV">
+              <input id="card-cvv" <?= $cardDirectCharge ? 'name="card_cvv"' : '' ?> type="password" class="form-control" inputmode="numeric" autocomplete="cc-csc" maxlength="4" data-testid="card-cvv-input" aria-label="Card CVV" placeholder="CVV">
               <span class="input-group-text" title="3-digit code on the back of your card · 4 digits for American Express"><i class="bi bi-question-circle text-secondary"></i></span>
             </div>
           </div>
         </div>
-        <div class="small text-secondary mt-1"><i class="bi bi-shield-lock-fill text-success me-1"></i>Your card is verified &amp; charged on Stripe's PCI-compliant secure page — we never store card data.</div>
+        <div class="small text-secondary mt-1"><i class="bi bi-shield-lock-fill text-success me-1"></i><?php if ($cardDirectCharge): ?>Your card is charged securely through <?= esc($cardProviderLabels[$cardActiveProvider] ?? 'our') ?> over an encrypted connection — we never store your full card number or CVV.<?php else: ?>Your card is verified &amp; charged on Stripe's PCI-compliant secure page — we never store card data.<?php endif; ?></div>
       </div>
       <!-- PayPal info drop-down (shown when PayPal is selected). No card fields —
            the customer is redirected to PayPal's own secure checkout to authorise the payment. -->
@@ -1832,3 +1922,4 @@ if (!empty(cart())):
 <?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
+?>

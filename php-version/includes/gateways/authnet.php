@@ -17,9 +17,13 @@ final class MvAuthnetGateway implements MvPaymentGateway
     public function slug(): string  { return 'authnet'; }
     public function isConfigured(): bool
     {
+        // NOTE: must match the setting keys the admin SAVE handler writes
+        // (gw_authnet_login_id_* / gw_authnet_transaction_key_*).  The old
+        // gw_authnet_login_* / gw_authnet_txn_key_* names never matched, so
+        // this always reported "not configured".
         $mode = setting_get('gw_mode', 'test') === 'live' ? 'live' : 'test';
-        return trim((string)setting_get('gw_authnet_login_' . $mode, '')) !== ''
-            && trim((string)setting_get('gw_authnet_txn_key_' . $mode, '')) !== '';
+        return trim((string)setting_get('gw_authnet_login_id_' . $mode, '')) !== ''
+            && trim((string)setting_get('gw_authnet_transaction_key_' . $mode, '')) !== '';
     }
 
     public function createSession(array $order, string $baseUrl): array

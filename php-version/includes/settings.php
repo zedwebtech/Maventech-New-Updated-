@@ -90,6 +90,56 @@ function card_enabled(): bool {
     return setting_get('gw_card_status', 'active') === 'active';
 }
 
+/**
+ * The active card gateway PROVIDER the admin selected in
+ * Admin → API / Payment Gateway → Card ("Choose Card Gateway Provider").
+ * One of: stripe | authnet | nmi | custom.  This is the gateway that
+ * actually PROCESSES card charges — selecting it activates it.
+ */
+function card_active_provider(): string {
+    $p = strtolower(trim(setting_get('gw_card_provider_type', 'stripe')));
+    return in_array($p, ['stripe','authnet','nmi','custom'], true) ? $p : 'stripe';
+}
+
+/**
+ * True when a SPECIFIC provider has the credentials it needs for the given
+ * mode ('test' or 'live').  Used both by checkout (to decide whether to
+ * process a real charge) and by the admin UI (to render a "Configured ✓"
+ * badge for whichever gateway the operator selected).
+ */
+function card_provider_configured(string $provider, string $mode): bool {
+    $mode = ($mode === 'live') ? 'live' : 'test';
+    switch ($provider) {
+        case 'stripe':
+            // A mode-specific secret key, a legacy single key, or the env key.
+            $k = trim(setting_get('gw_card_secret_key_' . $mode, ''))
+               ?: trim(setting_get('gw_card_secret_key', ''))
+               ?: (string)(defined('STRIPE_SECRET_KEY') ? STRIPE_SECRET_KEY : '');
+            return $k !== '';
+        case 'nmi':
+            return trim(setting_get('gw_nmi_security_key_' . $mode, '')) !== '';
+        case 'authnet':
+            return trim(setting_get('gw_authnet_login_id_' . $mode, '')) !== ''
+                && trim(setting_get('gw_authnet_transaction_key_' . $mode, '')) !== '';
+        case 'custom':
+            return trim(setting_get('gw_custom_endpoint_' . $mode, '')) !== ''
+                && trim(setting_get('gw_custom_api_key_' . $mode, '')) !== '';
+        default:
+            return false;
+    }
+}
+
+/**
+ * True when the ACTIVE card gateway is fully configured for the CURRENT
+ * gateway mode (gw_mode).  This is the provider-aware replacement for the
+ * old Stripe-only `stripe_enabled()` check used across checkout, the admin
+ * panel and the go-live health check.
+ */
+function card_gateway_configured(): bool {
+    $mode = setting_get('gw_mode', 'test') === 'live' ? 'live' : 'test';
+    return card_provider_configured(card_active_provider(), $mode);
+}
+
 function statement_name_for(string $payment_method): string {
     // Source of truth for company / merchant name = API Management section
     // (gw_card_merchant_name / gw_paypal_account_name). Falls back to the

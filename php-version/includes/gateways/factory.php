@@ -7,6 +7,7 @@
  * All adapters implement includes/gateways/interface.php.
  */
 require_once __DIR__ . '/interface.php';
+require_once __DIR__ . '/charge.php';
 
 function mv_gateway_registry(): array
 {

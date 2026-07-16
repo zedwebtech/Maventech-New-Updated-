@@ -88,34 +88,53 @@ if ($smtpHost === '' && $resendKey === '') {
 }
 
 /* -------------------------------------------------------------------- */
-/* 3. Stripe / Card Payment Gateway                                     */
+/* 3. Card Payment Gateway (provider-aware: Stripe / NMI / Authorize.Net /*/
+/*    Custom). Validates the credentials of the ACTIVE provider only.    */
 /* -------------------------------------------------------------------- */
-$gwMode  = (string)setting_get('gw_mode', 'test');                          // test|live
-$cardSec = trim((string)setting_get($gwMode === 'live' ? 'gw_card_secret_key_live' : 'gw_card_secret_key_test', ''));
-if ($cardSec === '') {
-    $checks[] = ['id'=>'stripe','name'=>'Stripe (Card · ' . strtoupper($gwMode) . ')','status'=>'red',
-        'detail'=>'No ' . $gwMode . ' secret key saved — card checkout will reject every order.',
-        'action'=>'admin.php?tab=api&gw=card'];
-} else {
-    $ch = curl_init('https://api.stripe.com/v1/balance');
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $cardSec],
-        CURLOPT_TIMEOUT        => 6,
-    ]);
-    $body = (string)@curl_exec($ch);
-    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    if ($code === 200) {
-        $d = json_decode($body, true);
-        $bal = ($d['available'][0] ?? null) ?: ($d['pending'][0] ?? null);
-        $balStr = $bal ? number_format(((int)$bal['amount'])/100, 2) . ' ' . strtoupper($bal['currency']) : '—';
-        $checks[] = ['id'=>'stripe','name'=>'Stripe (Card · ' . strtoupper($gwMode) . ')','status'=>'green',
-            'detail'=>'Connected · ' . strtoupper($gwMode) . ' account · balance ' . $balStr,
+$gwMode   = (string)setting_get('gw_mode', 'test');                          // test|live
+$provider = function_exists('card_active_provider') ? card_active_provider() : 'stripe';
+$provName = ['stripe'=>'Stripe','nmi'=>'NMI','authnet'=>'Authorize.Net','custom'=>'Custom Gateway'][$provider] ?? 'Card';
+$cardConfigured = function_exists('card_provider_configured') ? card_provider_configured($provider, $gwMode) : false;
+
+if ($provider === 'stripe') {
+    $cardSec = trim((string)setting_get($gwMode === 'live' ? 'gw_card_secret_key_live' : 'gw_card_secret_key_test', ''));
+    if ($cardSec === '') {
+        $checks[] = ['id'=>'card_gateway','name'=>'Stripe (Card · ' . strtoupper($gwMode) . ')','status'=>'red',
+            'detail'=>'No ' . $gwMode . ' secret key saved — card checkout will reject every order.',
             'action'=>'admin.php?tab=api&gw=card'];
     } else {
-        $checks[] = ['id'=>'stripe','name'=>'Stripe (Card · ' . strtoupper($gwMode) . ')','status'=>'red',
-            'detail'=>'Stripe rejected the key (HTTP ' . $code . ') — paste a fresh ' . $gwMode . ' key.',
+        $ch = curl_init('https://api.stripe.com/v1/balance');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $cardSec],
+            CURLOPT_TIMEOUT        => 6,
+        ]);
+        $body = (string)@curl_exec($ch);
+        $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($code === 200) {
+            $d = json_decode($body, true);
+            $bal = ($d['available'][0] ?? null) ?: ($d['pending'][0] ?? null);
+            $balStr = $bal ? number_format(((int)$bal['amount'])/100, 2) . ' ' . strtoupper($bal['currency']) : '—';
+            $checks[] = ['id'=>'card_gateway','name'=>'Stripe (Card · ' . strtoupper($gwMode) . ')','status'=>'green',
+                'detail'=>'Connected · ' . strtoupper($gwMode) . ' account · balance ' . $balStr,
+                'action'=>'admin.php?tab=api&gw=card'];
+        } else {
+            $checks[] = ['id'=>'card_gateway','name'=>'Stripe (Card · ' . strtoupper($gwMode) . ')','status'=>'red',
+                'detail'=>'Stripe rejected the key (HTTP ' . $code . ') — paste a fresh ' . $gwMode . ' key.',
+                'action'=>'admin.php?tab=api&gw=card'];
+        }
+    }
+} else {
+    // NMI / Authorize.Net / Custom — verify the active provider's credentials
+    // are saved for the current mode. (We do not run a live probe charge.)
+    if ($cardConfigured) {
+        $checks[] = ['id'=>'card_gateway','name'=>$provName . ' (Card · ' . strtoupper($gwMode) . ')','status'=>'green',
+            'detail'=>$provName . ' is the active card gateway and its ' . $gwMode . ' credentials are saved — card charges will be processed through ' . $provName . '.',
+            'action'=>'admin.php?tab=api&gw=card'];
+    } else {
+        $checks[] = ['id'=>'card_gateway','name'=>$provName . ' (Card · ' . strtoupper($gwMode) . ')','status'=>'red',
+            'detail'=>$provName . ' is the active card gateway but its ' . $gwMode . ' credentials are missing — card checkout will reject every order until you save them.',
             'action'=>'admin.php?tab=api&gw=card'];
     }
 }
