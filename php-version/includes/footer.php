@@ -1,5 +1,86 @@
 <?php /* Footer + chat widget + scripts */ ?>
 </main><!-- /#main-content (opened in header.php) -->
+<!-- ===================== Slide-out mini-cart drawer ===================== -->
+<div id="mvCartOverlay" class="mvcart-overlay" hidden></div>
+<aside id="mvCartDrawer" class="mvcart-drawer" aria-hidden="true" aria-label="Your cart" role="dialog" data-testid="cart-drawer">
+  <div class="mvcart-head">
+    <div class="mvcart-title"><i class="bi bi-cart3 me-2"></i>Your Cart <span class="mvcart-count" id="mvCartCount">0</span></div>
+    <button type="button" class="mvcart-close" id="mvCartClose" aria-label="Close cart"><i class="bi bi-x-lg"></i></button>
+  </div>
+  <div class="mvcart-body" id="mvCartBody">
+    <!-- items injected by JS -->
+  </div>
+  <div class="mvcart-empty" id="mvCartEmpty" hidden>
+    <i class="bi bi-cart-x"></i>
+    <p class="mb-2">Your cart is empty.</p>
+    <a href="shop.php" class="btn btn-primary rounded-pill px-4">Browse products</a>
+  </div>
+  <div class="mvcart-foot" id="mvCartFoot" hidden>
+    <div class="mvcart-coupon">
+      <input type="text" id="mvCartCoupon" class="form-control" placeholder="Coupon code" autocomplete="off">
+      <button type="button" id="mvCartCouponBtn" class="btn btn-outline-secondary">Apply</button>
+    </div>
+    <div id="mvCartCouponMsg" class="mvcart-coupon-msg"></div>
+    <div class="mvcart-save d-none" id="mvCartSaveRow"><span><i class="bi bi-piggy-bank me-1"></i>You save</span><span id="mvCartSave"></span></div>
+    <div class="mvcart-line"><span class="text-secondary">Subtotal</span><span id="mvCartSubtotal"></span></div>
+    <div class="mvcart-line d-none" id="mvCartDiscRow"><span class="text-success">Discount</span><span class="text-success" id="mvCartDisc"></span></div>
+    <div class="mvcart-total"><span>Total</span><span id="mvCartTotal"></span></div>
+    <div class="mvcart-note">No subscription, no recurring fees.</div>
+    <a href="checkout.php" class="btn btn-primary w-100 rounded-pill fw-bold mvcart-checkout" data-testid="cart-drawer-checkout">Proceed to Checkout <i class="bi bi-arrow-right ms-1"></i></a>
+    <button type="button" class="btn btn-link w-100 mvcart-continue" id="mvCartContinue">Continue Shopping</button>
+    <button type="button" class="mvcart-clear" id="mvCartClear">Clear cart</button>
+    <div class="mvcart-guarantee"><i class="bi bi-shield-fill-check me-1"></i>Backed by our money-back guarantee</div>
+  </div>
+</aside>
+<style>
+.mvcart-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1080;opacity:0;transition:opacity .25s;backdrop-filter:blur(2px);}
+.mvcart-overlay.show{opacity:1;}
+.mvcart-drawer{position:fixed;top:0;right:0;height:100%;width:400px;max-width:92vw;background:#fff;z-index:1090;display:flex;flex-direction:column;box-shadow:-12px 0 40px -12px rgba(2,6,23,.4);transform:translateX(105%);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.mvcart-drawer.open{transform:translateX(0);}
+.mvcart-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.1rem;border-bottom:1px solid #eef2f7;}
+.mvcart-title{font-weight:800;font-size:1.05rem;display:flex;align-items:center;color:#0f172a;}
+.mvcart-count{background:#2563eb;color:#fff;font-size:.75rem;font-weight:700;border-radius:999px;padding:.05rem .5rem;margin-left:.5rem;min-width:22px;text-align:center;}
+.mvcart-close{background:transparent;border:0;font-size:1.1rem;color:#64748b;cursor:pointer;line-height:1;padding:.3rem;}
+.mvcart-close:hover{color:#0f172a;}
+.mvcart-body{flex:1 1 auto;overflow-y:auto;padding:.6rem 1.1rem;}
+.mvcart-item{display:flex;gap:.7rem;padding:.8rem 0;border-bottom:1px solid #f1f5f9;}
+.mvcart-item img{width:56px;height:56px;object-fit:contain;border:1px solid #eef2f7;border-radius:8px;background:#fff;flex-shrink:0;}
+.mvcart-item .mvi-name{font-weight:700;font-size:.85rem;color:#0f172a;text-decoration:none;line-height:1.25;display:block;}
+.mvcart-item .mvi-name:hover{color:#2563eb;}
+.mvcart-item .mvi-price{font-size:.82rem;margin-top:.1rem;}
+.mvcart-item .mvi-price .mvi-orig{color:#94a3b8;text-decoration:line-through;margin-left:.35rem;font-size:.76rem;}
+.mvcart-qty{display:inline-flex;align-items:center;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-top:.4rem;}
+.mvcart-qty button{background:#f8fafc;border:0;width:26px;height:26px;font-weight:700;cursor:pointer;color:#334155;}
+.mvcart-qty button:hover{background:#eef2f7;}
+.mvcart-qty span{min-width:30px;text-align:center;font-size:.82rem;font-weight:700;}
+.mvcart-item .mvi-right{margin-left:auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;}
+.mvcart-item .mvi-line{font-weight:800;font-size:.9rem;color:#0f172a;}
+.mvcart-item .mvi-remove{background:transparent;border:0;color:#cbd5e1;cursor:pointer;font-size:.95rem;}
+.mvcart-item .mvi-remove:hover{color:#ef4444;}
+.mvcart-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#94a3b8;padding:2rem;}
+.mvcart-empty i{font-size:2.6rem;margin-bottom:.6rem;}
+.mvcart-foot{border-top:1px solid #eef2f7;padding:1rem 1.1rem;background:#fff;}
+.mvcart-coupon{display:flex;gap:.5rem;margin-bottom:.4rem;}
+.mvcart-coupon .form-control{border-radius:8px;font-size:.85rem;}
+.mvcart-coupon .btn{border-radius:8px;white-space:nowrap;font-size:.82rem;}
+.mvcart-coupon-msg{font-size:.78rem;margin-bottom:.5rem;min-height:1px;}
+.mvcart-coupon-msg.ok{color:#059669;}.mvcart-coupon-msg.err{color:#dc2626;}
+.mvcart-line,.mvcart-save{display:flex;justify-content:space-between;font-size:.86rem;margin-bottom:.35rem;}
+.mvcart-save{color:#059669;font-weight:600;}
+.mvcart-total{display:flex;justify-content:space-between;font-weight:800;font-size:1.15rem;color:#0f172a;margin:.5rem 0 .1rem;}
+.mvcart-note{font-size:.74rem;color:#94a3b8;margin-bottom:.7rem;}
+.mvcart-checkout{padding:.7rem;}
+.mvcart-continue{font-size:.85rem;text-decoration:none;color:#475569;}
+.mvcart-clear{display:block;width:100%;background:transparent;border:0;color:#94a3b8;font-size:.78rem;cursor:pointer;margin-top:.2rem;}
+.mvcart-clear:hover{color:#ef4444;}
+.mvcart-guarantee{text-align:center;font-size:.74rem;color:#94a3b8;margin-top:.6rem;}
+[data-bs-theme="dark"] .mvcart-drawer,[data-bs-theme="dark"] .mvcart-foot{background:#111827;}
+[data-bs-theme="dark"] .mvcart-head,[data-bs-theme="dark"] .mvcart-item,[data-bs-theme="dark"] .mvcart-foot{border-color:#1f2937;}
+[data-bs-theme="dark"] .mvcart-title,[data-bs-theme="dark"] .mvcart-item .mvi-name,[data-bs-theme="dark"] .mvcart-item .mvi-line,[data-bs-theme="dark"] .mvcart-total{color:#e2e8f0;}
+[data-bs-theme="dark"] .mvcart-qty button{background:#1f2937;color:#e2e8f0;}
+</style>
+
+
 <footer class="footer-dark pt-0 pb-4 mt-5">
 
   <!-- Newsletter band -->

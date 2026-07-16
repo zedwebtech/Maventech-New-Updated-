@@ -882,7 +882,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
       </span>
     </a>
     <div class="d-flex align-items-center gap-2 d-lg-none ms-auto me-2">
-      <a href="cart.php" class="btn btn-sm btn-primary rounded-pill position-relative" data-testid="cart-button-mobile" aria-label="View cart" title="View cart">
+      <a href="cart.php" class="btn btn-sm btn-primary rounded-pill position-relative js-open-cart" data-testid="cart-button-mobile" aria-label="View cart" title="View cart">
         <i class="bi bi-cart3" aria-hidden="true"></i>
         <span class="cart-count-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger <?= cart_count() === 0 ? 'd-none' : '' ?>" data-testid="cart-count-mobile"><?= cart_count() ?></span>
       </a>
@@ -996,7 +996,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
                 topbar (right side) so the main nav has room to breathe.
                 Only Ask AI + Cart remain here as the primary CTAs. */ ?>
         <button class="btn btn-sm btn-outline-primary rounded-pill flex-shrink-0" onclick="openAskAiModal()" data-testid="ask-ai-btn" style="white-space:nowrap;"><i class="bi bi-stars me-1"></i>Ask AI</button>
-        <a href="cart.php" class="btn btn-sm btn-primary rounded-pill position-relative flex-shrink-0" data-testid="cart-button" style="white-space:nowrap;">
+        <a href="cart.php" class="btn btn-sm btn-primary rounded-pill position-relative flex-shrink-0 js-open-cart" data-testid="cart-button" style="white-space:nowrap;">
           <i class="bi bi-cart3 me-1"></i>Cart
           <span class="cart-count-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger <?= cart_count() === 0 ? 'd-none' : '' ?>" data-testid="cart-count"><?= cart_count() ?></span>
         </a>

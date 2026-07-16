@@ -42,6 +42,11 @@ mysql -uroot ucode_store -e "ALTER TABLE products ADD COLUMN IF NOT EXISTS insta
 # official manuals site (manuals.winandoffice.com). Idempotent + non-destructive
 # — only fills products whose guide URL is still empty, never clobbers admin edits.
 php /app/php-version/scripts/seed-manual-urls.php >>/tmp/seed-manual-urls.log 2>&1 || true
+
+# Standardise product download/activation links to official Microsoft / vendor
+# destinations (setup.office.com, microsoft.com/software-download, etc.) — runs
+# AFTER seed-manual-urls so these official links win. Idempotent.
+php /app/php-version/scripts/set-official-product-links.php >>/tmp/set-official-product-links.log 2>&1 || true
 # Ensure the /disclaimer page carries the First Sale Doctrine block (Google
 # Ads compliance for surplus-license reseller storefronts). Idempotent.
 php /app/php-version/scripts/update-disclaimer-fsd.php >>/tmp/update-disclaimer-fsd.log 2>&1 || true

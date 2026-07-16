@@ -85,21 +85,72 @@ if ($action === 'add' && $slug && get_product($slug)) {
     }
 } elseif ($action === 'remove' && $slug) {
     unset($_SESSION['cart'][$slug]);
+} elseif ($action === 'clear') {
+    $_SESSION['cart'] = [];
+    unset($_SESSION['coupon'], $_SESSION['coupon_pct']);
 } elseif ($action === 'coupon') {
     $code = strtoupper(trim($in['code'] ?? ''));
     if ($code === '') {
         unset($_SESSION['coupon'], $_SESSION['coupon_pct']);
-        echo json_encode(['ok' => true, 'coupon' => null, 'count' => cart_count()]);
+        echo json_encode(['ok' => true, 'coupon' => null, 'count' => cart_count()] + mv_cart_state_payload());
         exit;
     }
     $valid = coupons();
     if (isset($valid[$code])) {
         $_SESSION['coupon'] = $code;
         $_SESSION['coupon_pct'] = $valid[$code];
-        echo json_encode(['ok' => true, 'coupon' => $code, 'pct' => $valid[$code], 'count' => cart_count()]);
+        echo json_encode(['ok' => true, 'coupon' => $code, 'pct' => $valid[$code], 'count' => cart_count()] + mv_cart_state_payload());
     } else {
-        echo json_encode(['ok' => false, 'error' => 'Invalid coupon code', 'count' => cart_count()]);
+        echo json_encode(['ok' => false, 'error' => 'Invalid coupon code', 'count' => cart_count()] + mv_cart_state_payload());
     }
+    exit;
+}
+
+/**
+ * Build the full cart-state payload consumed by the slide-out mini-cart drawer
+ * (assets/js/main.js). Includes line items, formatted prices, savings, coupon
+ * discount and total — all currency-aware via format_price().
+ */
+function mv_cart_state_payload(): array {
+    $items = [];
+    $savings = 0.0;
+    foreach (cart_items() as $i) {
+        $price = (float)$i['price'];
+        $orig  = (float)($i['original_price'] ?? 0);
+        $qty   = max(1, (int)$i['qty']);
+        if ($orig > $price) $savings += ($orig - $price) * $qty;
+        $items[] = [
+            'slug'       => $i['slug'],
+            'name'       => $i['name'],
+            'platform'   => (string)($i['platform'] ?? ''),
+            'qty'        => $qty,
+            'price'      => $price,
+            'price_fmt'  => format_price($price),
+            'orig_fmt'   => $orig > $price ? format_price($orig) : '',
+            'line_fmt'   => format_price($price * $qty),
+            'img'        => thumb_url($i['image'] ?? '', 120),
+            'url'        => 'product.php?slug=' . rawurlencode($i['slug']),
+        ];
+    }
+    $subtotal = cart_subtotal();
+    $pct      = (float)($_SESSION['coupon_pct'] ?? 0);
+    $couponDisc = $pct > 0 ? round($subtotal * $pct / 100, 2) : 0.0;
+    $total    = max(0, $subtotal - $couponDisc);
+    return [
+        'items'          => $items,
+        'subtotal'       => $subtotal,
+        'subtotal_fmt'   => format_price($subtotal),
+        'savings_fmt'    => $savings > 0 ? format_price($savings) : '',
+        'coupon'         => $_SESSION['coupon'] ?? null,
+        'coupon_pct'     => $pct,
+        'coupon_disc_fmt'=> $couponDisc > 0 ? format_price($couponDisc) : '',
+        'total_fmt'      => format_price($total),
+        'count'          => cart_count(),
+    ];
+}
+
+if ($action === 'state') {
+    echo json_encode(['ok' => true] + mv_cart_state_payload());
     exit;
 }
 
