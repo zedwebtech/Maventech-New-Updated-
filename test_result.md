@@ -101,6 +101,42 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 
+## ═══════════════ ITERATION 2026-07-16b — Office lifetime-license landing pages (2024 / 2021 / 2019) ═══════════════
+frontend:
+  - task: "Office lifetime-license landing pages (2024/2021/2019) modelled on gosoftwarebuy reference"
+    implemented: true
+    working: true
+    file: "php-version/includes/office-landing.php + office-2024-lifetime-license.php / office-2021-... / office-2019-..."
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "New data-driven landing template + 3 clean-URL route files (/office-2024-lifetime-license, /office-2021-..., /office-2019-...). Each shows version-specific box images (hero + 3 edition thumbnails), an edition selector (Home/Home&Business/Professional Plus mapped to REAL product slugs + live prices), What-You-Get feature grid, Office-vs-365 table, How-it-works, Why-buy, FAQ accordion, and cross-links to the other versions. Buy buttons reuse the storefront .buy-now-btn (data-slug) → cart → checkout. All 3 pages return HTTP 200; PHP lint clean; screenshot confirms layout matches reference."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ COMPREHENSIVE TESTING COMPLETE — ALL REQUIREMENTS VERIFIED (100% PASS RATE). Executed comprehensive Playwright testing at 1920×1000 viewport covering all 8 test scenarios from review_request. OFFICE 2024 PAGE (Full Testing): ✅ (1) HERO: HTTP 200, h1='Microsoft Office 2024', price='From $126.99', save badge='SAVE 75%', hero image #olpHeroImg exists, 3 edition thumbnails (.olp-thumb) found. ✅ (2) THUMBNAIL CLICKS: All 3 thumbnails successfully swap hero image src on click (tested Home, Home & Business, Professional Plus box images). ✅ (3) EDITION SELECTOR: Section heading 'Choose Your Office 2024 Edition' correct, 3 edition cards found with correct data-slug values (microsoft-office-home-2024-pc, microsoft-office-home-business-2024-pc, microsoft-office-2024-professional-plus-windows), all cards show correct badges (Best Seller/Best Value/Most Powerful), prices displayed, box images present, 6 feature bullets per card, Buy Now buttons have matching data-slug attributes. ✅ (4) CARD SELECTION: Clicking second card body (Home & Business edition name) adds 'selected' class, removes 'selected' from first card, and swaps hero image to selected card's image. ✅ (5) BUY FLOW: Clicking 'Buy Now' button on Home edition successfully adds item to cart (verified via screenshot showing Shopping Cart page with '1 item(s) in your cart' and Microsoft Office product visible). ✅ (6) COUNTDOWN: Element #olpCd exists, displays HH:MM:SS format (06:04:43), countdown ticks correctly (changed to 06:04:40 after 3 seconds). ✅ (7) FAQ ACCORDION: 8 FAQ questions found, first accordion button initially collapsed, clicking expands accordion (collapsed class removed, answer body has 'show' class, answer text visible: 'Yes. Every key is an authentic, genuine Microsoft license...'). ✅ (8) CROSS-LINKS: Links to /office-2021-lifetime-license and /office-2019-lifetime-license exist at bottom, clicking 2021 link navigates to 2021 page with h1='Microsoft Office 2021'. OFFICE 2021 PAGE (Smoke Check): ✅ H1 shows 'Microsoft Office 2021', 3 edition cards with correct slugs (microsoft-office-2021-home-student-windows, microsoft-office-2021-home-business-windows, microsoft-office-2021-professional-plus-windows), all Buy Now buttons have matching data-slug values. OFFICE 2019 PAGE (Smoke Check): ✅ H1 shows 'Microsoft Office 2019', 3 edition cards with correct slugs (microsoft-office-2019-home-student-windows, microsoft-office-2019-home-business-pc, microsoft-office-2019-professional-plus-windows), all Buy Now buttons have matching data-slug values. Screenshots: office_2021_page.png, office_2019_page.png. NO ISSUES FOUND. All 3 Office landing pages fully functional and production-ready."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Frontend verification for the 3 Office landing pages at http://localhost:3000/office-2024-lifetime-license (and 2021, 2019). Verify: (1) page loads with hero title 'Microsoft Office <YEAR>', 'From $X' price, hero box image + 3 clickable edition thumbnails that swap the hero image; (2) 'Choose Your Office <YEAR> Edition' shows 3 edition cards (Home/Home&Business/Professional Plus) with box images + prices + Buy Now buttons; clicking a card highlights it (selected) and swaps the hero image; (3) clicking a 'Buy Now — $X' button adds that product to the cart and navigates to cart.php (then checkout works); (4) countdown timer ticks; (5) FAQ accordion expands; (6) bottom cross-links navigate to the other version pages (/office-2021-lifetime-license etc). Test all THREE versions for correct per-version slugs (2024: home-2024-pc / home-business-2024-pc / 2024-professional-plus-windows; 2021: 2021-home-student/home-business/professional-plus-windows; 2019: 2019-home-student-windows/home-business-pc/professional-plus-windows)."
+    -agent: "testing"
+    -message: "✅ ITERATION 2026-07-16b TESTING COMPLETE — ALL 3 OFFICE LANDING PAGES FULLY WORKING. Comprehensive Playwright testing executed all test scenarios from review_request at 1920×1000 viewport with 100% pass rate. RESULTS: Office 2024 page (full testing): All 8 requirements verified working — hero section (h1, price, save badge, hero image, 3 thumbnails), thumbnail clicks swap hero image, edition selector (3 cards with correct slugs/badges/prices), card selection behavior (selected class + hero swap), buy flow (adds to cart successfully), countdown timer (ticking HH:MM:SS), FAQ accordion (expands on click), cross-links (navigate to other versions). Office 2021 page (smoke check): H1 shows 2021, 3 edition cards with correct per-version slugs. Office 2019 page (smoke check): H1 shows 2019, 3 edition cards with correct per-version slugs. All data-slug values match expected values exactly. Screenshots saved: office_2021_page.png, office_2019_page.png. NO ISSUES FOUND. All 3 Office landing pages are production-ready."
+
+
 ## ═══════════════ ITERATION 2026-07-16 — Multi-gateway card processing (NMI / Authorize.Net / Custom) + provider-aware "configured" status ═══════════════
 current_iteration_problem_statement: |
   On the deployed store, updating card gateway credentials (NMI, Authorize.Net,
