@@ -98,7 +98,7 @@
       </div>
 
       <!-- Support -->
-      <div class="col-lg-3 col-md-4 col-6">
+      <div class="col-lg-2 col-md-4 col-6">
         <h3 class="h6 text-white fw-bold mb-3">Support</h3>
         <ul class="list-unstyled small d-grid gap-2">
           <li><a href="account.php">My Account</a></li>
@@ -115,7 +115,7 @@
       </div>
 
       <!-- Company -->
-      <div class="col-lg-3 col-md-4 col-6">
+      <div class="col-lg-2 col-md-4 col-6">
         <h3 class="h6 text-white fw-bold mb-3">Company</h3>
         <ul class="list-unstyled small d-grid gap-2">
           <li><a href="about-us.php">About Us</a></li>
@@ -136,6 +136,18 @@
           <?php endforeach; ?>
           <li><a href="press-kit.php" data-testid="footer-press-kit">Press Kit &amp; Embeds</a></li>
           <li><a href="sitemap.php" data-testid="footer-company-sitemap">Site Map</a></li>
+        </ul>
+      </div>
+
+      <!-- Free Tools -->
+      <div class="col-lg-2 col-md-4 col-6" data-testid="footer-free-tools">
+        <h3 class="h6 text-white fw-bold mb-3">Free Tools</h3>
+        <ul class="list-unstyled small d-grid gap-2">
+          <li><a href="/tools/office-version-checker" data-testid="footer-tool-version">Office Version Checker</a></li>
+          <li><a href="/tools/windows-product-key-checker" data-testid="footer-tool-key">Windows Key Checker</a></li>
+          <li><a href="/tools/office-compatibility-checker" data-testid="footer-tool-compat">Compatibility Checker</a></li>
+          <li><a href="/tools/office-deployment-calculator" data-testid="footer-tool-calc">Deployment Calculator</a></li>
+          <li><a href="/tools" data-testid="footer-tool-all"><strong>All Free Tools &rarr;</strong></a></li>
         </ul>
       </div>
     </div>

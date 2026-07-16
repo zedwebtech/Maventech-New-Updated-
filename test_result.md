@@ -101,6 +101,42 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 
+## ═══════════════ ITERATION 2026-07-16c — Free Tools pages (/tools + 4 tools) + footer "Free Tools" section ═══════════════
+frontend:
+  - task: "Free Tools: /tools index + office-version-checker, windows-product-key-checker, office-compatibility-checker, office-deployment-calculator + footer Free Tools column"
+    implemented: true
+    working: true
+    file: "php-version/tools.php, php-version/tools/*.php, php-version/includes/tools-common.php, php-version/includes/footer.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Built 5 pages modelled on gosoftwarebuy /tools. Clean URLs via router extensionless mapping: /tools (root tools.php) and /tools/<name> (tools/ subdir, $baseHref set so assets resolve). (1) Version Checker: dropdown -> support-status result + lifecycle table. (2) Windows Key Checker: 25-char format validator (JS) + copyable Windows commands + shop CTA. (3) Compatibility Checker: OS + Office version selects -> compatible/not result. (4) Deployment Calculator: qty x live catalog price (16 Office products, currency-aware) -> total + add-to-cart (buy-now-btn). Footer got a new 'Free Tools' column (data-testid=footer-free-tools) with 5 links, shown site-wide. All 5 pages HTTP 200, PHP lint clean, screenshot confirms index + footer render correctly."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ COMPREHENSIVE TESTING COMPLETE — ALL 6 TEST SCENARIOS PASSED (27/27 tests, 100% success rate). Executed comprehensive Playwright testing at 1920×1000 viewport covering all requirements from review_request. TEST A — /tools INDEX (8/8 passed): ✅ H1 'Free Microsoft Tools' present ✓. ✅ 4 tool cards (.mvt-toolcard) found with correct hrefs (/tools/office-version-checker, /tools/windows-product-key-checker, /tools/office-compatibility-checker, /tools/office-deployment-calculator) ✓. ✅ All 4 cards navigate to correct tool pages (HTTP 200, correct h1 headers: 'Microsoft Office Version Checker', 'Windows Product Key Checker', 'Office Compatibility Checker', 'Office Deployment Calculator') ✓. TEST B — OFFICE VERSION CHECKER (3/3 passed): ✅ Select 'Office 2019' in #ovcSelect → result shows 'Office 2019 — Ended' with class 'mvt-bad' (red styling) ✓. ✅ Select 'Office 2024' → result shows 'Office 2024 — Supported' with class 'mvt-ok' (green styling) ✓. ✅ Lifecycle reference table present with rows for 2024/2021/2019/2016/2013 ✓. TEST C — WINDOWS PRODUCT KEY CHECKER (4/4 passed): ✅ Type 'AAAAA-BBBBB-CCCCC-DDDDD-EEEEE' + click #wpkBtn → #wpkResult shows 'Valid format ✓' with class 'mvt-ok' (green) ✓. ✅ Type 'ABC-123' + click → result shows 'Incorrect format ✗' with class 'mvt-bad' (red) ✓. ✅ 4 Windows command blocks with .mvt-copy buttons present ✓. ✅ Copy button functionality working (text changes to 'Copied!' on click) ✓. TEST D — OFFICE COMPATIBILITY CHECKER (2/2 passed): ✅ Set #occOs='win11' + #occVer='2024' → #occResult shows 'Compatible ✓' with class 'mvt-ok' (green) ✓. ✅ Change #occOs='win8' → result shows 'Not recommended ✗' with class 'mvt-bad' (red) ✓. TEST E — OFFICE DEPLOYMENT CALCULATOR (5/5 passed): ✅ Set #calcQty=10 + select product (index 1: Microsoft Office 2019 Home & Student, $89.99) → #calcBox visible ✓. ✅ Total calculation correct: #calcTotal shows '$899.90' (10 × $89.99) ✓. ✅ #calcBuy button shows 'Add 10 to cart' ✓. ✅ Click button → navigates to cart.php ✓. ✅ Cart shows '10 item(s) in your cart' with correct product and total $899.90 ✓. TEST F — FOOTER FREE TOOLS COLUMN (5/5 passed): ✅ Footer [data-testid='footer-free-tools'] exists on all pages ✓. ✅ 5 links present: 'Office Version Checker' (/tools/office-version-checker), 'Windows Key Checker' (/tools/windows-product-key-checker), 'Compatibility Checker' (/tools/office-compatibility-checker), 'Deployment Calculator' (/tools/office-deployment-calculator), 'All Free Tools →' (/tools) ✓. ✅ Click 'All Free Tools' link → navigates to /tools index ✓. ✅ Tools index loads with h1 'Free Microsoft Tools' + 4 tool cards ✓. Screenshots: test_deployment_calc_before_buy.png, test_deployment_calc_cart.png, test_footer_free_tools.png, test_free_tools_complete.png. NO ISSUES FOUND. All 5 Free Tools pages and footer integration fully functional and production-ready."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Verify the 5 Free Tools pages at http://localhost:3000. (A) /tools index shows 4 tool cards linking to the tools. (B) /tools/office-version-checker: selecting a version in #ovcSelect shows a support-status result (e.g. Office 2019 -> Ended/red; Office 2024 -> Supported/green). (C) /tools/windows-product-key-checker: typing a 25-char key (e.g. AAAAA-BBBBB-CCCCC-DDDDD-EEEEE) and clicking Check format shows 'Valid format'; a short/invalid key shows 'Incorrect format'; Copy buttons on commands work. (D) /tools/office-compatibility-checker: choosing OS=Windows 11 + Office 2024 shows 'Compatible'; OS=Windows 8.1 or older shows 'Not recommended'. (E) /tools/office-deployment-calculator: entering qty=10 and selecting a product shows a total = 10 x unit price and an 'Add 10 to cart' button; clicking it adds to cart. (F) Footer 'Free Tools' column appears on every page with 5 links that navigate correctly. Test in viewport 1920x1000."
+    -agent: "testing"
+    -message: "✅ ITERATION 2026-07-16c TESTING COMPLETE — ALL 5 FREE TOOLS PAGES FULLY WORKING (27/27 tests passed, 100% success rate). Comprehensive Playwright testing executed all test scenarios from review_request at 1920×1000 viewport. RESULTS: (A) /tools INDEX — H1 'Free Microsoft Tools' present, 4 tool cards with correct hrefs, all cards navigate to correct tool pages with HTTP 200 and correct h1 headers ✓. (B) OFFICE VERSION CHECKER — Office 2019 shows 'Ended' (red), Office 2024 shows 'Supported' (green), lifecycle table contains all required versions ✓. (C) WINDOWS PRODUCT KEY CHECKER — Valid format shows 'Valid format' (green), invalid format shows 'Incorrect format' (red), 4 Copy buttons working ✓. (D) OFFICE COMPATIBILITY CHECKER — Windows 11 + Office 2024 shows 'Compatible' (green), Windows 8.1 shows 'Not recommended' (red) ✓. (E) OFFICE DEPLOYMENT CALCULATOR — Qty 10 × $89.99 = $899.90 calculated correctly, 'Add 10 to cart' button adds items to cart successfully ✓. (F) FOOTER — Free Tools column exists with 5 links, 'All Free Tools' navigates to /tools index ✓. Screenshots saved: test_deployment_calc_before_buy.png, test_deployment_calc_cart.png, test_footer_free_tools.png, test_free_tools_complete.png. NO ISSUES FOUND. All Free Tools pages are production-ready.",
+
+
 ## ═══════════════ ITERATION 2026-07-16b — Office lifetime-license landing pages (2024 / 2021 / 2019) ═══════════════
 frontend:
   - task: "Office lifetime-license landing pages (2024/2021/2019) modelled on gosoftwarebuy reference"
