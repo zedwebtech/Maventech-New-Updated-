@@ -449,6 +449,12 @@ $versionLabel = fn($v) => $cv['base'] === 'windows' ? "Windows $v" : (string)$v;
 $discountPct = ($product['original_price'] && $product['original_price'] > $product['price'])
     ? round((1 - $product['price'] / $product['original_price']) * 100) : 0;
 
+/* Flash Deal detection — a live, time-boxed sale set from Admin → Products →
+ * Edit → Launch Flash Deal (sets sale_ends_at in the future). When active we
+ * render an animated live countdown banner under the price. */
+$flashEndsTs = !empty($product['sale_ends_at']) ? strtotime((string)$product['sale_ends_at']) : 0;
+$flashActive = $flashEndsTs > time() && $discountPct > 0;
+
 include __DIR__ . '/includes/header.php';
 ?>
 <div class="container py-5">
@@ -585,6 +591,30 @@ include __DIR__ . '/includes/header.php';
           <span>Digital product keys are delivered by email once the order is processed. See our <a href="page.php?slug=shipping-delivery" class="fw-semibold">Shipping &amp; Delivery</a> page for full timing details.</span>
         </div>
       </div>
+
+      <?php /* ── Flash Deal live countdown ──────────────────────────────
+              Rendered only while a time-boxed Flash Deal is active
+              (sale_ends_at in the future). Shows the % off + a JS live
+              countdown that ticks down HH:MM:SS and hides itself on expiry. */ ?>
+      <?php if ($flashActive): ?>
+        <div class="flash-deal-banner mb-4" data-testid="flash-deal-banner" data-flash-ends="<?= (int)$flashEndsTs ?>">
+          <div class="flash-deal-head">
+            <span class="flash-deal-bolt"><i class="bi bi-lightning-charge-fill"></i></span>
+            <span class="flash-deal-title">Flash Deal &mdash; <?= (int)$discountPct ?>% Off</span>
+            <span class="flash-deal-save">Save <?= format_price((float)$product['original_price'] - (float)$product['price']) ?></span>
+          </div>
+          <div class="flash-deal-timer">
+            <span class="flash-deal-ends-label">Ends in</span>
+            <span class="flash-deal-clock" aria-live="polite">
+              <span class="fd-unit"><b class="fd-hh" data-testid="flash-hh">00</b><i>hrs</i></span>
+              <span class="fd-sep">:</span>
+              <span class="fd-unit"><b class="fd-mm" data-testid="flash-mm">00</b><i>min</i></span>
+              <span class="fd-sep">:</span>
+              <span class="fd-unit"><b class="fd-ss" data-testid="flash-ss">00</b><i>sec</i></span>
+            </span>
+          </div>
+        </div>
+      <?php endif; ?>
 
       <?php /* Verified-buyer trust strip (stars) removed — no reviews shown site-wide. */ ?>
 

@@ -432,6 +432,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: admin.php?tab=products&edit=' . urlencode($slug) . '&msg=' . rawurlencode($flashMsg));
         exit;
 
+    } elseif ($action === 'cancel_flash_deal') {
+        // Deactivate a live Flash Deal — restore the price to the product's
+        // MSRP (original_price) and clear the sale window so the countdown
+        // banner disappears from the storefront. IndexNow ping so the feeds
+        // refetch the restored price promptly.
+        $slug = trim((string)($_POST['slug'] ?? ''));
+        $p = $pdo->prepare('SELECT slug, name, price, original_price FROM products WHERE slug=?');
+        $p->execute([$slug]);
+        $prod = $p->fetch();
+        if (!$prod) {
+            header('Location: admin.php?tab=products&msg=' . rawurlencode('Flash Deal cancel failed: product not found'));
+            exit;
+        }
+        $restore = (float)($prod['original_price'] ?: $prod['price']);
+        $pdo->prepare('UPDATE products SET price=?, sale_starts_at=NULL, sale_ends_at=NULL WHERE slug=?')
+            ->execute([$restore, $slug]);
+        try {
+            require_once __DIR__ . '/includes/seo-bot.php';
+            seo_indexnow_ping_paths(['product.php?slug=' . $slug, '/', '/sitemap.xml', '/merchant-feed.xml']);
+        } catch (Throwable $e) { /* non-fatal */ }
+        header('Location: admin.php?tab=products&edit=' . urlencode($slug) . '&msg=' . rawurlencode(sprintf('Flash Deal ended — %s price restored to $%.2f', $prod['name'], $restore)));
+        exit;
+
     } elseif ($action === 'duplicate_product') {
         $src = $pdo->prepare('SELECT * FROM products WHERE slug=?'); $src->execute([$_POST['slug']]); $s = $src->fetch();
         if ($s) {
@@ -8577,6 +8600,30 @@ elseif ($tab === 'products'):
                 <small class="flash-deal-tagline">Drop the price, pin a sale window, fire IndexNow on the Shopping feeds, and publish a "Today only — N% off" AI blog post — all in one click.</small>
               </div>
             </div>
+            <?php
+              // Detect a currently-live Flash Deal (sale_ends_at in the future).
+              $fdEndsTs = !empty($editing['sale_ends_at']) ? strtotime((string)$editing['sale_ends_at']) : 0;
+              $fdLive   = $fdEndsTs > time();
+            ?>
+            <?php if ($fdLive): ?>
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2 p-2 rounded" style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.4);" data-testid="flash-deal-active-status">
+                <div class="small">
+                  <span class="badge bg-success me-1"><i class="bi bi-broadcast me-1"></i>LIVE</span>
+                  Now <strong>$<?= number_format((float)$editing['price'], 2) ?></strong>
+                  <?php if (!empty($editing['original_price']) && (float)$editing['original_price'] > (float)$editing['price']): ?>
+                    <span class="text-decoration-line-through text-secondary">$<?= number_format((float)$editing['original_price'], 2) ?></span>
+                  <?php endif; ?>
+                  &middot; ends <strong><?= esc(date('M j, g:i A', $fdEndsTs)) ?></strong>
+                </div>
+                <form method="post" onsubmit="return confirm('End this Flash Deal now?\n\nThe price will be restored to MSRP and the countdown banner will disappear from the storefront.');">
+                  <input type="hidden" name="action" value="cancel_flash_deal">
+                  <input type="hidden" name="slug" value="<?= esc($editing['slug']) ?>">
+                  <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold" data-testid="flash-deal-cancel-btn">
+                    <i class="bi bi-trash3 me-1"></i>End Flash Deal
+                  </button>
+                </form>
+              </div>
+            <?php endif; ?>
             <form method="post" class="row g-2 align-items-end"
                   onsubmit="return confirm('Launch a Flash Deal on this product?\n\nThis will drop the price, set a 24h sale window, ping Bing/Yandex via IndexNow, AND auto-publish an AI blog post about the deal.\n\nProceed?');">
               <input type="hidden" name="action" value="flash_deal">

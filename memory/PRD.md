@@ -1550,3 +1550,9 @@ The store already had extensive, valid JSON-LD (Organization, LocalBusiness, Web
 - Added mv_is_manual_url() / mv_installer_btn_label() helpers in includes/install-guides.php.
 - The installer button now reads "Download & Install Guide" (icon bi-journal-arrow-down) wherever installer_url is a manuals page, else keeps "Download installer". Applied on: product.php install block, order-success.php (2 spots), includes/email.php delivery-email cards (2 builders). Non-manual products (antivirus) keep original label.
 - Verified: product page shows green "Download & Install Guide" -> manuals/o24pp; email card helper renders combined label for manual URL and original label for bitdefender.
+
+## 2026-06 (fork, cont.2) — Order-success help link + Flash Deal storefront timer + admin cancel
+- order-success.php: added "Need help installing? Chat with us" link (calls window.toggleChat live chat) beneath the Download & Install Guide button.
+- product.php: added a live Flash Deal countdown banner under the price (renders when sale_ends_at is in the future + a real discount). Elegant red/orange gradient, animated bolt, HH:MM:SS live JS countdown (assets/js/main.js) that auto-hides on expiry. CSS in assets/css/theme-refresh.css (.flash-deal-banner...). data-testid=flash-deal-banner / flash-hh/mm/ss.
+- admin.php: new `cancel_flash_deal` action restores price to MSRP (original_price), clears sale window, pings IndexNow. Product editor Flash Deal panel now shows a green "LIVE" status row (current price / ends-at) with an "End Flash Deal" trash button (data-testid=flash-deal-cancel-btn) when a deal is active.
+- Verified e2e: banner ticks live on storefront; admin shows LIVE status + trash button; clicking End Flash Deal restored price 178.49->209.99 and cleared sale_ends_at.

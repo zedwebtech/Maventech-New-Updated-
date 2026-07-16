@@ -637,6 +637,11 @@ if ($gcrOptInEnabled && $isPaid && $gmcId !== '' && !empty($order['email'])):
                   </a>
                 <?php endif; ?>
               </div>
+              <div class="mt-2">
+                <a href="#" onclick="if(window.toggleChat){toggleChat();}return false;" data-testid="success-install-help-link" style="font-size:.72rem;color:#0e7490;font-weight:600;text-decoration:none;">
+                  <i class="bi bi-chat-dots me-1"></i>Need help installing? Chat with us
+                </a>
+              </div>
             </div>
           </div>
         </div>

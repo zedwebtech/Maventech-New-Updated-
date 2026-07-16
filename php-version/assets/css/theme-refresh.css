@@ -91,3 +91,38 @@ hr{border-color:var(--tr-border);opacity:1;}
 [data-bs-theme="dark"] .product-card,[data-bs-theme="dark"] .p-card,
 [data-bs-theme="dark"] .tile{border-color:#1f2937 !important;}
 [data-bs-theme="dark"] .form-control,[data-bs-theme="dark"] .form-select{border-color:#334155;}
+
+/* ── Flash Deal live countdown banner (product page) ──────────────────── */
+.flash-deal-banner{
+  border-radius:16px;padding:16px 18px;color:#fff;
+  background:linear-gradient(120deg,#dc2626 0%,#ea580c 55%,#f59e0b 100%);
+  box-shadow:0 10px 26px -10px rgba(220,38,38,.55);
+  position:relative;overflow:hidden;
+}
+.flash-deal-banner::after{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 85% -20%,rgba(255,255,255,.28),transparent 45%);
+  pointer-events:none;
+}
+.flash-deal-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.flash-deal-bolt{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);
+  font-size:1rem;animation:fd-pulse 1.4s ease-out infinite;
+}
+@keyframes fd-pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.6);}70%{box-shadow:0 0 0 10px rgba(255,255,255,0);}100%{box-shadow:0 0 0 0 rgba(255,255,255,0);}}
+.flash-deal-title{font-weight:800;font-size:1.05rem;letter-spacing:.2px;}
+.flash-deal-save{
+  margin-left:auto;background:rgba(255,255,255,.22);
+  padding:3px 12px;border-radius:999px;font-weight:700;font-size:.82rem;
+}
+.flash-deal-timer{display:flex;align-items:center;gap:12px;margin-top:12px;}
+.flash-deal-ends-label{font-size:.8rem;opacity:.9;text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+.flash-deal-clock{display:flex;align-items:center;gap:6px;}
+.fd-unit{
+  display:inline-flex;flex-direction:column;align-items:center;
+  background:rgba(0,0,0,.22);border-radius:10px;padding:6px 10px;min-width:52px;
+}
+.fd-unit b{font-size:1.35rem;line-height:1;font-variant-numeric:tabular-nums;font-weight:800;}
+.fd-unit i{font-style:normal;font-size:.62rem;opacity:.85;margin-top:3px;text-transform:uppercase;letter-spacing:.5px;}
+.fd-sep{font-size:1.2rem;font-weight:800;opacity:.7;}

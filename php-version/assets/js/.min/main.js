@@ -1436,3 +1436,23 @@ return;
 });
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeCartDrawer(); });
 })();
+(function () {
+var banners = document.querySelectorAll('.flash-deal-banner[data-flash-ends]');
+if (!banners.length) return;
+function pad(n) { return (n < 10 ? '0' : '') + n; }
+function tick() {
+var now = Math.floor(Date.now() / 1000);
+banners.forEach(function (b) {
+var ends = parseInt(b.getAttribute('data-flash-ends'), 10) || 0;
+var left = ends - now;
+if (left <= 0) { b.style.display = 'none'; return; }
+var h = Math.floor(left / 3600), m = Math.floor((left % 3600) / 60), s = left % 60;
+var hh = b.querySelector('.fd-hh'), mm = b.querySelector('.fd-mm'), ss = b.querySelector('.fd-ss');
+if (hh) hh.textContent = pad(h);
+if (mm) mm.textContent = pad(m);
+if (ss) ss.textContent = pad(s);
+});
+}
+tick();
+setInterval(tick, 1000);
+})();
