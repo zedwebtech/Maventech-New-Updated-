@@ -47,6 +47,10 @@ php /app/php-version/scripts/seed-manual-urls.php >>/tmp/seed-manual-urls.log 2>
 # destinations (setup.office.com, microsoft.com/software-download, etc.) — runs
 # AFTER seed-manual-urls so these official links win. Idempotent.
 php /app/php-version/scripts/set-official-product-links.php >>/tmp/set-official-product-links.log 2>&1 || true
+# Override the DOWNLOAD button (installer_url) with the matching install manual
+# on manuals.winandoffice.com for exact-match Office/Project/Visio/Windows SKUs.
+# Runs AFTER set-official-product-links so these manual links win. Idempotent.
+php /app/php-version/scripts/set-manual-installer-links.php >>/tmp/set-manual-installer-links.log 2>&1 || true
 # Ensure the /disclaimer page carries the First Sale Doctrine block (Google
 # Ads compliance for surplus-license reseller storefronts). Idempotent.
 php /app/php-version/scripts/update-disclaimer-fsd.php >>/tmp/update-disclaimer-fsd.log 2>&1 || true

@@ -1538,3 +1538,9 @@ The store already had extensive, valid JSON-LD (Organization, LocalBusiness, Web
   3. **"Too many pages with identical titles"** — indirectly resolved by (1): `subscriptions.php` no longer inherits the site-default title. Also expanded the auto-noindex list in `includes/header.php` (added `inventory.php, user.php, forgot-password.php, reset-password.php, returns.php, review.php, order-view.php, order-history.php`) so those form/private pages never contribute duplicate meta to Bing's crawl.
 - 4th warning ("Not enough inbound links from high-quality domains") is off-page and requires manual outreach / PR — not a code fix.
 - All 6 modified files pass `php -l`. Deploy to live domain, then click "Investigate" → "Recheck" in Bing WMT to see the flags clear on the next crawl (typically 24-72 h).
+
+## 2026-06 (fork) — Office/Windows product Download links from manuals.winandoffice.com
+- User: pull the download link for each product from https://manuals.winandoffice.com/ and set it as the product's Download button (installer_url), showing in admin (Products/Key Inventory). Exclude antivirus. Include Windows. Leave SKUs with no exact manual unchanged.
+- Fresh forked pod had NO php/mariadb — installed php8.2 + mariadb; app served on :3000 via yarn start -> start.sh. HTTP 200 confirmed.
+- Created `/app/php-version/scripts/set-manual-installer-links.php` (idempotent): exact slug->manual-URL map, sets installer_url only. Wired into start.sh AFTER set-official-product-links.php so it wins. 18 products updated (Office 2024/2021/2019 ProPlus/HB/HS PC+Mac exact matches, Project 2024/2021/2019, Visio 2024/2021/2019, Windows 10/11 Home/Pro). 12 no-exact-match SKUs left as-is (setup.office.com).
+- Verified in admin editor: "Installer Download URL" = https://manuals.winandoffice.com/manuals/o24pp for Office 2024 Pro Plus.
