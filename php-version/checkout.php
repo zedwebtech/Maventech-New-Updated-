@@ -821,211 +821,235 @@ include __DIR__ . '/includes/header.php';
     <input type="hidden" name="email_override" id="email-override-input" value="0">
     <input type="hidden" name="address_override" id="address-override-input" value="0">
 
-    <!-- Left column: Order Summary (receipt style) -->
-    <div class="col-lg-5 order-lg-1">
-    <div class="card co-banner co-summary-sticky p-3 position-relative" data-testid="co-banner-summary">
-      <div id="checkout-summary">
-      <?php include __DIR__ . '/includes/checkout-summary-partial.php'; ?>
-      </div>
-    </div>
-    </div>
-
-    <!-- Right column: Payment (top) + Your Details -->
-    <div class="col-lg-7 order-lg-2 d-grid gap-3">
-    <!-- Banner: Payment (moved above Your Details per UX request) -->
-    <div class="card co-banner p-3" data-testid="co-banner-contact">
-      <div class="co-head d-flex align-items-center gap-3 mb-3" data-testid="co-banner-payment">
-        <span class="co-num">1</span>
-        <div class="lh-sm">
-          <h6 class="fw-bold mb-0">Payment</h6>
-          <small class="text-secondary">All transactions are secure and encrypted</small>
-        </div>
-        <i class="bi bi-shield-lock co-head-icon ms-auto"></i>
-      </div>
-      <?php $_cardEnabled = card_enabled(); $_paypalEnabled = paypal_enabled(); ?>
+    <!-- ============ LEFT column: the form (Contact · Billing · Payment) ============ -->
+    <div class="col-lg-7 order-lg-1 d-grid gap-3">
       <?php
+        // Shared form data used by the Billing + Payment cards below.
+        $_cardEnabled = card_enabled(); $_paypalEnabled = paypal_enabled();
         // When the active card gateway is a direct-charge processor
         // (NMI / Authorize.Net / Custom) the card fields MUST be posted to
-        // our server so we can charge the card server-side. For Stripe the
-        // fields stay nameless (the charge happens on Stripe's hosted page).
+        // our server so we can charge server-side. For Stripe the fields stay
+        // nameless (the charge is confirmed on Stripe's PCI-compliant page).
         $cardActiveProvider = card_active_provider();
         $cardDirectCharge   = in_array($cardActiveProvider, ['nmi','authnet','custom'], true);
         $cardProviderLabels = ['nmi'=>'NMI','authnet'=>'Authorize.Net','custom'=>'our secure payment','stripe'=>'Stripe'];
+        $phoneFlags = ['+1' => '🇺🇸', '+44' => '🇬🇧', '+61' => '🇦🇺', '+49' => '🇩🇪', '+33' => '🇫🇷', '+34' => '🇪🇸', '+39' => '🇮🇹', '+31' => '🇳🇱', '+91' => '🇮🇳', '+971' => '🇦🇪', '+64' => '🇳🇿'];
+        $phoneIso = ['+1' => 'us', '+44' => 'gb', '+61' => 'au', '+49' => 'de', '+33' => 'fr', '+34' => 'es', '+39' => 'it', '+31' => 'nl', '+91' => 'in', '+971' => 'ae', '+64' => 'nz'];
+        $formCC = strtoupper(trim($_POST['country'] ?? '')) ?: $curRegionCC;
+        if (!isset($ALL_COUNTRIES[$formCC])) $formCC = 'US';
+        $rf = $__region_form_for($formCC);
+        $selCode = $_POST['phone_code'] ?? $rf['dial'];
+        $selIso  = $phoneIso[$selCode] ?? 'us';
       ?>
-      <?php if (!$_cardEnabled && !$_paypalEnabled): ?>
-        <div class="alert alert-warning mb-3" data-testid="checkout-no-methods"><i class="bi bi-exclamation-triangle me-2"></i>No payment methods are currently available. Please contact support.</div>
-      <?php endif; ?>
-      <div class="row g-2 mb-2">
-        <?php if ($_cardEnabled): ?>
-        <div class="<?= $_paypalEnabled ? 'col-sm-6' : 'col-12' ?>">
-          <div id="pay-card" class="pay-option pay-tile <?= $defaultPM === 'card' ? 'active' : '' ?> p-2 h-100" onclick="selectPayMethod('card')" data-testid="pay-method-card">
-            <div class="d-flex align-items-center gap-2">
-              <input type="radio" class="form-check-input mt-0" name="pm_radio" <?= $defaultPM === 'card' ? 'checked' : '' ?> onclick="selectPayMethod('card')">
-              <i class="bi bi-credit-card-2-front text-primary fs-5"></i>
-              <span class="fw-bold">Card</span>
-            </div>
-            <!-- Accepted-brand icons render directly UNDER the Card tile so the customer
-                 sees which brands are supported the moment they pick "Card". Each icon
-                 lights up (scale-up + full opacity) as it matches the typed number. -->
-            <div class="card-brands-tile" id="card-brands" data-testid="card-brand-icons">
-              <img src="assets/images/payments/visa.svg"       alt="Visa"             data-brand="visa"       class="card-brand-icon">
-              <img src="assets/images/payments/mastercard.svg" alt="Mastercard"       data-brand="mastercard" class="card-brand-icon">
-              <img src="assets/images/payments/amex.svg"       alt="American Express" data-brand="amex"       class="card-brand-icon">
-              <img src="assets/images/payments/discover.svg"   alt="Discover"         data-brand="discover"   class="card-brand-icon">
-            </div>
+
+      <!-- Card 1: Contact Information -->
+      <div class="card co-banner p-3" data-testid="co-banner-contact">
+        <div class="co-head d-flex align-items-center gap-3 mb-3">
+          <span class="co-num">1</span>
+          <div class="lh-sm">
+            <h6 class="fw-bold mb-0">Contact Information</h6>
+            <small class="text-secondary">Where we send your license key &amp; receipt</small>
           </div>
+          <i class="bi bi-envelope co-head-icon ms-auto"></i>
         </div>
-        <?php endif; ?>
-        <?php if ($_paypalEnabled): ?>
-        <div class="<?= $_cardEnabled ? 'col-sm-6' : 'col-12' ?>">
-          <div id="pay-paypal" class="pay-option pay-tile paypal <?= $defaultPM === 'paypal' ? 'active' : '' ?> p-2 h-100" onclick="selectPayMethod('paypal')" data-testid="pay-method-paypal">
-            <div class="d-flex align-items-center gap-2">
-              <input type="radio" class="form-check-input mt-0" name="pm_radio" <?= $defaultPM === 'paypal' ? 'checked' : '' ?> onclick="selectPayMethod('paypal')">
-              <img src="assets/images/payments/paypal.svg" alt="PayPal" class="pay-icon pay-icon-sm">
-              <span class="fw-bold"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span></span>
-            </div>
-            <small class="text-secondary d-block mt-2 ps-4">Checkout with your PayPal account</small>
-          </div>
-        </div>
-        <?php endif; ?>
+        <label class="form-label">Email Address *</label>
+        <input type="email" name="email" required autocomplete="email" class="form-control" value="<?= esc($_POST['email'] ?? '') ?>" data-testid="checkout-email" id="checkout-email" placeholder="your@email.com">
+        <div id="checkout-email-hint" class="checkout-hint" style="display:none;" data-testid="checkout-email-hint"></div>
+        <div class="co-keynote mt-2"><i class="bi bi-download me-1"></i>License key delivered to this email within <strong>15–30 minutes</strong></div>
       </div>
-      <!-- Card details drop-down (shown when Card selected). Fields have NO name attrs —
-           they are never posted to our server; the charge is confirmed on Stripe's PCI-compliant page.
-           Layout: brand icons render INSIDE the Card Number input group as a live-highlight overlay
-           on the right; validation errors render as centered, bold, red plain-text UNDER the
-           corresponding input per UX request 2026-07-13(h). -->
-      <div id="card-form" class="card-form-reveal mb-2<?= $defaultPM !== 'card' ? ' d-none' : '' ?>" data-testid="card-details-form">
+
+      <!-- Card 2: Billing Address -->
+      <div class="card co-banner p-3" data-testid="co-banner-billing">
+        <div class="co-head d-flex align-items-center gap-3 mb-3">
+          <span class="co-num">2</span>
+          <div class="lh-sm">
+            <h6 class="fw-bold mb-0">Billing Address</h6>
+            <small class="text-secondary">Used for payment verification only</small>
+          </div>
+          <i class="bi bi-geo-alt co-head-icon ms-auto"></i>
+        </div>
         <div class="row g-2">
-          <div class="col-md-6 col-12">
-            <div class="d-flex align-items-baseline justify-content-between">
-              <label class="form-label mb-1" for="card-number">Card Number</label>
-              <span class="field-error-inline" id="card-number-error" data-testid="card-number-error" aria-live="polite"></span>
-            </div>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-credit-card-2-front text-primary"></i></span>
-              <input id="card-number" class="form-control" inputmode="numeric" autocomplete="cc-number" maxlength="19" data-testid="card-number-input" aria-label="Card number" placeholder="1234 5678 9012 3456">
-            </div>
-          </div>
-          <div class="col-md-3 col-7">
-            <div class="d-flex align-items-baseline justify-content-between">
-              <label class="form-label mb-1" for="card-exp">Expiry Date</label>
-              <span class="field-error-inline" id="card-exp-error" data-testid="card-exp-error" aria-live="polite"></span>
-            </div>
-            <input id="card-exp" <?= $cardDirectCharge ? 'name="card_exp"' : '' ?> class="form-control" inputmode="numeric" autocomplete="cc-exp" maxlength="5" data-testid="card-exp-input" aria-label="Card expiry date" placeholder="MM/YY">
-          </div>
-          <div class="col-md-3 col-5">
-            <div class="d-flex align-items-baseline justify-content-between">
-              <label class="form-label mb-1" for="card-cvv">CVV</label>
-              <span class="field-error-inline" id="card-cvv-error" data-testid="card-cvv-error" aria-live="polite"></span>
-            </div>
-            <div class="input-group">
-              <input id="card-cvv" <?= $cardDirectCharge ? 'name="card_cvv"' : '' ?> type="password" class="form-control" inputmode="numeric" autocomplete="cc-csc" maxlength="4" data-testid="card-cvv-input" aria-label="Card CVV" placeholder="CVV">
-              <span class="input-group-text" title="3-digit code on the back of your card · 4 digits for American Express"><i class="bi bi-question-circle text-secondary"></i></span>
+          <div class="col-md-6"><label class="form-label">First Name *</label><input name="first_name" autocomplete="given-name" required class="form-control" value="<?= esc($_POST['first_name'] ?? '') ?>" placeholder="John"></div>
+          <div class="col-md-6"><label class="form-label">Last Name *</label><input name="last_name" autocomplete="family-name" required class="form-control" value="<?= esc($_POST['last_name'] ?? '') ?>" placeholder="Doe"></div>
+          <div class="col-12">
+            <label class="form-label">Phone Number *</label>
+            <div class="input-group phone-group">
+              <select name="phone_code" id="phone-code" class="form-select phone-code" style="--phone-flag:url('https://flagcdn.com/w40/<?= $selIso ?>.png')" onchange="syncPhoneFlag(this)" data-testid="phone-code-select" aria-label="Country dial code">
+                <?php foreach ($phoneFlags as $code => $flag): ?>
+                  <option value="<?= $code ?>" data-iso="<?= $phoneIso[$code] ?? 'us' ?>" <?= $selCode === $code ? 'selected' : '' ?>><?= $code ?></option>
+                <?php endforeach; ?>
+              </select>
+              <input name="phone" required class="form-control" value="<?= esc($_POST['phone'] ?? '') ?>" data-testid="phone-number-input" placeholder="555 123 4567" inputmode="tel" autocomplete="tel-national">
             </div>
           </div>
-        </div>
-        <div class="small text-secondary mt-1"><i class="bi bi-shield-lock-fill text-success me-1"></i><?php if ($cardDirectCharge): ?>Your card is charged securely through <?= esc($cardProviderLabels[$cardActiveProvider] ?? 'our') ?> over an encrypted connection — we never store your full card number or CVV.<?php else: ?>Your card is verified &amp; charged on Stripe's PCI-compliant secure page — we never store card data.<?php endif; ?></div>
-      </div>
-      <!-- PayPal info drop-down (shown when PayPal is selected). No card fields —
-           the customer is redirected to PayPal's own secure checkout to authorise the payment. -->
-      <div id="paypal-info" class="card-form-reveal mb-2<?= $defaultPM !== 'paypal' ? ' d-none' : '' ?>" data-testid="paypal-info-panel">
-        <div class="paypal-info-box p-3 rounded-3">
-          <div class="d-flex align-items-center gap-2 mb-2">
-            <img src="assets/images/payments/paypal.svg" alt="PayPal" style="height:22px;">
-            <span class="fw-bold"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span> Checkout</span>
+          <div class="col-md-8 checkout-addr-parent"><label class="form-label">Address *</label><input name="address" autocomplete="address-line1" required class="form-control" value="<?= esc($_POST['address'] ?? '') ?>" id="checkout-address" data-testid="checkout-address" placeholder="123 Main St">
+            <div id="checkout-address-hint" class="checkout-hint" style="display:none;" data-testid="checkout-address-hint"></div>
+            <!-- Address auto-suggest dropdown — populated by ajax/address-suggest.php -->
+            <div id="checkout-address-suggest" class="checkout-addr-suggest" data-testid="checkout-address-suggest" role="listbox" hidden></div>
           </div>
-          <ul class="list-unstyled mb-0 small text-secondary" style="line-height:1.6;">
-            <li><i class="bi bi-check2-circle text-success me-1"></i>Click <strong>Continue with PayPal</strong> below — you'll be securely redirected to PayPal to log in and confirm.</li>
-            <li><i class="bi bi-check2-circle text-success me-1"></i>Pay with your PayPal balance, bank account, or any card linked to PayPal.</li>
-            <li><i class="bi bi-shield-lock-fill text-success me-1"></i>Your card &amp; bank details stay with PayPal — we never see them.</li>
-          </ul>
-        </div>
-      </div>
-      <hr class="co-merge-divider my-4">
-      <!-- Your Details — merged into the SAME card, now BELOW Payment -->
-      <div class="co-head d-flex align-items-center gap-3 mb-3">
-        <span class="co-num">2</span>
-        <div class="lh-sm">
-          <h6 class="fw-bold mb-0">Your Details</h6>
-          <small class="text-secondary">License key goes to your email · address is for payment verification only</small>
-        </div>
-        <i class="bi bi-person-vcard co-head-icon ms-auto"></i>
-      </div>
-      <div class="row g-2">
-        <div class="col-md-6">
-          <label class="form-label">Email Address *</label>
-          <input type="email" name="email" required autocomplete="email" class="form-control" value="<?= esc($_POST['email'] ?? '') ?>" data-testid="checkout-email" id="checkout-email">
-          <div id="checkout-email-hint" class="checkout-hint" style="display:none;" data-testid="checkout-email-hint"></div>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Phone Number *</label>
-          <?php
-          $phoneFlags = ['+1' => '🇺🇸', '+44' => '🇬🇧', '+61' => '🇦🇺', '+49' => '🇩🇪', '+33' => '🇫🇷', '+34' => '🇪🇸', '+39' => '🇮🇹', '+31' => '🇳🇱', '+91' => '🇮🇳', '+971' => '🇦🇪', '+64' => '🇳🇿'];
-          // Dial-code -> ISO country for the flag image (real SVG/PNG flags, so
-          // it renders elegantly everywhere — emoji flags don't render on Windows).
-          $phoneIso = ['+1' => 'us', '+44' => 'gb', '+61' => 'au', '+49' => 'de', '+33' => 'fr', '+34' => 'es', '+39' => 'it', '+31' => 'nl', '+91' => 'in', '+971' => 'ae', '+64' => 'nz'];
-          // Region the form should default to: a re-displayed form (validation
-          // error) keeps the POSTed country; a fresh form follows the storefront
-          // region derived from the active currency.
-          $formCC = strtoupper(trim($_POST['country'] ?? '')) ?: $curRegionCC;
-          if (!isset($ALL_COUNTRIES[$formCC])) $formCC = 'US';
-          $rf = $__region_form_for($formCC);
-          $selCode = $_POST['phone_code'] ?? $rf['dial'];
-          $selIso  = $phoneIso[$selCode] ?? 'us';
-          ?>
-          <div class="input-group phone-group">
-            <select name="phone_code" id="phone-code" class="form-select phone-code" style="--phone-flag:url('https://flagcdn.com/w40/<?= $selIso ?>.png')" onchange="syncPhoneFlag(this)" data-testid="phone-code-select" aria-label="Country dial code">
-              <?php foreach ($phoneFlags as $code => $flag): ?>
-                <option value="<?= $code ?>" data-iso="<?= $phoneIso[$code] ?? 'us' ?>" <?= $selCode === $code ? 'selected' : '' ?>><?= $code ?></option>
+          <div class="col-md-4"><label class="form-label">Address Line 2</label><input name="address2" autocomplete="address-line2" class="form-control" value="<?= esc($_POST['address2'] ?? '') ?>" placeholder="Apt, suite (optional)"></div>
+          <div class="col-md-4 col-12">
+            <label class="form-label">Country *</label>
+            <select name="country" autocomplete="country" id="co-country" class="form-select" onchange="mvSwitchCheckoutCountry(this.value)" data-testid="country-select">
+              <?php foreach ($ALL_COUNTRIES as $c => $n): ?>
+                <option value="<?= $c ?>" <?= $formCC === $c ? 'selected' : '' ?>><?= esc($n) ?></option>
               <?php endforeach; ?>
             </select>
-            <input name="phone" required class="form-control" value="<?= esc($_POST['phone'] ?? '') ?>" data-testid="phone-number-input" placeholder="Phone number" inputmode="tel" autocomplete="tel-national">
           </div>
+          <div class="col-md-4 col-6"><label class="form-label">City *</label><input name="city" autocomplete="address-level2" required class="form-control" value="<?= esc($_POST['city'] ?? '') ?>" placeholder="New York"></div>
+          <div class="col-md-4 col-6" id="co-region-wrap">
+            <label class="form-label" id="co-region-label"><?= esc($rf['region_label']) ?><?= $rf['region_required'] ? ' *' : '' ?></label>
+            <?php if (!empty($rf['regions'])): ?>
+            <select name="state" autocomplete="address-level1" <?= $rf['region_required'] ? 'required' : '' ?> class="form-select" data-testid="state-select">
+              <option value="">Select</option>
+              <?php foreach ($rf['regions'] as $st): ?>
+                <option value="<?= $st ?>" <?= ($_POST['state'] ?? '') === $st ? 'selected' : '' ?>><?= $st ?></option>
+              <?php endforeach; ?>
+            </select>
+            <?php else: ?>
+            <input name="state" autocomplete="address-level1" <?= $rf['region_required'] ? 'required' : '' ?> class="form-control" value="<?= esc($_POST['state'] ?? '') ?>" data-testid="state-select" placeholder="<?= esc($rf['region_label']) ?>">
+            <?php endif; ?>
+          </div>
+          <div class="col-md-4 col-6"><label class="form-label" id="co-postal-label"><?= esc($rf['postal_label']) ?> *</label><input name="zip" autocomplete="postal-code" required class="form-control" value="<?= esc($_POST['zip'] ?? '') ?>" id="co-postal" placeholder="<?= esc($rf['postal_ph']) ?>" data-testid="zip-input"></div>
         </div>
-        <div class="col-md-6"><label class="form-label">First Name *</label><input name="first_name" autocomplete="given-name" required class="form-control" value="<?= esc($_POST['first_name'] ?? '') ?>"></div>
-        <div class="col-md-6"><label class="form-label">Last Name *</label><input name="last_name" autocomplete="family-name" required class="form-control" value="<?= esc($_POST['last_name'] ?? '') ?>"></div>
-        <div class="col-md-8 checkout-addr-parent"><label class="form-label">Address *</label><input name="address" autocomplete="address-line1" required class="form-control" value="<?= esc($_POST['address'] ?? '') ?>" id="checkout-address" data-testid="checkout-address">
-          <div id="checkout-address-hint" class="checkout-hint" style="display:none;" data-testid="checkout-address-hint"></div>
-          <!-- Address auto-suggest dropdown — populated by ajax/address-suggest.php
-               (OpenStreetMap Nominatim). Hidden until 3+ chars typed. -->
-          <div id="checkout-address-suggest" class="checkout-addr-suggest" data-testid="checkout-address-suggest" role="listbox" hidden></div>
+      </div>
+
+      <!-- Card 3: Secure Payment -->
+      <div class="card co-banner p-3" data-testid="co-banner-payment">
+        <div class="co-head d-flex align-items-center gap-3 mb-3">
+          <span class="co-num">3</span>
+          <div class="lh-sm">
+            <h6 class="fw-bold mb-0">Secure Payment</h6>
+            <small class="text-secondary">Choose your preferred payment method</small>
+          </div>
+          <i class="bi bi-shield-lock co-head-icon ms-auto"></i>
         </div>
-        <div class="col-md-4"><label class="form-label">Address Line 2</label><input name="address2" autocomplete="address-line2" class="form-control" value="<?= esc($_POST['address2'] ?? '') ?>"></div>
-        <div class="col-md-3 col-6">
-          <label class="form-label">Country *</label>
-          <select name="country" autocomplete="country" id="co-country" class="form-select" onchange="mvSwitchCheckoutCountry(this.value)" data-testid="country-select">
-            <?php foreach ($ALL_COUNTRIES as $c => $n): ?>
-              <option value="<?= $c ?>" <?= $formCC === $c ? 'selected' : '' ?>><?= esc($n) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="col-md-3 col-6"><label class="form-label">City *</label><input name="city" autocomplete="address-level2" required class="form-control" value="<?= esc($_POST['city'] ?? '') ?>"></div>
-        <div class="col-md-3 col-6" id="co-region-wrap">
-          <label class="form-label" id="co-region-label"><?= esc($rf['region_label']) ?><?= $rf['region_required'] ? ' *' : '' ?></label>
-          <?php if (!empty($rf['regions'])): ?>
-          <select name="state" autocomplete="address-level1" <?= $rf['region_required'] ? 'required' : '' ?> class="form-select" data-testid="state-select">
-            <option value="">Select</option>
-            <?php foreach ($rf['regions'] as $st): ?>
-              <option value="<?= $st ?>" <?= ($_POST['state'] ?? '') === $st ? 'selected' : '' ?>><?= $st ?></option>
-            <?php endforeach; ?>
-          </select>
-          <?php else: ?>
-          <input name="state" autocomplete="address-level1" <?= $rf['region_required'] ? 'required' : '' ?> class="form-control" value="<?= esc($_POST['state'] ?? '') ?>" data-testid="state-select" placeholder="<?= esc($rf['region_label']) ?>">
+        <?php if (!$_cardEnabled && !$_paypalEnabled): ?>
+          <div class="alert alert-warning mb-3" data-testid="checkout-no-methods"><i class="bi bi-exclamation-triangle me-2"></i>No payment methods are currently available. Please contact support.</div>
+        <?php endif; ?>
+        <div class="row g-2 mb-2">
+          <?php if ($_cardEnabled): ?>
+          <div class="<?= $_paypalEnabled ? 'col-sm-6' : 'col-12' ?>">
+            <div id="pay-card" class="pay-option pay-tile <?= $defaultPM === 'card' ? 'active' : '' ?> p-2 h-100" onclick="selectPayMethod('card')" data-testid="pay-method-card">
+              <div class="d-flex align-items-center gap-2">
+                <input type="radio" class="form-check-input mt-0" name="pm_radio" <?= $defaultPM === 'card' ? 'checked' : '' ?> onclick="selectPayMethod('card')">
+                <i class="bi bi-credit-card-2-front text-primary fs-5"></i>
+                <span class="fw-bold">Pay with Credit/Debit Card</span>
+              </div>
+              <div class="card-brands-tile" id="card-brands" data-testid="card-brand-icons">
+                <img src="assets/images/payments/visa.svg"       alt="Visa"             data-brand="visa"       class="card-brand-icon">
+                <img src="assets/images/payments/mastercard.svg" alt="Mastercard"       data-brand="mastercard" class="card-brand-icon">
+                <img src="assets/images/payments/amex.svg"       alt="American Express" data-brand="amex"       class="card-brand-icon">
+                <img src="assets/images/payments/discover.svg"   alt="Discover"         data-brand="discover"   class="card-brand-icon">
+              </div>
+            </div>
+          </div>
+          <?php endif; ?>
+          <?php if ($_paypalEnabled): ?>
+          <div class="<?= $_cardEnabled ? 'col-sm-6' : 'col-12' ?>">
+            <div id="pay-paypal" class="pay-option pay-tile paypal <?= $defaultPM === 'paypal' ? 'active' : '' ?> p-2 h-100" onclick="selectPayMethod('paypal')" data-testid="pay-method-paypal">
+              <div class="d-flex align-items-center gap-2">
+                <input type="radio" class="form-check-input mt-0" name="pm_radio" <?= $defaultPM === 'paypal' ? 'checked' : '' ?> onclick="selectPayMethod('paypal')">
+                <img src="assets/images/payments/paypal.svg" alt="PayPal" class="pay-icon pay-icon-sm">
+                <span class="fw-bold"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span></span>
+              </div>
+              <small class="text-secondary d-block mt-2 ps-4">Checkout with your PayPal account</small>
+            </div>
+          </div>
           <?php endif; ?>
         </div>
-        <div class="col-md-3 col-6"><label class="form-label" id="co-postal-label"><?= esc($rf['postal_label']) ?> *</label><input name="zip" autocomplete="postal-code" required class="form-control" value="<?= esc($_POST['zip'] ?? '') ?>" id="co-postal" placeholder="<?= esc($rf['postal_ph']) ?>" data-testid="zip-input"></div>
-        <?php /* SMS consent checkbox removed per UX request 2026-07-13(h) —
-                the storefront no longer collects marketing consent at checkout. */ ?>
+        <div id="card-form" class="card-form-reveal mb-2<?= $defaultPM !== 'card' ? ' d-none' : '' ?>" data-testid="card-details-form">
+          <div class="co-accept d-flex align-items-center gap-2 mb-2">
+            <span class="small text-secondary">We accept</span>
+            <img src="assets/images/payments/visa.svg" alt="Visa" style="height:20px">
+            <img src="assets/images/payments/mastercard.svg" alt="Mastercard" style="height:20px">
+            <img src="assets/images/payments/amex.svg" alt="American Express" style="height:20px">
+            <img src="assets/images/payments/discover.svg" alt="Discover" style="height:20px">
+          </div>
+          <div class="row g-2">
+            <div class="col-12">
+              <div class="d-flex align-items-baseline justify-content-between">
+                <label class="form-label mb-1" for="card-number">Card Number</label>
+                <span class="field-error-inline" id="card-number-error" data-testid="card-number-error" aria-live="polite"></span>
+              </div>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-credit-card-2-front text-primary"></i></span>
+                <input id="card-number" <?= $cardDirectCharge ? 'name="card_number"' : '' ?> class="form-control" inputmode="numeric" autocomplete="cc-number" maxlength="19" data-testid="card-number-input" aria-label="Card number" placeholder="1234 5678 9012 3456">
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="d-flex align-items-baseline justify-content-between">
+                <label class="form-label mb-1" for="card-exp">Expiry Date</label>
+                <span class="field-error-inline" id="card-exp-error" data-testid="card-exp-error" aria-live="polite"></span>
+              </div>
+              <input id="card-exp" <?= $cardDirectCharge ? 'name="card_exp"' : '' ?> class="form-control" inputmode="numeric" autocomplete="cc-exp" maxlength="5" data-testid="card-exp-input" aria-label="Card expiry date" placeholder="MM/YY">
+            </div>
+            <div class="col-6">
+              <div class="d-flex align-items-baseline justify-content-between">
+                <label class="form-label mb-1" for="card-cvv">CVV</label>
+                <span class="field-error-inline" id="card-cvv-error" data-testid="card-cvv-error" aria-live="polite"></span>
+              </div>
+              <div class="input-group">
+                <input id="card-cvv" <?= $cardDirectCharge ? 'name="card_cvv"' : '' ?> type="password" class="form-control" inputmode="numeric" autocomplete="cc-csc" maxlength="4" data-testid="card-cvv-input" aria-label="Card CVV" placeholder="123">
+                <span class="input-group-text" title="3-digit code on the back of your card · 4 digits for American Express"><i class="bi bi-question-circle text-secondary"></i></span>
+              </div>
+            </div>
+          </div>
+          <div class="co-pci mt-2"><i class="bi bi-shield-lock-fill text-success me-1"></i><strong>PCI DSS Compliant</strong> — <?php if ($cardDirectCharge): ?>your card is charged securely through <?= esc($cardProviderLabels[$cardActiveProvider] ?? 'our gateway') ?> over an encrypted connection. We never store your full card details.<?php else: ?>your card is tokenised securely. We never store your card details.<?php endif; ?></div>
+        </div>
+        <div id="paypal-info" class="card-form-reveal mb-2<?= $defaultPM !== 'paypal' ? ' d-none' : '' ?>" data-testid="paypal-info-panel">
+          <div class="paypal-info-box p-3 rounded-3">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <img src="assets/images/payments/paypal.svg" alt="PayPal" style="height:22px;">
+              <span class="fw-bold"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span> Checkout</span>
+            </div>
+            <ul class="list-unstyled mb-0 small text-secondary" style="line-height:1.6;">
+              <li><i class="bi bi-check2-circle text-success me-1"></i>Click <strong>Continue with PayPal</strong> below — you'll be securely redirected to PayPal to log in and confirm.</li>
+              <li><i class="bi bi-check2-circle text-success me-1"></i>Pay with your PayPal balance, bank account, or any card linked to PayPal.</li>
+              <li><i class="bi bi-shield-lock-fill text-success me-1"></i>Your card &amp; bank details stay with PayPal — we never see them.</li>
+            </ul>
+          </div>
+        </div>
+        <?php if ($_cardEnabled): ?>
+        <button id="btn-pay-card" type="submit" class="btn btn-primary btn-lg rounded-pill w-100 mt-2<?= $defaultPM !== 'card' ? ' d-none' : '' ?>" data-testid="checkout-pay-button"><i class="bi bi-lock-fill me-1"></i>Pay Securely · <?= format_price($total) ?></button>
+        <?php endif; ?>
+        <?php if ($_paypalEnabled): ?>
+        <button id="btn-pay-paypal" type="submit" class="btn btn-paypal btn-lg rounded-pill w-100 mt-2<?= $defaultPM !== 'paypal' ? ' d-none' : '' ?>" data-testid="checkout-paypal-button"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span> · Continue <?= format_price($total) ?></button>
+        <?php endif; ?>
+        <div class="text-center small text-secondary mt-2"><i class="bi bi-shield-lock me-1"></i>256-bit SSL · Secure Checkout</div>
+        <div class="text-center mt-1" style="font-size:.72rem;">By placing your order, you agree to our <a href="page.php?slug=terms-of-service">Terms</a> and <a href="page.php?slug=privacy-policy">Privacy Policy</a></div>
       </div>
-      <?php if ($_cardEnabled): ?>
-      <button id="btn-pay-card" type="submit" class="btn btn-primary btn-lg rounded-pill w-100 mt-3<?= $defaultPM !== 'card' ? ' d-none' : '' ?>" data-testid="checkout-pay-button">Pay Securely · <?= format_price($total) ?></button>
-      <?php endif; ?>
-      <?php if ($_paypalEnabled): ?>
-      <button id="btn-pay-paypal" type="submit" class="btn btn-paypal btn-lg rounded-pill w-100 mt-3<?= $defaultPM !== 'paypal' ? ' d-none' : '' ?>" data-testid="checkout-paypal-button"><span class="fst-italic" style="color:#003087">Pay</span><span class="fst-italic" style="color:#0070BA">Pal</span> · Continue <?= format_price($total) ?></button>
-      <?php endif; ?>
-      <div class="text-center small text-secondary mt-2"><i class="bi bi-shield-lock me-1"></i>256-bit SSL · Powered by Stripe — card details are entered on the secure payment page</div>
-      <div class="text-center mt-1" style="font-size:.72rem;">By placing your order, you agree to our <a href="page.php?slug=terms-of-service">Terms</a> and <a href="page.php?slug=privacy-policy">Privacy Policy</a></div>
     </div>
+
+    <!-- ============ RIGHT column: Order Summary + Need Assistance (sticky) ============ -->
+    <div class="col-lg-5 order-lg-2">
+      <div class="co-summary-sticky d-grid gap-3">
+        <div class="card co-banner p-3 position-relative" data-testid="co-banner-summary">
+          <div id="checkout-summary">
+          <?php include __DIR__ . '/includes/checkout-summary-partial.php'; ?>
+          </div>
+        </div>
+        <?php
+          $__helpPhone = trim((string)($brandPhone ?? setting_get('contact_phone', '1-888-632-9902')));
+          $__helpEmail = trim((string)setting_get('support_email', setting_get('contact_email', 'support@' . ($_SERVER['HTTP_HOST'] ?? 'store'))));
+        ?>
+        <div class="card co-banner co-help p-3" data-testid="co-need-help">
+          <div class="d-flex align-items-start gap-2">
+            <i class="bi bi-headset co-help-icon"></i>
+            <div>
+              <div class="fw-bold">Need Assistance?</div>
+              <small class="text-secondary">We're here to help</small>
+            </div>
+          </div>
+          <?php if ($__helpPhone !== ''): ?>
+          <a href="tel:<?= esc(preg_replace('/[^0-9+]/', '', $__helpPhone)) ?>" class="co-help-phone d-block mt-2"><i class="bi bi-telephone-fill me-1"></i><?= esc($__helpPhone) ?></a>
+          <div class="small text-secondary"><i class="bi bi-clock me-1"></i>Mon–Sat, 9 AM – 6 PM EST</div>
+          <?php endif; ?>
+          <?php if ($__helpEmail !== ''): ?>
+          <a href="mailto:<?= esc($__helpEmail) ?>" class="small d-block mt-2 text-decoration-none"><i class="bi bi-envelope me-1"></i><?= esc($__helpEmail) ?></a>
+          <?php endif; ?>
+        </div>
+      </div>
     </div>
   </form>
 </div>
@@ -1038,6 +1062,18 @@ include __DIR__ . '/includes/header.php';
 @keyframes coFadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 .co-summary-sticky { animation: coFadeUp .5s cubic-bezier(.22,.61,.36,1) both; }
 @media (prefers-reduced-motion: reduce) { .co-summary-sticky { animation: none; } }
+/* Redesigned checkout (reference layout) helpers */
+.co-keynote{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:10px;padding:.55rem .75rem;font-size:.82rem;line-height:1.4;}
+.co-accept img{opacity:.95;}
+.co-pci{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:.5rem .7rem;font-size:.78rem;line-height:1.4;}
+.co-help{background:linear-gradient(180deg,#eff6ff,#fff);}
+.co-help-icon{font-size:1.4rem;color:var(--bs-primary,#2563eb);}
+.co-help-phone{font-size:1.2rem;font-weight:800;color:var(--bs-primary,#2563eb);text-decoration:none;letter-spacing:.01em;}
+.co-help-phone:hover{text-decoration:underline;}
+[data-bs-theme="dark"] .co-keynote{background:rgba(37,99,235,.12);border-color:#1e3a8a;color:#bfdbfe;}
+[data-bs-theme="dark"] .co-pci{background:rgba(16,185,129,.12);border-color:#065f46;color:#a7f3d0;}
+[data-bs-theme="dark"] .co-help{background:#0b1220;}
+
 #btn-pay-card { position: relative; overflow: hidden; }
 #btn-pay-card::after {
   content: ""; position: absolute; top: 0; left: -60%; width: 50%; height: 100%;
