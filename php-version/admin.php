@@ -10763,6 +10763,30 @@ elseif ($tab === 'emails'):
   require_once __DIR__ . '/includes/mailer.php';
   $emailsSmtp = smtp_config();
 
+  // BUG FIX: an email row was showing status='sent' in this UI even after the
+  // recipient's mail server had bounced it (MAILER-DAEMON reply hitting our
+  // inbox). Reason: the row is marked 'sent' the moment PHPMailer hands the
+  // message to the SMTP relay — the ACTUAL delivery outcome is only learned
+  // later, by reading the mailbox for bounce notifications. That
+  // reconciliation is done by email_sync_bounces(). We now run it (a) on
+  // every admin visit to this tab, but (b) throttled to once every 3 minutes
+  // (setting: emails_last_bounce_sync) so IMAP is not hammered. If IMAP is
+  // not configured or the PHP imap extension is missing, we silently skip —
+  // the queue-worker path already reports SMTP-level failures directly.
+  $__lastBounceSyncTs = (int)setting_get('emails_last_bounce_sync', '0');
+  if ((time() - $__lastBounceSyncTs) > 180 && function_exists('imap_open')) {
+      try {
+          $__bs = email_sync_bounces(40);
+          setting_set('emails_last_bounce_sync', (string)time());
+          if (!empty($__bs['ok']) && (int)($__bs['bounced'] ?? 0) > 0) {
+              $__bouncedFlashCount = (int)$__bs['bounced'];
+          }
+      } catch (Throwable $__e) {
+          @error_log('[emails auto-sync-bounces] ' . $__e->getMessage());
+          setting_set('emails_last_bounce_sync', (string)time()); // still throttle after an error
+      }
+  }
+
   // Main category: purchase vs review
   $emailCategory = $_GET['cat'] ?? 'purchase';
   if (!in_array($emailCategory, ['purchase', 'review'], true)) $emailCategory = 'purchase';
@@ -10825,6 +10849,48 @@ elseif ($tab === 'emails'):
   <?php endif; ?>
 
   <?php $emailFilter = $_GET['filter'] ?? 'all'; ?>
+
+  <?php
+  // Bounce-sync UX (Bug 1 fix): show a green flash when the auto-sync just
+  // flipped one or more rows from 'sent' → 'bounced', and a persistent
+  // amber notice when the PHP imap extension is missing so admin knows why
+  // bounce status might lag behind reality.
+  // Also react to the flash query params from a manual "Sync bounces now" click.
+  $__syncedQuery = isset($_GET['synced']) && $_GET['synced'] === '1';
+  $__manualBounced = $__syncedQuery ? (int)($_GET['bounced'] ?? 0) : 0;
+  $__manualChecked = $__syncedQuery ? (int)($_GET['checked'] ?? 0) : 0;
+  $__manualErr     = $__syncedQuery ? (string)($_GET['err'] ?? '') : '';
+  if ($__manualErr !== ''):
+  ?>
+  <div class="alert alert-warning py-2 px-3 mb-3 d-flex align-items-center gap-2" data-testid="emails-bounces-error" style="font-size:13px;">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <div class="flex-grow-1"><strong>Bounce sync error —</strong> <?= esc($__manualErr) ?></div>
+  </div>
+  <?php elseif ($__syncedQuery): ?>
+  <div class="alert <?= $__manualBounced > 0 ? 'alert-success' : 'alert-info' ?> py-2 px-3 mb-3 d-flex align-items-center gap-2" data-testid="emails-bounces-flash" style="font-size:13px;">
+    <i class="bi bi-shield-check"></i>
+    <div class="flex-grow-1"><strong>Bounce sync complete —</strong> read <?= $__manualChecked ?> mailbox notice<?= $__manualChecked === 1 ? '' : 's' ?>; <?= $__manualBounced ?> Email Activity row<?= $__manualBounced === 1 ? '' : 's' ?> flipped from "sent" to <span class="s-badge failed" style="font-size:10px;">BOUNCED</span>.</div>
+  </div>
+  <?php elseif (!empty($__bouncedFlashCount)): ?>
+  <div class="alert alert-success py-2 px-3 mb-3 d-flex align-items-center gap-2" data-testid="emails-bounces-flash" style="font-size:13px;">
+    <i class="bi bi-shield-check"></i>
+    <div class="flex-grow-1"><strong>Bounce report processed —</strong> <?= (int)$__bouncedFlashCount ?> message<?= ((int)$__bouncedFlashCount === 1) ? '' : 's' ?> that previously showed "sent" <?= ((int)$__bouncedFlashCount === 1) ? 'has' : 'have' ?> now been flipped to <span class="s-badge failed" style="font-size:10px;">BOUNCED</span> using the delivery-failure notices in your inbox.</div>
+  </div>
+  <?php elseif (!function_exists('imap_open')): ?>
+  <div class="alert alert-warning py-2 px-3 mb-3 d-flex align-items-center gap-2" data-testid="emails-imap-missing-banner" style="font-size:13px;">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <div class="flex-grow-1">
+      <strong>Delivery status may be stale.</strong>
+      A row shows <span class="s-badge sent" style="font-size:10px;">SENT</span> the moment the outbound SMTP server accepts the message — later bounces (rejected addresses, mailbox-full, etc.) are only reflected here once we read the bounce notification from your inbox.
+      This server does not have the <code>php-imap</code> extension enabled, so bounces cannot be auto-imported. Ask your host to enable <code>php-imap</code>, or manually mark rows failed from the row's action menu.
+    </div>
+  </div>
+  <?php endif; ?>
+  <?php if (function_exists('imap_open')): ?>
+  <div class="d-flex justify-content-end mb-2">
+    <a href="ajax/sync-bounces.php?redirect=1&back=<?= urlencode('admin.php?tab=emails' . ($emailCategory==='review'?'&cat=review':'') . ($emailFilter && $emailFilter!=='all' ? '&filter='.$emailFilter : '')) ?>" class="btn btn-sm btn-outline-secondary" data-testid="emails-sync-bounces-btn" title="Read the mailbox for MAILER-DAEMON bounce reports and flip matching rows from 'sent' to 'bounced'."><i class="bi bi-arrow-clockwise me-1"></i> Sync bounces now<?php if (!empty($__lastBounceSyncTs)): ?> <span class="text-muted ms-2" style="font-size:11px;">last: <?= esc(date('H:i', (int)$__lastBounceSyncTs)) ?></span><?php endif; ?></a>
+  </div>
+  <?php endif; ?>
 
   <ul class="nav nav-pills nav-pills-sm mb-3" data-testid="email-filter-pills">
     <li class="nav-item"><a class="nav-link <?= $emailFilter==='all'?'active':'' ?> py-1 px-3" href="?tab=emails" data-testid="filter-all">All <span class="badge bg-light text-dark ms-1" data-counter="all"><?= (int)$c['t'] ?></span></a></li>
@@ -12141,6 +12207,20 @@ elseif ($tab === 'smtp'):
 // ============================================================================
 elseif ($tab === 'api'):
   function mask($v) { if (!$v) return ''; $l = strlen($v); if ($l <= 8) return str_repeat('*', $l); return substr($v,0,4).str_repeat('*', $l-8).substr($v,-4); }
+  /**
+   * Render a "currently saved" hint UNDER a credential input (not above it).
+   * Shown only when a value is actually saved. Bug 2 fix: users expect the
+   * masked value to appear below the box so it's clearly a status indicator
+   * of what's already stored, not part of the field label above.
+   */
+  function saved_key_hint($v) {
+      if (!$v) return '';
+      return '<small class="text-muted d-block mt-1 mb-2" data-testid="saved-key-hint" style="font-size:11px;line-height:1.4;">'
+           . '<i class="bi bi-shield-check me-1" style="color:#10b981;"></i>Currently saved: '
+           . '<code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;color:#334155;font-size:11px;">'
+           . htmlspecialchars(mask($v), ENT_QUOTES, 'UTF-8')
+           . '</code></small>';
+  }
   $cardStatus = setting_get('gw_card_status','inactive');
   $cardProv   = setting_get('gw_card_provider','Stripe');
   $cardMerch  = setting_get('gw_card_merchant_name','Maventech');
@@ -12545,10 +12625,10 @@ elseif ($tab === 'api'):
                     <?php if (!$isLiveNow): ?><span class="badge" style="background:#f59e0b;color:#fff;font-size:9.5px;letter-spacing:1px;">ACTIVE</span><?php endif; ?>
                   </div>
                   <small class="text-muted d-block mb-2" style="font-size:11px;">Paste your Stripe <code>sk_test_*</code> keys.</small>
-                  <label class="form-label small mb-0">Publishable Key (test) <small class="text-muted"><?= esc(mask($cardPubT)) ?></small></label>
-                  <input class="form-control form-control-sm mb-2" name="public_key_test" type="password" placeholder="pk_test_… (leave blank to keep current)" data-testid="api-card-public-test">
-                  <label class="form-label small mb-0">Secret Key (test) <small class="text-muted"><?= esc(mask($cardSecT)) ?></small></label>
-                  <input class="form-control form-control-sm" id="apiCardSecretTest" name="secret_key_test" type="password" placeholder="sk_test_… (leave blank to keep current)" data-testid="api-card-secret-test">
+                  <label class="form-label small mb-0">Publishable Key (test)</label>
+                  <input class="form-control form-control-sm mb-2" name="public_key_test" type="password" placeholder="pk_test_… (leave blank to keep current)" data-testid="api-card-public-test"><?= saved_key_hint($cardPubT) ?>
+                  <label class="form-label small mb-0">Secret Key (test)</label>
+                  <input class="form-control form-control-sm" id="apiCardSecretTest" name="secret_key_test" type="password" placeholder="sk_test_… (leave blank to keep current)" data-testid="api-card-secret-test"><?= saved_key_hint($cardSecT) ?>
                   <button type="button" class="btn btn-sm btn-outline-secondary mt-2 w-100 rounded-pill validate-key-btn" data-testid="api-card-validate-test"
                           data-gateway="stripe" data-mode="test" data-secret-input="#apiCardSecretTest" data-result-target="#apiCardResultTest">
                     <i class="bi bi-shield-check me-1"></i>Validate test key
@@ -12563,10 +12643,10 @@ elseif ($tab === 'api'):
                     <?php if ($isLiveNow): ?><span class="badge" style="background:#10b981;color:#fff;font-size:9.5px;letter-spacing:1px;">ACTIVE</span><?php endif; ?>
                   </div>
                   <small class="text-muted d-block mb-2" style="font-size:11px;">Paste your Stripe <code>sk_live_*</code> keys. These charge real customers.</small>
-                  <label class="form-label small mb-0">Publishable Key (live) <small class="text-muted"><?= esc(mask($cardPubL)) ?></small></label>
-                  <input class="form-control form-control-sm mb-2" name="public_key_live" type="password" placeholder="pk_live_… (leave blank to keep current)" data-testid="api-card-public-live">
-                  <label class="form-label small mb-0">Secret Key (live) <small class="text-muted"><?= esc(mask($cardSecL)) ?></small></label>
-                  <input class="form-control form-control-sm" id="apiCardSecretLive" name="secret_key_live" type="password" placeholder="sk_live_… (leave blank to keep current)" data-testid="api-card-secret-live">
+                  <label class="form-label small mb-0">Publishable Key (live)</label>
+                  <input class="form-control form-control-sm mb-2" name="public_key_live" type="password" placeholder="pk_live_… (leave blank to keep current)" data-testid="api-card-public-live"><?= saved_key_hint($cardPubL) ?>
+                  <label class="form-label small mb-0">Secret Key (live)</label>
+                  <input class="form-control form-control-sm" id="apiCardSecretLive" name="secret_key_live" type="password" placeholder="sk_live_… (leave blank to keep current)" data-testid="api-card-secret-live"><?= saved_key_hint($cardSecL) ?>
                   <button type="button" class="btn btn-sm btn-outline-success mt-2 w-100 rounded-pill validate-key-btn" data-testid="api-card-validate-live"
                           data-gateway="stripe" data-mode="live" data-secret-input="#apiCardSecretLive" data-result-target="#apiCardResultLive">
                     <i class="bi bi-shield-check me-1"></i>Validate live key
@@ -12576,7 +12656,7 @@ elseif ($tab === 'api'):
               </div>
             </div>
             <div class="row g-2 small mb-3">
-              <div class="col-12"><label class="form-label small mb-0">Stripe Webhook Secret <small class="text-muted"><?= esc(mask($cardWh)) ?></small></label><input class="form-control form-control-sm" name="webhook_secret" type="password" placeholder="whsec_… (leave blank to keep current)" data-testid="api-card-webhook-secret"></div>
+              <div class="col-12"><label class="form-label small mb-0">Stripe Webhook Secret</label><input class="form-control form-control-sm" name="webhook_secret" type="password" placeholder="whsec_… (leave blank to keep current)" data-testid="api-card-webhook-secret"><?= saved_key_hint($cardWh) ?></div>
               <div class="col-12"><label class="form-label small mb-0">Stripe Webhook URL <span class="badge bg-info ms-1" style="font-size:9px;">paste into Stripe Dashboard</span></label><input class="form-control form-control-sm" readonly value="<?= esc($whBase.$cardWhUrl) ?>" data-testid="api-card-webhook-url"></div>
               <div class="col-12">
                 <div class="alert alert-secondary py-2 mb-0 small" style="font-size:11.5px;border-radius:8px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;">
@@ -12603,10 +12683,10 @@ elseif ($tab === 'api'):
                     <?php if (!$isLiveNow): ?><span class="badge" style="background:#f59e0b;color:#fff;font-size:9.5px;letter-spacing:1px;">ACTIVE</span><?php endif; ?>
                   </div>
                   <small class="text-muted d-block mb-2" style="font-size:11px;">From sandbox.authorize.net.</small>
-                  <label class="form-label small mb-0">API Login ID (test) <small class="text-muted"><?= esc(mask($anLoginT)) ?></small></label>
-                  <input class="form-control form-control-sm mb-2" name="authnet_login_id_test" type="password" placeholder="(leave blank to keep current)" data-testid="api-authnet-login-test">
-                  <label class="form-label small mb-0">Transaction Key (test) <small class="text-muted"><?= esc(mask($anTxKeyT)) ?></small></label>
-                  <input class="form-control form-control-sm" name="authnet_transaction_key_test" type="password" placeholder="(leave blank to keep current)" data-testid="api-authnet-txkey-test">
+                  <label class="form-label small mb-0">API Login ID (test)</label>
+                  <input class="form-control form-control-sm mb-2" name="authnet_login_id_test" type="password" placeholder="(leave blank to keep current)" data-testid="api-authnet-login-test"><?= saved_key_hint($anLoginT) ?>
+                  <label class="form-label small mb-0">Transaction Key (test)</label>
+                  <input class="form-control form-control-sm" name="authnet_transaction_key_test" type="password" placeholder="(leave blank to keep current)" data-testid="api-authnet-txkey-test"><?= saved_key_hint($anTxKeyT) ?>
                 </div>
               </div>
               <div class="col-md-6">
@@ -12616,15 +12696,15 @@ elseif ($tab === 'api'):
                     <?php if ($isLiveNow): ?><span class="badge" style="background:#10b981;color:#fff;font-size:9.5px;letter-spacing:1px;">ACTIVE</span><?php endif; ?>
                   </div>
                   <small class="text-muted d-block mb-2" style="font-size:11px;">From account.authorize.net (production).</small>
-                  <label class="form-label small mb-0">API Login ID (live) <small class="text-muted"><?= esc(mask($anLoginL)) ?></small></label>
-                  <input class="form-control form-control-sm mb-2" name="authnet_login_id_live" type="password" placeholder="(leave blank to keep current)" data-testid="api-authnet-login-live">
-                  <label class="form-label small mb-0">Transaction Key (live) <small class="text-muted"><?= esc(mask($anTxKeyL)) ?></small></label>
-                  <input class="form-control form-control-sm" name="authnet_transaction_key_live" type="password" placeholder="(leave blank to keep current)" data-testid="api-authnet-txkey-live">
+                  <label class="form-label small mb-0">API Login ID (live)</label>
+                  <input class="form-control form-control-sm mb-2" name="authnet_login_id_live" type="password" placeholder="(leave blank to keep current)" data-testid="api-authnet-login-live"><?= saved_key_hint($anLoginL) ?>
+                  <label class="form-label small mb-0">Transaction Key (live)</label>
+                  <input class="form-control form-control-sm" name="authnet_transaction_key_live" type="password" placeholder="(leave blank to keep current)" data-testid="api-authnet-txkey-live"><?= saved_key_hint($anTxKeyL) ?>
                 </div>
               </div>
             </div>
             <div class="row g-2 small mb-3">
-              <div class="col-md-12"><label class="form-label small mb-0">Signature Key (Webhook signing) <small class="text-muted"><?= esc(mask($anSigKey)) ?></small></label><input class="form-control form-control-sm" name="authnet_signature_key" type="password" placeholder="(leave blank to keep current)" data-testid="api-authnet-sigkey"></div>
+              <div class="col-md-12"><label class="form-label small mb-0">Signature Key (Webhook signing)</label><input class="form-control form-control-sm" name="authnet_signature_key" type="password" placeholder="(leave blank to keep current)" data-testid="api-authnet-sigkey"><?= saved_key_hint($anSigKey) ?></div>
               <div class="col-12"><label class="form-label small mb-0">Authorize.Net Webhook URL <span class="badge bg-info ms-1" style="font-size:9px;">paste into AuthNet Dashboard</span></label><input class="form-control form-control-sm" readonly value="<?= esc($whBase.'/authnet-webhook.php') ?>" data-testid="api-authnet-webhook-url"></div>
             </div>
           </div>
@@ -12641,8 +12721,8 @@ elseif ($tab === 'api'):
                     <h6 class="fw-bold mb-0" style="font-size:13.5px;"><i class="bi bi-eyedropper me-1" style="color:#f59e0b;"></i> Sandbox credentials</h6>
                     <?php if (!$isLiveNow): ?><span class="badge" style="background:#f59e0b;color:#fff;font-size:9.5px;letter-spacing:1px;">ACTIVE</span><?php endif; ?>
                   </div>
-                  <label class="form-label small mb-0">Security Key (test) <small class="text-muted"><?= esc(mask($nmiKeyT)) ?></small></label>
-                  <input class="form-control form-control-sm mb-2" name="nmi_security_key_test" type="password" placeholder="(leave blank to keep current)" data-testid="api-nmi-key-test">
+                  <label class="form-label small mb-0">Security Key (test)</label>
+                  <input class="form-control form-control-sm mb-2" name="nmi_security_key_test" type="password" placeholder="(leave blank to keep current)" data-testid="api-nmi-key-test"><?= saved_key_hint($nmiKeyT) ?>
                   <label class="form-label small mb-0">Username (optional)</label>
                   <input class="form-control form-control-sm mb-2" name="nmi_username_test" value="<?= esc($nmiUserT) ?>" data-testid="api-nmi-user-test">
                   <label class="form-label small mb-0">Password (optional)</label>
@@ -12655,8 +12735,8 @@ elseif ($tab === 'api'):
                     <h6 class="fw-bold mb-0" style="font-size:13.5px;"><i class="bi bi-broadcast me-1" style="color:#10b981;"></i> Live / Production credentials</h6>
                     <?php if ($isLiveNow): ?><span class="badge" style="background:#10b981;color:#fff;font-size:9.5px;letter-spacing:1px;">ACTIVE</span><?php endif; ?>
                   </div>
-                  <label class="form-label small mb-0">Security Key (live) <small class="text-muted"><?= esc(mask($nmiKeyL)) ?></small></label>
-                  <input class="form-control form-control-sm mb-2" name="nmi_security_key_live" type="password" placeholder="(leave blank to keep current)" data-testid="api-nmi-key-live">
+                  <label class="form-label small mb-0">Security Key (live)</label>
+                  <input class="form-control form-control-sm mb-2" name="nmi_security_key_live" type="password" placeholder="(leave blank to keep current)" data-testid="api-nmi-key-live"><?= saved_key_hint($nmiKeyL) ?>
                   <label class="form-label small mb-0">Username (optional)</label>
                   <input class="form-control form-control-sm mb-2" name="nmi_username_live" value="<?= esc($nmiUserL) ?>" data-testid="api-nmi-user-live">
                   <label class="form-label small mb-0">Password (optional)</label>
@@ -12689,10 +12769,10 @@ elseif ($tab === 'api'):
                   </div>
                   <label class="form-label small mb-0">API Endpoint URL</label>
                   <input class="form-control form-control-sm mb-2" name="custom_endpoint_test" value="<?= esc($customEndT) ?>" placeholder="https://sandbox.gateway.com/api" data-testid="api-custom-endpoint-test">
-                  <label class="form-label small mb-0">API Key <small class="text-muted"><?= esc(mask($customApiKT)) ?></small></label>
-                  <input class="form-control form-control-sm mb-2" name="custom_api_key_test" type="password" placeholder="(leave blank to keep current)" data-testid="api-custom-key-test">
-                  <label class="form-label small mb-0">API Secret <small class="text-muted"><?= esc(mask($customApiST)) ?></small></label>
-                  <input class="form-control form-control-sm mb-2" name="custom_api_secret_test" type="password" placeholder="(leave blank to keep current)" data-testid="api-custom-secret-test">
+                  <label class="form-label small mb-0">API Key</label>
+                  <input class="form-control form-control-sm mb-2" name="custom_api_key_test" type="password" placeholder="(leave blank to keep current)" data-testid="api-custom-key-test"><?= saved_key_hint($customApiKT) ?>
+                  <label class="form-label small mb-0">API Secret</label>
+                  <input class="form-control form-control-sm mb-2" name="custom_api_secret_test" type="password" placeholder="(leave blank to keep current)" data-testid="api-custom-secret-test"><?= saved_key_hint($customApiST) ?>
                   <label class="form-label small mb-0">Merchant ID</label>
                   <input class="form-control form-control-sm mb-2" name="custom_merchant_id_test" value="<?= esc($customMidT) ?>" placeholder="merchant id (optional)" data-testid="api-custom-mid-test">
                   <label class="form-label small mb-0">Provider Webhook URL <span class="badge bg-light text-dark ms-1" style="font-size:9px;">URL on provider side</span></label>
@@ -12707,10 +12787,10 @@ elseif ($tab === 'api'):
                   </div>
                   <label class="form-label small mb-0">API Endpoint URL</label>
                   <input class="form-control form-control-sm mb-2" name="custom_endpoint_live" value="<?= esc($customEndL) ?>" placeholder="https://api.gateway.com" data-testid="api-custom-endpoint-live">
-                  <label class="form-label small mb-0">API Key <small class="text-muted"><?= esc(mask($customApiKL)) ?></small></label>
-                  <input class="form-control form-control-sm mb-2" name="custom_api_key_live" type="password" placeholder="(leave blank to keep current)" data-testid="api-custom-key-live">
-                  <label class="form-label small mb-0">API Secret <small class="text-muted"><?= esc(mask($customApiSL)) ?></small></label>
-                  <input class="form-control form-control-sm mb-2" name="custom_api_secret_live" type="password" placeholder="(leave blank to keep current)" data-testid="api-custom-secret-live">
+                  <label class="form-label small mb-0">API Key</label>
+                  <input class="form-control form-control-sm mb-2" name="custom_api_key_live" type="password" placeholder="(leave blank to keep current)" data-testid="api-custom-key-live"><?= saved_key_hint($customApiKL) ?>
+                  <label class="form-label small mb-0">API Secret</label>
+                  <input class="form-control form-control-sm mb-2" name="custom_api_secret_live" type="password" placeholder="(leave blank to keep current)" data-testid="api-custom-secret-live"><?= saved_key_hint($customApiSL) ?>
                   <label class="form-label small mb-0">Merchant ID</label>
                   <input class="form-control form-control-sm mb-2" name="custom_merchant_id_live" value="<?= esc($customMidL) ?>" placeholder="merchant id (optional)" data-testid="api-custom-mid-live">
                   <label class="form-label small mb-0">Provider Webhook URL <span class="badge bg-light text-dark ms-1" style="font-size:9px;">URL on provider side</span></label>
@@ -12833,10 +12913,10 @@ elseif ($tab === 'api'):
                   <?php endif; ?>
                 </div>
                 <small class="text-muted d-block mb-2" style="font-size:11px;">From <a href="https://developer.paypal.com/" target="_blank" rel="noopener">developer.paypal.com → Sandbox app</a>.</small>
-                <label class="form-label small mb-0">Client ID (sandbox) <small class="text-muted"><?= esc(mask($ppCidT)) ?></small></label>
-                <input class="form-control form-control-sm mb-2" id="apiPpClientTest" name="client_id_test" type="password" placeholder="leave blank to keep current" data-testid="api-paypal-client-test">
-                <label class="form-label small mb-0">Client Secret (sandbox) <small class="text-muted"><?= esc(mask($ppSecT)) ?></small></label>
-                <input class="form-control form-control-sm" id="apiPpSecretTest" name="secret_test" type="password" placeholder="leave blank to keep current" data-testid="api-paypal-secret-test">
+                <label class="form-label small mb-0">Client ID (sandbox)</label>
+                <input class="form-control form-control-sm mb-2" id="apiPpClientTest" name="client_id_test" type="password" placeholder="leave blank to keep current" data-testid="api-paypal-client-test"><?= saved_key_hint($ppCidT) ?>
+                <label class="form-label small mb-0">Client Secret (sandbox)</label>
+                <input class="form-control form-control-sm" id="apiPpSecretTest" name="secret_test" type="password" placeholder="leave blank to keep current" data-testid="api-paypal-secret-test"><?= saved_key_hint($ppSecT) ?>
                 <button type="button" class="btn btn-sm btn-outline-secondary mt-2 w-100 rounded-pill validate-key-btn" data-testid="api-paypal-validate-test"
                         data-gateway="paypal" data-mode="test" data-secret-input="#apiPpSecretTest" data-client-input="#apiPpClientTest" data-result-target="#apiPpResultTest">
                   <i class="bi bi-shield-check me-1"></i>Validate sandbox credentials
@@ -12853,10 +12933,10 @@ elseif ($tab === 'api'):
                   <?php endif; ?>
                 </div>
                 <small class="text-muted d-block mb-2" style="font-size:11px;">From your PayPal Business <strong>Live</strong> REST app.  Real funds are debited from buyers.</small>
-                <label class="form-label small mb-0">Client ID (live) <small class="text-muted"><?= esc(mask($ppCidL)) ?></small></label>
-                <input class="form-control form-control-sm mb-2" id="apiPpClientLive" name="client_id_live" type="password" placeholder="leave blank to keep current" data-testid="api-paypal-client-live">
-                <label class="form-label small mb-0">Client Secret (live) <small class="text-muted"><?= esc(mask($ppSecL)) ?></small></label>
-                <input class="form-control form-control-sm" id="apiPpSecretLive" name="secret_live" type="password" placeholder="leave blank to keep current" data-testid="api-paypal-secret-live">
+                <label class="form-label small mb-0">Client ID (live)</label>
+                <input class="form-control form-control-sm mb-2" id="apiPpClientLive" name="client_id_live" type="password" placeholder="leave blank to keep current" data-testid="api-paypal-client-live"><?= saved_key_hint($ppCidL) ?>
+                <label class="form-label small mb-0">Client Secret (live)</label>
+                <input class="form-control form-control-sm" id="apiPpSecretLive" name="secret_live" type="password" placeholder="leave blank to keep current" data-testid="api-paypal-secret-live"><?= saved_key_hint($ppSecL) ?>
                 <button type="button" class="btn btn-sm btn-outline-success mt-2 w-100 rounded-pill validate-key-btn" data-testid="api-paypal-validate-live"
                         data-gateway="paypal" data-mode="live" data-secret-input="#apiPpSecretLive" data-client-input="#apiPpClientLive" data-result-target="#apiPpResultLive">
                   <i class="bi bi-shield-check me-1"></i>Validate live credentials
@@ -12867,7 +12947,7 @@ elseif ($tab === 'api'):
           </div>
 
           <div class="row g-2 small mb-3">
-            <div class="col-12"><label class="form-label small mb-0">Webhook ID <small class="text-muted"><?= esc(mask($ppWh)) ?></small></label><input class="form-control form-control-sm" name="webhook_id" type="password" placeholder="leave blank to keep current"></div>
+            <div class="col-12"><label class="form-label small mb-0">Webhook ID</label><input class="form-control form-control-sm" name="webhook_id" type="password" placeholder="leave blank to keep current"><?= saved_key_hint($ppWh) ?></div>
             <div class="col-12"><label class="form-label small mb-0">Webhook URL</label><input class="form-control form-control-sm" readonly value="<?= esc(site_url().$ppWhUrl) ?>"></div>
           </div>
           <button class="btn btn-soft-blue btn-sm w-100"><i class="bi bi-check2 me-1"></i> Save PayPal API Settings</button>
