@@ -105,27 +105,33 @@
 backend:
   - task: "Bug 1 — Email Activity: rows still show 'sent' after delivery bounced; auto-run email_sync_bounces() on tab load (throttled 3 min) + add manual 'Sync bounces now' button + support redirect=1 in /ajax/sync-bounces.php"
     implemented: true
-    working: "NA"
+    working: true
     file: "php-version/admin.php, php-version/ajax/sync-bounces.php"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: "NA"
         -agent: "main"
         -comment: "Reported: admin's Email Activity showed status='sent' even though the customer received a MAILER-DAEMON bounce email in their inbox. Root cause: a row is marked 'sent' the instant PHPMailer hands the message off to the outbound SMTP relay. The actual delivery outcome only surfaces later when the mailbox is read for bounce reports — done by email_sync_bounces() in /includes/mailer.php. Previously that reconciler was only invoked by cron.php and a manual /ajax/sync-bounces.php JSON call; the admin UI never triggered it. Fix: (a) on admin.php tab=emails page load we now call email_sync_bounces(40), throttled to once every 180s via setting emails_last_bounce_sync — this keeps IMAP quiet under normal usage but ensures the UI reflects reality; (b) added a green flash '<n> messages that previously showed sent have now been flipped to BOUNCED' when the auto-sync just moved rows; (c) added an amber banner explaining stale-status when php-imap is missing (bounces can't be auto-imported); (d) added a 'Sync bounces now' button (data-testid=emails-sync-bounces-btn) that redirects through /ajax/sync-bounces.php?redirect=1&back=… which busts the throttle and returns to the emails page with synced=1&checked=&bounced= flash. Also added open-redirect guard so 'back' is restricted to admin.php paths."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — 7/7 tests passed. Auto-sync throttle mechanism working (emails_last_bounce_sync updated within 15s, doesn't advance on immediate re-fetch). IMAP-missing banner shown correctly when php-imap absent; 'Sync bounces now' button correctly gated by function_exists('imap_open'). /ajax/sync-bounces.php?redirect=1 returns 302 with synced=1&checked=&bounced= query params; open-redirect guard rejects external hosts. Flash banner + error banner render correctly with the URL params."
 frontend:
   - task: "Bug 2 — API/Payment Gateway credentials page: 'currently saved' masked hint (e.g. mRpB********s895) was shown ABOVE the input as part of the label; move it BELOW the input as a status indicator"
     implemented: true
-    working: "NA"
+    working: true
     file: "php-version/admin.php"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: "NA"
         -agent: "main"
         -comment: "Reported (with screenshot of NMI card): 'Security Key (test) mRpB*******s895' shows the masked saved key INLINE inside the label ABOVE the input box, which confused customers editing the value. Fix: (a) added helper saved_key_hint($v) in the api tab that returns a styled small block with a shield icon + 'Currently saved: <code>mRpB***s895</code>' when the value is non-empty; (b) Python-scripted 21 targeted replacements in the api tab so every credential row now renders the mask hint UNDER the input (data-testid=saved-key-hint) rather than inside the label. Affected fields: Stripe (publishable/secret/webhook × test+live), Authorize.Net (login_id/tx_key × test+live, signature key), NMI (security key × test+live), Custom (api_key/api_secret × test+live), PayPal (client_id/secret × test+live, webhook_id). Empty saved values render nothing (no leftover empty '******')."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — 7/7 tests passed. DOM order confirmed: <label>Security Key (live)</label> → <input name=nmi_security_key_live> → <small data-testid='saved-key-hint'><code>NMIK*************CDEF</code></small>. Label no longer contains the inline <small class='text-muted'> mask. Mask format correct. Empty fields render NO hint. All 21 credential fields (Stripe, Authorize.Net, NMI, Custom, PayPal) working. Placeholder 'leave blank to keep current' unchanged."
 
 metadata:
   created_by: "main_agent"
