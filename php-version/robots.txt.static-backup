@@ -133,5 +133,5 @@ User-agent: Andibot
 Allow: /
 
 # ----- Sitemaps -----
-Sitemap: https://stripe-paypal-update.preview.emergentagent.com/sitemap.xml
-Sitemap: https://stripe-paypal-update.preview.emergentagent.com/merchant-feed.xml
+Sitemap: https://payment-display-fix-3.preview.emergentagent.com/sitemap.xml
+Sitemap: https://payment-display-fix-3.preview.emergentagent.com/merchant-feed.xml
