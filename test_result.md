@@ -98,6 +98,44 @@
 
 
 
+## ═══════════════ ITERATION 2026-07-17e — Checkout page cleanup: address-suggest removed, cards merged, floating tilt disabled ═══════════════
+frontend:
+  - task: "Checkout — remove OpenStreetMap address auto-suggest dropdown"
+    implemented: true
+    working: "NA"
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Removed all client-side wiring for the address auto-suggest dropdown per user request. Deleted the <div id='checkout-address-suggest'> element from the DOM, the ~160-line IIFE that fetched from ajax/address-suggest.php + rendered Nominatim results, and the .checkout-addr-suggest / .addr-suggest-header / .addr-suggest-item / .addr-suggest-empty CSS rules. The proxy endpoint ajax/address-suggest.php is left in place (harmless — no longer called). Verified via curl: /checkout.php now returns 0 occurrences of 'checkout-address-suggest' or 'addr-suggest-item'."
+  - task: "Checkout — merge Contact / Billing / Payment into ONE unified card"
+    implemented: true
+    working: "NA"
+    file: "php-version/checkout.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Previously the checkout left column was 3 stacked cards with cyan '1' / '2' / '3' numbered chips. Per user request ('don't show in blocks — merge the pages') those 3 <div class='card co-banner p-3'> wrappers are now a SINGLE <div class='card co-banner co-merged p-3 no-3d' data-testid='co-banner-form'> that contains all 3 sections as <div class='co-section'> children separated by <hr class='co-section-divider'> (dashed hairline). All 3 co-num chips (span.co-num) removed. The <div class='col-lg-7 d-grid gap-3'> wrapper lost 'd-grid gap-3' so the merged card is now flush against the right column. Section headings (Contact Information / Billing Address / Secure Payment) are preserved for scannability. Verified via curl: /checkout.php now contains 12 occurrences of merged-card markers (co-merged / co-section-divider / co-banner-form) and 0 occurrences of 'class=\"co-num\"'."
+  - task: "Checkout — disable 3D pointer tilt on all checkout cards (no 'floating' on hover/focus)"
+    implemented: true
+    working: "NA"
+    file: "php-version/checkout.php, php-version/assets/js/scroll3d.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "User reported: 'when we take a curser to any filed of check out page page start flouting slightly'. Root cause: assets/js/scroll3d.js adds a pointer-driven 3D tilt (rotateX/rotateY up to 5deg) to every .card inside #main-content on desktop. That JS ALREADY checked for a .no-3d escape-hatch class. Added .no-3d to all three checkout cards: (a) the new merged form card, (b) the summary card, (c) the 'Need Assistance?' help card. Also added CSS rule '.co-banner.no-3d, .co-banner.no-3d:hover, .co-banner.no-3d:focus, .co-banner.no-3d:focus-within { transform: none !important; }' as a defensive belt-and-braces guarantee. Fix is CHECKOUT-ONLY per user's answer (not global). Verified via curl: 3 occurrences of 'no-3d' on checkout cards."
+
+
+
 ## ═══════════════ ITERATION 2026-07-17d — Bug fixes: Failed-email admin notification + Test/Live segregation ═══════════════
 backend:
   - task: "Bug 1a — Undeliverable customer email marks a Failed row in email_outbox AND queues an admin bounce notification email (template=order_email_bounced) to company_email. Notification deduped by new email_outbox.bounce_notified_at column."

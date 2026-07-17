@@ -885,8 +885,8 @@ include __DIR__ . '/includes/header.php';
     <input type="hidden" name="email_override" id="email-override-input" value="0">
     <input type="hidden" name="address_override" id="address-override-input" value="0">
 
-    <!-- ============ LEFT column: the form (Contact · Billing · Payment) ============ -->
-    <div class="col-lg-7 order-lg-1 d-grid gap-3">
+    <!-- ============ LEFT column: Merged form card (Contact · Billing · Payment) ============ -->
+    <div class="col-lg-7 order-lg-1">
       <?php
         // Shared form data used by the Billing + Payment cards below.
         $_cardEnabled = card_enabled(); $_paypalEnabled = paypal_enabled();
@@ -906,33 +906,39 @@ include __DIR__ . '/includes/header.php';
         $selIso  = $phoneIso[$selCode] ?? 'us';
       ?>
 
-      <!-- Card 1: Contact Information -->
-      <div class="card co-banner p-3" data-testid="co-banner-contact">
-        <div class="co-head d-flex align-items-center gap-3 mb-3">
-          <span class="co-num">1</span>
-          <div class="lh-sm">
-            <h6 class="fw-bold mb-0">Contact Information</h6>
-            <small class="text-secondary">Where we send your license key &amp; receipt</small>
+      <!-- Merged card: Contact + Billing + Payment sections on one canvas.
+           2026-07-17e: previously 3 separate cards with numbered 1/2/3 chips.
+           The .no-3d class opts this card OUT of the site-wide pointer-tilt
+           effect (assets/js/scroll3d.js) so the checkout stays perfectly
+           still when the customer mouses over the fields. -->
+      <div class="card co-banner co-merged p-3 no-3d" data-testid="co-banner-form">
+        <!-- === Section 1: Contact Information === -->
+        <div class="co-section" data-testid="co-banner-contact">
+          <div class="co-head d-flex align-items-center gap-3 mb-3">
+            <div class="lh-sm flex-grow-1">
+              <h6 class="fw-bold mb-0">Contact Information</h6>
+              <small class="text-secondary">Where we send your license key &amp; receipt</small>
+            </div>
+            <i class="bi bi-envelope co-head-icon"></i>
           </div>
-          <i class="bi bi-envelope co-head-icon ms-auto"></i>
+          <label class="form-label">Email Address *</label>
+          <input type="email" name="email" required autocomplete="email" class="form-control" value="<?= esc($_POST['email'] ?? '') ?>" data-testid="checkout-email" id="checkout-email" placeholder="your@email.com">
+          <div id="checkout-email-hint" class="checkout-hint" style="display:none;" data-testid="checkout-email-hint"></div>
+          <div class="co-keynote mt-2"><i class="bi bi-download me-1"></i>License key delivered to this email within <strong>15–30 minutes</strong></div>
         </div>
-        <label class="form-label">Email Address *</label>
-        <input type="email" name="email" required autocomplete="email" class="form-control" value="<?= esc($_POST['email'] ?? '') ?>" data-testid="checkout-email" id="checkout-email" placeholder="your@email.com">
-        <div id="checkout-email-hint" class="checkout-hint" style="display:none;" data-testid="checkout-email-hint"></div>
-        <div class="co-keynote mt-2"><i class="bi bi-download me-1"></i>License key delivered to this email within <strong>15–30 minutes</strong></div>
-      </div>
 
-      <!-- Card 2: Billing Address -->
-      <div class="card co-banner p-3" data-testid="co-banner-billing">
-        <div class="co-head d-flex align-items-center gap-3 mb-3">
-          <span class="co-num">2</span>
-          <div class="lh-sm">
-            <h6 class="fw-bold mb-0">Billing Address</h6>
-            <small class="text-secondary">Used for payment verification only</small>
+        <hr class="co-section-divider">
+
+        <!-- === Section 2: Billing Address === -->
+        <div class="co-section" data-testid="co-banner-billing">
+          <div class="co-head d-flex align-items-center gap-3 mb-3">
+            <div class="lh-sm flex-grow-1">
+              <h6 class="fw-bold mb-0">Billing Address</h6>
+              <small class="text-secondary">Used for payment verification only</small>
+            </div>
+            <i class="bi bi-geo-alt co-head-icon"></i>
           </div>
-          <i class="bi bi-geo-alt co-head-icon ms-auto"></i>
-        </div>
-        <div class="row g-2">
+          <div class="row g-2">
           <div class="col-md-6"><label class="form-label">First Name *</label><input name="first_name" autocomplete="given-name" required class="form-control" value="<?= esc($_POST['first_name'] ?? '') ?>" placeholder="John"></div>
           <div class="col-md-6"><label class="form-label">Last Name *</label><input name="last_name" autocomplete="family-name" required class="form-control" value="<?= esc($_POST['last_name'] ?? '') ?>" placeholder="Doe"></div>
           <div class="col-12">
@@ -948,8 +954,6 @@ include __DIR__ . '/includes/header.php';
           </div>
           <div class="col-md-8 checkout-addr-parent"><label class="form-label">Address *</label><input name="address" autocomplete="address-line1" required class="form-control" value="<?= esc($_POST['address'] ?? '') ?>" id="checkout-address" data-testid="checkout-address" placeholder="123 Main St">
             <div id="checkout-address-hint" class="checkout-hint" style="display:none;" data-testid="checkout-address-hint"></div>
-            <!-- Address auto-suggest dropdown — populated by ajax/address-suggest.php -->
-            <div id="checkout-address-suggest" class="checkout-addr-suggest" data-testid="checkout-address-suggest" role="listbox" hidden></div>
           </div>
           <div class="col-md-4"><label class="form-label">Address Line 2</label><input name="address2" autocomplete="address-line2" class="form-control" value="<?= esc($_POST['address2'] ?? '') ?>" placeholder="Apt, suite (optional)"></div>
           <div class="col-md-4 col-12">
@@ -976,18 +980,19 @@ include __DIR__ . '/includes/header.php';
           </div>
           <div class="col-md-4 col-6"><label class="form-label" id="co-postal-label"><?= esc($rf['postal_label']) ?> *</label><input name="zip" autocomplete="postal-code" required class="form-control" value="<?= esc($_POST['zip'] ?? '') ?>" id="co-postal" placeholder="<?= esc($rf['postal_ph']) ?>" data-testid="zip-input"></div>
         </div>
-      </div>
+        </div><!-- /Section 2: Billing Address -->
 
-      <!-- Card 3: Secure Payment -->
-      <div class="card co-banner p-3" data-testid="co-banner-payment">
-        <div class="co-head d-flex align-items-center gap-3 mb-3">
-          <span class="co-num">3</span>
-          <div class="lh-sm">
-            <h6 class="fw-bold mb-0">Secure Payment</h6>
-            <small class="text-secondary">Choose your preferred payment method</small>
+        <hr class="co-section-divider">
+
+        <!-- === Section 3: Secure Payment === -->
+        <div class="co-section" data-testid="co-banner-payment">
+          <div class="co-head d-flex align-items-center gap-3 mb-3">
+            <div class="lh-sm flex-grow-1">
+              <h6 class="fw-bold mb-0">Secure Payment</h6>
+              <small class="text-secondary">Choose your preferred payment method</small>
+            </div>
+            <i class="bi bi-shield-lock co-head-icon"></i>
           </div>
-          <i class="bi bi-shield-lock co-head-icon ms-auto"></i>
-        </div>
         <?php if (!$_cardEnabled && !$_paypalEnabled): ?>
           <div class="alert alert-warning mb-3" data-testid="checkout-no-methods"><i class="bi bi-exclamation-triangle me-2"></i>No payment methods are currently available. Please contact support.</div>
         <?php endif; ?>
@@ -1082,13 +1087,14 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
         <div class="text-center small text-secondary mt-2"><i class="bi bi-shield-lock me-1"></i>256-bit SSL · Secure Checkout</div>
         <div class="text-center mt-1" style="font-size:.72rem;">By placing your order, you agree to our <a href="page.php?slug=terms-of-service">Terms</a> and <a href="page.php?slug=privacy-policy">Privacy Policy</a></div>
-      </div>
+        </div><!-- /Section 3: Secure Payment -->
+      </div><!-- /.card.co-merged -->
     </div>
 
     <!-- ============ RIGHT column: Order Summary + Need Assistance (sticky) ============ -->
     <div class="col-lg-5 order-lg-2">
       <div class="co-summary-sticky d-grid gap-3">
-        <div class="card co-banner p-3 position-relative" data-testid="co-banner-summary">
+        <div class="card co-banner no-3d p-3 position-relative" data-testid="co-banner-summary">
           <div id="checkout-summary">
           <?php include __DIR__ . '/includes/checkout-summary-partial.php'; ?>
           </div>
@@ -1097,7 +1103,7 @@ include __DIR__ . '/includes/header.php';
           $__helpPhone = trim((string)($brandPhone ?? setting_get('contact_phone', '1-888-632-9902')));
           $__helpEmail = trim((string)setting_get('support_email', setting_get('contact_email', 'support@' . ($_SERVER['HTTP_HOST'] ?? 'store'))));
         ?>
-        <div class="card co-banner co-help p-3" data-testid="co-need-help">
+        <div class="card co-banner co-help no-3d p-3" data-testid="co-need-help">
           <div class="d-flex align-items-start gap-2">
             <i class="bi bi-headset co-help-icon"></i>
             <div>
@@ -1197,6 +1203,38 @@ include __DIR__ . '/includes/header.php';
   background: linear-gradient(135deg,#0891b2,#06b6d4);
   color:#fff; box-shadow: 0 6px 16px rgba(6,182,212,.32);
 }
+
+/* ── Merged checkout card (2026-07-17e) ─────────────────────────────────
+   The three previous cards (Contact / Billing / Payment) are now unified
+   inside a single .co-merged card. Section titles remain visible for
+   scannability, separated by hair-line dividers. Kills all hover/focus
+   transforms so the page stays perfectly still while the customer fills
+   in fields — no floating, no tilt, no jitter. */
+.co-banner.co-merged { padding: 1.5rem !important; }
+.co-banner.co-merged .co-section { padding: .25rem 0; }
+.co-banner.co-merged .co-section-divider {
+  margin: 1.15rem 0;
+  border: 0; border-top: 1px dashed var(--bs-border-color);
+  opacity: 1;
+}
+.co-banner.co-merged .co-head-icon {
+  font-size: 1.4rem; color: #06b6d4; opacity: .55;
+}
+.co-banner.co-merged .co-head h6 { font-size: 1.02rem; }
+@media (max-width: 576px) {
+  .co-banner.co-merged { padding: 1rem !important; }
+  .co-banner.co-merged .co-section-divider { margin: .9rem 0; }
+}
+/* Kill every animated transform on checkout cards so nothing "floats"
+   when the customer clicks / hovers / focuses a field. */
+.co-banner.no-3d,
+.co-banner.no-3d:hover,
+.co-banner.no-3d:focus,
+.co-banner.no-3d:focus-within {
+  transform: none !important;
+  transition: box-shadow .15s ease, border-color .15s ease !important;
+}
+
 .co-banner .form-control, .co-banner .form-select {
   border-radius: .7rem; padding: .55rem .8rem; font-size: .92rem;
   border-color: var(--bs-border-color);
@@ -1312,44 +1350,7 @@ form .row.g-3 { --bs-gutter-y: .75rem; }
    — otherwise the panel gets clipped by the button.
    ============================================================ */
 .checkout-addr-parent { position: relative; }
-.checkout-addr-suggest {
-  position: fixed;                          /* escapes ALL parent stacking contexts */
-  z-index: 2000;                            /* well above Pay button + PayPal panel */
-  background: var(--bs-body-bg, #fff);
-  border: 1px solid rgba(6,182,212,.45);   /* subtle cyan hair-line so the panel reads as attached to the input */
-  border-radius: 12px;
-  box-shadow: 0 18px 36px rgba(2,6,23,.22), 0 4px 10px rgba(2,6,23,.08);
-  max-height: 300px; overflow-y: auto;
-  padding: .35rem;
-}
-[data-bs-theme="dark"] .checkout-addr-suggest {
-  background: #0f172a; border-color: rgba(6,182,212,.55);
-  box-shadow: 0 20px 40px rgba(0,0,0,.6), 0 4px 12px rgba(0,0,0,.4);
-}
-.checkout-addr-suggest[hidden] { display: none !important; }
-.addr-suggest-header {
-  font-size: .68rem; font-weight: 700; letter-spacing: .06em;
-  color: var(--bs-secondary-color); text-transform: uppercase;
-  padding: .4rem .65rem .2rem;
-  border-bottom: 1px solid var(--bs-border-color);
-  margin-bottom: .3rem;
-}
-.addr-suggest-item {
-  padding: .55rem .65rem; border-radius: 8px;
-  font-size: .84rem; line-height: 1.35; cursor: pointer;
-  display: flex; align-items: flex-start; gap: .55rem;
-  transition: background-color .12s ease;
-}
-.addr-suggest-item + .addr-suggest-item { margin-top: 1px; }
-.addr-suggest-item:hover,
-.addr-suggest-item.active {
-  background: rgba(6,182,212,.14); color: inherit;
-}
-.addr-suggest-item .bi { color: #0891b2; flex-shrink: 0; margin-top: 2px; font-size: 1rem; }
-.addr-suggest-empty {
-  font-size: .82rem; color: var(--bs-secondary-color);
-  padding: .8rem .65rem; text-align: center;
-}
+/* Address auto-suggest CSS removed 2026-07-17e — no longer needed. */
 </style>
 <script>
 /* Region-aware checkout address form. The PHP $REGION_FORMS config is the
@@ -1465,168 +1466,10 @@ function mvValidateCheckoutOnSubmit(form, ev) {
 }
 window.mvValidateCheckoutOnSubmit = mvValidateCheckoutOnSubmit;
 
-/* ============================================================
-   Address auto-suggest — as the customer types in #checkout-address,
-   we debounce-fetch suggestions from OpenStreetMap Nominatim (via our
-   own proxy /ajax/address-suggest.php).  Clicking a suggestion fills
-   Address / City / State / Postal-code (and, when possible, tries to
-   match the state to the current country's fixed list; otherwise it
-   drops the text into the free-text state input).
-   Keyboard: Arrow-Up/Down to navigate, Enter to pick, Escape to close.
-   ============================================================ */
-(function () {
-  var input   = document.getElementById('checkout-address');
-  var panel   = document.getElementById('checkout-address-suggest');
-  if (!input || !panel) return;
-  // The checkout summary/payment cards have a `s3d-tilt` transform on scroll,
-  // which creates a stacking context that traps position:fixed elements. Move
-  // the suggestion panel to document.body so it can float above everything
-  // (Pay Securely button included) regardless of parent transforms.
-  document.body.appendChild(panel);
-
-  var timer = null, currentReq = 0, cursor = -1, suggestions = [];
-
-  function currentCountry() {
-    var el = document.getElementById('co-country');
-    return el ? (el.value || 'US') : 'US';
-  }
-  function hide() { panel.hidden = true; cursor = -1; }
-  function show() {
-    // Recompute panel position relative to the input EVERY show — position
-    // is fixed (viewport-anchored) so it escapes parent stacking contexts,
-    // but we have to keep it visually attached to the input.
-    var r = input.getBoundingClientRect();
-    panel.style.left  = r.left + 'px';
-    panel.style.top   = (r.bottom + 4) + 'px';
-    panel.style.width = r.width + 'px';
-    panel.hidden = false;
-  }
-  // Reposition on scroll / resize / country-switch reflow while open.
-  var __reposHandler = function () { if (!panel.hidden) show(); };
-  window.addEventListener('scroll', __reposHandler, true);
-  window.addEventListener('resize', __reposHandler);
-  // Reset internal state so the panel can't be re-shown by the focus handler
-  // right after a selection.  Called from pick() below.
-  function clearState() { suggestions = []; cursor = -1; panel.innerHTML = ''; }
-
-  function render(list) {
-    suggestions = Array.isArray(list) ? list : [];
-    cursor = -1;
-    if (suggestions.length === 0) {
-      panel.innerHTML = '<div class="addr-suggest-empty">No matching address found — please type it manually.</div>';
-      show();
-      return;
-    }
-    var html = '<div class="addr-suggest-header"><i class="bi bi-geo-alt-fill"></i> Suggested addresses</div>';
-    html += suggestions.map(function (s, i) {
-      var meta = [];
-      if (s.city)     meta.push(s.city);
-      if (s.state)    meta.push(s.state);
-      if (s.postcode) meta.push(s.postcode);
-      var metaLine = meta.length ? '<div class="small text-secondary">' + escHtml(meta.join(' · ')) + '</div>' : '';
-      return '<div class="addr-suggest-item" role="option" data-idx="' + i + '" data-testid="addr-suggest-item">'
-        + '<i class="bi bi-geo-alt"></i>'
-        + '<div class="flex-grow-1"><div>' + escHtml(s.line1) + '</div>' + metaLine + '</div>'
-        + '</div>';
-    }).join('');
-    panel.innerHTML = html;
-    show();
-  }
-  function escHtml(s) { return String(s || '').replace(/[&<>"']/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]); }); }
-
-  async function fetchSuggestions(q) {
-    var req = ++currentReq;
-    try {
-      var url = 'ajax/address-suggest.php?q=' + encodeURIComponent(q) + '&country=' + encodeURIComponent(currentCountry());
-      var r = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      var j = await r.json();
-      if (req !== currentReq) return; // stale
-      if (j.ok) render(j.suggestions || []);
-      else      { panel.innerHTML = '<div class="addr-suggest-empty">' + escHtml(j.error || 'Suggestions unavailable') + '</div>'; show(); }
-    } catch (e) { if (req === currentReq) hide(); }
-  }
-
-  input.addEventListener('input', function () {
-    var q = (input.value || '').trim();
-    if (q.length < 3) { hide(); return; }
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(function () { fetchSuggestions(q); }, 300);
-  });
-  input.addEventListener('focus', function () {
-    if ((input.value || '').trim().length >= 3 && suggestions.length) show();
-  });
-
-  function pick(idx) {
-    var s = suggestions[idx];
-    if (!s) return;
-    // Address line 1.
-    input.value = s.line1 || '';
-    // City.
-    var cityEl = document.querySelector('input[name="city"]');
-    if (cityEl && s.city) cityEl.value = s.city;
-    // Postal code.
-    var zipEl = document.getElementById('co-postal') || document.querySelector('input[name="zip"]');
-    if (zipEl && s.postcode) zipEl.value = s.postcode;
-    // State — if the country has a fixed list (select), try to match either
-    // the ISO subdivision code (best) or the display name. Otherwise drop
-    // the plain state name into the free-text input.
-    var stateEl = document.querySelector('[name="state"]');
-    if (stateEl) {
-      var target = s.state_code || s.state || '';
-      if (stateEl.tagName === 'SELECT') {
-        var matched = false;
-        for (var i = 0; i < stateEl.options.length; i++) {
-          var v = stateEl.options[i].value;
-          if (v && (v === s.state_code || v.toLowerCase() === (s.state || '').toLowerCase())) {
-            stateEl.selectedIndex = i; matched = true; break;
-          }
-        }
-        if (!matched && s.state) {
-          // No exact match — fall back to trying by prefix of the option
-          // text (e.g. Nominatim returns "New South Wales" and the option
-          // list has just "NSW"). Leave unchanged if no prefix match.
-        }
-      } else {
-        stateEl.value = target;
-      }
-    }
-    hide();
-    clearState();
-    // Cancel any pending debounce timer so a stale fetch that started before
-    // the user picked doesn't repopulate the dropdown moments later.
-    if (timer) { clearTimeout(timer); timer = null; }
-    currentReq++;
-    // Advance focus to the next field (Address Line 2) instead of the address
-    // input — otherwise refocusing #checkout-address would trigger a redundant
-    // input/focus event and could reveal the dropdown again.
-    var next = document.querySelector('input[name="address2"]');
-    if (next) next.focus();
-  }
-
-  panel.addEventListener('click', function (ev) {
-    var it = ev.target.closest('.addr-suggest-item');
-    if (!it) return;
-    var idx = parseInt(it.getAttribute('data-idx'), 10);
-    if (!isNaN(idx)) pick(idx);
-  });
-
-  input.addEventListener('keydown', function (ev) {
-    if (panel.hidden || !suggestions.length) return;
-    if (ev.key === 'ArrowDown') { ev.preventDefault(); cursor = (cursor + 1) % suggestions.length; paintCursor(); }
-    else if (ev.key === 'ArrowUp') { ev.preventDefault(); cursor = (cursor - 1 + suggestions.length) % suggestions.length; paintCursor(); }
-    else if (ev.key === 'Enter' && cursor >= 0) { ev.preventDefault(); pick(cursor); }
-    else if (ev.key === 'Escape') { hide(); }
-  });
-  function paintCursor() {
-    panel.querySelectorAll('.addr-suggest-item').forEach(function (n, i) {
-      n.classList.toggle('active', i === cursor);
-      if (i === cursor) n.scrollIntoView({ block: 'nearest' });
-    });
-  }
-  document.addEventListener('click', function (ev) {
-    if (!panel.hidden && ev.target !== input && !panel.contains(ev.target)) hide();
-  });
-})();
+/* Address auto-suggest was removed 2026-07-17e per customer request —
+   customers now type their full address manually with no OpenStreetMap
+   dropdown. The client-side proxy ajax/address-suggest.php is left in
+   place (harmless without a caller) but is no longer invoked. */
 </script>
 
 <script>
