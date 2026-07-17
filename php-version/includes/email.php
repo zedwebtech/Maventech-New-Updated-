@@ -1325,9 +1325,12 @@ function send_email(string $to, string $subject, string $html, ?int $orderId = n
     }
     // Skip obviously invalid addresses (header-injection defence happens inside smtp_send)
     if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
-        $pdo->prepare('INSERT INTO email_outbox (recipient, subject, html, status, note, order_id, tracking_token, template_code, attachments_json)
-            VALUES (?,?,?,"failed",?,?,?,?,?)')
-            ->execute([$to, $subject, $html, 'Invalid recipient address', $orderId, $tok, $templateCode, $attachJson]);
+        $pdo->prepare('INSERT INTO email_outbox (recipient, subject, html, status, note, order_id, tracking_token, template_code, attachments_json, gw_mode)
+            VALUES (?,?,?,"failed",?,?,?,?,?,?)')
+            ->execute([$to, $subject, $html, 'Invalid recipient address', $orderId, $tok, $templateCode, $attachJson, setting_get('gw_mode','test')]);
+        $__badId = (int)$pdo->lastInsertId();
+        try { email_notify_admin_of_bounce($__badId, 'Invalid recipient address'); }
+        catch (Throwable $e) { @error_log('[preflight admin notify] '.$e->getMessage()); }
         return;
     }
 
@@ -1337,11 +1340,14 @@ function send_email(string $to, string $subject, string $html, ?int $orderId = n
     // Failed tab + bell counter so the customer can be reached out to.
     $deliv = email_address_deliverable($to);
     if (!$deliv['ok'] && in_array($deliv['reason'], ['no_mx','invalid_syntax'], true)) {
-        $pdo->prepare('INSERT INTO email_outbox (recipient, subject, html, status, note, order_id, tracking_token, template_code, attachments_json)
-            VALUES (?,?,?,"failed",?,?,?,?,?)')
+        $pdo->prepare('INSERT INTO email_outbox (recipient, subject, html, status, note, order_id, tracking_token, template_code, attachments_json, gw_mode)
+            VALUES (?,?,?,"failed",?,?,?,?,?,?)')
             ->execute([$to, $subject, $html,
                 'Undeliverable: ' . ($deliv['detail'] ?: $deliv['reason']),
-                $orderId, $tok, $templateCode, $attachJson]);
+                $orderId, $tok, $templateCode, $attachJson, setting_get('gw_mode','test')]);
+        $__badId = (int)$pdo->lastInsertId();
+        try { email_notify_admin_of_bounce($__badId, 'Undeliverable: ' . ($deliv['detail'] ?: $deliv['reason'])); }
+        catch (Throwable $e) { @error_log('[preflight admin notify] '.$e->getMessage()); }
         return;
     }
 
@@ -1365,10 +1371,18 @@ function send_email(string $to, string $subject, string $html, ?int $orderId = n
     // Dev / preview path — when delayed, store as 'queued' with future
     // next_retry_at so the cron worker picks it up at the right time.
     if ($delayMinutes > 0) {
+        $__gwMode = setting_get('gw_mode', 'test');
+        try {
+            if ($orderId) {
+                $__q = $pdo->prepare("SELECT gw_mode FROM orders WHERE id = ? LIMIT 1");
+                $__q->execute([(int)$orderId]);
+                $__gwMode = $__q->fetchColumn() ?: $__gwMode;
+            }
+        } catch (Throwable $e) { /* ignore */ }
         $pdo->prepare("INSERT INTO email_outbox
-            (recipient, subject, html, status, note, order_id, tracking_token, template_code, next_retry_at, priority, attachments_json)
-            VALUES (?,?,?,'queued','Delayed send (dev mode)',?,?,?,DATE_ADD(NOW(), INTERVAL ? MINUTE),5,?)")
-            ->execute([$to, $subject, $html, $orderId, $tok, $templateCode, $delayMinutes, $attachJson]);
+            (recipient, subject, html, status, note, order_id, tracking_token, template_code, next_retry_at, priority, attachments_json, gw_mode)
+            VALUES (?,?,?,'queued','Delayed send (dev mode)',?,?,?,DATE_ADD(NOW(), INTERVAL ? MINUTE),5,?,?)")
+            ->execute([$to, $subject, $html, $orderId, $tok, $templateCode, $delayMinutes, $attachJson, $__gwMode]);
         return;
     }
 
@@ -1403,11 +1417,26 @@ function send_email(string $to, string $subject, string $html, ?int $orderId = n
         $ok = $res !== false && $code >= 200 && $code < 300;
         $providerId = null;
         if ($ok) { $d = json_decode($res, true); $providerId = $d['id'] ?? null; }
-        $pdo->prepare('INSERT INTO email_outbox (recipient, subject, html, status, note, order_id, tracking_token, provider_id, delivered_at, template_code, attachments_json)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+        $__gwMode = setting_get('gw_mode', 'test');
+        try {
+            if ($orderId) {
+                $__q = $pdo->prepare("SELECT gw_mode FROM orders WHERE id = ? LIMIT 1");
+                $__q->execute([(int)$orderId]);
+                $__gwMode = $__q->fetchColumn() ?: $__gwMode;
+            }
+        } catch (Throwable $e) { /* ignore */ }
+        $pdo->prepare('INSERT INTO email_outbox (recipient, subject, html, status, note, order_id, tracking_token, provider_id, delivered_at, template_code, attachments_json, gw_mode)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
             ->execute([$to, $subject, $html, $ok ? 'sent' : 'failed',
                 $ok ? null : ('Delivery failed (HTTP ' . $code . ')'),
-                $orderId, $tok, $providerId, $ok ? date('Y-m-d H:i:s') : null, $templateCode, $attachJson]);
+                $orderId, $tok, $providerId, $ok ? date('Y-m-d H:i:s') : null, $templateCode, $attachJson, $__gwMode]);
+        // If Resend delivery FAILED, also grab the row id so we can fire an
+        // admin bounce notice (deduped inside helper).
+        if (!$ok) {
+            $__resFailId = (int)$pdo->lastInsertId();
+            try { email_notify_admin_of_bounce($__resFailId, 'Resend HTTP '.$code); }
+            catch (Throwable $e) { @error_log('[resend fail admin notify] '.$e->getMessage()); }
+        }
         // Only buzz the admin bell when delivery FAILED — every successful
         // sent message would be noisy.
         if (!$ok && function_exists('admin_notify')) {
@@ -1429,11 +1458,19 @@ function send_email(string $to, string $subject, string $html, ?int $orderId = n
     // Once the operator configures SMTP (admin → SMTP / Mail Server) on
     // the live domain, the same rows will be picked up by the cron
     // worker and actually delivered + flipped to 'sent'.
-    $pdo->prepare('INSERT INTO email_outbox (recipient, subject, html, status, note, order_id, tracking_token, delivered_at, template_code, attachments_json, next_retry_at)
-        VALUES (?,?,?,"queued",?,?,?,NULL,?,?,NOW())')
+    $__gwMode = setting_get('gw_mode', 'test');
+    try {
+        if ($orderId) {
+            $__q = $pdo->prepare("SELECT gw_mode FROM orders WHERE id = ? LIMIT 1");
+            $__q->execute([(int)$orderId]);
+            $__gwMode = $__q->fetchColumn() ?: $__gwMode;
+        }
+    } catch (Throwable $e) { /* ignore */ }
+    $pdo->prepare('INSERT INTO email_outbox (recipient, subject, html, status, note, order_id, tracking_token, delivered_at, template_code, attachments_json, next_retry_at, gw_mode)
+        VALUES (?,?,?,"queued",?,?,?,NULL,?,?,NOW(),?)')
         ->execute([$to, $subject, $html,
             '⚠ Pending delivery — configure SMTP (admin → SMTP / Mail Server) so the cron worker can dispatch this row.',
-            $orderId, $tok, $templateCode, $attachJson]);
+            $orderId, $tok, $templateCode, $attachJson, $__gwMode]);
 }
 
 /**

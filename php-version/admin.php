@@ -9194,15 +9194,28 @@ elseif ($tab === 'products'):
 // ============================================================================
 elseif ($tab === 'orders'):
   $oFilter = ($_GET['filter'] ?? 'all') === 'awaiting' ? 'awaiting' : 'all';
+  // Gateway-mode filter (Bug 2 fix — test-vs-live segregation): stores in
+  // $oMode; values: 'all' (default), 'live', 'test'. Combines with the
+  // existing awaiting-key + region filters.
+  $oMode = $_GET['mode'] ?? 'all';
+  if (!in_array($oMode, ['all','live','test'], true)) $oMode = 'all';
   $awaitCount = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE region=" . $pdo->quote($region_code) . " AND fulfilled=1 AND delivery_status='pending'")->fetchColumn();
+  // Mode counts (region-scoped, mirror the Orders list scope)
+  $liveCount = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE region=" . $pdo->quote($region_code) . " AND COALESCE(gw_mode,'live')='live'")->fetchColumn();
+  $testCount = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE region=" . $pdo->quote($region_code) . " AND gw_mode='test'")->fetchColumn();
 ?>
   <h5 class="fw-bold mb-3">Orders <span class="text-muted fs-6">(<?= esc($rg['name']) ?>)</span></h5>
-  <div class="d-flex gap-2 mb-3 flex-wrap" data-testid="orders-filter">
-    <a href="?tab=orders" class="btn btn-sm rounded-pill <?= $oFilter==='all' ? 'btn-primary' : 'btn-outline-secondary' ?>" data-testid="orders-filter-all">All orders</a>
-    <a href="?tab=orders&filter=awaiting" class="btn btn-sm rounded-pill <?= $oFilter==='awaiting' ? 'btn-warning' : 'btn-outline-warning' ?>" data-testid="orders-filter-awaiting">
+  <div class="d-flex gap-2 mb-2 flex-wrap" data-testid="orders-filter">
+    <a href="?tab=orders<?= $oMode!=='all'?'&mode='.$oMode:'' ?>" class="btn btn-sm rounded-pill <?= $oFilter==='all' ? 'btn-primary' : 'btn-outline-secondary' ?>" data-testid="orders-filter-all">All orders</a>
+    <a href="?tab=orders&filter=awaiting<?= $oMode!=='all'?'&mode='.$oMode:'' ?>" class="btn btn-sm rounded-pill <?= $oFilter==='awaiting' ? 'btn-warning' : 'btn-outline-warning' ?>" data-testid="orders-filter-awaiting">
       <i class="bi bi-clock-history me-1"></i>Awaiting Key
       <?php if ($awaitCount > 0): ?><span class="badge text-bg-danger ms-1" data-testid="awaiting-count"><?= $awaitCount ?></span><?php endif; ?>
     </a>
+  </div>
+  <div class="d-flex gap-2 mb-3 flex-wrap" data-testid="orders-mode-filter">
+    <a href="?tab=orders<?= $oFilter==='awaiting'?'&filter=awaiting':'' ?>" class="btn btn-sm rounded-pill <?= $oMode==='all' ? 'btn-dark' : 'btn-outline-secondary' ?>" data-testid="orders-mode-all"><i class="bi bi-globe me-1"></i>All modes <span class="badge bg-light text-dark ms-1"><?= $liveCount + $testCount ?></span></a>
+    <a href="?tab=orders&mode=live<?= $oFilter==='awaiting'?'&filter=awaiting':'' ?>" class="btn btn-sm rounded-pill <?= $oMode==='live' ? 'btn-success' : 'btn-outline-success' ?>" data-testid="orders-mode-live"><i class="bi bi-broadcast me-1"></i>Live <span class="badge bg-light text-dark ms-1"><?= $liveCount ?></span></a>
+    <a href="?tab=orders&mode=test<?= $oFilter==='awaiting'?'&filter=awaiting':'' ?>" class="btn btn-sm rounded-pill <?= $oMode==='test' ? 'btn-warning' : 'btn-outline-warning' ?>" data-testid="orders-mode-test"><i class="bi bi-eyedropper me-1"></i>Test <span class="badge bg-light text-dark ms-1"><?= $testCount ?></span></a>
   </div>
   <div class="tbl-e">
     <table class="table mb-0" data-testid="admin-orders-table">
@@ -9212,6 +9225,8 @@ elseif ($tab === 'orders'):
         $where  = "region=?";
         $params = [$region_code];
         if ($oFilter === 'awaiting') { $where .= " AND fulfilled=1 AND delivery_status='pending'"; }
+        if ($oMode === 'live')       { $where .= " AND COALESCE(gw_mode,'live')='live'"; }
+        elseif ($oMode === 'test')   { $where .= " AND gw_mode='test'"; }
         $orderStmt = $pdo->prepare("SELECT * FROM orders WHERE $where ORDER BY created_at DESC LIMIT 200");
         $orderStmt->execute($params);
         $anyOrders = false;
@@ -9261,9 +9276,12 @@ elseif ($tab === 'sales'):
   $fRegion = strtoupper(trim((string)($_GET['f_region'] ?? ''))); // '' = All regions
   $sFrom   = trim((string)($_GET['sd_from']  ?? ''));
   $sTo     = trim((string)($_GET['sd_to']    ?? ''));
+  // Bug 2 fix — test-vs-live segregation for Sales Detail.
+  $sMode   = strtolower(trim((string)($_GET['f_mode'] ?? 'all')));
+  if (!in_array($sMode, ['all','live','test'], true)) $sMode = 'all';
   $salesRegionList = function_exists('mv_sales_regions') ? mv_sales_regions() : ['US','UK','CA','AU','EU'];
   $regionChosen = in_array($fRegion, $salesRegionList, true);
-  $textFilter   = ($fName !== '' || $fEmail !== '' || $fPhone !== '' || $fOrder !== '' || $sFrom !== '' || $sTo !== '');
+  $textFilter   = ($fName !== '' || $fEmail !== '' || $fPhone !== '' || $fOrder !== '' || $sFrom !== '' || $sTo !== '' || $sMode !== 'all');
   $salesFiltering = $textFilter || $regionChosen;
 
   $sWhere = ["o.status IN ('paid','delivered')"];
@@ -9281,6 +9299,8 @@ elseif ($tab === 'sales'):
   if ($fOrder !== '') { $sWhere[] = "o.order_number LIKE ?"; $sArgs[] = '%'.$fOrder.'%'; }
   if ($sFrom !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $sFrom)) { $sWhere[] = "o.created_at >= ?"; $sArgs[] = $sFrom.' 00:00:00'; }
   if ($sTo   !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $sTo))   { $sWhere[] = "o.created_at <= ?"; $sArgs[] = $sTo.' 23:59:59'; }
+  if ($sMode === 'live')       { $sWhere[] = "COALESCE(o.gw_mode,'live') = 'live'"; }
+  elseif ($sMode === 'test')   { $sWhere[] = "o.gw_mode = 'test'"; }
 
   // One row per ORDER (fixes the multiplicative duplicate-rows bug). Multi-line orders
   // get their line items + license keys aggregated into a single comma list.
@@ -9347,6 +9367,14 @@ elseif ($tab === 'sales'):
         <label class="form-label small mb-1 fw-semibold">To date</label>
         <input type="date" name="sd_to" value="<?= esc($sTo) ?>" class="form-control form-control-sm" data-testid="sales-filter-to">
       </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <label class="form-label small mb-1 fw-semibold"><i class="bi bi-toggles me-1"></i>Mode</label>
+        <select name="f_mode" class="form-select form-select-sm" data-testid="sales-filter-mode">
+          <option value="all"  <?= $sMode==='all'?'selected':'' ?>>All modes</option>
+          <option value="live" <?= $sMode==='live'?'selected':'' ?>>Live only</option>
+          <option value="test" <?= $sMode==='test'?'selected':'' ?>>Test only</option>
+        </select>
+      </div>
       <div class="col-6 col-lg-6 d-flex gap-2 justify-content-lg-end">
         <button type="submit" class="btn btn-primary btn-sm px-4" data-testid="sales-filter-submit"><i class="bi bi-funnel me-1"></i>Filter</button>
         <?php if ($salesFiltering): ?>
@@ -9357,7 +9385,10 @@ elseif ($tab === 'sales'):
     <?php if ($salesFiltering): ?>
       <div class="small text-muted mt-2" data-testid="sales-filter-result">
         <i class="bi bi-info-circle me-1"></i><strong><?= count($salesRows) ?></strong> matching order<?= count($salesRows)===1?'':'s' ?>
-        <?= $regionChosen ? 'in region <strong>'.esc($fRegion).'</strong>' : 'across <strong>all regions</strong>' ?>.
+        <?= $regionChosen ? 'in region <strong>'.esc($fRegion).'</strong>' : 'across <strong>all regions</strong>' ?>
+        <?php if ($sMode !== 'all'): ?>
+          · <span class="badge <?= $sMode==='live'?'bg-success':'bg-warning text-dark' ?>" data-testid="sales-mode-active-badge"><?= strtoupper($sMode) ?> mode only</span>
+        <?php endif; ?>.
       </div>
     <?php endif; ?>
   </form>
@@ -9386,7 +9417,11 @@ elseif ($tab === 'sales'):
         ?>
           <tr class="sales-row" data-bs-toggle="collapse" data-bs-target="#<?= $rowId ?>" aria-expanded="false" style="cursor:pointer;">
             <td><small><?= esc(date('M j, Y H:i', strtotime($s['created_at']))) ?></small></td>
-            <td><strong>#<?= esc($s['order_number']) ?></strong></td>
+            <td><strong>#<?= esc($s['order_number']) ?></strong>
+              <?php if (($s['gw_mode'] ?? 'live') === 'test'): ?>
+                <span class="badge ms-1" data-testid="sales-mode-pill-<?= (int)$s['id'] ?>" style="background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;font-size:9px;letter-spacing:1px;padding:2px 6px;"><i class="bi bi-eyedropper me-1"></i>TEST</span>
+              <?php endif; ?>
+            </td>
             <td><small><strong><?= esc($s['first_name'].' '.$s['last_name']) ?></strong><br><span class="text-muted"><?= esc($s['email']) ?></span></small></td>
             <td><small><?= esc($s['country'] ?: '—') ?></small></td>
             <td><small><?= esc(mb_strimwidth($s['products'] ?? '—', 0, 60, '…')) ?></small></td>
@@ -10791,8 +10826,22 @@ elseif ($tab === 'emails'):
   $emailCategory = $_GET['cat'] ?? 'purchase';
   if (!in_array($emailCategory, ['purchase', 'review'], true)) $emailCategory = 'purchase';
 
-  // Purchase emails scope
-  $purchaseTemplates = ['order_delivery', 'order_confirmation', 'order_pending', 'refund_confirm'];
+  // Gateway-mode filter (test vs live vs all) — links each email row back to
+  // orders.gw_mode via em.order_id. Rows without an order (system / preview
+  // emails) fall back to em.gw_mode which we now capture at queue time.
+  $emailMode = $_GET['mode'] ?? 'all';
+  if (!in_array($emailMode, ['all','live','test'], true)) $emailMode = 'all';
+  $modeJoinSelect = "COALESCE(o.gw_mode, em.gw_mode, 'live')";
+  $modeWhereSql = '';
+  if ($emailMode === 'live') {
+      $modeWhereSql = " AND COALESCE((SELECT gw_mode FROM orders o2 WHERE o2.id=em.order_id LIMIT 1), em.gw_mode, 'live') = 'live'";
+  } elseif ($emailMode === 'test') {
+      $modeWhereSql = " AND COALESCE((SELECT gw_mode FROM orders o2 WHERE o2.id=em.order_id LIMIT 1), em.gw_mode, 'live') = 'test'";
+  }
+
+  // Purchase emails scope. Include the admin bounce-notice template so the
+  // "customer email undeliverable" alerts also appear under Product Purchases.
+  $purchaseTemplates = ['order_delivery', 'order_confirmation', 'order_pending', 'refund_confirm', 'order_email_bounced'];
   $purchaseInSql     = "('" . implode("','", $purchaseTemplates) . "')";
   $purchaseScope     = "template_code IN $purchaseInSql";
 
@@ -10801,21 +10850,28 @@ elseif ($tab === 'emails'):
   $reviewInSql     = "('" . implode("','", $reviewTemplates) . "')";
   $reviewScope     = "template_code IN $reviewInSql";
 
-  // Counts for both categories
+  // Counts for both categories — respect the current mode filter so the
+  // KPI tiles + tab counters match what's actually rendered below.
+  $__modeCountSql = '';
+  if ($emailMode === 'live') {
+      $__modeCountSql = " AND COALESCE((SELECT gw_mode FROM orders o2 WHERE o2.id=em.order_id LIMIT 1), em.gw_mode, 'live') = 'live'";
+  } elseif ($emailMode === 'test') {
+      $__modeCountSql = " AND COALESCE((SELECT gw_mode FROM orders o2 WHERE o2.id=em.order_id LIMIT 1), em.gw_mode, 'live') = 'test'";
+  }
   $cPurchase = $pdo->query("SELECT
         SUM(status IN ('queued','retrying'))            q,
         SUM(status = 'sent')                            s,
         SUM(opened_at IS NOT NULL)                      o,
         SUM(status IN ('failed','bounced'))             f,
         COUNT(*)                                        t
-        FROM email_outbox WHERE $purchaseScope")->fetch();
+        FROM email_outbox em WHERE $purchaseScope $__modeCountSql")->fetch();
   $cReview = $pdo->query("SELECT
         SUM(status IN ('queued','retrying'))            q,
         SUM(status = 'sent')                            s,
         SUM(opened_at IS NOT NULL)                      o,
         SUM(status IN ('failed','bounced'))             f,
         COUNT(*)                                        t
-        FROM email_outbox WHERE $reviewScope")->fetch();
+        FROM email_outbox em WHERE $reviewScope $__modeCountSql")->fetch();
   $c = $emailCategory === 'review' ? $cReview : $cPurchase;
 ?>
   <h5 class="fw-bold mb-1">Email Activity Center</h5>
@@ -10892,11 +10948,40 @@ elseif ($tab === 'emails'):
   </div>
   <?php endif; ?>
 
+  <?php
+    // Preserve category + mode in the status pill hrefs so switching between
+    // Failed/Sent/Queued doesn't lose the current test/live segment.
+    $__statQs = function($f) use ($emailMode, $emailCategory) {
+        $qs = 'tab=emails';
+        if ($emailCategory === 'review') $qs .= '&cat=review';
+        if ($f && $f !== 'all') $qs .= '&filter=' . $f;
+        if ($emailMode !== 'all') $qs .= '&mode=' . $emailMode;
+        return '?' . $qs;
+    };
+  ?>
   <ul class="nav nav-pills nav-pills-sm mb-3" data-testid="email-filter-pills">
-    <li class="nav-item"><a class="nav-link <?= $emailFilter==='all'?'active':'' ?> py-1 px-3" href="?tab=emails" data-testid="filter-all">All <span class="badge bg-light text-dark ms-1" data-counter="all"><?= (int)$c['t'] ?></span></a></li>
-    <li class="nav-item"><a class="nav-link <?= $emailFilter==='failed'?'active':'' ?> py-1 px-3" href="?tab=emails&filter=failed" data-testid="filter-failed"><i class="bi bi-exclamation-triangle me-1"></i>Failed <span class="badge bg-danger text-white ms-1" data-counter="failed"><?= (int)$c['f'] ?></span></a></li>
-    <li class="nav-item"><a class="nav-link <?= $emailFilter==='sent'?'active':'' ?> py-1 px-3" href="?tab=emails&filter=sent" data-testid="filter-sent">Sent <span class="badge bg-light text-dark ms-1" data-counter="sent"><?= (int)$c['s'] ?></span></a></li>
-    <li class="nav-item"><a class="nav-link <?= $emailFilter==='queued'?'active':'' ?> py-1 px-3" href="?tab=emails&filter=queued" data-testid="filter-queued">Queued <span class="badge bg-light text-dark ms-1" data-counter="queued"><?= (int)$c['q'] ?></span></a></li>
+    <li class="nav-item"><a class="nav-link <?= $emailFilter==='all'?'active':'' ?> py-1 px-3" href="<?= esc($__statQs('all')) ?>" data-testid="filter-all">All <span class="badge bg-light text-dark ms-1" data-counter="all"><?= (int)$c['t'] ?></span></a></li>
+    <li class="nav-item"><a class="nav-link <?= $emailFilter==='failed'?'active':'' ?> py-1 px-3" href="<?= esc($__statQs('failed')) ?>" data-testid="filter-failed"><i class="bi bi-exclamation-triangle me-1"></i>Failed <span class="badge bg-danger text-white ms-1" data-counter="failed"><?= (int)$c['f'] ?></span></a></li>
+    <li class="nav-item"><a class="nav-link <?= $emailFilter==='sent'?'active':'' ?> py-1 px-3" href="<?= esc($__statQs('sent')) ?>" data-testid="filter-sent">Sent <span class="badge bg-light text-dark ms-1" data-counter="sent"><?= (int)$c['s'] ?></span></a></li>
+    <li class="nav-item"><a class="nav-link <?= $emailFilter==='queued'?'active':'' ?> py-1 px-3" href="<?= esc($__statQs('queued')) ?>" data-testid="filter-queued">Queued <span class="badge bg-light text-dark ms-1" data-counter="queued"><?= (int)$c['q'] ?></span></a></li>
+  </ul>
+
+  <!-- Test / Live mode filter — segregates emails by the gateway mode of
+       the order they belong to. Falls back to em.gw_mode (captured at queue
+       time) for rows without an order (system / preview emails). -->
+  <?php
+    $__modeQs = function($m) use ($emailFilter, $emailCategory) {
+        $qs = 'tab=emails';
+        if ($emailCategory === 'review') $qs .= '&cat=review';
+        if ($emailFilter && $emailFilter !== 'all') $qs .= '&filter=' . $emailFilter;
+        if ($m !== 'all') $qs .= '&mode=' . $m;
+        return '?' . $qs;
+    };
+  ?>
+  <ul class="nav nav-pills nav-pills-sm mb-3" data-testid="email-mode-pills">
+    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $emailMode==='all'?'active':'' ?>" href="<?= esc($__modeQs('all')) ?>" data-testid="email-mode-all"><i class="bi bi-globe me-1"></i>All modes</a></li>
+    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $emailMode==='live'?'active':'' ?>" href="<?= esc($__modeQs('live')) ?>" data-testid="email-mode-live" style="<?= $emailMode==='live'?'background:#10b981;color:#fff;':'color:#065f46;' ?>"><i class="bi bi-broadcast me-1"></i>Live</a></li>
+    <li class="nav-item"><a class="nav-link py-1 px-3 <?= $emailMode==='test'?'active':'' ?>" href="<?= esc($__modeQs('test')) ?>" data-testid="email-mode-test" style="<?= $emailMode==='test'?'background:#f59e0b;color:#fff;':'color:#92400e;' ?>"><i class="bi bi-eyedropper me-1"></i>Test</a></li>
   </ul>
 
   <div class="row g-3 mb-3">
@@ -10913,10 +10998,13 @@ elseif ($tab === 'emails'):
     if      ($emailFilter === 'failed') $whereSql .= " AND em.status IN ('failed','bounced')";
     elseif  ($emailFilter === 'sent')   $whereSql .= " AND em.status = 'sent'";
     elseif  ($emailFilter === 'queued') $whereSql .= " AND em.status IN ('queued','retrying')";
+    // Gateway-mode filter — apply the same subquery used for KPI counters.
+    $whereSql .= $modeWhereSql;
 
     // For review emails, also pull the review data
     if ($emailCategory === 'review') {
         $emQuery = $pdo->query("SELECT em.*, o.order_number, o.first_name, o.last_name, o.phone,
+                                  COALESCE(o.gw_mode, em.gw_mode, 'live') AS __row_mode,
                                   cr.rating AS review_rating, cr.comment AS review_comment, cr.status AS review_status, cr.submitted_at AS review_date,
                                   (SELECT oi.name FROM order_items oi WHERE oi.order_id=em.order_id LIMIT 1) AS product_name
                                 FROM email_outbox em
@@ -10926,6 +11014,7 @@ elseif ($tab === 'emails'):
                                 ORDER BY em.created_at DESC LIMIT 200");
     } else {
         $emQuery = $pdo->query("SELECT em.*, o.order_number, o.first_name, o.last_name, o.phone,
+                                  COALESCE(o.gw_mode, em.gw_mode, 'live') AS __row_mode,
                                   (SELECT GROUP_CONCAT(lk.license_key SEPARATOR '|')
                                      FROM license_keys lk WHERE lk.order_id=em.order_id) AS keys_list
                                 FROM email_outbox em LEFT JOIN orders o ON o.id=em.order_id
@@ -10937,13 +11026,15 @@ elseif ($tab === 'emails'):
       $rowCount++;
       $custName = trim(($e['first_name'] ?? '').' '.($e['last_name'] ?? ''));
       $oid      = (int)($e['order_id'] ?? 0);
+      $rowMode  = (string)($e['__row_mode'] ?? 'live');
       $tplLabels = [
-        'order_delivery'    => 'License delivery',
-        'review_request'    => 'Review request',
-        'order_confirmation'=> 'Order confirm',
-        'order_pending'     => 'Payment pending',
-        'refund_confirm'    => 'Refund',
-        'lead_followup'     => 'Lead follow-up',
+        'order_delivery'     => 'License delivery',
+        'review_request'     => 'Review request',
+        'order_confirmation' => 'Order confirm',
+        'order_pending'      => 'Payment pending',
+        'refund_confirm'     => 'Refund',
+        'lead_followup'      => 'Lead follow-up',
+        'order_email_bounced'=> 'Bounce alert (admin)',
       ];
       $tplLabel = $tplLabels[$e['template_code']] ?? ($e['template_code'] ?: 'inline');
       $statusClass = $e['opened_at'] ? 'opened' : ($e['status'] === 'sent' ? 'sent' : ($e['status'] === 'failed' || $e['status']==='bounced' ? 'failed' : 'queued'));
@@ -10956,6 +11047,11 @@ elseif ($tab === 'emails'):
               <div class="ec-subject"><?= esc(mb_strimwidth($e['subject'], 0, 90, '…')) ?></div>
               <div class="ec-meta">
                 <span class="ec-tpl-chip"><i class="bi bi-tag-fill"></i> <?= esc($tplLabel) ?></span>
+                <?php if ($rowMode === 'test'): ?>
+                  <span data-testid="email-mode-pill-<?= (int)$e['id'] ?>" style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:999px;"><i class="bi bi-eyedropper"></i>TEST</span>
+                <?php else: ?>
+                  <span data-testid="email-mode-pill-<?= (int)$e['id'] ?>" style="display:inline-flex;align-items:center;gap:3px;background:#dcfce7;color:#166534;font-size:10px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:999px;"><i class="bi bi-broadcast"></i>LIVE</span>
+                <?php endif; ?>
                 <span><i class="bi bi-clock"></i> <?= esc(date('M j, Y · H:i', strtotime($e['created_at']))) ?></span>
               </div>
             </div>

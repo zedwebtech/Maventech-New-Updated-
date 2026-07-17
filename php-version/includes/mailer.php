@@ -39,14 +39,20 @@ function mailer_bootstrap(): void {
         $pdo = db();
         // Ensure the columns required for retry / status tracking exist.
         $needed = [
-            'retry_count'   => 'INT NOT NULL DEFAULT 0',
-            'max_retries'   => 'INT NOT NULL DEFAULT 3',
-            'next_retry_at' => 'TIMESTAMP NULL DEFAULT NULL',
-            'error_details' => 'TEXT NULL DEFAULT NULL',
-            'last_error'    => 'VARCHAR(255) NULL DEFAULT NULL',
-            'message_id'    => 'VARCHAR(190) NULL DEFAULT NULL',
-            'bounced_at'    => 'TIMESTAMP NULL DEFAULT NULL',
-            'priority'      => "TINYINT NOT NULL DEFAULT 5", // 1=highest, 9=lowest
+            'retry_count'         => 'INT NOT NULL DEFAULT 0',
+            'max_retries'         => 'INT NOT NULL DEFAULT 3',
+            'next_retry_at'       => 'TIMESTAMP NULL DEFAULT NULL',
+            'error_details'       => 'TEXT NULL DEFAULT NULL',
+            'last_error'          => 'VARCHAR(255) NULL DEFAULT NULL',
+            'message_id'          => 'VARCHAR(190) NULL DEFAULT NULL',
+            'bounced_at'          => 'TIMESTAMP NULL DEFAULT NULL',
+            'priority'            => "TINYINT NOT NULL DEFAULT 5", // 1=highest, 9=lowest
+            // Bug fix 2026-07-17d: track when we've notified admin about a failed/bounced
+            // customer email so we never send a duplicate admin bounce notice.
+            'bounce_notified_at'  => 'TIMESTAMP NULL DEFAULT NULL',
+            // Capture the gateway mode (test/live) at queue time so Email Activity
+            // can be filtered by test vs live purchases even after settings change.
+            'gw_mode'             => "VARCHAR(10) NULL DEFAULT NULL",
         ];
         $tableExists = (int)$pdo->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME='email_outbox'")->fetchColumn();
         if (!$tableExists) return;
@@ -299,16 +305,29 @@ function smtp_queue_email(string $to, string $subject, string $html, array $opts
     // Optional delay (in minutes) before the cron worker is allowed to send
     // this row. Defaults to NOW() (immediate).
     $delayMin = (int)($opts['delay_minutes'] ?? 0);
+    // Capture gateway mode at queue time so Email Activity can be filtered
+    // test-vs-live even after the admin later toggles the mode.
+    $gwMode = $opts['gw_mode'] ?? null;
+    if ($gwMode === null) {
+        try {
+            if (!empty($oid)) {
+                $q = $pdo->prepare("SELECT gw_mode FROM orders WHERE id = ? LIMIT 1");
+                $q->execute([(int)$oid]);
+                $gwMode = $q->fetchColumn() ?: null;
+            }
+        } catch (Throwable $e) { /* ignore */ }
+        if (!$gwMode) $gwMode = setting_get('gw_mode', 'test');
+    }
     if ($delayMin > 0) {
         $pdo->prepare("INSERT INTO email_outbox
-            (recipient, subject, html, status, note, order_id, tracking_token, template_code, retry_count, max_retries, next_retry_at, priority, attachments_json)
-            VALUES (?,?,?,'queued',NULL,?,?,?,0,?,DATE_ADD(NOW(), INTERVAL ? MINUTE),?,?)")
-            ->execute([$to, $subject, $html, $oid, $tok, $tpl, $maxRetries, $delayMin, $priority, $opts['attachments'] ?? null]);
+            (recipient, subject, html, status, note, order_id, tracking_token, template_code, retry_count, max_retries, next_retry_at, priority, attachments_json, gw_mode)
+            VALUES (?,?,?,'queued',NULL,?,?,?,0,?,DATE_ADD(NOW(), INTERVAL ? MINUTE),?,?,?)")
+            ->execute([$to, $subject, $html, $oid, $tok, $tpl, $maxRetries, $delayMin, $priority, $opts['attachments'] ?? null, $gwMode]);
     } else {
         $pdo->prepare("INSERT INTO email_outbox
-            (recipient, subject, html, status, note, order_id, tracking_token, template_code, retry_count, max_retries, next_retry_at, priority, attachments_json)
-            VALUES (?,?,?,'queued',NULL,?,?,?,0,?,NOW(),?,?)")
-            ->execute([$to, $subject, $html, $oid, $tok, $tpl, $maxRetries, $priority, $opts['attachments'] ?? null]);
+            (recipient, subject, html, status, note, order_id, tracking_token, template_code, retry_count, max_retries, next_retry_at, priority, attachments_json, gw_mode)
+            VALUES (?,?,?,'queued',NULL,?,?,?,0,?,NOW(),?,?,?)")
+            ->execute([$to, $subject, $html, $oid, $tok, $tpl, $maxRetries, $priority, $opts['attachments'] ?? null, $gwMode]);
     }
     return (int)$pdo->lastInsertId();
 }
@@ -406,6 +425,9 @@ function smtp_process_queue(int $maxBatch = 5): int {
                     SET status='bounced', bounced_at=NOW(), retry_count=?, last_error=?, next_retry_at=NULL
                     WHERE id=?")
                     ->execute([$newCount, mb_substr($reason, 0, 250, 'UTF-8'), $row['id']]);
+                // Notify admin about this bounce (deduped inside helper).
+                try { email_notify_admin_of_bounce((int)$row['id'], $reason); }
+                catch (Throwable $e) { @error_log('[queue bounce admin notify] '.$e->getMessage()); }
             } else {
                 $pdo->prepare("UPDATE email_outbox
                     SET status='retrying', retry_count=?, last_error=?, next_retry_at=DATE_ADD(NOW(), INTERVAL $delay MINUTE)
@@ -601,13 +623,29 @@ function email_sync_bounces(int $maxScan = 80): array
             $reason = mb_substr($reason, 0, 300);
 
             if ($rcpt !== '' && filter_var($rcpt, FILTER_VALIDATE_EMAIL)) {
-                $upd = $pdo->prepare(
-                    "UPDATE email_outbox SET status='bounced', last_error=? " .
+                // Find the most-recent customer-facing row so we can flip it AND
+                // fire an admin bounce notice for THAT specific row.
+                $findRow = $pdo->prepare(
+                    "SELECT id, order_id, template_code FROM email_outbox " .
                     "WHERE recipient=? AND status IN ('sent','queued','delivered') " .
                     "ORDER BY id DESC LIMIT 1"
                 );
-                $upd->execute([$reason, $rcpt]);
-                if ($upd->rowCount() > 0) $out['bounced']++;
+                $findRow->execute([$rcpt]);
+                $rowHit = $findRow->fetch();
+                if ($rowHit) {
+                    $upd = $pdo->prepare(
+                        "UPDATE email_outbox SET status='bounced', bounced_at=NOW(), last_error=? " .
+                        "WHERE id=?"
+                    );
+                    $upd->execute([$reason, (int)$rowHit['id']]);
+                    if ($upd->rowCount() > 0) {
+                        $out['bounced']++;
+                        // Notify admin about this specific bounce (deduped by
+                        // bounce_notified_at inside the helper).
+                        try { email_notify_admin_of_bounce((int)$rowHit['id'], $reason); }
+                        catch (Throwable $e) { @error_log('[bounce admin notify] '.$e->getMessage()); }
+                    }
+                }
             }
             @imap_setflag_full($imap, (string)$num, "\\Seen");
         }
@@ -618,4 +656,144 @@ function email_sync_bounces(int $maxScan = 80): array
         @imap_close($imap);
     }
     return $out;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Admin bounce notification — fires once per failed/bounced customer email.
+ *
+ * When a customer-facing email is marked 'failed' or 'bounced' (whether via
+ * preflight, SMTP-level rejection, retry-exhaustion or the IMAP bounce sync)
+ * we send ONE admin notification email to the site's company_email so the
+ * merchant knows immediately without having to keep the admin panel open.
+ * The notification is ALSO written into email_outbox with a dedicated
+ * template_code ('order_email_bounced') so it shows up on the admin's
+ * Product Purchases → Failed tab.
+ *
+ * Dedup: we set email_outbox.bounce_notified_at on the original row so the
+ * same failure never triggers two admin notices.
+ */
+function email_notify_admin_of_bounce(int $outboxId, string $reason = ''): bool {
+    mailer_bootstrap();
+    $pdo = db();
+
+    // Load the original row; bail if already notified or not customer-facing.
+    $r = $pdo->prepare("SELECT * FROM email_outbox WHERE id = ? LIMIT 1");
+    $r->execute([$outboxId]);
+    $row = $r->fetch();
+    if (!$row) return false;
+    if (!empty($row['bounce_notified_at'])) return false;
+    if (!in_array((string)$row['status'], ['failed','bounced'], true)) return false;
+    // Never recurse on our own admin notices.
+    if (($row['template_code'] ?? '') === 'order_email_bounced') return false;
+
+    $adminEmail = trim((string)setting_get('company_email', ''));
+    if ($adminEmail === '') $adminEmail = trim((string)setting_get('smtp_reply_to', ''));
+    if ($adminEmail === '' || !filter_var($adminEmail, FILTER_VALIDATE_EMAIL)) {
+        // No admin address configured — mark as notified anyway so we don't
+        // keep retrying, and log for the operator.
+        $pdo->prepare("UPDATE email_outbox SET bounce_notified_at=NOW() WHERE id=?")->execute([$outboxId]);
+        @error_log('[bounce admin notify] no company_email set — skipping outbox '.$outboxId);
+        return false;
+    }
+
+    // Enrich with order context if we have it.
+    $order = null;
+    if (!empty($row['order_id'])) {
+        $oq = $pdo->prepare("SELECT id, order_number, first_name, last_name, phone, total, currency, gw_mode, created_at
+                             FROM orders WHERE id = ? LIMIT 1");
+        $oq->execute([(int)$row['order_id']]);
+        $order = $oq->fetch() ?: null;
+    }
+    $reason = $reason !== '' ? $reason : ((string)($row['last_error'] ?? 'Delivery failed'));
+    $reason = mb_substr($reason, 0, 500, 'UTF-8');
+
+    $customerEmail = (string)$row['recipient'];
+    $tplLabels = [
+        'order_delivery'      => 'Order delivery (license keys)',
+        'order_confirmation'  => 'Order confirmation',
+        'order_pending'       => 'Payment reminder',
+        'refund_confirm'      => 'Refund confirmation',
+        'review_request'      => 'Review request',
+    ];
+    $tplLabel = $tplLabels[$row['template_code'] ?? ''] ?? ($row['template_code'] ?? 'transactional');
+    $baseUrl  = rtrim((function_exists('site_url') ? site_url() : (setting_get('site_url', '') ?: '')), '/');
+
+    $custName = '';
+    $orderLink = '';
+    $orderNum  = '';
+    $modePill  = '';
+    if ($order) {
+        $custName = trim(($order['first_name'] ?? '').' '.($order['last_name'] ?? ''));
+        $orderNum = (string)$order['order_number'];
+        $orderLink = $baseUrl . '/admin.php?tab=orders&q=' . urlencode($orderNum);
+        $modePill = (($order['gw_mode'] ?? 'live') === 'test')
+            ? '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#fef3c7;color:#92400e;font-size:11px;font-weight:700;letter-spacing:1px;">TEST</span>'
+            : '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#dcfce7;color:#166534;font-size:11px;font-weight:700;letter-spacing:1px;">LIVE</span>';
+    }
+
+    $subj = '⚠ Delivery failed — ' . htmlspecialchars($customerEmail, ENT_QUOTES, 'UTF-8')
+          . ($orderNum ? ' (Order #'.htmlspecialchars($orderNum, ENT_QUOTES, 'UTF-8').')' : '');
+    $subjPlain = '⚠ Delivery failed — ' . $customerEmail . ($orderNum ? ' (Order #'.$orderNum.')' : '');
+
+    $rowHtml = '';
+    $rowHtml .= '<tr><td style="padding:6px 10px;color:#64748b;font-size:13px;">Customer email</td>'
+             .  '<td style="padding:6px 10px;font-weight:600;color:#0f172a;">'.htmlspecialchars($customerEmail, ENT_QUOTES, 'UTF-8').'</td></tr>';
+    if ($custName !== '') {
+        $rowHtml .= '<tr><td style="padding:6px 10px;color:#64748b;font-size:13px;">Customer name</td>'
+                 .  '<td style="padding:6px 10px;color:#0f172a;">'.htmlspecialchars($custName, ENT_QUOTES, 'UTF-8').'</td></tr>';
+    }
+    if ($orderNum !== '') {
+        $rowHtml .= '<tr><td style="padding:6px 10px;color:#64748b;font-size:13px;">Order</td>'
+                 .  '<td style="padding:6px 10px;color:#0f172a;">#'.htmlspecialchars($orderNum, ENT_QUOTES, 'UTF-8').' '.$modePill.'</td></tr>';
+    }
+    $rowHtml .= '<tr><td style="padding:6px 10px;color:#64748b;font-size:13px;">Email type</td>'
+             .  '<td style="padding:6px 10px;color:#0f172a;">'.htmlspecialchars($tplLabel, ENT_QUOTES, 'UTF-8').'</td></tr>';
+    $rowHtml .= '<tr><td style="padding:6px 10px;color:#64748b;font-size:13px;">Failure reason</td>'
+             .  '<td style="padding:6px 10px;color:#b91c1c;">'.htmlspecialchars($reason, ENT_QUOTES, 'UTF-8').'</td></tr>';
+
+    $activityLink = $baseUrl . '/admin.php?tab=emails&filter=failed';
+    $html = '<!doctype html><html><body style="font-family:Segoe UI,Arial,sans-serif;background:#f8fafc;padding:24px;">'
+          . '<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:14px;padding:28px;box-shadow:0 4px 18px rgba(0,0,0,.05);border:1px solid #fee2e2;">'
+          . '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">'
+          . '<div style="width:36px;height:36px;border-radius:10px;background:#fef2f2;color:#b91c1c;display:flex;align-items:center;justify-content:center;font-size:22px;">⚠</div>'
+          . '<h2 style="margin:0;color:#0f172a;font-size:19px;">Customer email undeliverable</h2></div>'
+          . '<p style="color:#475569;line-height:1.55;margin:0 0 14px;">A customer-facing email could not be delivered. '
+          . 'You may want to reach the customer through another channel (phone / SMS) to confirm the correct address.</p>'
+          . '<table style="width:100%;border-collapse:collapse;background:#f8fafc;border-radius:10px;overflow:hidden;font-size:14px;margin:0 0 18px;">'
+          . $rowHtml . '</table>'
+          . '<div style="margin-top:6px;">';
+    if ($orderLink !== '') {
+        $html .= '<a href="'.htmlspecialchars($orderLink, ENT_QUOTES, 'UTF-8').'" '
+              .  'style="display:inline-block;padding:10px 16px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;margin-right:8px;">View order</a>';
+    }
+    $html .= '<a href="'.htmlspecialchars($activityLink, ENT_QUOTES, 'UTF-8').'" '
+          .  'style="display:inline-block;padding:10px 16px;background:#fff;color:#0f172a;text-decoration:none;border-radius:8px;font-weight:600;border:1px solid #e2e8f0;">Open Email Activity → Failed</a>'
+          . '</div>'
+          . '<p style="color:#94a3b8;font-size:12px;margin-top:18px;line-height:1.55;">This alert was sent because Email Activity row #'.(int)$outboxId
+          . ' flipped to <strong>'.htmlspecialchars((string)$row['status'], ENT_QUOTES, 'UTF-8').'</strong>. '
+          . 'You can resend the email to a corrected address from the row\'s action menu.</p>'
+          . '</div></body></html>';
+
+    // Directly insert into outbox so we never recurse through send_email().
+    $tok = bin2hex(random_bytes(16));
+    $gwModeVal = $order['gw_mode'] ?? setting_get('gw_mode', 'test');
+    try {
+        $pdo->prepare("INSERT INTO email_outbox
+            (recipient, subject, html, status, note, order_id, tracking_token, template_code, retry_count, max_retries, next_retry_at, priority, gw_mode)
+            VALUES (?,?,?,'queued',?,?,?,?,0,3,NOW(),3,?)")
+            ->execute([
+                $adminEmail, $subjPlain, $html,
+                'Admin bounce notice for outbox #'.$outboxId,
+                $order['id'] ?? null, $tok, 'order_email_bounced', $gwModeVal,
+            ]);
+    } catch (Throwable $e) { @error_log('[bounce admin notify insert] '.$e->getMessage()); return false; }
+
+    // Try to send immediately if SMTP is enabled — best-effort.
+    try {
+        $c = smtp_config();
+        if ($c['enabled'] && $c['host'] !== '') { smtp_process_queue(1); }
+    } catch (Throwable $e) { /* fall through — cron will pick it up */ }
+
+    $pdo->prepare("UPDATE email_outbox SET bounce_notified_at=NOW() WHERE id=?")->execute([$outboxId]);
+    return true;
 }

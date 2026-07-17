@@ -98,6 +98,222 @@
 
 
 
+## ═══════════════ ITERATION 2026-07-17d — Bug fixes: Failed-email admin notification + Test/Live segregation ═══════════════
+backend:
+  - task: "Bug 1a — Undeliverable customer email marks a Failed row in email_outbox AND queues an admin bounce notification email (template=order_email_bounced) to company_email. Notification deduped by new email_outbox.bounce_notified_at column."
+    implemented: true
+    working: true
+    file: "php-version/includes/mailer.php, php-version/includes/email.php, php-version/admin.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Reported: When a customer types a wrong email at checkout, the failure was invisible on the admin Email Activity → Failed tab (all counters at 0). Fix implemented across 3 hook points: (a) send_email() preflight — invalid syntax OR no MX inserts a 'failed' row AND fires email_notify_admin_of_bounce() which queues an 'order_email_bounced' template email addressed to company_email; (b) smtp_process_queue() — when retry-exhaustion flips a row to 'bounced', the same helper fires; (c) email_sync_bounces() — when IMAP reconciliation flips a 'sent' row to 'bounced', the helper fires for that specific row. Dedup via new email_outbox.bounce_notified_at column (self-healed via mailer_bootstrap ALTER TABLE). Admin notice includes: customer email, customer name, order # + TEST/LIVE pill, email template label, failure reason, 'View order' button + 'Open Email Activity → Failed' button. purchaseTemplates array in admin.php extended to include 'order_email_bounced' so the alert shows on the Product Purchases tab too. Verified via CLI harness at /tmp/test_bounce.php: inserting an order with bad@nonexistent-domain-xyz-abc-12345.com creates row id=25 (status=failed, template=order_delivery, gw_mode=test, bounce_notified_at set) AND row id=26 (status=queued, template=order_email_bounced, recipient=admin-test@maventech-dev.local, subject='⚠ Delivery failed — bad@… (Order #TB…)'). Tab counter goes from 0 → 1 on Failed."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — 10/10 tests passed. (1) Schema verification: DESC email_outbox confirms bounce_notified_at and gw_mode columns exist. (2) Preflight rejection test: Inserted order TB111 (id=6) with bad@nonexistent-xyz-domain-99.com, called send_email() via PHP CLI. TWO rows created: Row 27 (status='failed', template_code='order_delivery', gw_mode='test', bounce_notified_at IS NOT NULL, note='Undeliverable: Domain nonexistent-xyz-domain-99.com has no MX or A records — mail server doesn't exist.') AND Row 28 (status='queued', template_code='order_email_bounced', recipient='services@maventechsoftware.com', gw_mode='test', subject='⚠ Delivery failed — bad@nonexistent-xyz-domain-99.com (Order #TB111)'). (3) Admin UI verification: GET /admin.php?tab=emails&filter=failed shows data-testid='email-card-27' with data-testid='email-mode-pill-27' displaying TEST badge. Failed counter=1. (4) Queued admin notice: GET /admin.php?tab=emails&filter=queued shows email-card-28 with subject '⚠ Delivery failed — bad@nonexistent-xyz-domain-99.com (Order #TB111)'. (5) Deduplication test: Called email_notify_admin_of_bounce(27) a second time, returned false. No new row created (COUNT=1). (6) Code verification: smtp_process_queue() calls email_notify_admin_of_bounce() at line 429 when retry-exhaustion flips row to 'bounced'. (7) Code verification: email_sync_bounces() calls email_notify_admin_of_bounce() at line 645 when IMAP reconciliation flips row to 'bounced'. All test data cleaned up."
+  - task: "Bug 2a — Test/Live filter pills on Admin → Orders tab (region-scoped)"
+    implemented: true
+    working: true
+    file: "php-version/admin.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Reported: gw_mode was captured on each order but there was no filter UI on the Orders tab to segregate test-mode transactions from live-mode ones. Added a second row of pill filters (data-testid='orders-mode-filter') with All modes / Live / Test buttons, each showing a live count that scopes to the currently-selected region. WHERE clause extended: mode=live → COALESCE(gw_mode,'live')='live'; mode=test → gw_mode='test'. The existing awaiting-key filter is preserved across mode switches via query-string preservation. Verified via curl on http://localhost:3000/admin.php?tab=orders&mode=test that only test-mode rows render (order-mode-pill badges present on pill-5, pill-3, pill-2)."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — 6/6 tests passed. Seeded 2 orders: LT1T (id=7, gw_mode='test') and LT1L (id=8, gw_mode='live'). (1) GET /admin.php?tab=orders shows data-testid='orders-mode-filter' with All/Live/Test pills. Both orders visible (#LT1T and #LT1L). TEST orders show data-testid='order-mode-pill-{id}' badges. (2) GET /admin.php?tab=orders&mode=test shows only #LT1T (test order). #LT1L not visible. (3) GET /admin.php?tab=orders&mode=live shows only #LT1L (live order). #LT1T not visible. No order-mode-pill on live rows (by design). (4) Combined filter preservation verified. All test data cleaned up."
+  - task: "Bug 2b — Test/Live filter dropdown on Admin → Sales Detail tab (f_mode=all/live/test), TEST pill on each Order# cell + 'TEST mode only' active-badge in the result-count line"
+    implemented: true
+    working: true
+    file: "php-version/admin.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Extended the existing Sales Detail filter form with a new Mode select (data-testid='sales-filter-mode', values: all/live/test). WHERE clause extended identically to orders. Added a TEST badge next to Order # in the sales table (data-testid='sales-mode-pill-{id}') so admins can distinguish test orders inline even when the mode filter is set to All. When any filter is active AND mode!=all, the filter-result summary shows a coloured 'LIVE mode only' / 'TEST mode only' badge (data-testid='sales-mode-active-badge'). Verified via curl: mode=test URL returns pill badges + 'TEST mode only' summary text."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — 5/5 tests passed. (1) GET /admin.php?tab=sales&f_mode=test shows data-testid='sales-filter-mode' with 'test' selected. Only test order #LT1T visible. data-testid='sales-mode-active-badge' displays 'TEST mode only'. data-testid='sales-mode-pill-{id}' badges visible on test rows. (2) GET /admin.php?tab=sales&f_mode=live shows data-testid='sales-mode-active-badge' with 'LIVE mode only'. Only live order #LT1L visible. All test data cleaned up."
+  - task: "Bug 2c — Test/Live filter pills on Admin → Email Activity Center (linked back to orders.gw_mode via em.order_id; falls back to new em.gw_mode column captured at queue time for rows without an order)"
+    implemented: true
+    working: true
+    file: "php-version/admin.php, php-version/includes/mailer.php, php-version/includes/email.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Added a second row of pill filters below the existing All/Failed/Sent/Queued row (data-testid='email-mode-pills' with 'email-mode-all', 'email-mode-live', 'email-mode-test'). The filter reads/writes ?mode= and is preserved across status pill clicks + category (Product Purchases / Customer Reviews) switches. New email_outbox.gw_mode column captures gateway mode at queue time so that even rows without an order_id can be filtered (self-healed via mailer_bootstrap ALTER TABLE). Every INSERT path was updated: smtp_queue_email(), send_email() preflight-failed path, send_email() Resend fallback path, send_email() dev-mode queued path, and the admin bounce-notice INSERT in email_notify_admin_of_bounce(). KPI counters (Sent/Opened/Queued/Failed) all respect the current mode filter. Each email card in the list now shows a TEST or LIVE pill (data-testid='email-mode-pill-{id}'). Verified via curl: filter=failed&mode=test shows the failed row; mode=live shows 0 rows (correct, no live-mode failed emails)."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — 7/7 tests passed. Created email_outbox rows for both test and live orders. (1) GET /admin.php?tab=emails&mode=test shows data-testid='email-mode-pills' with data-testid='email-mode-test' active. Only 'Test order delivery' visible. data-testid='email-mode-pill-{id}' badges show TEST. 'Live order delivery' NOT visible. KPI counters mode-scoped (Failed=1 for test mode). (2) GET /admin.php?tab=emails&mode=live shows data-testid='email-mode-live' active. Only 'Live order delivery' visible. data-testid='email-mode-pill-{id}' badges show LIVE. 'Test order delivery' NOT visible. (3) Combined filter test: GET /admin.php?tab=emails&filter=failed&mode=test preserves both filters (both pills active). All test data cleaned up."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Bug 1a — Undeliverable customer email marks a Failed row in email_outbox AND queues an admin bounce notification email (template=order_email_bounced) to company_email. Notification deduped by new email_outbox.bounce_notified_at column."
+    - "Bug 2a — Test/Live filter pills on Admin → Orders tab (region-scoped)"
+    - "Bug 2b — Test/Live filter dropdown on Admin → Sales Detail tab (f_mode=all/live/test), TEST pill on each Order# cell + 'TEST mode only' active-badge in the result-count line"
+    - "Bug 2c — Test/Live filter pills on Admin → Email Activity Center (linked back to orders.gw_mode via em.order_id; falls back to new em.gw_mode column captured at queue time for rows without an order)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: |
+      Please verify BOTH BUG FIXES at http://localhost:3000 (admin login
+      services@maventechsoftware.com / Admin@123). DO NOT make real charges.
+      Use curl + mysql on ucode_store DB.
+
+      BUG 1 — Undeliverable customer email must trigger BOTH (a) an
+      admin-visible Failed row AND (b) a queued admin-notification email.
+
+      Scenario A: preflight rejection (invalid domain).
+        (1) INSERT an order with a bad email:
+              mysql -uroot ucode_store -e "INSERT INTO orders (order_number, email, first_name, last_name, phone, address, city, state, zip, country, subtotal, total, currency, gw_mode, status, region, payment_method) VALUES ('TB111','bad@nonexistent-xyz-domain-99.com','John','Doe','+15550000000','1 Main St','NY','NY','10001','US',19.99,19.99,'USD','test','paid','US','card')"
+            Grab the id (LAST_INSERT_ID()) as $OID.
+        (2) Fire send_email() via a small CLI harness:
+              php -r 'require_once "/app/php-version/includes/db.php"; require_once "/app/php-version/includes/settings.php"; require_once "/app/php-version/includes/email.php"; require_once "/app/php-version/includes/mailer.php"; send_email("bad@nonexistent-xyz-domain-99.com","Your order delivery","<p>Test</p>", '$OID', "order_delivery");'
+        (3) Assert two rows in email_outbox:
+              (a) status='failed', template_code='order_delivery',
+                  gw_mode='test', bounce_notified_at IS NOT NULL,
+                  note LIKE 'Undeliverable: %'
+              (b) status='queued', template_code='order_email_bounced',
+                  recipient = value of settings.company_email
+                  (services@maventechsoftware.com), gw_mode='test',
+                  subject LIKE '⚠ Delivery failed — bad@…'
+        (4) Load /admin.php?tab=emails&filter=failed as admin — assert the
+            KPI counter for Failed increments by 1 AND the failed row is
+            visible in data-testid=email-activity-list AND the row's
+            email-mode-pill-{id} shows TEST.
+        (5) Load /admin.php?tab=emails&filter=queued — the admin bounce
+            notice row (order_email_bounced) is visible.
+        (6) Dedup check: fire the send_email() call again with the SAME bad
+            address (increments a NEW outbox row via preflight) — but calling
+            email_notify_admin_of_bounce($outboxId) a SECOND time on the
+            existing outbox row must return false without creating a duplicate.
+      Scenario B: retry-exhaustion (SMTP repeatedly refuses the recipient).
+        (Skip if SMTP is not enabled on this preview host — instead just
+        confirm email_notify_admin_of_bounce() is called from
+        smtp_process_queue() when it flips a row to 'bounced' by reading
+        the source of mailer.php.)
+      Scenario C: IMAP bounce sync flips a 'sent' row to 'bounced' and
+        fires the admin notice.
+        (Skip if php-imap / IMAP mailbox are not configured — instead just
+        confirm the code path exists by reading email_sync_bounces() in
+        mailer.php: it now calls email_notify_admin_of_bounce() when it
+        flips a row to bounced.)
+      CLEANUP: delete test rows (email_outbox WHERE recipient LIKE 'bad@…',
+      orders WHERE order_number='TB111').
+
+      BUG 2 — Test/Live filter on Orders / Sales Detail / Email Activity.
+        (a) Seed:  1 test order (gw_mode='test'), 1 live order (gw_mode='live'),
+            both status='paid'.
+        (b) Orders tab:
+              GET /admin.php?tab=orders — pill data-testid='orders-mode-all'
+              is 'active', shows both orders + a TEST pill on the test row.
+              GET /admin.php?tab=orders&mode=test — only the test order is in
+              the tbody; each visible row has a data-testid='order-mode-pill-{id}'.
+              GET /admin.php?tab=orders&mode=live — only the live order visible;
+              NO order-mode-pill (LIVE default has no pill by design).
+              Live/Test count badges next to the pills match the seeded counts.
+              Filter+mode combo: /admin.php?tab=orders&filter=awaiting&mode=test
+              preserves both filters when clicking either pill row.
+        (c) Sales Detail tab:
+              GET /admin.php?tab=sales&f_mode=test — filter form shows
+              data-testid='sales-filter-mode' with 'test' selected; only
+              test rows in tbody; result-summary shows data-testid=
+              'sales-mode-active-badge' with text 'TEST mode only'.
+              GET /admin.php?tab=sales&f_mode=live — analogous with 'LIVE mode only'.
+              Each visible sales row on filter=test has data-testid=
+              'sales-mode-pill-{id}' next to the Order# strong.
+        (d) Email Activity tab:
+              GET /admin.php?tab=emails&mode=test — email-mode-test pill is
+              active; only rows with a linked order.gw_mode='test' OR
+              em.gw_mode='test' are visible; the KPI Failed/Sent/Queued
+              counters reflect the mode-scoped subset.
+              GET /admin.php?tab=emails&mode=live — analogous.
+              Each visible email card has data-testid='email-mode-pill-{id}'.
+              Filter combo: /admin.php?tab=emails&filter=failed&mode=test
+              preserves both, and clicking Sent/Queued keeps the mode.
+      CLEANUP: delete the two seeded orders + associated email_outbox rows.
+
+      Report pass/fail with evidence (curl responses, DOM fragments, DB dumps).
+    -agent: "testing"
+    -message: |
+      ✅ ITERATION 2026-07-17d TESTING COMPLETE — ALL 4 TASKS VERIFIED WORKING (28/28 tests passed, 100% success rate).
+      
+      Executed comprehensive backend testing following the review_request specifications. NO REAL CHARGES MADE.
+      
+      TEST METHODOLOGY:
+      - PHP and MariaDB available and working
+      - Admin login: services@maventechsoftware.com / Admin@123
+      - Database: ucode_store
+      - Testing via curl + mysql + PHP CLI
+      
+      RESULTS BY BUG:
+      
+      BUG 1 — Undeliverable customer email → Failed row + admin bounce notification (10/10 tests passed):
+        ✅ Schema verification: email_outbox.bounce_notified_at and email_outbox.gw_mode columns exist
+        ✅ Preflight rejection: Inserted order TB111 with bad@nonexistent-xyz-domain-99.com
+        ✅ TWO rows created correctly:
+           - Row 27: status='failed', template_code='order_delivery', gw_mode='test', bounce_notified_at IS NOT NULL
+           - Row 28: status='queued', template_code='order_email_bounced', recipient='services@maventechsoftware.com'
+        ✅ Admin UI: Failed email visible with data-testid='email-card-27' and TEST pill
+        ✅ Admin UI: Queued bounce notice visible with correct subject
+        ✅ Deduplication: Second call to email_notify_admin_of_bounce() returned false, no duplicate created
+        ✅ Code verification: smtp_process_queue() calls email_notify_admin_of_bounce() at line 429
+        ✅ Code verification: email_sync_bounces() calls email_notify_admin_of_bounce() at line 645
+      
+      BUG 2 — Test/Live segregation on Orders/Sales/Email Activity (18/18 tests passed):
+        
+        2a. Orders tab (6/6 tests):
+          ✅ data-testid='orders-mode-filter' exists with All/Live/Test pills
+          ✅ Both orders visible on unfiltered view with TEST pills on test orders
+          ✅ mode=test shows only test order LT1T
+          ✅ mode=live shows only live order LT1L (no pill on live rows by design)
+          ✅ Combined filters preserved
+        
+        2b. Sales Detail tab (5/5 tests):
+          ✅ data-testid='sales-filter-mode' dropdown exists
+          ✅ f_mode=test shows only test order with 'TEST mode only' badge
+          ✅ f_mode=live shows only live order with 'LIVE mode only' badge
+          ✅ data-testid='sales-mode-pill-{id}' badges visible on test rows
+        
+        2c. Email Activity tab (7/7 tests):
+          ✅ data-testid='email-mode-pills' exists with All/Live/Test pills
+          ✅ mode=test shows only test emails with TEST pills
+          ✅ mode=live shows only live emails with LIVE pills
+          ✅ KPI counters are mode-scoped
+          ✅ Combined filter (filter=failed&mode=test) preserves both parameters
+          ✅ data-testid='email-mode-pill-{id}' badges visible on all rows
+      
+      EVIDENCE:
+      - All test data created and cleaned up successfully
+      - curl responses verified DOM elements with correct data-testid attributes
+      - MySQL queries verified database state
+      - PHP CLI harness verified email sending and bounce notification logic
+      
+      NO ISSUES FOUND. Both bug fixes are working correctly and meet all specifications in the review_request.
+
+
+
+
 ## ═══════════════ ITERATION 2026-07-17c — FINAL VERIFICATION: Payment gateway item data (PayPal/Stripe/NMI/Authnet/Custom) ═══════════════
 backend:
   - task: "FINAL VERIFICATION — PayPal Orders API v2 payload shape matches user's exact JSON spec (intent=CAPTURE, purchase_units.items[], amount.breakdown)"
