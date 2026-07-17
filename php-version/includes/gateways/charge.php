@@ -78,6 +78,28 @@ function mv_parse_exp(string $exp): array
 }
 
 /**
+ * Build a short human-readable order description from cart items.
+ * Used by every gateway (NMI orderdescription, Authorize.Net
+ * order.description, Custom description) so the item name/description shows
+ * up in the merchant's gateway record and the buyer's card statement /
+ * receipt (fixes the "-" placeholder in gateway UIs).
+ */
+function mv_items_description(array $items, string $orderNumber = '', int $max = 240): string
+{
+    if (!$items) return $orderNumber !== '' ? ('Order ' . $orderNumber) : 'Order';
+    $parts = [];
+    foreach ($items as $it) {
+        $name = trim((string)($it['name'] ?? 'Item'));
+        $qty  = max(1, (int)($it['qty'] ?? 1));
+        $parts[] = ($qty > 1 ? $qty . '× ' : '') . $name;
+    }
+    $desc = ($orderNumber !== '' ? 'Order ' . $orderNumber . ' — ' : '') . implode(', ', $parts);
+    $desc = preg_replace('/\s+/', ' ', $desc) ?? $desc;
+    if (mb_strlen($desc) > $max) $desc = mb_substr($desc, 0, $max - 1) . '…';
+    return $desc;
+}
+
+/**
  * Dispatch a card charge to the active provider.
  *
  * @param string $provider  nmi | authnet | custom
@@ -85,14 +107,17 @@ function mv_parse_exp(string $exp): array
  * @param array  $card      ['number'=>digits, 'exp'=>'MM/YY', 'cvv'=>digits]
  * @param array  $billing   ['first_name','last_name','address1','city','state','zip','country','email']
  * @param float  $amount    charge amount in major units (e.g. 129.99)
+ * @param array  $items     optional cart items (each: name/description/price/qty/slug)
+ *                          — used so the gateway record shows the real
+ *                          product info instead of a placeholder.
  */
-function mv_card_charge(string $provider, array $order, array $card, array $billing, float $amount): array
+function mv_card_charge(string $provider, array $order, array $card, array $billing, float $amount, array $items = []): array
 {
     $mode = setting_get('gw_mode', 'test') === 'live' ? 'live' : 'test';
     switch ($provider) {
-        case 'nmi':     return nmi_charge_card($card, $billing, $amount, $mode, $order);
-        case 'authnet': return authnet_charge_card($card, $billing, $amount, $mode, $order);
-        case 'custom':  return custom_charge_card($card, $billing, $amount, $mode, $order);
+        case 'nmi':     return nmi_charge_card($card, $billing, $amount, $mode, $order, $items);
+        case 'authnet': return authnet_charge_card($card, $billing, $amount, $mode, $order, $items);
+        case 'custom':  return custom_charge_card($card, $billing, $amount, $mode, $order, $items);
         default:
             return ['status'=>'failed','error_code'=>'unknown_provider',
                     'error_message'=>'Unknown card gateway provider.',
@@ -107,7 +132,7 @@ function mv_card_charge(string $provider, array $order, array $card, array $bill
 /* is used, so both modes hit secure.nmi.com. An optional gw_nmi_endpoint */
 /* setting can override the URL for merchants on a dedicated sandbox host.*/
 /* ===================================================================== */
-function nmi_charge_card(array $card, array $billing, float $amount, string $mode, array $order = []): array
+function nmi_charge_card(array $card, array $billing, float $amount, string $mode, array $order = [], array $items = []): array
 {
     $key = trim((string)setting_get('gw_nmi_security_key_' . $mode, ''));
     if ($key === '') {
@@ -134,7 +159,29 @@ function nmi_charge_card(array $card, array $billing, float $amount, string $mod
         'country'      => (string)($billing['country'] ?? 'US'),
         'email'        => (string)($billing['email'] ?? ''),
         'orderid'      => (string)($order['order_number'] ?? ''),
+        // Human-readable order description shows on the NMI merchant record,
+        // batch report and (with most acquirers) the buyer's card statement.
+        'orderdescription' => mv_items_description($items, (string)($order['order_number'] ?? ''), 240),
     ];
+    // Level-2/3 line items (per NMI Direct Post spec: item_product_code_N,
+    // item_description_N, item_unit_cost_N, item_quantity_N, item_total_amount_N).
+    // Sending these makes each product name/desc visible in NMI's transaction
+    // detail view and improves interchange rates for B2B cards.
+    $idx = 1;
+    foreach ($items as $it) {
+        $qty  = max(1, (int)($it['qty'] ?? 1));
+        $unit = round((float)($it['price'] ?? 0), 2);
+        $name = trim((string)($it['name'] ?? 'Item'));
+        $sku  = trim((string)($it['sku'] ?? ($it['slug'] ?? '')));
+        if ($name === '') $name = 'Item';
+        $fields['item_product_code_' . $idx]   = substr($sku !== '' ? $sku : ('SKU' . $idx), 0, 12);
+        $fields['item_description_' . $idx]    = substr($name, 0, 32);
+        $fields['item_unit_cost_' . $idx]      = number_format($unit, 2, '.', '');
+        $fields['item_quantity_' . $idx]       = (string)$qty;
+        $fields['item_total_amount_' . $idx]   = number_format($unit * $qty, 2, '.', '');
+        $idx++;
+        if ($idx > 99) break; // NMI caps at 99 line items.
+    }
     // Optional username/password auth (some NMI accounts use this instead of a key).
     $user = trim((string)setting_get('gw_nmi_username_' . $mode, ''));
     $pass = trim((string)setting_get('gw_nmi_password_' . $mode, ''));
@@ -179,7 +226,7 @@ function nmi_charge_card(array $card, array $billing, float $amount, string $mod
 /* Sandbox: https://apitest.authorize.net/xml/v1/request.api            */
 /* Live:    https://api.authorize.net/xml/v1/request.api                */
 /* ===================================================================== */
-function authnet_charge_card(array $card, array $billing, float $amount, string $mode, array $order = []): array
+function authnet_charge_card(array $card, array $billing, float $amount, string $mode, array $order = [], array $items = []): array
 {
     $login = trim((string)setting_get('gw_authnet_login_id_' . $mode, ''));
     $txKey = trim((string)setting_get('gw_authnet_transaction_key_' . $mode, ''));
@@ -199,6 +246,39 @@ function authnet_charge_card(array $card, array $billing, float $amount, string 
     $amt       = number_format($amount, 2, '.', '');
     $enc = fn($v) => htmlspecialchars((string)$v, ENT_QUOTES | ENT_XML1, 'UTF-8');
 
+    // <order><description>...</description></order> shows in Authorize.Net
+    // merchant emails, transaction detail and (with many acquirers) the
+    // buyer's card statement — so the item name/desc is no longer blank.
+    $orderDesc = mv_items_description($items, (string)($order['order_number'] ?? ''), 255);
+
+    // <lineItems><lineItem>… — Authorize.Net accepts up to 30 lines. Each
+    // itemId/name/description/quantity/unitPrice appears in the merchant
+    // transaction record + email receipts sent to the buyer.
+    $lineItemsXml = '';
+    if (!empty($items)) {
+        $lineItemsXml .= '<lineItems>';
+        $count = 0;
+        foreach ($items as $it) {
+            if ($count >= 30) break;
+            $qty  = max(1, (int)($it['qty'] ?? 1));
+            $unit = round((float)($it['price'] ?? 0), 2);
+            $name = trim((string)($it['name'] ?? 'Item'));
+            if ($name === '') $name = 'Item';
+            $desc = trim((string)($it['description'] ?? $name));
+            $sku  = trim((string)($it['sku'] ?? ($it['slug'] ?? '')));
+            if ($sku === '') $sku = 'SKU' . ($count + 1);
+            $lineItemsXml .= '<lineItem>'
+                . '<itemId>' . $enc(substr($sku, 0, 31)) . '</itemId>'
+                . '<name>' . $enc(substr($name, 0, 31)) . '</name>'
+                . '<description>' . $enc(substr($desc, 0, 255)) . '</description>'
+                . '<quantity>' . $enc((string)$qty) . '</quantity>'
+                . '<unitPrice>' . $enc(number_format($unit, 2, '.', '')) . '</unitPrice>'
+                . '</lineItem>';
+            $count++;
+        }
+        $lineItemsXml .= '</lineItems>';
+    }
+
     $xml  = '<?xml version="1.0" encoding="utf-8"?>'
         . '<createTransactionRequest xmlns="AnetApi/xml/v1/schema/AnetApiSchema.xsd">'
         . '<merchantAuthentication><name>' . $enc($login) . '</name>'
@@ -212,7 +292,11 @@ function authnet_charge_card(array $card, array $billing, float $amount, string 
         . '<expirationDate>' . $enc($expDate) . '</expirationDate>'
         . '<cardCode>' . $enc($cvv) . '</cardCode>'
         . '</creditCard></payment>'
-        . '<order><invoiceNumber>' . $enc(substr((string)($order['order_number'] ?? ''), 0, 20)) . '</invoiceNumber></order>'
+        . '<order>'
+        . '<invoiceNumber>' . $enc(substr((string)($order['order_number'] ?? ''), 0, 20)) . '</invoiceNumber>'
+        . '<description>' . $enc(substr($orderDesc, 0, 255)) . '</description>'
+        . '</order>'
+        . $lineItemsXml
         . '<billTo>'
         . '<firstName>' . $enc(substr((string)($billing['first_name'] ?? ''), 0, 50)) . '</firstName>'
         . '<lastName>' . $enc(substr((string)($billing['last_name'] ?? ''), 0, 50)) . '</lastName>'
@@ -280,7 +364,7 @@ function authnet_charge_card(array $card, array $billing, float $amount, string 
 /* "approved"|response:"1"} or form response=1). Anything else declines  */
 /* — we never assume success on a live store.                            */
 /* ===================================================================== */
-function custom_charge_card(array $card, array $billing, float $amount, string $mode, array $order = []): array
+function custom_charge_card(array $card, array $billing, float $amount, string $mode, array $order = [], array $items = []): array
 {
     $endpoint = trim((string)setting_get('gw_custom_endpoint_' . $mode, ''));
     $apiKey   = trim((string)setting_get('gw_custom_api_key_' . $mode, ''));
@@ -293,6 +377,24 @@ function custom_charge_card(array $card, array $billing, float $amount, string $
     $merchant  = trim((string)setting_get('gw_custom_merchant_id_' . $mode, ''));
     [$mm, $yy] = mv_parse_exp((string)$card['exp']);
 
+    // Normalise items so the merchant receives the real product info in the
+    // charge payload (name/description/qty/unit price) — fixes "-" placeholder
+    // in downstream receipts / dashboards.
+    $normItems = [];
+    foreach ($items as $it) {
+        $qty  = max(1, (int)($it['qty'] ?? 1));
+        $unit = round((float)($it['price'] ?? 0), 2);
+        $normItems[] = [
+            'sku'         => (string)($it['sku'] ?? ($it['slug'] ?? '')),
+            'name'        => (string)($it['name'] ?? 'Item'),
+            'description' => (string)($it['description'] ?? ($it['name'] ?? '')),
+            'quantity'    => $qty,
+            'unit_price'  => number_format($unit, 2, '.', ''),
+            'line_total'  => number_format($unit * $qty, 2, '.', ''),
+        ];
+    }
+    $description = mv_items_description($items, (string)($order['order_number'] ?? ''), 240);
+
     $payload = [
         'api_key'     => $apiKey,
         'api_secret'  => $apiSecret,
@@ -303,6 +405,8 @@ function custom_charge_card(array $card, array $billing, float $amount, string $
         'card_exp'    => $mm . $yy,
         'card_cvv'    => preg_replace('/\D/', '', (string)$card['cvv']),
         'order_id'    => (string)($order['order_number'] ?? ''),
+        'description' => $description,
+        'items'       => $normItems,
         'first_name'  => (string)($billing['first_name'] ?? ''),
         'last_name'   => (string)($billing['last_name'] ?? ''),
         'address1'    => (string)($billing['address1'] ?? ''),

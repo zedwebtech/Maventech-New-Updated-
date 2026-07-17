@@ -175,8 +175,105 @@ function mv_humanize_stripe_error(string $code): string
  * Stripe Checkout session with recovery-aware cancel_url.
  * On decline / cancel Stripe redirects to /checkout.php?cancel=1&session_id={CHECKOUT_SESSION_ID}
  * so we can look up the exact last_payment_error and render the inline banner.
+ *
+ * When $items is provided we send one Stripe line_item PER cart item (with
+ * product name + description + real unit price) so the buyer sees the actual
+ * items — not a single generic "Order #…" line — on Stripe's hosted
+ * Checkout page and receipt. A coupon discount, if present, is applied via
+ * a one-off Stripe Coupon so subtotal + discount = order total.
  */
-function stripe_create_session_with_recovery(array $order, string $baseUrl): array
+function stripe_create_session_with_recovery(array $order, string $baseUrl, array $items = [], float $subtotal = 0.0, float $discount = 0.0): array
+{
+    $mode  = stripe_active_mode();
+    $orderTotalCents = (int)round((float)$order['total'] * 100);
+    $currency = strtolower((string)($order['currency'] ?? 'usd')) ?: 'usd';
+    $params = [
+        'mode'                 => 'payment',
+        'customer_email'       => $order['email'],
+        'metadata[order_number]' => $order['order_number'],
+        'metadata[gw_mode]'    => $mode,
+        // Include session_id on BOTH success and cancel so we can always
+        // look up the definitive server-side status.
+        'success_url'          => $baseUrl . 'order-success.php?order=' . urlencode($order['order_number']) . '&session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url'           => $baseUrl . 'checkout.php?cancel=1&session_id={CHECKOUT_SESSION_ID}',
+        // Show buyers the itemised description on their card statement too.
+        'payment_intent_data[description]' => 'Order ' . $order['order_number'] . ' — ' . (defined('SITE_LEGAL') ? SITE_LEGAL : 'Order'),
+    ];
+
+    if (!empty($items)) {
+        // Real per-product line items — Stripe Checkout renders each one.
+        $i = 0;
+        $sumCents = 0;
+        foreach ($items as $it) {
+            $qty  = max(1, (int)($it['qty'] ?? 1));
+            $unit = (int)round((float)($it['price'] ?? 0) * 100);
+            $name = trim((string)($it['name'] ?? 'Item'));
+            if ($name === '') $name = 'Item';
+            if ($mode === 'test') $name = '[TEST] ' . $name;
+            $desc = trim((string)($it['description'] ?? ''));
+            $params['line_items[' . $i . '][price_data][currency]']                 = $currency;
+            $params['line_items[' . $i . '][price_data][product_data][name]']       = mb_substr($name, 0, 250);
+            if ($desc !== '') {
+                $params['line_items[' . $i . '][price_data][product_data][description]'] = mb_substr($desc, 0, 500);
+            }
+            $sku = trim((string)($it['sku'] ?? ($it['slug'] ?? '')));
+            if ($sku !== '') {
+                $params['line_items[' . $i . '][price_data][product_data][metadata][sku]'] = mb_substr($sku, 0, 250);
+            }
+            $params['line_items[' . $i . '][price_data][unit_amount]'] = $unit;
+            $params['line_items[' . $i . '][quantity]']                = $qty;
+            $sumCents += $unit * $qty;
+            $i++;
+        }
+        // If there's a coupon discount, mint a one-shot Stripe coupon so the
+        // charged total still matches the order total the buyer saw.
+        $discountCents = (int)round(max(0.0, (float)$discount) * 100);
+        if ($discountCents <= 0) {
+            $expected = $sumCents;
+            if ($expected !== $orderTotalCents) {
+                // Fall back to a single-line session so the amount matches
+                // exactly (guards against rounding mismatches with taxes /
+                // add-ons that aren't in $items).
+                return stripe_create_session_single_line($order, $baseUrl);
+            }
+        } else {
+            // Ensure sum - discount == order total; if drift, adjust discount.
+            $expected = $sumCents - $discountCents;
+            if ($expected !== $orderTotalCents) {
+                $discountCents = $sumCents - $orderTotalCents;
+                if ($discountCents <= 0) $discountCents = 0;
+            }
+            if ($discountCents > 0) {
+                try {
+                    $coupon = stripe_request('POST', 'coupons', [
+                        'amount_off' => $discountCents,
+                        'currency'   => $currency,
+                        'duration'   => 'once',
+                        'name'       => 'Discount',
+                    ]);
+                    if (!empty($coupon['id'])) {
+                        $params['discounts[0][coupon]'] = (string)$coupon['id'];
+                    }
+                } catch (Throwable $e) {
+                    // If the coupon cannot be created for any reason, fall
+                    // back to the safe single-line session so we never
+                    // over/under charge the buyer.
+                    @error_log('[stripe coupon create] ' . $e->getMessage());
+                    return stripe_create_session_single_line($order, $baseUrl);
+                }
+            }
+        }
+        return stripe_request('POST', 'checkout/sessions', $params);
+    }
+
+    return stripe_create_session_single_line($order, $baseUrl);
+}
+
+/**
+ * Legacy single-line fallback (kept intact so total always matches when the
+ * per-item breakdown is unavailable or would mismatch).
+ */
+function stripe_create_session_single_line(array $order, string $baseUrl): array
 {
     $cents = (int)round((float)$order['total'] * 100);
     $mode  = stripe_active_mode();
@@ -191,8 +288,7 @@ function stripe_create_session_with_recovery(array $order, string $baseUrl): arr
         'customer_email' => $order['email'],
         'metadata[order_number]' => $order['order_number'],
         'metadata[gw_mode]' => $mode,
-        // Include session_id on BOTH success and cancel so we can always
-        // look up the definitive server-side status.
+        'payment_intent_data[description]' => 'Order ' . $order['order_number'] . ' — ' . (defined('SITE_LEGAL') ? SITE_LEGAL : 'Order'),
         'success_url' => $baseUrl . 'order-success.php?order=' . urlencode($order['order_number']) . '&session_id={CHECKOUT_SESSION_ID}',
         'cancel_url'  => $baseUrl . 'checkout.php?cancel=1&session_id={CHECKOUT_SESSION_ID}',
     ]);

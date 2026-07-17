@@ -580,8 +580,37 @@ HTML;
             $rbase     = rtrim(site_url(), '/');
             $returnUrl = $rbase . '/paypal-return.php?order=' . rawurlencode($orderNumber);
             $cancelUrl = $rbase . '/checkout.php?paypal=cancel';
+            // Build a normalised item list so PayPal shows real product
+            // names/descriptions on its review screen + the buyer's receipt
+            // (fixes the "-" placeholder previously seen in the receipt).
+            $ppItemsPayload = [];
+            foreach ($items as $ii) {
+                $ppItemsPayload[] = [
+                    'slug'        => (string)($ii['slug'] ?? ''),
+                    'name'        => (string)($ii['name'] ?? 'Item'),
+                    'description' => (string)($ii['name'] ?? ''),
+                    'price'       => (float)($ii['price'] ?? 0),
+                    'qty'         => (int)($ii['qty'] ?? 1),
+                    'sku'         => (string)($ii['slug'] ?? ''),
+                ];
+            }
+            $ppFirst   = (string)($items[0]['name'] ?? 'Order');
+            $ppRest    = max(0, count($items) - 1);
+            $ppDesc    = 'Order ' . $orderNumber . ' — ' . $ppFirst
+                       . ($ppRest > 0 ? ' + ' . $ppRest . ' more item' . ($ppRest > 1 ? 's' : '') : '');
             try {
-                $pp = paypal_create_order((float)$total, current_currency()['code'], $orderNumber, $returnUrl, $cancelUrl, $activeMode);
+                $pp = paypal_create_order(
+                    (float)$total,
+                    current_currency()['code'],
+                    $orderNumber,
+                    $returnUrl,
+                    $cancelUrl,
+                    $activeMode,
+                    $ppItemsPayload,
+                    (float)$subtotal,
+                    (float)$discount,
+                    $ppDesc
+                );
             } catch (Throwable $e) {
                 @error_log('[checkout paypal] ' . $e->getMessage());
                 $pp = ['ok'=>false, 'error'=>'A PayPal error occurred. Please try again.'];
@@ -621,7 +650,7 @@ HTML;
                 ];
                 try {
                     $charge = mv_card_charge($cardProvider, $orderRow,
-                        ['number'=>$cardNum, 'exp'=>$cardExp, 'cvv'=>$cardCvv], $billing, (float)$total);
+                        ['number'=>$cardNum, 'exp'=>$cardExp, 'cvv'=>$cardCvv], $billing, (float)$total, $items);
                 } catch (Throwable $e) {
                     @error_log('[checkout ' . $cardProvider . ' charge] ' . $e->getMessage());
                     $charge = ['status'=>'failed','error_code'=>'exception',
@@ -687,7 +716,10 @@ HTML;
                     $orderStmt = $pdo->prepare('SELECT * FROM orders WHERE id = ?');
                     $orderStmt->execute([$orderId]);
                     $orderRow = $orderStmt->fetch();
-                    $session = stripe_create_session_with_recovery($orderRow, $baseUrl);
+                    // Pass items so Stripe Checkout shows real product names +
+                    // descriptions on its hosted page and receipt email
+                    // (fixes the "-" placeholder previously shown by gateways).
+                    $session = stripe_create_session_with_recovery($orderRow, $baseUrl, $items, (float)$subtotal, (float)$discount);
                     $pdo->prepare('UPDATE orders SET stripe_session_id = ?, payment_status = COALESCE(NULLIF(payment_status, ""), "pending"), last_activity_at = NOW() WHERE id = ?')
                         ->execute([$session['id'], $orderId]);
                     unset($_SESSION['mv_resume_order_id']);
