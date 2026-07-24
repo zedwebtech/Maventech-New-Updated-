@@ -1136,6 +1136,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         header('Location: admin.php?tab=company&msg=Schedule+removed'); exit;
     } elseif ($action === 'save_company_info') {
+        // 2026-07 — every field we save here also gets tracked in
+        // `company_info_history` so:
+        //   (1) admins have an audit trail of what changed and when,
+        //   (2) the site-wide output filter (apply_company_branding) can
+        //       silently remap OLD values → CURRENT values on every page
+        //       render — old toll-free numbers/emails/brand names can no
+        //       longer leak into pages, emails, blog posts or cached
+        //       HTML fragments after an admin change,
+        //   (3) the accompanying DB sweep (sweep_company_info_across_db)
+        //       proactively rewrites free-text columns (pages,
+        //       blog_posts, email_templates, pending email_outbox rows,
+        //       settings) so the old value is scrubbed from the DB too.
+        require_once __DIR__ . '/includes/company-info-history.php';
+        $__ci_changes = ['company_name','company_legal_name','company_email','company_phone','company_address','company_id_prefix'];
+        foreach (['ca','uk','au','eu'] as $__cc) $__ci_changes[] = 'company_phone_' . $__cc;
+        // Capture BEFORE snapshot so we can diff & sweep after the writes.
+        $__ci_before = [];
+        foreach ($__ci_changes as $__k) $__ci_before[$__k] = (string)setting_get($__k, '');
+
         // Single source of truth for company branding shown across all transactional emails.
         setting_set('company_name',        trim($_POST['company_name']        ?? ''));
         // Legal-entity name (from EIN / articles-of-org).  Displayed only in
@@ -1152,6 +1171,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Subscription customer-ID prefix (default MVN) — feeds new customer IDs.
         $idPrefix = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string)($_POST['company_id_prefix'] ?? '')));
         setting_set('company_id_prefix', $idPrefix !== '' ? substr($idPrefix, 0, 6) : 'MVN');
+
+        // ---- Now diff, archive & sweep ----
+        $__ci_sweptTotal = 0;
+        foreach ($__ci_changes as $__k) {
+            $__oldVal = trim($__ci_before[$__k]);
+            $__newVal = trim((string)setting_get($__k, ''));
+            if ($__oldVal === $__newVal) continue;
+            $__adminEmail = (string)($_SESSION['admin_email'] ?? ($_SESSION['user_email'] ?? 'admin'));
+            $__ci_sweptTotal += record_company_info_change($__k, $__oldVal, $__newVal, $__adminEmail);
+        }
         // "Authorized Reseller" trust badge — toggleable so brands that haven't
         // yet finalised an OEM agreement can hide the claim site-wide.
         setting_set('show_authorized_reseller_badge', !empty($_POST['show_authorized_reseller_badge']) ? '1' : '0');
@@ -1189,7 +1218,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setting_set('company_logo_motion', $motion);
         if (!empty($_POST['company_logo'])) setting_set('company_logo', trim($_POST['company_logo']));
         if (!empty($_POST['clear_logo']))    setting_set('company_logo', '');
-        header('Location: admin.php?tab=company&msg=Saved'); exit;
+        if ($__ci_sweptTotal > 0) {
+            header('Location: admin.php?tab=company&msg=' . urlencode('Saved. Replaced ' . $__ci_sweptTotal . ' previous value(s) across site content.'));
+        } else {
+            header('Location: admin.php?tab=company&msg=Saved');
+        }
+        exit;
 
     } elseif ($action === 'save_tracking_ids') {
         /* SEO & Tracking — paste IDs from GA4 / Google Ads / Bing UET /

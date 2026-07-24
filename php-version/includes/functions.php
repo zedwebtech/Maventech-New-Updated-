@@ -205,8 +205,15 @@ chat_schema_migrate();
 function apply_company_branding(string $html): string
 {
     static $map = null;
+    static $generation = null;
+    // 2026-07 — the admin's Company Info save writes a `company_branding_generation`
+    // timestamp to bust this static cache so the next request picks up any
+    // new historic-value → current-value mappings without needing to restart PHP-FPM.
+    $curGen = (string)(function_exists('setting_get') ? setting_get('company_branding_generation', '0') : '0');
+    if ($generation !== null && $generation !== $curGen) { $map = null; $generation = null; }
     if ($map === null) {
         $map = [];
+        $generation = $curGen;
         try {
             $co    = company_info();
             $name  = trim((string)($co['name']  ?? ''));
@@ -235,6 +242,26 @@ function apply_company_branding(string $html): string
                 // and Shipping & Delivery page).
                 if ($defEmail !== '' && $defEmail !== $email) {
                     $map[$defEmail] = $email;
+                }
+            }
+
+            // 2026-07 FIX — remap every PREVIOUS admin-set value to the CURRENT
+            // one so an old toll-free number / brand / email typed anywhere
+            // (blog posts, cached HTML fragments, embed snippets, pre-baked
+            // PDFs referenced from HTML pages) is silently rewritten on the
+            // way out.  History rows are written by
+            // record_company_info_change() in the admin save handler.
+            if (is_file(__DIR__ . '/company-info-history.php')) {
+                require_once __DIR__ . '/company-info-history.php';
+                if (function_exists('company_info_historic_values')) {
+                    $hist = company_info_historic_values();
+                    if ($hist) {
+                        // Historic map takes priority over the default map —
+                        // strtr picks the first match at each position so
+                        // ordering matters when historic value contains a
+                        // default value as a substring (rare edge case).
+                        $map = array_merge($map, $hist);
+                    }
                 }
             }
         } catch (Throwable $e) { $map = []; }
