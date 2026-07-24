@@ -85,7 +85,8 @@ foreach ([
     ['/reviews.php',       '0.6', 'weekly'],
     ['/blog.php',          '0.8', 'daily'],
     ['/about-us.php',      '0.6', 'monthly'],
-    ['/why-choose-us.php', '0.6', 'monthly'],
+    // 2026-07 FIX: removed '/why-choose-us.php' — file does not exist,
+    // Semrush reported it as "1 incorrect page found in sitemap.xml".
     ['/contact.php',       '0.6', 'monthly'],
     ['/press-kit',         '0.6', 'monthly'],
     ['/support.php',       '0.6', 'monthly'],
@@ -93,6 +94,13 @@ foreach ([
     ['/return-policy.php', '0.6', 'monthly'],
     ['/sitemap.php',       '0.4', 'monthly'],
     ['/track-order.php',   '0.5', 'monthly'],
+    // 2026-07 additions: free-tools pages exist and are indexable, so
+    // they belong in the sitemap for full crawl coverage.
+    ['/tools',                                 '0.6', 'monthly'],
+    ['/tools/office-version-checker',          '0.5', 'monthly'],
+    ['/tools/windows-product-key-checker',     '0.5', 'monthly'],
+    ['/tools/office-compatibility-checker',    '0.5', 'monthly'],
+    ['/tools/office-deployment-calculator',    '0.5', 'monthly'],
 ] as [$path, $pri, $freq]) {
     $urls[] = ['loc' => $base . $path, 'lastmod' => $today, 'freq' => $freq, 'pri' => $pri, 'images' => []];
 }
@@ -271,7 +279,10 @@ echo '        xmlns:xhtml="http://www.w3.org/1999/xhtml"' . "\n";
 echo '        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">' . "\n";
 // hreflang map — mirrors includes/header.php so the on-page <link rel="alternate">
 // tags and the sitemap agree on every region/language signal Google sees.
-$hreflangMap = ['US' => 'en-US', 'UK' => 'en-GB', 'AU' => 'en-AU', 'CA' => 'en-CA', 'EU' => 'en'];
+// 2026-07 FIX: removed the standalone `en` (for /eu) — a language-only
+// hreflang alongside country-specific variants (en-US, en-GB, en-AU, en-CA)
+// creates ambiguous matches which Semrush flags as "hreflang conflicts".
+$hreflangMap = ['US' => 'en-US', 'UK' => 'en-GB', 'AU' => 'en-AU', 'CA' => 'en-CA'];
 foreach ($urls as $u) {
     // Region-aware bare path (everything after the canonical host) so we can
     // emit the /au, /uk, /ca, /eu equivalents as hreflang alternates.

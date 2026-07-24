@@ -50,6 +50,21 @@ $planLogos = [
 // names so includes/header.php picks them up. Using $title / $description
 // (as an earlier revision did) silently fell back to the site-wide default,
 // causing Bing Webmaster Tools to flag the page as a duplicate.
+//
+// 2026-07 FIX for Semrush "2 issues with duplicate title tags":
+//   /subscriptions.php and /protection-hub.php serve identical content
+//   (the latter simply `require`s the former).  We must NOT emit the same
+//   <title> twice.  Sitemap lists /protection-hub.php as the canonical URL,
+//   so when this file is hit via the /subscriptions.php path we set the
+//   canonical to /protection-hub.php AND differentiate the title so
+//   crawlers understand the pages consolidate on the canonical variant.
+$__subsScript = basename($_SERVER['SCRIPT_NAME'] ?? '');
+$__isDirectSubs = ($__subsScript === 'subscriptions.php');
+if ($__isDirectSubs) {
+    // Canonical explicitly points at the preferred URL (/protection-hub.php).
+    $canonicalUrl      = site_url() . country_prefix() . '/protection-hub.php';
+    $canonicalPathBare = '/protection-hub.php';
+}
 $pageTitle       = 'Protection Hub - Genuine Support Plans | ' . SITE_BRAND;
 $pageDescription = 'Choose the right level of hands-on support for your Windows & Office licences. One-time payment plans from $29 (Quick Fix) to $199 (Lifetime Elite) - no recurring billing, no hidden fees.';
 include __DIR__ . '/includes/header.php';

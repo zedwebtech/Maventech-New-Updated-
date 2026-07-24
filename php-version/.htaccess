@@ -180,6 +180,14 @@ RewriteRule ^og-product\.(png|jpe?g)$            og-product.php            [L,QS
 # ---- Frequently-guessed alias → canonical contact page (301). ----
 RewriteRule ^contact-us(\.php)?/?$  /contact.php  [R=301,L]
 
+# ---- Free Tools clean URLs — /tools and /tools/<slug> must resolve on
+#      Apache even without the generic ".php fallback" below (some shared
+#      hosts disable multiviews / negotiation).  Explicit rules mean the
+#      footer link "All Free Tools" and the individual tool pages always
+#      work on the live domain. ----
+RewriteRule ^tools/?$                            tools.php                 [L,QSA]
+RewriteRule ^tools/([a-z0-9\-]+)/?$              tools/$1.php              [L,QSA]
+
 # ---- SELF-HEAL stacked country prefixes (e.g. /uk/au/shop from an old cached
 #      link or stale switcher) — collapse to the FIRST prefix (the region the
 #      visitor most recently clicked, which the switcher prepends) and 301 to

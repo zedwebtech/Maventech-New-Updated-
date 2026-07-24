@@ -2488,6 +2488,32 @@ if ($tab === 'ai-blogger') {
         exit;
     }
 
+    // ----- "Auto-publish blog posts" toggle -----
+    // 2026-07 policy change: automatic blog-post publishing is now opt-in.
+    // The toggle stores its state in the `settings` table under
+    // `seo_bot_auto_publish` and is read by:
+    //   • includes/seo-bot.php → seo_bot_autotick()   (page-view auto-tick)
+    //   • cron.php                                    (internal cron)
+    //   • cron/seo-daily.php                          (external cron endpoint)
+    // Manual buttons (Write One Post / Random Post / Generate Trends Now)
+    // always work — the toggle only gates the *automatic* publish paths.
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_auto_publish'])) {
+        $newVal  = !empty($_POST['seo_bot_auto_publish']) ? '1' : '0';
+        $prevVal = (string)setting_get('seo_bot_auto_publish', '0');
+        setting_set('seo_bot_auto_publish', $newVal);
+        if ($newVal !== $prevVal) {
+            $_SESSION['seo_bot_flash'] = $newVal === '1'
+                ? 'Auto-publish enabled — daily batch + page-view auto-tick will now publish new blog posts.'
+                : 'Auto-publish disabled — new blog posts will only be published when you click Write One Post / Random Post / Generate Trends Now.';
+            $_SESSION['seo_bot_flash_kind'] = 'success';
+        } else {
+            $_SESSION['seo_bot_flash'] = 'No change — auto-publish is already ' . ($newVal === '1' ? 'ON' : 'OFF') . '.';
+            $_SESSION['seo_bot_flash_kind'] = 'info';
+        }
+        header('Location: admin.php?tab=ai-blogger');
+        exit;
+    }
+
     // ----- "Publish a random post now" — pick ONE random product + region,
     // write a single blog post and index it instantly. Separate from the
     // daily 24-post batch so the operator can ship an ad-hoc article without
@@ -4794,7 +4820,7 @@ elseif ($tab === 'ai-blogger'):
   <!-- ====== SIMPLIFIED AI AUTO-BLOGGER PANEL ====== -->
   <div class="mb-3">
     <h1 class="h4 fw-bold mb-1" data-testid="ai-blogger-page-title"><i class="bi bi-robot me-1 text-primary"></i> AI Auto-Blogger</h1>
-    <p class="text-secondary mb-0" style="font-size:14px;">Automatically writes and publishes blog posts about your products for US, UK, Australia & Canada markets. Posts go live on your website instantly.</p>
+    <p class="text-secondary mb-0" style="font-size:14px;">Write and publish blog posts about your products for US, UK, Australia &amp; Canada markets. By default posts publish only when you click a button below — flip the toggle to re-enable fully automatic publishing.</p>
   </div>
 
   <?php if (!empty($_SESSION['seo_bot_flash'])):
@@ -4910,6 +4936,43 @@ elseif ($tab === 'ai-blogger'):
     .ai-section > .ai-body { padding:0 20px 20px; }
     .ai-section > summary .ai-badge { margin-left:auto; font-size:11px; font-weight:600; padding:3px 10px; border-radius:999px; }
   </style>
+
+  <!-- ====== 0. AUTO-PUBLISH TOGGLE — controls whether new blog posts
+              publish automatically. Default OFF. Manual buttons always work. ====== -->
+  <?php
+    $autoPubEnabled = ((string)setting_get('seo_bot_auto_publish', '0') === '1');
+  ?>
+  <form method="post" action="admin.php?tab=ai-blogger" class="card-e mb-3" data-testid="ai-blogger-auto-toggle"
+        style="border:1px solid <?= $autoPubEnabled ? '#bbf7d0' : '#fed7aa' ?>;border-radius:14px;padding:14px 20px;background:<?= $autoPubEnabled ? 'rgba(187,247,208,.12)' : 'rgba(254,215,170,.12)' ?>;">
+    <input type="hidden" name="save_auto_publish" value="1">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div style="flex:1;min-width:280px;">
+        <div class="fw-bold" style="font-size:14px;color:#0f172a;">
+          <i class="bi <?= $autoPubEnabled ? 'bi-check-circle-fill text-success' : 'bi-pause-circle-fill text-warning' ?> me-1"></i>
+          Automatic blog-post publishing is <span data-testid="auto-publish-state"><?= $autoPubEnabled ? 'ON' : 'OFF' ?></span>
+        </div>
+        <div class="text-secondary mt-1" style="font-size:12.5px;line-height:1.5;">
+          <?php if ($autoPubEnabled): ?>
+            The bot will publish new blog posts automatically (up to one per 24&nbsp;h auto-tick, plus the daily cron batch). Turn this off to publish only via the manual buttons below.
+          <?php else: ?>
+            <strong>No posts will be published automatically.</strong> Blog posts only go live when you click <em>Write One Post</em>, <em>Random Post</em>, or <em>Generate Trends Now</em> below. Non-publishing maintenance (sitemap ping, llms.txt refresh, IndexNow) still runs on its normal schedule.
+          <?php endif; ?>
+        </div>
+      </div>
+      <div class="form-check form-switch d-flex align-items-center gap-2" style="min-height:38px;">
+        <input class="form-check-input" type="checkbox" role="switch"
+               id="seo_bot_auto_publish" name="seo_bot_auto_publish" value="1"
+               data-testid="auto-publish-switch"
+               style="width:46px;height:24px;cursor:pointer;"
+               <?= $autoPubEnabled ? 'checked' : '' ?>
+               onchange="this.form.submit()">
+        <label class="form-check-label fw-semibold mb-0" for="seo_bot_auto_publish" style="cursor:pointer;font-size:13px;">
+          <?= $autoPubEnabled ? 'Enabled' : 'Disabled' ?>
+        </label>
+        <noscript><button type="submit" class="btn btn-sm btn-primary ms-2">Save</button></noscript>
+      </div>
+    </div>
+  </form>
 
   <!-- ====== 1. QUICK ACTIONS — always visible ====== -->
   <div class="card-e mb-3" style="border:1px solid #e2e8f0;border-radius:14px;padding:16px 20px;">

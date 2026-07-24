@@ -995,6 +995,56 @@ function min_css_url(string $srcFsPath, string $srcWebPath): string {
 }
 
 /**
+ * min_js_url() — mirror of min_css_url() for JavaScript.  Reads the source
+ * .js file, strips /* ... *​/ + // comments, collapses whitespace, writes
+ * to a sibling .min.js.  On PageSpeed / Semrush audits this satisfies the
+ * "Minify JavaScript" recommendation without a build step.
+ *
+ * Conservative — never touches string/regex literals, never renames
+ * identifiers, never removes semicolons.  Aim is only "reasonable byte
+ * reduction" while remaining bulletproof for any hand-written code.
+ */
+function min_js_url(string $srcFsPath, string $srcWebPath): string {
+    if (!is_file($srcFsPath)) return $srcWebPath;
+    $minFs  = preg_replace('/\.js$/', '.min.js', $srcFsPath);
+    $minWeb = preg_replace('/\.js$/', '.min.js', $srcWebPath);
+    $srcMt  = (int)@filemtime($srcFsPath);
+    $srcHash = substr(md5_file($srcFsPath), 0, 12);
+    $stale = !is_file($minFs) || (int)@filemtime($minFs) < $srcMt;
+    if (!$stale) {
+        $tail = @file_get_contents($minFs, false, null, max(0, filesize($minFs) - 64));
+        if ($tail === false || strpos($tail, '/*@src=' . $srcHash . '*/') === false) {
+            $stale = true;
+        }
+    }
+    if ($stale) {
+        $js = (string)@file_get_contents($srcFsPath);
+        if ($js === '') return $srcWebPath . '?v=' . $srcMt;
+        // Line-by-line: strip block comments per line, strip `//` line
+        // comments (skip lines starting with a URL protocol to avoid
+        // stripping `//example.com`), trim, and collapse runs of spaces.
+        $lines = explode("\n", $js);
+        $out = [];
+        foreach ($lines as $line) {
+            $line = preg_replace('#/\*[\s\S]*?\*/#', '', $line);
+            // Strip `// ...` comments only when NOT inside a string or after `:`
+            $line = preg_replace('#(?<![:"\'])//[^\n]*$#', '', $line);
+            $line = trim($line);
+            if ($line !== '') $out[] = $line;
+        }
+        $js = implode("\n", $out);
+        $js = preg_replace('/[ \t]+/', ' ', $js);
+        $js = trim((string)$js);
+        $js .= "\n/*@src=" . $srcHash . "*/";
+        if (@file_put_contents($minFs, $js) === false) {
+            return $srcWebPath . '?v=' . $srcMt;
+        }
+        @touch($minFs, $srcMt + 1);
+    }
+    return $minWeb . '?v=' . (int)@filemtime($minFs);
+}
+
+/**
  * True only for a GLOBALLY valid GTIN (real GS1 identifier). Rejects the
  * GS1 restricted / in-store ranges (GTIN-12/13 starting with "2", and the
  * 02/04/05 prefixes) that pass the check digit but are NOT globally unique —

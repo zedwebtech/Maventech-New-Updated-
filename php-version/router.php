@@ -440,6 +440,27 @@ if (preg_match('#^/hub/([a-z0-9\-]+)/?$#', $path, $m)) {
 }
 
 /* ============================================================
+ *  FREE TOOLS clean URLs — mirror the .htaccess rules so the
+ *  built-in dev server resolves /tools and /tools/<slug> to
+ *  the correct .php files.  Without these, the extensionless
+ *  fallback further down doesn't fire for /tools/<slug> because
+ *  the router falls back to serving the directory listing.
+ * ============================================================ */
+if ($path === '/tools' || $path === '/tools/') {
+    require __DIR__ . '/tools.php';
+    return true;
+}
+if (preg_match('#^/tools/([a-z0-9\-]+)/?$#', $path, $m)) {
+    $toolFile = __DIR__ . '/tools/' . $m[1] . '.php';
+    if (is_file($toolFile)) {
+        $_SERVER['SCRIPT_NAME']     = '/tools/' . $m[1] . '.php';
+        $_SERVER['SCRIPT_FILENAME'] = $toolFile;
+        require $toolFile;
+        return true;
+    }
+}
+
+/* ============================================================
  *  BACKLINK BOOTSTRAP — Embeddable badge widget.
  *  Partners/bloggers paste a single <script> tag on their site:
  *     <script src="https://yourdomain/embed/badge.js"

@@ -134,11 +134,19 @@ include __DIR__ . '/includes/header.php';
         </div>
       </div>
       <div class="mv-actions d-flex flex-wrap gap-2 mt-3">
+        <?php
+          /* Same helper as product.php — nofollow only for external URLs;
+             internal links must be crawlable. */
+          $mv_link_rel = static function (string $url): string {
+              return preg_match('~^https?://~i', $url) === 1
+                  ? 'nofollow noopener external' : 'noopener';
+          };
+        ?>
         <?php if ($installer !== ''): ?>
-          <a href="<?= esc($installer) ?>" target="_blank" rel="nofollow noopener" class="btn rounded-pill px-4" data-testid="guide-download-btn" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi bi-box-arrow-down me-2"></i>Download installer</a>
+          <a href="<?= esc($installer) ?>" target="_blank" rel="<?= $mv_link_rel($installer) ?>" class="btn rounded-pill px-4" data-testid="guide-download-btn" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi bi-box-arrow-down me-2"></i>Download installer</a>
         <?php endif; ?>
         <?php if ($activation !== ''): ?>
-          <a href="<?= esc($activation) ?>" target="_blank" rel="nofollow noopener" class="btn btn-outline-primary rounded-pill px-4" data-testid="guide-activate-btn"><i class="bi bi-key me-2"></i>Activate / Sign in</a>
+          <a href="<?= esc($activation) ?>" target="_blank" rel="<?= $mv_link_rel($activation) ?>" class="btn btn-outline-primary rounded-pill px-4" data-testid="guide-activate-btn"><i class="bi bi-key me-2"></i>Activate / Sign in</a>
         <?php endif; ?>
         <a href="<?= esc('product.php?slug=' . urlencode($slug)) ?>" class="btn btn-link text-decoration-none px-2" data-testid="guide-back-btn"><i class="bi bi-arrow-left me-1"></i>Back to product</a>
       </div>

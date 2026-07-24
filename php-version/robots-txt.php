@@ -45,7 +45,20 @@ $disallowedPaths = [
     '/account.php', '/admin.php', '/admin-email-preview.php',
     '/logout.php', '/order-success.php', '/order-view.php',
     '/order-history.php', '/email-view.php', '/email-api.php',
-    '/ajax/', '/uploads/', '/cron.php', '/setup-check.php',
+    // /ajax/ is fetched by client-side JS from indexed pages, so Google
+    // needs to be able to reach it to render (Semrush flags these as
+    // "blocked internal resources"). Only the AJAX endpoints that require
+    // an authenticated session are individually noindex'd — the rest are
+    // safe to crawl.
+    // '/ajax/',  // REMOVED 2026-07 — was flagged as blocked internal resource.
+    // /uploads/ contains product images that are hotlinked from indexed
+    // product/blog pages. Blocking the whole directory made Semrush report
+    // "181 issues with blocked internal resources". PII-carrying receipts
+    // (uploads/order-pdfs/*) are already protected by a 403 in router.php +
+    // .htaccess, so the top-level uploads/ folder can be crawled safely.
+    // '/uploads/', // REMOVED 2026-07 — see uploads/order-pdfs/.htaccess for PII gating.
+    '/uploads/order-pdfs/',
+    '/cron.php', '/setup-check.php',
     '/*?session_id=', '/*?order=',
     // ---- Legacy WordPress paths (Search Console cleanup) ---------------
     // These URLs never existed on the Maventech PHP store — they're leftover

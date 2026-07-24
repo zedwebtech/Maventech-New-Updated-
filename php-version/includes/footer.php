@@ -841,7 +841,7 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
    the single biggest Core-Web-Vitals win for a server-rendered site.
 -->
 <script defer src="assets/vendor/bootstrap.bundle.min.js?v=<?= esc(@filemtime(__DIR__ . '/../assets/vendor/bootstrap.bundle.min.js')) ?>"></script>
-<script defer src="assets/js/main.js?v=<?= esc(@filemtime(__DIR__ . '/../assets/js/main.js')) ?>"></script>
+<script defer src="<?= esc(min_js_url(__DIR__ . '/../assets/js/main.js', 'assets/js/main.js')) ?>"></script>
 <!-- 3D scroll effects (reveal-on-scroll + subtle pointer tilt; reduced-motion aware) -->
 <!-- `defer` added 2026-07-07 — PageSpeed Insights (desktop + mobile) flagged
      this script as render-blocking (~590 ms savings). scroll3d.js only wires
@@ -849,7 +849,7 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
      run before DOMContentLoaded, so `defer` is fully safe here. Also
      eliminates a script-eval spike that was contributing to Total Blocking
      Time (was 550 ms). -->
-<script defer src="assets/js/scroll3d.js?v=<?= esc(@filemtime(__DIR__ . '/../assets/js/scroll3d.js')) ?>"></script>
+<script defer src="<?= esc(min_js_url(__DIR__ . '/../assets/js/scroll3d.js', 'assets/js/scroll3d.js')) ?>"></script>
 
 <!--
    Lazy-load + async-decode every image that's not already in the initial

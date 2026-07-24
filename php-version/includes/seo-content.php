@@ -763,7 +763,7 @@ function product_howto_jsonld(array $p): array
         'tool'        => ['Your ' . $brand . ' licence key', 'Internet connection', 'Your ' . ($p['platform'] ?: 'Windows') . ' device'],
         'step'        => [
             ['@type' => 'HowToStep', 'position' => 1, 'name' => 'Receive your licence key',
-             'text' => 'Your ' . $name . ' licence key arrives by email withby email of completing checkout, along with the official ' . $brand . ' download link.'],
+             'text' => 'Your ' . $name . ' licence key arrives by email within minutes of completing checkout, along with the official ' . $brand . ' download link.'],
             ['@type' => 'HowToStep', 'position' => 2, 'name' => 'Download the official installer',
              'text' => 'Click the download link in the email or visit the official ' . $brand . ' website to download the genuine installer for ' . ($p['platform'] ?: 'Windows') . '.'],
             ['@type' => 'HowToStep', 'position' => 3, 'name' => 'Install the software',
@@ -806,18 +806,38 @@ function product_ai_summary_jsonld(array $p): array
     $body .= 'The licence is genuine, activates directly inside the official ' . $brand . ' software on ' . $platform . ', and remains valid for the life of the device — there is no monthly subscription and no automatic re-billing. ';
     $body .= 'Ideal for shoppers searching for "buy ' . strtolower($name) . ' lifetime", "' . strtolower($name) . ' product key", "' . strtolower($name) . ' one-time purchase no subscription" or "' . $brand . ' independent reseller". ';
     $body .= "\n\n";
-    $body .= 'After checkout the activation key arrives by email withby email, alongside the official ' . $brand . ' download link and step-by-step activation instructions. ';
+    $body .= 'After checkout the activation key arrives by email within minutes of purchase, alongside the official ' . $brand . ' download link and step-by-step activation instructions. ';
     $body .= 'Activation completes in under five minutes; help is available six days a week via live chat, email and phone. ';
     $body .= 'Every order is backed by a 30-day money-back guarantee and protected by encrypted payment processing. ';
+
+    // Article schema REQUIRES an `image` field for rich results.  Fall back
+    // to the site OG default when the product has no image so Search Console
+    // stops flagging "Missing field 'image' (in 'Article')".
+    $imgRaw = trim((string)($p['image'] ?? ''));
+    if ($imgRaw !== '') {
+        $imgAbs = preg_match('#^https?://#i', $imgRaw) ? $imgRaw : rtrim(site_url(), '/') . '/' . ltrim($imgRaw, '/');
+    } else {
+        $imgAbs = rtrim(site_url(), '/') . '/og-default.png';
+    }
 
     return [
         '@context'      => 'https://schema.org',
         '@type'         => 'Article',
         'headline'      => $headline,
+        'image'         => [$imgAbs],
         'description'   => 'Plain-language summary of ' . $name . ' for AI search engines and shoppers comparing genuine ' . $brand . ' licence keys.',
         'articleBody'   => $body,
         'author'        => ['@type' => 'Organization', 'name' => SITE_BRAND, 'url' => site_url() . '/'],
-        'publisher'     => ['@type' => 'Organization', 'name' => SITE_BRAND, 'url' => site_url() . '/'],
+        'publisher'     => [
+            '@type' => 'Organization',
+            'name'  => SITE_BRAND,
+            'url'   => site_url() . '/',
+            // publisher.logo is REQUIRED by Google's Article rich-result parser.
+            'logo'  => [
+                '@type' => 'ImageObject',
+                'url'   => rtrim(site_url(), '/') . '/assets/images/favicon/icon-512.png',
+            ],
+        ],
         'datePublished' => date('Y-m-d'),
         'dateModified'  => date('Y-m-d'),
         'mainEntityOfPage' => ['@type' => 'WebPage', '@id' => $url],

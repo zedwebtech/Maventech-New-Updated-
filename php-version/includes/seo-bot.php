@@ -1989,6 +1989,23 @@ function seo_bot_latest_run(): ?array
  *  Safe to call from header.php on EVERY request — the early exit
  *  branches add ~0.1 ms when the bot isn't due.
  * =================================================================== */
+/**
+ * Returns TRUE only when the operator has explicitly opted-in to
+ * automatic blog-post publishing via the admin toggle.  Default = OFF
+ * (2026-07 policy change — auto-publishing was too noisy, so posts
+ * only ship when a human clicks Write One Post / Random Post /
+ * Generate Trends Now).  Non-publishing background tasks (sitemap
+ * pings, IndexNow, llms.txt refresh, freshness updates) are unaffected.
+ */
+function seo_bot_auto_publish_enabled(): bool
+{
+    try {
+        return (string)setting_get('seo_bot_auto_publish', '0') === '1';
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
 function seo_bot_autotick(): void
 {
     // Don't trip during CLI scripts, the dedicated cron worker, or bots.
@@ -1998,10 +2015,20 @@ function seo_bot_autotick(): void
     $ua = strtolower((string)($_SERVER['HTTP_USER_AGENT'] ?? ''));
     if ($ua === '' || preg_match('/bot|crawler|spider|googlebot|bingbot|yandex|baidu|facebookexternalhit|slack|discord|preview|monitor/i', $ua)) return;
 
-    try {
-        $last = setting_get('seo_bot_last_run_at', '');
-        if ($last && (time() - strtotime($last)) < 24 * 3600) return; // not due
-    } catch (Throwable $e) { return; }
+    // Only take the lock if we actually have background work to do.
+    // Auto-publish is opt-in; non-publish maintenance always runs.
+    $needsPublish       = seo_bot_auto_publish_enabled();
+    $needsSitemapWeekly = ((string)setting_get('auto_sitemap_weekly', '0') === '1');
+
+    if ($needsPublish) {
+        try {
+            $last = setting_get('seo_bot_last_run_at', '');
+            if ($last && (time() - strtotime($last)) < 24 * 3600) $needsPublish = false; // not due
+        } catch (Throwable $e) { $needsPublish = false; }
+    }
+
+    // If NONE of the background jobs are ready to fire, bail early.
+    if (!$needsPublish && !$needsSitemapWeekly) return;
 
     // Single-flight lock so two simultaneous visitors don't both fire.
     $lockFile = sys_get_temp_dir() . '/maventech_seo_bot.lock';
@@ -2010,7 +2037,7 @@ function seo_bot_autotick(): void
 
     // Defer the actual run until AFTER PHP has finished sending the response
     // to the browser, so the visitor isn't blocked by the LLM call.
-    register_shutdown_function(static function () use ($lockFile) {
+    register_shutdown_function(static function () use ($lockFile, $needsPublish) {
         // Close the connection to the browser ASAP.
         ignore_user_abort(true);
         @set_time_limit(120);
@@ -2021,16 +2048,26 @@ function seo_bot_autotick(): void
             while (ob_get_level() > 0) @ob_end_flush();
             @flush();
         }
-        try {
-            seo_bot_run_if_due(false);
-        } catch (Throwable $e) {
-            @error_log('[seo-bot autotick] ' . $e->getMessage());
+        // NEW: Only auto-publish blog posts when the operator has explicitly
+        // enabled the toggle in Admin → AI Auto-Blogger. Default is OFF, so
+        // by default this branch is skipped and posts only ship on manual
+        // clicks (Write One Post / Random Post / Generate Trends Now).
+        if ($needsPublish) {
+            try {
+                seo_bot_run_if_due(false);
+            } catch (Throwable $e) {
+                @error_log('[seo-bot autotick] ' . $e->getMessage());
+            }
         }
         try {
             seo_bot_weekly_sitemap_tick();
         } catch (Throwable $e) {
             @error_log('[seo-bot weekly-sitemap] ' . $e->getMessage());
         }
+        // Freshness tick UPDATES existing posts (bumps dateModified + refreshes
+        // FAQ). It does NOT publish new posts, so it can safely run whether or
+        // not auto-publish is enabled — kept behind the same lock to serialise
+        // LLM calls.
         try {
             seo_bot_freshness_tick();
         } catch (Throwable $e) {

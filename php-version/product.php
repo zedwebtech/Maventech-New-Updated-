@@ -831,6 +831,16 @@ include __DIR__ . '/includes/header.php';
     $pActivate  = $pLinks['activation'];
   ?>
   <?php if ($pInstaller !== '' || $pGuide !== '' || $pActivate !== ''): ?>
+  <?php
+    /* Helper: only apply rel="nofollow" to EXTERNAL URLs. Internal links
+       (e.g. /install-guide.php?slug=...) must be crawlable — otherwise
+       Semrush flags them as "outgoing internal links contain nofollow"
+       and PageRank stops flowing to the guide page. */
+    $mv_link_rel = static function (string $url): string {
+        $isExternal = preg_match('~^https?://~i', $url) === 1;
+        return $isExternal ? 'nofollow noopener external' : 'noopener';
+    };
+  ?>
   <section class="mt-5" data-testid="product-install-block">
     <div class="card border-0 shadow-sm rounded-4">
       <div class="card-body p-4">
@@ -838,13 +848,13 @@ include __DIR__ . '/includes/header.php';
         <p class="small text-secondary mb-3">Official installer, step-by-step installation guide and the activation / sign-in page for <strong><?= esc($product['name']) ?></strong> &mdash; the same links we email after purchase.</p>
         <div class="d-flex flex-wrap gap-2">
           <?php if ($pInstaller !== ''): ?>
-            <a href="<?= esc($pInstaller) ?>" target="_blank" rel="nofollow noopener" class="btn rounded-pill px-4 fw-semibold" data-testid="install-download-btn" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi <?= mv_is_manual_url($pInstaller) ? 'bi-journal-arrow-down' : 'bi-box-arrow-down' ?> me-2"></i><?= esc(mv_installer_btn_label($pInstaller)) ?></a>
+            <a href="<?= esc($pInstaller) ?>" target="_blank" rel="<?= $mv_link_rel($pInstaller) ?>" class="btn rounded-pill px-4 fw-semibold" data-testid="install-download-btn" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi <?= mv_is_manual_url($pInstaller) ? 'bi-journal-arrow-down' : 'bi-box-arrow-down' ?> me-2"></i><?= esc(mv_installer_btn_label($pInstaller)) ?></a>
           <?php endif; ?>
           <?php if ($pGuide !== ''): ?>
-            <a href="<?= esc($pGuide) ?>" target="_blank" rel="nofollow noopener" class="btn btn-primary rounded-pill px-4 fw-semibold" data-testid="install-guide-btn"><i class="bi bi-journal-text me-2"></i>Installation guide</a>
+            <a href="<?= esc($pGuide) ?>" target="_blank" rel="<?= $mv_link_rel($pGuide) ?>" class="btn btn-primary rounded-pill px-4 fw-semibold" data-testid="install-guide-btn"><i class="bi bi-journal-text me-2"></i>Installation guide</a>
           <?php endif; ?>
           <?php if ($pActivate !== ''): ?>
-            <a href="<?= esc($pActivate) ?>" target="_blank" rel="nofollow noopener" class="btn btn-outline-primary rounded-pill px-4 fw-semibold" data-testid="install-activate-btn"><i class="bi bi-key me-2"></i>Activate / Sign in</a>
+            <a href="<?= esc($pActivate) ?>" target="_blank" rel="<?= $mv_link_rel($pActivate) ?>" class="btn btn-outline-primary rounded-pill px-4 fw-semibold" data-testid="install-activate-btn"><i class="bi bi-key me-2"></i>Activate / Sign in</a>
           <?php endif; ?>
         </div>
         <?php if ($pInstaller === '' && $pGuide !== ''): ?>

@@ -27,6 +27,12 @@ $stmt->execute(['refund-policy']);
 $policy = $stmt->fetch();
 
 $pageTitle = 'Refund Policy | ' . SITE_BRAND;
+// 2026-07 FIX: force canonical URL so /refund-policy (clean alias) and
+// /refund-policy.php agree on the same canonical, and /page.php?slug=refund-policy
+// (legacy) also consolidates here.  Semrush counted this as one of the
+// "2 issues with duplicate title tags".
+$canonicalUrl      = site_url() . country_prefix() . '/refund-policy.php';
+$canonicalPathBare = '/refund-policy.php';
 if ($policy) {
     $policy['content'] = company_placeholders_apply((string)$policy['content']);
     $pageDescription = 'Refund Policy — ' . trim(mb_substr(strip_tags($policy['content']), 0, 140)) . '…';

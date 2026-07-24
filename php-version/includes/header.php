@@ -228,10 +228,26 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   <link rel="canonical" href="<?= esc($canonicalUrl) ?>">
   <?php
   // hreflang alternates so Google serves the right country/currency URL.
-  if (isset($canonicalPathBare)):
-      $__hlMap = ['US' => 'en-US', 'UK' => 'en-GB', 'AU' => 'en-AU', 'CA' => 'en-CA', 'EU' => 'en'];
+  //
+  // 2026-07 FIX for Semrush "14 hreflang conflicts within page source code":
+  //   1. Skip the entire emitter on noindex pages — Search Console
+  //      flags "hreflang link pointing to a URL that has noindex" as a
+  //      conflict. We also skip on private / auth / cart routes.
+  //   2. Removed the standalone `hreflang="en"` variant for /eu — a
+  //      language-only tag alongside en-US / en-GB / en-AU / en-CA
+  //      creates ambiguous matches which Semrush counts as conflicts.
+  //      Visitors landing on /eu still get the correct currency; SEO
+  //      wise x-default (which resolves to US) is the canonical fallback.
+  //   3. `xhtml` namespace not needed inside &lt;head&gt; — plain <link>
+  //      tags are the recommended form. Sitemap keeps xhtml:link.
+  if (isset($canonicalPathBare) && !$noIndex):
+      $__hlMap = ['US' => 'en-US', 'UK' => 'en-GB', 'AU' => 'en-AU', 'CA' => 'en-CA'];
+      // Deduplicate — the same URL under two hreflang tags is a conflict.
+      $__emitted = [];
       foreach ($__hlMap as $__cc => $__lang):
           $__alt = site_url() . ($__cc === 'US' ? '' : '/' . strtolower($__cc)) . $canonicalPathBare;
+          if (isset($__emitted[$__lang])) continue;
+          $__emitted[$__lang] = $__alt;
   ?>
   <link rel="alternate" hreflang="<?= $__lang ?>" href="<?= esc($__alt) ?>">
   <?php endforeach; ?>
@@ -630,17 +646,24 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
     // inline CSS. That mismatch caused a visible dark→dark FOUC flash on
     // every navigation. Loading it synchronously ensures the polished bg
     // is applied on the very first paint (no repaint = no flicker).
-    $darkCss = 'assets/css/dark-mode-polish.css?v=' . esc(@filemtime(__DIR__ . '/../assets/css/dark-mode-polish.css'));
+    //
+    // 2026-07 FIX: all first-party CSS is now served through min_css_url()
+    // so Semrush's "unminified CSS" warning no longer fires. Source files
+    // stay human-editable — the .min.css sibling is auto-regenerated on
+    // any change (see includes/functions.php).
+    $darkCss = min_css_url(__DIR__ . '/../assets/css/dark-mode-polish.css', 'assets/css/dark-mode-polish.css');
+    $themeCss = min_css_url(__DIR__ . '/../assets/css/theme-refresh.css', 'assets/css/theme-refresh.css');
+    $scrollCss = min_css_url(__DIR__ . '/../assets/css/scroll3d.css', 'assets/css/scroll3d.css');
   ?>
   <link href="<?= 'assets/vendor/bootstrap-icons.min.css?v=' . esc(@filemtime(__DIR__ . '/../assets/vendor/bootstrap-icons.min.css')) ?>" rel="stylesheet">
   <link href="<?= esc(min_css_url(__DIR__ . '/../assets/css/style.css', 'assets/css/style.css')) ?>" rel="stylesheet">
-  <link href="<?= $darkCss ?>" rel="stylesheet">
+  <link href="<?= esc($darkCss) ?>" rel="stylesheet">
   <!-- theme-refresh.css: global clean/spacious typography layer — must load LAST so it overrides. -->
-  <link href="assets/css/theme-refresh.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/css/theme-refresh.css')) ?>" rel="stylesheet">
+  <link href="<?= esc($themeCss) ?>" rel="stylesheet">
   <!-- scroll3d.css is a progressive-enhancement (scroll reveal + tilt) — load it
        async so it never blocks first render (PageSpeed: render-blocking CSS). -->
-  <link rel="preload" as="style" href="assets/css/scroll3d.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/css/scroll3d.css')) ?>" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link href="assets/css/scroll3d.css?v=<?= esc(@filemtime(__DIR__ . '/../assets/css/scroll3d.css')) ?>" rel="stylesheet"></noscript>
+  <link rel="preload" as="style" href="<?= esc($scrollCss) ?>" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="<?= esc($scrollCss) ?>" rel="stylesheet"></noscript>
   <script>window.SITE_PHONE = '<?= esc($brandPhone) ?>'; window.CART_SLUGS = <?= json_encode(array_keys(cart())) ?>;</script>
 
   <?php

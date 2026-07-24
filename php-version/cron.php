@@ -40,8 +40,14 @@ echo "[" . date('c') . "] cron.php: processed=$count batch=$batch elapsed_ms=$ms
 // SEO / GEO / AEO automation — runs once every 24h.
 // IndexNow ping + Google/Bing sitemap ping + Claude Haiku content refresh
 // (meta description + AI summary for stale products).
+// NEW (2026-07): auto-publishing new blog posts is opt-in via the
+// admin toggle. When disabled, we skip the publish step but still emit
+// a status line so cron logs remain readable.
 try {
     $seoForce = !empty($_GET['seo_force']);
+    if (!seo_bot_auto_publish_enabled() && !$seoForce) {
+        echo "[" . date('c') . "] seo-bot: skipped — auto-publish is OFF (enable in Admin → AI Auto-Blogger).\n";
+    } else {
     $seoReport = seo_bot_run_if_due($seoForce);
     if (!empty($seoReport['skipped'])) {
         echo "[" . date('c') . "] seo-bot: skipped — " . $seoReport['reason'] . "\n";
@@ -52,6 +58,7 @@ try {
            . (!empty($seoReport['blog_post_id']) ? ' blog_post="' . $seoReport['blog_post_title'] . '"' : '')
            . (empty($seoReport['errors']) ? '' : ' errors=' . count($seoReport['errors']))
            . "\n";
+    }
     }
 } catch (Throwable $e) {
     echo "[" . date('c') . "] seo-bot: ERROR " . $e->getMessage() . "\n";

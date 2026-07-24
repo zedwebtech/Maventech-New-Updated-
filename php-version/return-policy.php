@@ -47,6 +47,10 @@ if (!$policy) {
 }
 
 $pageTitle = 'Return Policy | ' . SITE_BRAND;
+// 2026-07 FIX: force canonical so /return-policy (clean alias) and
+// /return-policy.php agree.  Prevents duplicate-title tags in Semrush.
+$canonicalUrl      = site_url() . country_prefix() . '/return-policy.php';
+$canonicalPathBare = '/return-policy.php';
 if ($policy) {
     $policy['content'] = company_placeholders_apply((string)$policy['content']);
     $pageDescription = 'Return Policy — ' . trim(mb_substr(strip_tags($policy['content']), 0, 140)) . '…';

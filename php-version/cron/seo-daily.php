@@ -50,6 +50,14 @@ $response  = [
 ];
 
 try {
+    // NEW (2026-07): auto-publish is now opt-in. External cron ping still
+    // ticks the maintenance tasks (sitemap resubmit + freshness updates in
+    // seo_bot_autotick), but it MUST NOT publish new blog posts unless the
+    // operator has explicitly enabled the toggle in Admin → AI Auto-Blogger.
+    if (!seo_bot_auto_publish_enabled()) {
+        $response['mode']   = 'auto_publish_disabled';
+        $response['reason'] = 'Auto-publish is OFF. Enable "Auto-publish blog posts" in Admin → AI Auto-Blogger to run the daily batch, or use the Write One Post / Random Post / Generate Trends Now buttons for manual publishing.';
+    } else {
     // If a full daily batch hasn't run inside the cooldown window, run it.
     // SEOBOT_BLOG_COOLDOWN_H is defined inside seo-bot.php (20 h default).
     $lastBatchAt = setting_get('seo_bot_last_blog_post_at', '');
@@ -92,6 +100,7 @@ try {
             $response['ok']     = false;
             $response['errors'] = [$one['error'] ?? 'unknown error'];
         }
+    }
     }
 } catch (Throwable $e) {
     $response['ok']     = false;

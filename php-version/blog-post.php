@@ -52,11 +52,21 @@ if ($post) {
         }
     } catch (Throwable $e) {}
 
+    // Resolve an absolute image URL (Google requires https:// and rejects
+    // schema when the image field is empty or unreachable). Fall back to
+    // the site OG default so `image` is never an empty array.
+    $__blogImg = trim((string)($post['image'] ?? ''));
+    if ($__blogImg !== '' && !preg_match('#^https?://#i', $__blogImg)) {
+        $__blogImg = rtrim(site_url(), '/') . '/' . ltrim($__blogImg, '/');
+    }
+    if ($__blogImg === '') {
+        $__blogImg = rtrim(site_url(), '/') . '/og-default.png';
+    }
     $jsonLdArticle = [
         '@context'      => 'https://schema.org',
         '@type'         => !empty($post['is_featured_trends']) ? 'Article' : 'BlogPosting',
         'headline'      => $post['title'],
-        'image'         => $post['image'] ? [$post['image']] : [],
+        'image'         => [$__blogImg],
         'datePublished' => $articleDate ?: date('c'),
         'dateModified'  => $modifiedDate,
         // Author = the brand (Organization). Keeps the article attribution
@@ -81,7 +91,14 @@ if ($post) {
             'url'   => site_url() . '/',
             'logo'  => [
                 '@type' => 'ImageObject',
-                'url'   => site_url() . '/assets/images/badges/microsoft-verified.svg',
+                // 2026-07 FIX: Google's Article rich-result parser rejects
+                // SVG for publisher.logo (must be a raster with an explicit
+                // aspect ratio ≤ 600x60 px in width/height). Point at the
+                // 512x512 PNG icon shipped in /assets/images/favicon which
+                // Google's parser has always accepted.
+                'url'    => rtrim(site_url(), '/') . '/assets/images/favicon/icon-512.png',
+                'width'  => 512,
+                'height' => 512,
             ],
         ],
         'mainEntityOfPage' => [
