@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/seo-content.php';
+require_once __DIR__ . '/includes/product-keywords.php';
 
 $slug = $_GET['slug'] ?? '';
 $product = $slug ? get_product($slug) : null;
@@ -348,7 +349,11 @@ if ($_reviewStats['count'] > 0 && !empty($_reviewRows)) {
 // Perplexity, Google AI Overviews) consume both signals to map this SKU
 // against high-intent transactional queries — "lifetime license",
 // "product key", "one-time purchase", "Professional Plus", etc.
-$jsonLd['keywords'] = product_long_tail_keywords($product);
+//
+// 2026-07: merged with the client-supplied high-intent keyword map
+// (includes/product-keywords.php) so both the algorithmic long-tail list
+// AND the explicit search-console PPC terms appear in the JSON-LD payload.
+$jsonLd['keywords'] = product_seo_keywords_string($product);
 $_addProps = [
     ['@type' => 'PropertyValue', 'name' => 'License Type',   'value' => 'Lifetime / Perpetual'],
     ['@type' => 'PropertyValue', 'name' => 'Purchase Model', 'value' => 'One-time purchase — no subscription'],
@@ -437,7 +442,12 @@ $jsonLdAiSummary = product_ai_summary_jsonld($product);
 // Google can surface either set in AI Overviews / Featured Snippets.
 $jsonLdPaa = faq_to_jsonld(product_paa_faqs($product));
 
-$pageKeywords = product_long_tail_keywords($product);
+// $pageKeywords is picked up by includes/header.php and rendered as
+// <meta name="keywords">. Legacy SEO signal but STILL parsed by Bing
+// Webmaster + Yandex + several AI crawlers (Perplexity, Andi, Kagi).
+// We use the merged explicit+algorithmic list so this tag doubles as a
+// declarative index of the exact phrases we want to rank for.
+$pageKeywords = product_seo_keywords_string($product);
 $related = get_products([$product['category']]);
 $related = array_values(array_filter($related, fn($r) => $r['slug'] !== $product['slug']));
 $related = array_slice($related, 0, 4);
@@ -876,6 +886,15 @@ include __DIR__ . '/includes/header.php';
   <!-- Long-tail keyword SEO copy block — visible to humans, indexable by
        crawlers, quotable by AI search engines (Speakable schema attached). -->
   <?= product_seo_copy($product) ?>
+
+  <!-- "Popular searches" chip block — visible, crawlable list of the exact
+       high-intent PPC / Search-Console phrases shoppers type when hunting
+       for this SKU.  Emits inline CSS the first time it renders in the
+       response, then reuses the shared class on subsequent product pages.
+       CRITICAL: never hidden with `display:none` — Google flags hidden
+       keyword lists as spam ("cloaked keyword stuffing").  Real, visible
+       chips satisfy both SEO guidelines AND the user-value bar. -->
+  <?= product_search_keywords_block($product) ?>
 
   <?php /* "What customers are saying" — visible block backing the JSON-LD
           aggregateRating + review schema added in the <head>.  Hidden when
