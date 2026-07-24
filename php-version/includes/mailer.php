@@ -97,7 +97,33 @@ function smtp_set_config(array $in): void {
         'host'         => fn($v) => setting_set('smtp_host',        trim((string)$v)),
         'port'         => fn($v) => setting_set('smtp_port',        (string)(int)$v),
         'username'     => fn($v) => setting_set('smtp_username',    trim((string)$v)),
-        'password'     => fn($v) => setting_set('smtp_password_b64', $v === '' ? '' : base64_encode((string)$v)),
+        'password'     => function ($v) {
+            // Normalise the password.  Two common paste-pitfalls we clean here:
+            //
+            //   1. Gmail App Passwords are displayed as 4x4 groups
+            //      ("abcd efgh ijkl mnop"). Users copy the whole block —
+            //      Google's docs say the spaces are ignored, so we strip
+            //      them here rather than confusing the admin with an
+            //      auth-fail on a superficially-correct password.
+            //
+            //   2. Trailing / leading whitespace or an accidental newline
+            //      from a copy-paste. Same fix as (1).
+            //
+            //   Passwords that legitimately contain internal spaces are
+            //   rare, and no mainstream provider (Gmail, O365, SendGrid,
+            //   SES, cPanel Mailboxes) uses one. We keep the ORIGINAL
+            //   password when normalisation would leave it identical, so
+            //   we never silently mutate a valid credential.
+            $orig = (string)$v;
+            $norm = trim($orig);
+            // Only strip inner spaces on Gmail-App-Password-shaped inputs
+            // (16 hex-ish chars in 4x4 groups).  Anything else keeps its
+            // internal spaces intact so we don't break real passwords.
+            if (preg_match('/^[A-Za-z0-9]{4}[ \t]+[A-Za-z0-9]{4}[ \t]+[A-Za-z0-9]{4}[ \t]+[A-Za-z0-9]{4}$/', $norm)) {
+                $norm = preg_replace('/\s+/', '', $norm);
+            }
+            setting_set('smtp_password_b64', $norm === '' ? '' : base64_encode($norm));
+        },
         'encryption'   => fn($v) => setting_set('smtp_encryption',  in_array($v,['tls','ssl','none'],true) ? $v : 'tls'),
         'from_email'   => fn($v) => setting_set('smtp_from_email',  trim((string)$v)),
         'from_name'    => fn($v) => setting_set('smtp_from_name',   trim((string)$v)),
@@ -462,10 +488,44 @@ function smtp_test_connection(?string $to = null): array {
         </ul>
         <p style="font-size:12px;color:#94a3b8;margin-top:18px;">You can now switch SMTP <em>Enabled</em> ON and all transactional emails will flow through this server.</p>
       </div></body></html>';
+    // Force SMTP debug output for the duration of the test so the admin
+    // gets the raw server response when something fails (Gmail's
+    // "5.7.8 Username and Password not accepted", O365's "5.7.3 Not
+    // Authorized to send from this address", etc.).  We do this by
+    // toggling the debug setting temporarily, then restoring it.  This
+    // is the single biggest UX win for diagnosing SMTP auth failures.
+    $prevDebug = setting_get('smtp_debug', '0');
+    setting_set('smtp_debug', '2');
     ob_start();
-    $res = smtp_send($to, 'Maventech SMTP test', $body, ['headers' => ['X-Test-Email' => '1']]);
-    $log = ob_get_clean();
-    return ['ok' => $res['ok'], 'message' => $res['ok'] ? ('Test email sent to ' . $to) : ($res['error'] ?? 'Send failed'), 'log' => $log];
+    try {
+        $res = smtp_send($to, 'Maventech SMTP test', $body, ['headers' => ['X-Test-Email' => '1']]);
+    } finally {
+        $log = ob_get_clean();
+        setting_set('smtp_debug', (string)$prevDebug);
+    }
+    // Friendly-fy well-known SMTP error signatures so the admin sees
+    // actionable guidance instead of a raw SMTP error string.
+    $friendlyMessage = $res['ok']
+        ? ('Test email sent to ' . $to)
+        : ($res['error'] ?? 'Send failed');
+    if (!$res['ok']) {
+        $lc = strtolower($res['error'] ?? '' . ' ' . $log);
+        if (strpos($lc, 'username and password not accepted') !== false
+            || strpos($lc, '535 5.7.8') !== false) {
+            $friendlyMessage = 'Authentication failed — Gmail rejected the username/password. Use an App Password (not your Google account password). Generate one at https://myaccount.google.com/apppasswords after enabling 2-Step Verification.';
+        } elseif (strpos($lc, '5.7.3') !== false || strpos($lc, 'not authorized to send') !== false) {
+            $friendlyMessage = 'Authentication OK but the "From Email" is not allowed on this mailbox. Set From Email to match the SMTP Username exactly (Gmail / O365 both rewrite From: to the authenticated mailbox).';
+        } elseif (strpos($lc, 'smtp authenticate') !== false || strpos($lc, 'smtp_auth') !== false || strpos($lc, '535 ') !== false) {
+            $friendlyMessage = 'SMTP authentication failed — check the Username and Password. For SendGrid the Username must be literally "apikey". For Amazon SES use SMTP credentials (not AWS access keys).';
+        } elseif (strpos($lc, 'connection refused') !== false || strpos($lc, 'network is unreachable') !== false || strpos($lc, 'no route to host') !== false) {
+            $friendlyMessage = 'Could not reach the SMTP host. Check the Host + Port. Some shared hosts block outbound port 25 — use 587 (STARTTLS) or 465 (SSL) instead.';
+        } elseif (strpos($lc, 'ssl') !== false && strpos($lc, 'certificate') !== false) {
+            $friendlyMessage = 'TLS certificate verification failed. If this is a legitimate self-signed cert on an internal relay, uncheck "Strict TLS peer verification" and try again.';
+        } elseif (strpos($lc, 'sender rejected') !== false || strpos($lc, '550 5.7.1') !== false) {
+            $friendlyMessage = 'Your SMTP host rejected the From Email address. Make sure it belongs to a real mailbox on the configured server (or a verified sender identity for SendGrid/SES).';
+        }
+    }
+    return ['ok' => $res['ok'], 'message' => $friendlyMessage, 'log' => $log];
 }
 
 /* ------------------------------------------------------------------------- */

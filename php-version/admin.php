@@ -1309,6 +1309,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'verify_peer'  => !empty($_POST['verify_peer']),
             'debug_level'  => $_POST['debug_level']?? '0',
         ]);
+        // 2026-07: when the "Send Test Email" button save-then-tests it
+        // POSTs with __ajax=1 so we can return a JSON ACK instead of a
+        // 302 (which fetch() follows and re-renders the whole admin
+        // page).  Backwards-compatible — a normal form submit without
+        // __ajax still gets the classic redirect.
+        if (!empty($_POST['__ajax'])) {
+            header('Content-Type: application/json');
+            echo json_encode(['ok' => true, 'message' => 'SMTP saved']);
+            exit;
+        }
         header('Location: admin.php?tab=smtp&msg=SMTP+saved'); exit;
 
     } elseif ($action === 'resend_outbox') {
@@ -12122,7 +12132,7 @@ elseif ($tab === 'smtp'):
 
           <!-- Provider presets -->
           <label class="form-label small fw-semibold mb-1">Quick preset</label>
-          <div class="d-flex flex-wrap gap-2 mb-3 smtp-presets-row" data-testid="smtp-presets">
+          <div class="d-flex flex-wrap gap-2 mb-2 smtp-presets-row" data-testid="smtp-presets">
             <button type="button" class="btn smtp-preset-btn" data-preset="cpanel">cPanel / Plesk</button>
             <button type="button" class="btn smtp-preset-btn" data-preset="gmail">Gmail</button>
             <button type="button" class="btn smtp-preset-btn" data-preset="o365">Office 365</button>
@@ -12130,6 +12140,12 @@ elseif ($tab === 'smtp'):
             <button type="button" class="btn smtp-preset-btn" data-preset="ses">Amazon SES</button>
             <button type="button" class="btn smtp-preset-btn" data-preset="custom">Custom</button>
           </div>
+
+          <!-- Provider-specific setup hint (rendered by JS when a preset is picked) -->
+          <div id="smtpPresetHint" class="mb-3 d-none" data-testid="smtp-preset-hint"
+               style="border-radius:10px;padding:10px 14px;font-size:12.5px;line-height:1.55;
+                      background:linear-gradient(180deg,#eff6ff 0%,#dbeafe 100%);
+                      border:1px solid #bfdbfe;color:#1e3a8a;"></div>
           <style>
             .smtp-preset-btn {
               font-size: 13px; font-weight: 600; padding: 7px 16px;
@@ -12160,6 +12176,22 @@ elseif ($tab === 'smtp'):
               padding: 9px 18px;
               border-radius: 10px;
             }
+            /* Provider-hint panel — dark-mode aware. */
+            [data-bs-theme="dark"] #smtpPresetHint {
+              background: linear-gradient(180deg, rgba(59,130,246,.08) 0%, rgba(59,130,246,.14) 100%) !important;
+              border-color: rgba(59,130,246,.35) !important;
+              color: #dbeafe !important;
+            }
+            #smtpPresetHint a { color: #1d4ed8; text-decoration: underline; font-weight: 600; }
+            [data-bs-theme="dark"] #smtpPresetHint a { color: #93c5fd; }
+            #smtpPresetHint code {
+              background: rgba(15,23,42,.08); padding: 1px 6px; border-radius: 4px;
+              font-size: 11.5px; color: inherit;
+            }
+            [data-bs-theme="dark"] #smtpPresetHint code { background: rgba(255,255,255,.10); }
+            #smtpPresetHint .hint-title { font-weight: 700; margin-bottom: 4px; }
+            #smtpPresetHint ul { margin: 4px 0 0; padding-left: 20px; }
+            #smtpPresetHint ul li { margin: 2px 0; }
           </style>
 
           <div class="row g-3">
@@ -12297,40 +12329,190 @@ elseif ($tab === 'smtp'):
     catch(e){ document.execCommand('copy'); }
   }
   (function(){
+    // ---- Provider preset library --------------------------------------
+    // Each preset defines the connection defaults AND a "hint" HTML block
+    // that renders under the preset row so the admin sees exactly what
+    // credentials to paste before clicking Save.
+    //
+    // Gmail / Office 365 / SendGrid / Amazon SES all REWRITE the outgoing
+    // "From:" header to the SMTP-authenticated mailbox, so we set the
+    // `syncFromEmail` flag on those presets — the JS auto-mirrors Username
+    // → From Email so the mailbox the customer sees always matches the
+    // one that actually sent the mail (no more "via gmail.com" tag in
+    // the recipient's inbox).
+    var siteHost = <?= json_encode($siteHost) ?>;
     var presets = {
-      cpanel:   { host: 'mail.' + '<?= esc($siteHost) ?>', port: 465, enc: 'ssl' },
-      gmail:    { host: 'smtp.gmail.com',     port: 587, enc: 'tls' },
-      o365:     { host: 'smtp.office365.com', port: 587, enc: 'tls' },
-      sendgrid: { host: 'smtp.sendgrid.net',  port: 587, enc: 'tls', user: 'apikey' },
-      ses:      { host: 'email-smtp.us-east-1.amazonaws.com', port: 587, enc: 'tls' },
-      custom:   { host: '', port: 587, enc: 'tls' }
+      cpanel:   {
+        host: 'mail.' + siteHost, port: 587, enc: 'tls',
+        syncFromEmail: false,
+        hint: '<div class="hint-title"><i class="bi bi-server me-1"></i>cPanel / Plesk shared hosting</div>' +
+              'Host is usually <code>mail.' + siteHost + '</code> (some hosts use <code>' + siteHost + '</code> without the "mail." prefix &mdash; check your cPanel Email Accounts page).' +
+              '<ul>' +
+              '<li>Create the mailbox first (cPanel &rarr; Email Accounts &rarr; Create), then paste its full email as the Username.</li>' +
+              '<li>Port <strong>587</strong> with STARTTLS is standard. If it stalls, try <strong>465</strong> with SSL.</li>' +
+              '<li>From Email must match a real mailbox on this domain, otherwise the host will reject with <em>Sender rejected</em>.</li>' +
+              '</ul>'
+      },
+      gmail:    {
+        host: 'smtp.gmail.com', port: 587, enc: 'tls',
+        syncFromEmail: true,
+        hint: '<div class="hint-title"><i class="bi bi-google me-1"></i>Gmail / Google Workspace</div>' +
+              'Gmail <strong>requires an App Password</strong>, not your Google account password (Google blocks basic-auth passwords since May&nbsp;2022).' +
+              '<ul>' +
+              '<li>Enable 2-Step Verification first: <a href="https://myaccount.google.com/security" target="_blank" rel="noopener">myaccount.google.com/security</a>.</li>' +
+              '<li>Then create an app password: <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">myaccount.google.com/apppasswords</a> &rarr; select "Mail" / "Other". Paste the 16-character code (spaces optional) into the Password field.</li>' +
+              '<li>Username = your full Gmail address (e.g. <code>you@gmail.com</code> or <code>you@yourdomain.com</code> for Workspace).</li>' +
+              '<li>Gmail rewrites the <em>From:</em> header to the authenticated mailbox &mdash; From Email is auto-synced below.</li>' +
+              '<li>Daily sending cap: 500/day for @gmail.com, 2 000/day for Workspace.</li>' +
+              '</ul>'
+      },
+      o365:     {
+        host: 'smtp.office365.com', port: 587, enc: 'tls',
+        syncFromEmail: true,
+        hint: '<div class="hint-title"><i class="bi bi-microsoft me-1"></i>Microsoft 365 / Office 365</div>' +
+              'Microsoft 365 requires <strong>SMTP AUTH to be explicitly enabled</strong> on the mailbox (disabled by default since 2023).' +
+              '<ul>' +
+              '<li>Enable in Microsoft 365 admin: Users &rarr; Active users &rarr; select user &rarr; Mail &rarr; "Manage email apps" &rarr; check <strong>Authenticated SMTP</strong>.</li>' +
+              '<li>If your tenant blocks basic auth, create an app password after enabling MFA: <a href="https://mysignins.microsoft.com/security-info" target="_blank" rel="noopener">mysignins.microsoft.com/security-info</a>.</li>' +
+              '<li>Username = full email (<code>user@company.com</code>).</li>' +
+              '<li>From Email must match the licensed mailbox, otherwise Microsoft returns <em>5.7.3 Not Authorized to send from this address</em>.</li>' +
+              '</ul>'
+      },
+      sendgrid: {
+        host: 'smtp.sendgrid.net', port: 587, enc: 'tls', user: 'apikey',
+        syncFromEmail: false,
+        hint: '<div class="hint-title"><i class="bi bi-send-fill me-1"></i>SendGrid</div>' +
+              '<ul>' +
+              '<li>Username is literally the word <code>apikey</code> (auto-filled above &mdash; do not change it).</li>' +
+              '<li>Password = the SendGrid API key. Create one at <a href="https://app.sendgrid.com/settings/api_keys" target="_blank" rel="noopener">app.sendgrid.com/settings/api_keys</a> with <em>Mail Send</em> = Full Access.</li>' +
+              '<li>From Email must be a <strong>verified Sender Identity</strong> (single-sender or authenticated domain): <a href="https://app.sendgrid.com/settings/sender_auth" target="_blank" rel="noopener">app.sendgrid.com/settings/sender_auth</a>.</li>' +
+              '<li>Free tier = 100 emails/day; upgrade for higher throughput.</li>' +
+              '</ul>'
+      },
+      ses:      {
+        host: 'email-smtp.us-east-1.amazonaws.com', port: 587, enc: 'tls',
+        syncFromEmail: false,
+        hint: '<div class="hint-title"><i class="bi bi-cloud-fill me-1"></i>Amazon SES</div>' +
+              'SES SMTP credentials are <strong>different from your AWS access keys</strong>. Generate a dedicated SMTP user under IAM.' +
+              '<ul>' +
+              '<li>Create SMTP credentials: SES console &rarr; <em>Account dashboard</em> &rarr; <a href="https://console.aws.amazon.com/ses/home#/smtp" target="_blank" rel="noopener">SMTP settings</a> &rarr; "Create SMTP credentials". Save the Username + Password Amazon shows you (won\'t be shown again).</li>' +
+              '<li>Adjust the host to your SES region: <code>email-smtp.us-east-1.amazonaws.com</code>, <code>email-smtp.eu-west-1.amazonaws.com</code>, <code>email-smtp.ap-south-1.amazonaws.com</code>, etc.</li>' +
+              '<li>Verify your From Email domain (or the specific address) in <em>Verified identities</em> before sending, otherwise SES returns <em>MessageRejected: Email address is not verified</em>.</li>' +
+              '<li>New accounts start in <strong>SES sandbox mode</strong> &mdash; you can only send to verified addresses until you request production access.</li>' +
+              '</ul>'
+      },
+      custom:   {
+        host: '', port: 587, enc: 'tls',
+        syncFromEmail: false,
+        hint: '<div class="hint-title"><i class="bi bi-sliders me-1"></i>Custom SMTP relay</div>' +
+              'Paste the host, port and credentials your provider gave you. Common port/encryption pairs: <code>587 &middot; TLS/STARTTLS</code>, <code>465 &middot; SSL</code>, <code>25 &middot; None</code> (only for internal relays).'
+      }
     };
-    document.querySelectorAll('[data-preset]').forEach(function(b){
-      b.addEventListener('click', function(){
-        var key = b.getAttribute('data-preset');
-        var p = presets[key];
-        if (!p) return;
+
+    // Auto-adjust port when the admin flips encryption.  These are the
+    // widely-accepted defaults; the admin can still override manually.
+    var portForEnc = { tls: 587, ssl: 465, none: 25 };
+
+    function renderHint(key){
+      var hintBox = document.getElementById('smtpPresetHint');
+      var p = presets[key];
+      if (!p || !p.hint) { hintBox.classList.add('d-none'); return; }
+      hintBox.innerHTML = p.hint;
+      hintBox.classList.remove('d-none');
+    }
+
+    function applyPreset(key, opts){
+      opts = opts || {};
+      var p = presets[key];
+      if (!p) return;
+      var userEl = document.getElementById('smtpUser');
+      var fromEl = document.querySelector('[name=from_email]');
+      var replyEl = document.querySelector('[name=reply_to]');
+      // Only overwrite host/port/enc when the admin actively clicked the
+      // preset (opts.force). During auto-detect on page load we just render
+      // the hint without clobbering saved values.
+      if (opts.force) {
         document.getElementById('smtpHost').value = p.host;
         document.getElementById('smtpPort').value = p.port;
         document.getElementById('smtpEnc').value  = p.enc;
-        if (p.user) document.getElementById('smtpUser').value = p.user;
-        // Highlight the active preset
-        document.querySelectorAll('[data-preset]').forEach(function(x){ x.classList.remove('is-active'); });
-        b.classList.add('is-active');
-      });
+        if (p.user) userEl.value = p.user;
+        // Sync From Email to Username for providers that force From: rewrite.
+        if (p.syncFromEmail && userEl.value && !fromEl.value) {
+          fromEl.value = userEl.value;
+        }
+      }
+      // Wire up "sync from username → from email" continuously for
+      // gmail / o365 so if the admin later edits the username the From
+      // Email tracks it automatically (until they manually override).
+      if (p.syncFromEmail) {
+        userEl.dataset.syncFromEmail = '1';
+      } else {
+        delete userEl.dataset.syncFromEmail;
+      }
+      // Active-state pill.
+      document.querySelectorAll('[data-preset]').forEach(function(x){ x.classList.remove('is-active'); });
+      var btn = document.querySelector('[data-preset="' + key + '"]');
+      if (btn) btn.classList.add('is-active');
+      renderHint(key);
+    }
+
+    document.querySelectorAll('[data-preset]').forEach(function(b){
+      b.addEventListener('click', function(){ applyPreset(b.getAttribute('data-preset'), {force:true}); });
     });
 
-    // Auto-detect & highlight the currently-saved preset on page load
+    // Auto-detect & highlight the currently-saved preset on page load,
+    // then render its hint so a fresh admin sees provider guidance
+    // immediately (without clicking anything).
     (function detectPreset(){
       var host = (document.getElementById('smtpHost').value || '').toLowerCase();
       var matched = 'custom';
-      for (var k in presets) {
-        if (presets[k].host && presets[k].host !== '' && host === presets[k].host.toLowerCase()) { matched = k; break; }
-      }
-      var btn = document.querySelector('[data-preset="' + matched + '"]');
-      if (btn) btn.classList.add('is-active');
+      // Match by host substring (SES uses region-specific hostnames).
+      if (host.indexOf('smtp.gmail.com')          !== -1) matched = 'gmail';
+      else if (host.indexOf('smtp.office365.com') !== -1
+            || host.indexOf('outlook.office365')  !== -1
+            || host.indexOf('smtp-mail.outlook')  !== -1) matched = 'o365';
+      else if (host.indexOf('smtp.sendgrid.net')  !== -1) matched = 'sendgrid';
+      else if (host.indexOf('email-smtp.')        === 0
+            && host.indexOf('.amazonaws.com')     !== -1) matched = 'ses';
+      else if (host.indexOf('mail.')              === 0) matched = 'cpanel';
+      applyPreset(matched, {force:false});
     })();
 
+    // Continuous sync: for Gmail/O365 presets, mirror Username → From Email
+    // as the admin types their email address.  Stops as soon as the admin
+    // manually edits From Email (respecting their override).
+    (function wireFromSync(){
+      var userEl = document.getElementById('smtpUser');
+      var fromEl = document.querySelector('[name=from_email]');
+      var fromDirty = false;
+      fromEl.addEventListener('input', function(){ fromDirty = true; });
+      userEl.addEventListener('input', function(){
+        if (fromDirty) return;
+        if (userEl.dataset.syncFromEmail === '1' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(userEl.value.trim())) {
+          fromEl.value = userEl.value.trim();
+        }
+      });
+    })();
+
+    // Auto-adjust port when encryption changes (only if the current port
+    // matches the OLD encryption's default — leaves custom ports alone).
+    (function wirePortAutoAdjust(){
+      var encEl  = document.getElementById('smtpEnc');
+      var portEl = document.getElementById('smtpPort');
+      var prev = encEl.value;
+      encEl.addEventListener('change', function(){
+        var newEnc = encEl.value;
+        // Only overwrite the port if the current value matches the
+        // default for the PREVIOUS encryption — that means the admin
+        // hasn't customised it and we're safe to snap to the new default.
+        if (String(portEl.value) === String(portForEnc[prev] || '')) {
+          portEl.value = portForEnc[newEnc] || portEl.value;
+        }
+        prev = newEnc;
+      });
+    })();
+
+    // ---- "Send Test Email" — save form first if it's dirty -----------
     var result = document.getElementById('smtpResult');
     function showResult(ok, msg){
       result.classList.remove('d-none', 'ok', 'err');
@@ -12338,25 +12520,66 @@ elseif ($tab === 'smtp'):
       result.innerHTML = (ok ? '<i class="bi bi-check2-circle me-1"></i>' : '<i class="bi bi-exclamation-triangle me-1"></i>') + msg;
     }
 
+    // Track form dirtiness so we know whether "Send Test Email" needs
+    // to persist the config to the DB before firing.  Previously the
+    // test used the SAVED settings — if the admin typed new credentials
+    // but forgot to click Save, the test still hit the OLD server and
+    // reported a confusing "Sent!" even though the new settings had
+    // never touched disk.  That's the "glitch" fix.
+    var smtpForm = document.getElementById('smtpForm');
+    var initialSnapshot = new URLSearchParams(new FormData(smtpForm)).toString();
+    function isDirty(){
+      return new URLSearchParams(new FormData(smtpForm)).toString() !== initialSnapshot;
+    }
+    function refreshSnapshot(){
+      initialSnapshot = new URLSearchParams(new FormData(smtpForm)).toString();
+    }
+
     document.getElementById('smtpTestBtn').addEventListener('click', function(){
       var to = prompt('Send a test email to:', document.querySelector('[name=reply_to]').value || document.querySelector('[name=from_email]').value);
       if (!to) return;
-      var b = this, orig = b.innerHTML; b.disabled=true; b.innerHTML='<span class="spinner-border spinner-border-sm me-1"></span>Sending…';
-      var fd = new FormData(); fd.append('to', to);
-      fetch('ajax/smtp-test.php', { method:'POST', body: fd })
-        .then(r => r.json())
-        .then(j => { b.disabled=false; b.innerHTML=orig; showResult(j.ok, j.message || (j.ok?'Sent':'Failed')); })
-        .catch(() => { b.disabled=false; b.innerHTML=orig; showResult(false, 'Network error'); });
+      var b = this, orig = b.innerHTML; b.disabled=true; b.innerHTML='<span class="spinner-border spinner-border-sm me-1"></span>Sending&hellip;';
+
+      var promiseChain;
+      if (isDirty()) {
+        // Persist the form first so the AJAX test uses the CURRENT values.
+        var savePayload = new FormData(smtpForm);
+        savePayload.append('action', 'save_smtp');
+        savePayload.append('__ajax', '1');
+        promiseChain = fetch('admin.php?tab=smtp', { method: 'POST', body: savePayload, credentials: 'same-origin' })
+          .then(function(){ refreshSnapshot(); });
+      } else {
+        promiseChain = Promise.resolve();
+      }
+      promiseChain.then(function(){
+        var fd = new FormData(); fd.append('to', to);
+        return fetch('ajax/smtp-test.php', { method:'POST', body: fd, credentials: 'same-origin' });
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        b.disabled=false; b.innerHTML=orig;
+        var msg = j.message || (j.ok?'Sent':'Failed');
+        // Bubble up PHPMailer's diagnostic in the error case so the admin
+        // sees the real reason (e.g. "SMTP AUTH failed" / "Username and
+        // Password not accepted") instead of a generic "Failed".
+        if (!j.ok && j.log) msg += '<details class="mt-2"><summary>Show SMTP log</summary><pre style="white-space:pre-wrap;font-size:11px;max-height:220px;overflow:auto;">' + j.log.replace(/</g,'&lt;') + '</pre></details>';
+        showResult(j.ok, msg);
+      })
+      .catch(function(){ b.disabled=false; b.innerHTML=orig; showResult(false, 'Network error'); });
     });
 
     document.getElementById('smtpProcessBtn').addEventListener('click', function(){
-      var b = this, orig = b.innerHTML; b.disabled=true; b.innerHTML='<span class="spinner-border spinner-border-sm me-1"></span>Processing…';
+      var b = this, orig = b.innerHTML; b.disabled=true; b.innerHTML='<span class="spinner-border spinner-border-sm me-1"></span>Processing&hellip;';
       var fd = new FormData(); fd.append('batch', '25');
-      fetch('ajax/smtp-process.php', { method:'POST', body: fd })
-        .then(r => r.json())
-        .then(j => { b.disabled=false; b.innerHTML=orig; showResult(j.ok, 'Processed <strong>' + (j.processed||0) + '</strong> email(s) — refresh to see updated counts.'); })
-        .catch(() => { b.disabled=false; b.innerHTML=orig; showResult(false, 'Network error'); });
+      fetch('ajax/smtp-process.php', { method:'POST', body: fd, credentials: 'same-origin' })
+        .then(function(r){ return r.json(); })
+        .then(function(j){ b.disabled=false; b.innerHTML=orig; showResult(j.ok, 'Processed <strong>' + (j.processed||0) + '</strong> email(s) &mdash; refresh to see updated counts.'); })
+        .catch(function(){ b.disabled=false; b.innerHTML=orig; showResult(false, 'Network error'); });
     });
+
+    // Refresh dirtiness snapshot after a full form submit (page navigates
+    // and reloads, so this is only a safety net for AJAX-driven saves).
+    smtpForm.addEventListener('submit', function(){ setTimeout(refreshSnapshot, 500); });
   })();
   </script>
 
