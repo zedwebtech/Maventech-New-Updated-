@@ -11,6 +11,14 @@ $selOs = array_values((array)($_GET['os'] ?? []));
 $sort = $_GET['sort'] ?? '';
 $view = ($_GET['view'] ?? 'grid') === 'list' ? 'list' : 'grid';
 
+/* 2026-07 FIX — Semrush "No self-referencing hreflang" on ?q= search
+   permutations and filter combinations. Canonical points to bare
+   /shop.php; mark filter/search variants noindex so the header hreflang
+   emitter skips them (no self-ref hreflang = Semrush error). */
+if (!empty($_GET['q']) || !empty($selCats) || !empty($selVers) || !empty($selOs) || !empty($_GET['sort'])) {
+    $noIndex = true;
+}
+
 $all = get_products([], '', $sort);
 
 function product_family(array $p): string

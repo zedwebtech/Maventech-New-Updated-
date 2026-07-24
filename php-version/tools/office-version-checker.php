@@ -4,6 +4,9 @@ require_once __DIR__ . '/../includes/tools-common.php';
 $baseHref = rtrim(site_url(), '/') . '/';
 $pageTitle = 'Microsoft Office Version Checker | ' . SITE_BRAND;
 $pageDescription = 'Find out which version of Microsoft Office you have and whether it’s still supported by Microsoft. Step-by-step guide for Windows and Mac, plus a free support-status checker.';
+/* 2026-07 FIX — served under /tools/office-version-checker via router.php. */
+$canonicalUrl      = site_url() . country_prefix() . '/tools/office-version-checker';
+$canonicalPathBare = '/tools/office-version-checker';
 include __DIR__ . '/../includes/header.php';
 tools_styles();
 $rows = [

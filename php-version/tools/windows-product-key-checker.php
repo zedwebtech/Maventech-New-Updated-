@@ -4,6 +4,9 @@ require_once __DIR__ . '/../includes/tools-common.php';
 $baseHref = rtrim(site_url(), '/') . '/';
 $pageTitle = 'Windows Product Key Checker | ' . SITE_BRAND;
 $pageDescription = 'Check the format of a Windows product key and learn how to find your key and confirm Windows activation. Free, instant, and no sign-up.';
+/* 2026-07 FIX — served under /tools/windows-product-key-checker via router.php. */
+$canonicalUrl      = site_url() . country_prefix() . '/tools/windows-product-key-checker';
+$canonicalPathBare = '/tools/windows-product-key-checker';
 include __DIR__ . '/../includes/header.php';
 tools_styles();
 $cmds = [

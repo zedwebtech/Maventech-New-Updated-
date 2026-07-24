@@ -4,6 +4,12 @@ require_once __DIR__ . '/../includes/tools-common.php';
 $baseHref = rtrim(site_url(), '/') . '/';
 $pageTitle = 'Office Deployment Calculator | ' . SITE_BRAND;
 $pageDescription = 'Work out how many Microsoft Office licenses your team needs and the total cost. Uses real, live catalog prices - free, instant, and no sign-up required.';
+/* 2026-07 FIX — served under /tools/office-deployment-calculator via router.php.
+   Explicit canonical prevents the header defaulting to
+   /office-deployment-calculator.php (wrong URL → Semrush "non-canonical sitemap
+   URL" and "no self-referencing hreflang" errors). */
+$canonicalUrl      = site_url() . country_prefix() . '/tools/office-deployment-calculator';
+$canonicalPathBare = '/tools/office-deployment-calculator';
 include __DIR__ . '/../includes/header.php';
 tools_styles();
 $cur = current_currency();

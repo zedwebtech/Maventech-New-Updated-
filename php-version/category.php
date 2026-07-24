@@ -5,6 +5,18 @@ require_once __DIR__ . '/includes/seo-content.php';
 $slug = $_GET['slug'] ?? 'office';
 $sort = $_GET['sort'] ?? '';
 
+/* 2026-07 FIX — Semrush "No self-referencing hreflang" on filter variants.
+   Query-string filter/sort permutations (e.g. ?slug=x&platform=Mac&sort=…)
+   are NOT distinct index targets — canonical already points at the bare
+   category URL. Mark these variants noindex so:
+     • the header hreflang emitter skips them (no self-ref = no error),
+     • Google never treats them as competing pages against the canonical.
+   Slug-implied platforms like /category.php?slug=office-2019-mac remain
+   indexable because they arrive with NO ?platform= query param. */
+if (!empty($_GET['platform']) || !empty($_GET['sort'])) {
+    $noIndex = true;
+}
+
 /* Platform-specific categories (e.g. office-2024-mac) widen to their year family
    so the Platform filter can switch between Windows / Mac / All of the same year. */
 $familySlug = preg_replace('/(-for)?-(macs?|pc|windows)$/', '', $slug);

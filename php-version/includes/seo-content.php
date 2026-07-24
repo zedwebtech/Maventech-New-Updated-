@@ -1455,11 +1455,26 @@ function category_itemlist_jsonld(array $products, string $title): array
     $pos = 1;
     $siteUrl = site_url();
     foreach ($products as $p) {
+        // 2026-07 FIX — Semrush "1 structured data item is invalid" flagged
+        // this ItemList (Carousel) for a missing field on ListItem entries.
+        // Wrap each entry as a Product with url + name + image so the
+        // carousel validates against Google's rich-results requirements.
+        $img = (string)($p['image'] ?? '');
+        if ($img !== '' && !preg_match('~^https?://~i', $img)) {
+            $img = rtrim($siteUrl, '/') . '/' . ltrim($img, '/');
+        }
+        $productItem = [
+            '@type' => 'Product',
+            'name'  => (string)$p['name'],
+            'url'   => $siteUrl . '/product.php?slug=' . urlencode((string)$p['slug']),
+        ];
+        if ($img !== '') $productItem['image'] = $img;
         $items[] = [
             '@type'    => 'ListItem',
             'position' => $pos++,
             'url'      => $siteUrl . '/product.php?slug=' . urlencode((string)$p['slug']),
             'name'     => (string)$p['name'],
+            'item'     => $productItem,
         ];
     }
     return [

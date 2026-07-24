@@ -93,7 +93,9 @@ foreach ([
     ['/refund-policy.php', '0.6', 'monthly'],
     ['/return-policy.php', '0.6', 'monthly'],
     ['/sitemap.php',       '0.4', 'monthly'],
-    ['/track-order.php',   '0.5', 'monthly'],
+    // 2026-07 FIX — removed '/track-order.php' from sitemap: it 302-redirects
+    // to /order-history.php and Semrush flagged "Redirect in sitemap.xml".
+    // The Track Order page remains discoverable via header / footer nav.
     // 2026-07 additions: free-tools pages exist and are indexable, so
     // they belong in the sitemap for full crawl coverage.
     ['/tools',                                 '0.6', 'monthly'],

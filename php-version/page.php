@@ -6,6 +6,19 @@ if ($slug === 'contact-us') { // rich contact page replaced the DB page
     header('Location: contact.php');
     exit;
 }
+/* 2026-07 FIX — Semrush "2 pages have duplicate content issues" + "2 issues
+   with duplicate title tags".  Legal pages that also live at clean URLs
+   (/refund-policy.php, /return-policy.php — the latter is the URL submitted
+   to Google Merchant Center's Return Policy) 301-redirect here so we keep
+   ONE canonical index target per policy instead of two identical pages. */
+if ($slug === 'refund-policy') {
+    header('Location: /refund-policy.php', true, 301);
+    exit;
+}
+if ($slug === 'return-policy') {
+    header('Location: /return-policy.php', true, 301);
+    exit;
+}
 // Ensure policy pages use the dynamic company phone (one-time cleanup).
 mv_placeholderize_legacy_page_phones();
 $page = null;

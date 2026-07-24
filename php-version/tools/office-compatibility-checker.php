@@ -4,6 +4,11 @@ require_once __DIR__ . '/../includes/tools-common.php';
 $baseHref = rtrim(site_url(), '/') . '/';
 $pageTitle = 'Office Compatibility Checker | ' . SITE_BRAND;
 $pageDescription = 'Check whether a version of Microsoft Office is compatible with your Windows or Mac, based on Microsoft official system requirements. Free instant compatibility checker.';
+/* 2026-07 FIX — served under /tools/office-compatibility-checker via router.php.
+   Explicit canonical prevents the header defaulting to
+   /office-compatibility-checker.php (wrong URL → Semrush errors). */
+$canonicalUrl      = site_url() . country_prefix() . '/tools/office-compatibility-checker';
+$canonicalPathBare = '/tools/office-compatibility-checker';
 include __DIR__ . '/../includes/header.php';
 tools_styles();
 ?>

@@ -3,6 +3,12 @@ require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/tools-common.php';
 $pageTitle = 'Free Microsoft Office & Windows Tools | ' . SITE_BRAND;
 $pageDescription = 'Free, no-signup tools for Microsoft Office and Windows: check your Office version, validate a Windows product key format, check compatibility, and calculate licensing for your team.';
+/* 2026-07 FIX — clean URL /tools is served through router.php.  Without
+   an explicit canonical the header defaults to /tools.php (via
+   $_SERVER['SCRIPT_NAME']) which breaks Semrush "sitemap non-canonical
+   URL" and "self-referencing hreflang" checks. */
+$canonicalUrl      = site_url() . country_prefix() . '/tools';
+$canonicalPathBare = '/tools';
 include __DIR__ . '/includes/header.php';
 tools_styles();
 $tools = [

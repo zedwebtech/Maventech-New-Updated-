@@ -229,19 +229,32 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   <?php
   // hreflang alternates so Google serves the right country/currency URL.
   //
-  // 2026-07 FIX for Semrush "14 hreflang conflicts within page source code":
-  //   1. Skip the entire emitter on noindex pages — Search Console
-  //      flags "hreflang link pointing to a URL that has noindex" as a
-  //      conflict. We also skip on private / auth / cart routes.
-  //   2. Removed the standalone `hreflang="en"` variant for /eu — a
-  //      language-only tag alongside en-US / en-GB / en-AU / en-CA
-  //      creates ambiguous matches which Semrush counts as conflicts.
-  //      Visitors landing on /eu still get the correct currency; SEO
-  //      wise x-default (which resolves to US) is the canonical fallback.
-  //   3. `xhtml` namespace not needed inside &lt;head&gt; — plain <link>
-  //      tags are the recommended form. Sitemap keeps xhtml:link.
+  // 2026-07 FIX for Semrush "21 hreflang conflicts within page source code
+  // — No self-referencing hreflang":
+  //   1. Skip the entire emitter on noindex pages — Search Console flags
+  //      "hreflang link pointing to a URL that has noindex" as a conflict.
+  //   2. Added EU to the hreflang map (hreflang="en") so /eu and /eu/...
+  //      pages get a self-referencing hreflang tag.  Each URL is unique
+  //      (only /eu resolves to hreflang="en"), so this does NOT collide
+  //      with the region-specific en-US/en-GB/en-AU/en-CA variants —
+  //      Semrush only counts a conflict when two different codes point
+  //      at the same URL, which never happens here.
+  //   3. `xhtml` namespace not needed inside <head> — plain <link> tags
+  //      are the recommended form. Sitemap keeps xhtml:link.
+  //
+  // NOTE — the companion fix for query-string filter variants (Semrush
+  // was crawling category.php?slug=x&platform=Mac and shop.php?q=… as
+  // separate URLs and flagging them for missing self-hreflang) is done
+  // by marking those filter pages $noIndex=true in category.php / shop.php,
+  // which cleanly disables the emitter here.
   if (isset($canonicalPathBare) && !$noIndex):
-      $__hlMap = ['US' => 'en-US', 'UK' => 'en-GB', 'AU' => 'en-AU', 'CA' => 'en-CA'];
+      $__hlMap = [
+          'US' => 'en-US',
+          'UK' => 'en-GB',
+          'AU' => 'en-AU',
+          'CA' => 'en-CA',
+          'EU' => 'en',
+      ];
       // Deduplicate — the same URL under two hreflang tags is a conflict.
       $__emitted = [];
       foreach ($__hlMap as $__cc => $__lang):
