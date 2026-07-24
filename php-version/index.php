@@ -121,7 +121,7 @@ include __DIR__ . '/includes/header.php';
                 <span class="cube cb-3"></span>
               </div>
             </div>
-            <a href="shop.php" id="hero-photo-link" class="hero-photo-link" aria-label="Browse all software deals" title="Browse all software deals" data-testid="hero-photo-link"></a>
+            <a href="shop.php" id="hero-photo-link" class="hero-photo-link" aria-label="Browse all software deals" title="Browse all software deals" data-testid="hero-photo-link"><span class="visually-hidden">Browse all software deals</span></a>
             <span class="hero-delivery-pill" data-testid="hero-delivery-pill"><i class="bi bi-envelope-check"></i>Digital delivery by email</span>
           </div>
         </div>

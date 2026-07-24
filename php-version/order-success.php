@@ -967,7 +967,7 @@ if ($gcrOptInEnabled && $isPaid && $gmcId !== '' && !empty($order['email'])):
     </script>
     <?php endif; ?>
 
-    <a href="index.php" class="btn btn-primary btn-lg rounded-pill px-5 my-2" data-testid="return-home-btn"><i class="bi bi-house-door me-2"></i>Return to Home Page</a>
+    <a href="/" class="btn btn-primary btn-lg rounded-pill px-5 my-2" data-testid="return-home-btn"><i class="bi bi-house-door me-2"></i>Return to Home Page</a>
 
     <?php
       // Per-product installation notes (brand-aware) reuse the same helper the
@@ -1209,7 +1209,7 @@ if ($gcrOptInEnabled && $isPaid && $gmcId !== '' && !empty($order['email'])):
   <div class="text-center">
     <i class="bi bi-question-circle text-secondary display-1"></i>
     <h1 class="fw-bold mt-3 h3">Order not found</h1>
-    <a href="index.php" class="btn btn-primary rounded-pill px-4 mt-2">Back to Home</a>
+    <a href="/" class="btn btn-primary rounded-pill px-4 mt-2">Back to Home</a>
   </div>
   <?php endif; ?>
 </div>

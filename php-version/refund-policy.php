@@ -58,7 +58,7 @@ include __DIR__ . '/includes/header.php';
     <div class="text-center py-5">
       <h1 class="fw-bold">Refund Policy</h1>
       <p class="text-secondary">Our refund policy is temporarily unavailable. Please contact <a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a> for details.</p>
-      <a href="index.php" class="btn btn-primary rounded-pill px-4 mt-3">Back to Home</a>
+      <a href="/" class="btn btn-primary rounded-pill px-4 mt-3">Back to Home</a>
     </div>
   <?php endif; ?>
 </div>

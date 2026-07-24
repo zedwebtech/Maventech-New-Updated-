@@ -94,7 +94,7 @@ include __DIR__ . '/includes/header.php';
       <p>Questions? Reach us anytime at <a href="mailto:services@<?= esc(preg_replace('#^https?://(www\.)?#i', '', site_url())) ?>">services@<?= esc(preg_replace('#^https?://(www\.)?#i', '', site_url())) ?></a>.</p>
     </div>
     <div class="text-center pt-4">
-      <a href="index.php" class="btn btn-outline-primary rounded-pill px-4">Back to Home</a>
+      <a href="/" class="btn btn-outline-primary rounded-pill px-4">Back to Home</a>
     </div>
   <?php endif; ?>
 </div>

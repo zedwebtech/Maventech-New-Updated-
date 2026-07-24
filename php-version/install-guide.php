@@ -116,7 +116,7 @@ include __DIR__ . '/includes/header.php';
 <div class="container py-4 py-md-5">
   <nav aria-label="breadcrumb" class="small mb-3" data-testid="guide-breadcrumb">
     <ol class="breadcrumb mb-0">
-      <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
       <li class="breadcrumb-item"><a href="<?= esc('product.php?slug=' . urlencode($slug)) ?>"><?= esc($name) ?></a></li>
       <li class="breadcrumb-item active" aria-current="page">Installation guide</li>
     </ol>

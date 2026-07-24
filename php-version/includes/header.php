@@ -899,7 +899,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
 <!-- Main navbar -->
 <nav class="navbar navbar-expand-lg bg-body border-bottom sticky-top navbar-below-trustbar">
   <div class="container position-relative">
-    <a class="navbar-brand logo-3d d-flex align-items-center gap-2" href="index.php" data-testid="brand-logo">
+    <a class="navbar-brand logo-3d d-flex align-items-center gap-2" href="/" data-testid="brand-logo">
       <?php if ($brandLogo !== ''): ?>
         <?= brand_logo_html(42, 'width="140" height="42" decoding="async" fetchpriority="high"') ?>
       <?php else: ?>

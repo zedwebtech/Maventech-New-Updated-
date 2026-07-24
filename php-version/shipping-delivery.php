@@ -39,7 +39,7 @@ include __DIR__ . '/includes/header.php';
   <div class="container py-5">
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb small">
-        <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
         <li class="breadcrumb-item active">Shipping &amp; Delivery</li>
       </ol>
     </nav>

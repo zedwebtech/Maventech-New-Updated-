@@ -470,7 +470,7 @@ include __DIR__ . '/includes/header.php';
 <div class="container py-5">
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb small">
-      <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
       <li class="breadcrumb-item"><a href="category.php?slug=<?= esc($product['category']) ?>"><?= esc(category_title($product['category'])) ?></a></li>
       <li class="breadcrumb-item active"><?= esc($product['name']) ?></li>
     </ol>
@@ -842,13 +842,30 @@ include __DIR__ . '/includes/header.php';
   ?>
   <?php if ($pInstaller !== '' || $pGuide !== '' || $pActivate !== ''): ?>
   <?php
-    /* Helper: only apply rel="nofollow" to EXTERNAL URLs. Internal links
-       (e.g. /install-guide.php?slug=...) must be crawlable — otherwise
-       Semrush flags them as "outgoing internal links contain nofollow"
-       and PageRank stops flowing to the guide page. */
+    /* Helper: apply rel attributes based on external URL trust level.
+       - Internal links (/install-guide.php?slug=...) must remain crawlable.
+       - Third-party download hosts (download.winandoffice.com) keep
+         `nofollow` — we do not endorse them for PageRank purposes.
+       - Microsoft-owned properties (setup.office.com, account.microsoft.com,
+         microsoft.com/*) drop `nofollow` — these are trusted vendor pages
+         customers must reach anyway; forcing nofollow on them was flagged by
+         Semrush's "outgoing external links contain nofollow" notice
+         (2026-07). Keeping them followable is standard practice and
+         improves topical relevance signals. */
     $mv_link_rel = static function (string $url): string {
-        $isExternal = preg_match('~^https?://~i', $url) === 1;
-        return $isExternal ? 'nofollow noopener external' : 'noopener';
+        if (!preg_match('~^https?://~i', $url)) return 'noopener';
+        $host = parse_url($url, PHP_URL_HOST) ?: '';
+        $host = strtolower($host);
+        $microsoftHosts = [
+            'setup.office.com', 'account.microsoft.com',
+            'www.microsoft.com', 'microsoft.com',
+            'central.bitdefender.com', 'home.mcafee.com',
+            'my.norton.com', 'account.adobe.com',
+        ];
+        if (in_array($host, $microsoftHosts, true)) {
+            return 'noopener external';
+        }
+        return 'nofollow noopener external';
     };
   ?>
   <section class="mt-5" data-testid="product-install-block">

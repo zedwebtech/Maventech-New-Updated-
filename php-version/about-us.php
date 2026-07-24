@@ -81,7 +81,7 @@ $features = [
 <!-- Hero -->
 <div class="page-head" data-testid="about-hero">
   <div class="container py-5">
-    <nav aria-label="breadcrumb"><ol class="breadcrumb small"><li class="breadcrumb-item"><a href="index.php">Home</a></li><li class="breadcrumb-item active">About Us</li></ol></nav>
+    <nav aria-label="breadcrumb"><ol class="breadcrumb small"><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item active">About Us</li></ol></nav>
     <div class="text-center mx-auto" style="max-width: 760px;">
       <div class="d-flex justify-content-center mb-3"><?= render_logo(56) ?></div>
       <span class="eyebrow">OUR STORY</span>

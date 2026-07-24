@@ -259,6 +259,14 @@ RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
     Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
     Header unset X-Powered-By
     Header always unset X-Powered-By
+    # 2026-07 FIX for Semrush "1 subdomain doesn't support HSTS" (flagged
+    # against www.maventechsoftware.com).  HSTS forces every future request
+    # for this host — including the www subdomain served by the same
+    # Apache vhost — to use HTTPS, and includeSubDomains covers /au, /ca,
+    # /uk, /eu variants under the same origin.  `always` ensures it is
+    # emitted on 301 canonical-host redirects too, so the www → naked
+    # redirect itself carries the header (that was the Semrush miss).
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 </IfModule>
 
 # ---- Disable directory listing ----

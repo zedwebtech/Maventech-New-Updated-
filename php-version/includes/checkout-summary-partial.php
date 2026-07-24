@@ -16,7 +16,7 @@ if (!isset($items)) { return; }
   <div class="d-flex justify-content-center mb-2">
     <span class="co-banner-secure badge rounded-pill text-bg-success-subtle text-success border border-success-subtle" style="z-index:2;"><i class="bi bi-lock-fill me-1"></i>Secure Checkout</span>
   </div>
-  <a href="index.php" class="logo-3d d-inline-flex align-items-center justify-content-center gap-2 mb-1 text-decoration-none" data-testid="co-banner-brand">
+  <a href="/" class="logo-3d d-inline-flex align-items-center justify-content-center gap-2 mb-1 text-decoration-none" data-testid="co-banner-brand">
     <?= render_logo(36) ?>
     <span class="text-start">
       <span class="brand-text d-block lh-1"><span class="brand-grad">Maventech</span></span>

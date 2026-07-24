@@ -180,7 +180,7 @@ include __DIR__ . '/includes/header.php';
   <?php if ($post): ?>
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb small">
-        <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
         <li class="breadcrumb-item"><a href="blog.php">Blog</a></li>
         <li class="breadcrumb-item active"><?= esc($post['title']) ?></li>
       </ol>
