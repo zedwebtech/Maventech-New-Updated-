@@ -497,7 +497,6 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
                 'areaServed'        => ['US', 'GB', 'AU', 'CA'],
             ]] : null,
             'areaServed'         => $areaServed,
-            'currenciesAccepted' => implode(', ', $currenciesAccepted),
             // knowsAbout — the live list of brands we resell. Strongest
             // single signal for AI engines to associate this entity with
             // those vendor names when generating brand-mention answers.
