@@ -41,10 +41,16 @@ $aiCrawlers = [
 ];
 
 $disallowedPaths = [
-    '/cart.php', '/checkout.php', '/login.php', '/register.php',
-    '/account.php', '/admin.php', '/admin-email-preview.php',
-    '/logout.php', '/order-success.php', '/order-view.php',
-    '/order-history.php', '/email-view.php', '/email-api.php',
+    // 2026-07 FIX — Semrush "4 pages are blocked from crawling" notice.
+    // account/cart/checkout/order-* are gated by the
+    //   `<meta name="robots" content="noindex,nofollow">`  tag emitted
+    // from includes/header.php.  Removing the Disallow entries lets Google
+    // reach the page, discover the noindex, and drop it from the index —
+    // which stops Semrush reporting them as "crawl-blocked" without
+    // opening them up for indexing.
+    '/admin.php', '/admin-email-preview.php',
+    '/logout.php',
+    '/email-view.php', '/email-api.php',
     // /ajax/ is fetched by client-side JS from indexed pages, so Google
     // needs to be able to reach it to render (Semrush flags these as
     // "blocked internal resources"). Only the AJAX endpoints that require

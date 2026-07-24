@@ -429,6 +429,14 @@ function ensure_db_schema(): void
     $done = true;
     try {
         $pdo = db();
+        // 2026-07: bootstrap the follow-up-email tables here so a fresh
+        // clone auto-provisions email_followup_schedule + email_unsubscribes
+        // without a manual migration. Wrapped in file_exists so this
+        // include is defensive when the module is removed.
+        if (is_file(__DIR__ . '/followup-emails.php')) {
+            require_once __DIR__ . '/followup-emails.php';
+            if (function_exists('ensure_followup_schema')) ensure_followup_schema();
+        }
         // Visitor analytics
         $pdo->exec("CREATE TABLE IF NOT EXISTS visitor_log (
             id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,

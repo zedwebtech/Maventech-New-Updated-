@@ -98,6 +98,229 @@
 
 
 
+## ═══════════════ ITERATION 2026-07-24 — Semrush SEO fixes + Follow-up Email Feature verification ═══════════════
+frontend:
+  - task: "WORKSTREAM A — Semrush SEO fixes (A1: agents.json and llms.txt links on /press-kit.php with download + rel='nofollow')"
+    implemented: true
+    working: true
+    file: "php-version/press-kit.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — Both agents.json and llms.txt links on /press-kit.php have download attribute AND rel='nofollow'. curl test confirmed: href='http://localhost:3000/agents.json' download rel='nofollow' data-testid='asset-agents' and href='http://localhost:3000/llms.txt' download rel='nofollow' data-testid='asset-llms'. Semrush's 'resource is formatted as a page link' rule no longer applies to these resource-download links."
+  - task: "WORKSTREAM A — Semrush SEO fixes (A2: returns.php should be crawlable/indexable with meta robots 'index, follow')"
+    implemented: true
+    working: true
+    file: "php-version/returns.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — /returns.php has <meta name='robots' content='index, follow'>. Previously incorrectly noindex'd, now correctly indexable."
+  - task: "WORKSTREAM A — Semrush SEO fixes (A3: robots.txt no longer disallows account/cart/checkout pages)"
+    implemented: true
+    working: true
+    file: "php-version/robots-txt.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — robots.txt no longer contains Disallow entries for /cart.php, /checkout.php, /account.php, /login.php, /register.php, /order-success.php, /order-view.php, /order-history.php. Only /logout.php remains disallowed (correct). Legacy disallows for /wp-admin/, /wp-content/, /uploads/order-pdfs/, /admin.php are STILL present (correct). Semrush '4 pages are blocked from crawling' issue resolved."
+  - task: "WORKSTREAM A — Semrush SEO fixes (A4: Meta noindex still protects private pages - cart.php, checkout.php, account.php)"
+    implemented: true
+    working: true
+    file: "php-version/includes/header.php, php-version/cart.php, php-version/checkout.php, php-version/account.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — All three pages return HTTP 200 with <meta name='robots' content='noindex, nofollow'> in the HTML head. cart.php: confirmed noindex. checkout.php: confirmed noindex (redirects to cart when empty, but when accessed directly shows noindex). account.php: confirmed noindex. Pages are not indexable via meta tag even though robots.txt now lets them be crawled."
+  - task: "WORKSTREAM A — Semrush SEO fixes (A5: Regression check - all prior fixes still work)"
+    implemented: true
+    working: true
+    file: "php-version/index.php, php-version/product.php, php-version/category.php, php-version/shop.php, php-version/page.php, php-version/assets/js/main.min.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — All prior fixes working: (1) / returns 200, has hero-photo-link with hidden text span. (2) /product.php?slug=windows-11-home: account.microsoft.com link has NO nofollow (rel='noopener external'), winandoffice.com link HAS nofollow (rel='nofollow noopener external'). (3) /category.php?slug=office-2019-pc&platform=Windows&sort= has <meta name='robots' content='noindex, nofollow'>. (4) /shop.php?q=Windows+11 has <meta name='robots' content='noindex, nofollow'>. (5) /page.php?slug=refund-policy returns HTTP 301 to /refund-policy.php. (6) / contains ZERO href='index.php' strings (grep returned 0). (7) /assets/js/main.min.js returns HTTP 200 and is 11 lines (≤ 20 lines, heavily minified)."
+
+backend:
+  - task: "WORKSTREAM B — Follow-up Email Feature (B1: DB schema exists - email_followup_schedule and email_unsubscribes tables)"
+    implemented: true
+    working: true
+    file: "php-version/includes/followup-emails.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — Both tables exist with expected columns. email_followup_schedule: id, order_id, email, stage, scheduled_at, sent_at, status, note, created_at. email_unsubscribes: id, email, reason, source, unsubscribed_at. Schema matches specification exactly."
+  - task: "WORKSTREAM B — Follow-up Email Feature (B2: Unsubscribe endpoint - invalid token path)"
+    implemented: true
+    working: true
+    file: "php-version/unsubscribe.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — /unsubscribe.php?e=bogus@example.com&t=bad returns HTTP 200, page contains data-testid='unsub-title-error' and 'Unsubscribe link invalid' message."
+  - task: "WORKSTREAM B — Follow-up Email Feature (B3: Unsubscribe endpoint - valid token path round-trip)"
+    implemented: true
+    working: true
+    file: "php-version/unsubscribe.php, php-version/includes/followup-emails.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — Generated token for e2etest@example.com (b53c1bd13e9df5b6f0384ae7224e5420), curled /unsubscribe.php?e=e2etest@example.com&t=$TOKEN. Page returns HTTP 200, contains data-testid='unsub-title-ok' and mentions 'e2etest@example.com'. DB row exists: SELECT email FROM email_unsubscribes WHERE email='e2etest@example.com' returns one row."
+  - task: "WORKSTREAM B — Follow-up Email Feature (B4: Unsubscribe endpoint - repeat visit shows 'already')"
+    implemented: true
+    working: true
+    file: "php-version/unsubscribe.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — Curled the SAME URL from B3 again. Page now shows data-testid='unsub-title-already'. Idempotent unsubscribe working correctly."
+  - task: "WORKSTREAM B — Follow-up Email Feature (B5: Follow-up scheduling logic)"
+    implemented: true
+    working: true
+    file: "php-version/includes/followup-emails.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — Called schedule_order_followups(88888, 'sched-test@example.com'). Output shows 2 rows: stage 1 scheduled_at='2026-07-31 13:19:21' (7 days from now), stage 2 scheduled_at='2026-08-23 13:19:21' (30 days from now), both status='pending'. Scheduling logic working correctly."
+  - task: "WORKSTREAM B — Follow-up Email Feature (B6: Follow-up email content)"
+    implemented: true
+    working: true
+    file: "php-version/includes/followup-emails.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — Called build_followup_email() with test order data. Subject: 'How's your software going, Jane? — Order #MV-001'. HTML contains: UNSUB_LINK_OK (unsubscribe.php present), ORDER_ID_OK (MV-001 present), NAME_OK (Jane present). Email content matches specification."
+  - task: "WORKSTREAM B — Follow-up Email Feature (B7: Unsubscribe skips follow-ups)"
+    implemented: true
+    working: true
+    file: "php-version/includes/followup-emails.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — Called unsubscribe_email('sched-test@example.com','test','test'). Both rows (stage 1 and 2) are now status='skipped' with note='unsubscribed'. Unsubscribe correctly cancels pending follow-ups."
+  - task: "WORKSTREAM B — Follow-up Email Feature (B8: Cron worker sends due follow-ups)"
+    implemented: true
+    working: true
+    file: "php-version/includes/followup-emails.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — Inserted order 88888 (CRON-88888, cron-test@example.com) and follow-up row with scheduled_at in the past. Called send_pending_followups(10), returned 'Sent: 1'. Schedule row status became 'sent'. email_outbox has row with template_code='followup_1', status='queued'. Worker correctly sends due follow-ups."
+  - task: "WORKSTREAM B — Follow-up Email Feature (B9: Cron.php endpoint calls follow-up worker)"
+    implemented: true
+    working: true
+    file: "php-version/cron.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — Retrieved cron_token from settings, curled /cron.php?token=$TOKEN. Output contains '[2026-07-24T13:20:32+00:00] followups: sent=0 elapsed_ms=0'. sent=0 is correct (previous test already sent the row). Cron endpoint correctly calls follow-up worker."
+  - task: "WORKSTREAM B — Follow-up Email Feature (B10: Cleanup)"
+    implemented: true
+    working: true
+    file: "N/A"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ VERIFIED — Cleanup completed successfully. Deleted email_followup_schedule rows for order_id=88888, orders row id=88888, email_outbox rows for order_id=88888, and email_unsubscribes rows for e2etest@example.com, cron-test@example.com, sched-test@example.com."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "testing"
+    -message: |
+      ✅ ITERATION 2026-07-24 TESTING COMPLETE — ALL TASKS VERIFIED WORKING (100% success rate, 15/15 tests passed).
+      
+      Executed comprehensive verification of TWO independent workstreams following the review_request specifications. NO REAL CHARGES MADE. Site tested at http://localhost:3000/.
+      
+      TEST METHODOLOGY:
+      - WORKSTREAM A: curl + grep for HTML/robots.txt verification
+      - WORKSTREAM B: PHP CLI + mysql for backend logic verification
+      - All tests performed without modifying any code (report-only mode)
+      
+      RESULTS BY WORKSTREAM:
+      
+      WORKSTREAM A — Semrush SEO fixes (regression check) (6/6 tests passed):
+        ✅ A1: agents.json and llms.txt links on /press-kit.php have download attribute AND rel="nofollow"
+        ✅ A2: returns.php has <meta name="robots" content="index, follow"> (previously incorrectly noindex'd)
+        ✅ A3: robots.txt no longer disallows cart/checkout/account pages (Semrush "4 pages blocked" resolved)
+        ✅ A4: cart.php, checkout.php, account.php all have <meta name="robots" content="noindex, nofollow">
+        ✅ A5: All prior fixes still work (hero-photo-link, product page nofollow rules, category/shop noindex, page.php 301 redirect, no index.php hrefs, main.min.js minified)
+      
+      WORKSTREAM B — Follow-up Email Feature (9/9 tests passed):
+        ✅ B1: DB schema exists (email_followup_schedule and email_unsubscribes tables with expected columns)
+        ✅ B2: Unsubscribe endpoint with invalid token shows error (data-testid="unsub-title-error")
+        ✅ B3: Valid token path creates unsubscribe record and shows success (data-testid="unsub-title-ok")
+        ✅ B4: Repeat visit shows "already unsubscribed" (data-testid="unsub-title-already")
+        ✅ B5: schedule_order_followups() creates 2 rows (stages 1 and 2, +7 days and +30 days)
+        ✅ B6: build_followup_email() generates correct subject with order number, name, unsubscribe link
+        ✅ B7: unsubscribe_email() flips pending rows to status=skipped with note=unsubscribed
+        ✅ B8: send_pending_followups() sends due emails, updates status to 'sent', queues in email_outbox
+        ✅ B9: cron.php endpoint calls follow-up worker (output: "followups: sent=0 elapsed_ms=0")
+      
+      EVIDENCE:
+      - All curl commands returned expected HTTP status codes and HTML content
+      - All mysql queries returned expected database state
+      - All PHP CLI harness tests returned expected output
+      - Test data created and cleaned up successfully
+      
+      NO ISSUES FOUND. Both workstreams are working correctly and meet all specifications in the review_request. The Semrush SEO fixes resolve the reported issues without breaking prior fixes. The Follow-up Email Feature is fully functional with proper schema, unsubscribe logic, scheduling, email content, and cron integration.
+
+
 ## ═══════════════ ITERATION 2026-07-17e — Checkout page cleanup: address-suggest removed, cards merged, floating tilt disabled ═══════════════
 frontend:
   - task: "Checkout — remove OpenStreetMap address auto-suggest dropdown"

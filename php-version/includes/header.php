@@ -44,6 +44,9 @@ $pageTitleShort  = $pageTitleShort ?? seo_clamp_title(preg_replace('/\s+\|\s+.*$
 $script = basename($_SERVER['SCRIPT_NAME'] ?? '');
 $noIndex = $noIndex ?? in_array($script, [
     // Transactional / session-bound pages — never surface these in Bing/Google.
+    // We rely on the `<meta name="robots" content="noindex,nofollow">` tag
+    // rather than a `Disallow:` line in robots.txt so Semrush no longer
+    // fires the "blocked from crawling" notice (2026-07 fix).
     'cart.php', 'checkout.php', 'order-success.php', 'order-view.php', 'order-history.php',
     // Auth / account flow — nothing crawlable behind login.
     'login.php', 'register.php', 'user.php', 'account.php',
@@ -52,7 +55,7 @@ $noIndex = $noIndex ?? in_array($script, [
     'admin.php', 'admin-email-preview.php', 'inventory.php',
     // Utility / thin form pages that would otherwise inherit the site-wide
     // default meta and get flagged by Bing as "identical description".
-    'returns.php', 'review.php',
+    'review.php',
     // System pages.
     '404.php',
 ], true);

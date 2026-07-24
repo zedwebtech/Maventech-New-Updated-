@@ -136,8 +136,8 @@ is not affiliated with, endorsed by or sponsored by Microsoft Corporation; all t
     <ul class="list-unstyled">
       <li class="mb-2"><a href="<?= esc($siteUrl) ?>/assets/images/badges/microsoft-verified.svg" download data-testid="asset-logo"><i class="bi bi-download me-1"></i> 100% Authentic Guarantee badge (SVG)</a></li>
       <li class="mb-2"><a href="<?= esc($siteUrl) ?>/sitemap.xml" data-testid="asset-sitemap"><i class="bi bi-list-ul me-1"></i> Full sitemap.xml</a></li>
-      <li class="mb-2"><a href="<?= esc($siteUrl) ?>/llms.txt" data-testid="asset-llms"><i class="bi bi-robot me-1"></i> /llms.txt — AI discovery manifest</a></li>
-      <li class="mb-2"><a href="<?= esc($siteUrl) ?>/agents.json" data-testid="asset-agents"><i class="bi bi-cpu me-1"></i> /agents.json — AI agent manifest</a></li>
+      <li class="mb-2"><a href="<?= esc($siteUrl) ?>/llms.txt" download rel="nofollow" data-testid="asset-llms"><i class="bi bi-robot me-1"></i> /llms.txt — AI discovery manifest</a></li>
+      <li class="mb-2"><a href="<?= esc($siteUrl) ?>/agents.json" download rel="nofollow" data-testid="asset-agents"><i class="bi bi-cpu me-1"></i> /agents.json — AI agent manifest</a></li>
     </ul>
   </section>
 

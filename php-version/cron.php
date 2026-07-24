@@ -14,6 +14,7 @@ require_once __DIR__ . '/includes/seo-bot.php';
 require_once __DIR__ . '/includes/ai-citation-tracker.php';
 require_once __DIR__ . '/includes/dmca-watchdog.php';
 require_once __DIR__ . '/includes/recovery.php';
+require_once __DIR__ . '/includes/followup-emails.php';
 
 // Generate a cron token once (so the admin can copy it from the SMTP page).
 $token = setting_get('cron_token', '');
@@ -36,6 +37,19 @@ $start = microtime(true);
 $count = smtp_process_queue($batch);
 $ms    = (int)((microtime(true) - $start) * 1000);
 echo "[" . date('c') . "] cron.php: processed=$count batch=$batch elapsed_ms=$ms\n";
+
+// ---- Follow-up emails (post-purchase re-engagement) ----
+// Sends any Day-7 / Day-30 check-in emails whose scheduled_at has arrived.
+// Skips unsubscribed addresses automatically.
+try {
+    $fuStart = microtime(true);
+    $fuSent  = send_pending_followups(25);
+    $fuMs    = (int)((microtime(true) - $fuStart) * 1000);
+    echo "[" . date('c') . "] followups: sent=$fuSent elapsed_ms=$fuMs\n";
+} catch (Throwable $e) {
+    echo "[" . date('c') . "] followups: ERROR " . $e->getMessage() . "\n";
+    @error_log('[cron followups] ' . $e->getMessage());
+}
 
 // SEO / GEO / AEO automation — runs once every 24h.
 // IndexNow ping + Google/Bing sitemap ping + Claude Haiku content refresh

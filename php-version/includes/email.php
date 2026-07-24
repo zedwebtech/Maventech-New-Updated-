@@ -1883,6 +1883,18 @@ function fulfill_order(int $orderId, bool $forceAdminOverride = false): void {
     $tl['email_sent'] = date('Y-m-d H:i:s');
     $pdo->prepare('UPDATE orders SET timeline=? WHERE id=?')->execute([json_encode($tl), $orderId]);
 
+    // ---- Follow-up emails ----
+    // 2026-07 feature: after the delivery email, schedule two friendly
+    // follow-up touches (Day 7 + Day 30) offering software / computer
+    // help.  Each email carries an unsubscribe link — opt-outs are
+    // recorded in email_unsubscribes and honoured on send.
+    try {
+        require_once __DIR__ . '/followup-emails.php';
+        schedule_order_followups($orderId, (string)$order['email']);
+    } catch (Throwable $e) {
+        @error_log('[schedule_order_followups] ' . $e->getMessage());
+    }
+
     // Notify the COMPANY (Company Info email) of the sale — full order details
     // + the same Receipt/Invoice PDFs attached. awaitingKey=true when at least
     // one item is still out of stock so the admin knows to fulfil the key(s).
