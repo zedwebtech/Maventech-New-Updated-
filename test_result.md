@@ -1506,29 +1506,48 @@ agent_communication:
 
 
 user_problem_statement: |
-  Iteration 2026-07-13 (k) — checkout address auto-suggest:
+  Iteration 2026-07-25 — CRITICAL bug: "Add to Cart" and "Buy Now" buttons on
+  category listings (and every product listing page) do NOTHING when clicked.
+  Cart badge stays at 0, no navigation, no toast. Also: the floating chat bubble
+  should be draggable but automatically snap to the RIGHT edge of the viewport
+  after any drag (keeping the vertical position where the user dropped it).
+
+  ROOT CAUSE FOUND (main agent 2026-07-25): The HTML minifier in
+  includes/functions.php (mv_minify_html_output) was silently stripping
+  <script src="assets/vendor/bootstrap.bundle.min.js"> AND
+  <script src="assets/js/main.min.js"> from the rendered HTML because an
+  HTML comment above them contains the literal text "<script>" (in the
+  sentence "as the previous blocking <script> but with no parser pause").
+  The regex extracting <script>...</script> blocks greedily matched from
+  that fake <script> inside the comment through the real </script> of
+  bootstrap.bundle. That placeholder consumed the comment's "-->" too,
+  so the follow-up HTML-comment stripper then removed an even bigger
+  chunk — taking the main.js <script> placeholder with it. Result: only
+  scroll3d.min.js survived on the client; without main.js, the delegated
+  document.addEventListener('click', ...) for .add-to-cart-btn / .buy-now-btn
+  never bound, so clicks were dead. Fix: extract HTML comments FIRST
+  (dropping regular comments, keeping IE conditionals) before running
+  the script/style extractors.
+
+  Previous iteration 2026-07-13 (k) — checkout address auto-suggest:
   When the customer types in the Address field on checkout, show a
   dropdown of suggested addresses below the input. Clicking a suggestion
   should auto-fill Address / City / State / ZIP based on the currently-
   selected Country. Use OpenStreetMap Nominatim (free, no API key).
 
-backend:
-  - task: "New /ajax/address-suggest.php proxying OpenStreetMap Nominatim with cache + rate-limit"
+frontend:
+  - task: "CRITICAL — restore Add to Cart / Buy Now buttons + chat bubble snap-to-right"
     implemented: true
     working: true
-    file: "php-version/ajax/address-suggest.php"
+    file: "php-version/includes/functions.php, php-version/includes/footer.php"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         -working: "NA"
         -agent: "main"
-        -comment: "Created POST/GET /ajax/address-suggest.php. Accepts {q, country}, minimum q length 3, maximum 120. Maps internal 'UK'→'gb' before hitting Nominatim. Auto-creates `address_suggest_cache` (24h TTL by cache_key = 'v1:'+q+'|'+country) and `address_suggest_rate` (6 requests / 10s per IP). Calls https://nominatim.openstreetmap.org/search with User-Agent 'MaventechCheckout/1.0 (ops@…)' as required by Nominatim's usage policy. Normalises the response to { display, line1, city, state, state_code (from ISO3166-2-lvl4), postcode, country } — falling back through Nominatim's inconsistent city/town/village/hamlet/suburb keys and pedestrian/road/footway keys. Verified: curl for '1600 Amphitheatre&country=us' returns 2 suggestions with line1='1600 Amphitheatre Parkway', city='Mountain View', state='California', state_code='CA', postcode='94043', country='US'."
-        -working: true
-        -agent: "testing"
-        -comment: "✅ COMPREHENSIVE BACKEND TESTING COMPLETE — ALL 8 TESTS PASSED. Executed all test scenarios from review_request. TEST 1 (Happy path US address): ✅ HTTP 200, Content-Type application/json, ok:true, 2 suggestions returned. First suggestion verified: line1='1600 Amphitheatre Parkway', city='Mountain View', state='California', state_code='CA', postcode='94043', country='US'. All fields match expected values exactly. TEST 2 (UK country biasing): ✅ Query 'Buckingham Palace&country=uk' correctly maps UK→GB internally and returns country='UK' in response. First suggestion: city='City of Westminster' (acceptable London variant), postcode='SW1A 1AA' (contains SW1 as required). TEST 3 (Short query): ✅ Query 'ab' (2 chars) returns {ok:true, suggestions:[]} without upstream call (short-circuit working). TEST 4 (Cache): ✅ Repeat query returns identical JSON. Cache speedup verified: second call 2.0% faster (190.30ms → 186.45ms). Database verification: 1 row found in address_suggest_cache with cache_key='v1:1600 amphitheatre|us'. TEST 5 (Rate limit): ✅ 10 rapid requests: exactly 6 successful (ok:true) and 4 rate-limited (ok:false, error='Too many requests — try again in a moment.'). Rate limiting working correctly at 6 req/10s per IP. TEST 6 (Long query): ✅ Query with 121 chars returns {ok:false, error:'Query too long.'}. TEST 7 (Missing country): ✅ Query 'Eiffel Tower' without country parameter returns ok:true with 2 suggestions (Paris, France and Alberta, Canada). All suggestions include country field (FR, CA). TEST 8 (DB schema): ✅ Both tables exist. address_suggest_cache has cache_key (PK), payload (LONGTEXT), created_at (TIMESTAMP). address_suggest_rate has ip (VARCHAR), ts (TIMESTAMP), and index on (ip, ts). All schema requirements met. NO ISSUES FOUND. Backend endpoint fully functional and production-ready."
+        -comment: "FIXED THE MINIFIER BUG. Reordered mv_minify_html_output() in includes/functions.php so HTML comments are stripped (regular) or preserved (IE conditionals) BEFORE the <script>/<style>/<pre>/<textarea>/<code> extractor runs. This prevents a stray '<script>' mention inside a comment body (which existed in footer.php's 'Defer non-critical JS' comment block) from confusing the greedy tag-pair matcher and swallowing real script tags. VERIFIED LOCALLY: cURL of /category.php now emits all 3 defer <script> tags (bootstrap.bundle.min.js, main.min.js, scroll3d.min.js). Browser test confirmed: JS globals cartAction/openCartDrawer/showToast/toggleTheme now defined; clicking 'Add to Cart' fires POST /ajax/cart.php, cart badge goes 0→1, drawer opens with the item visible; clicking 'Buy Now' navigates to /cart.php as expected. Also updated the chat-bubble drag script in footer.php: after any drag the bubble now animates back to the right edge of the viewport with a 280ms cubic-bezier transition while preserving the user's chosen vertical position (via new snapRight() helper). restorePos() now ignores the persisted X so the bubble ALWAYS rests on the right edge on page load; only Y is honoured. Resize handler also re-snaps to right. Verified via mcp_screenshot_tool: bubble at x=1844→1844 (right edge) after drag from bottom-right to (400,300), Y correctly persisted at 271. NEEDS TESTING AGENT VERIFICATION on live-simulated flows across category.php, shop.php, product.php."
 
-frontend:
   - task: "Checkout — address input auto-suggest dropdown with click-to-autofill (fix: dropdown STAYS closed after selection)"
     implemented: true
     working: true
@@ -11367,94 +11386,101 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "CRITICAL — restore Add to Cart / Buy Now buttons + chat bubble snap-to-right"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
+    -agent: "main"
+    -message: |
+      2026-07-25 — CRITICAL bug fix ready for testing.
+
+      REPORTED BUGS:
+      1) Add to Cart / Buy Now buttons on category listings (and every product row) do nothing when clicked. Cart badge stays at 0; no toast; no navigation on Buy Now.
+      2) Chat bubble should be draggable but auto-snap to the RIGHT edge of the viewport after any drag, preserving the vertical drop position.
+
+      ROOT CAUSE (Bug #1):
+      Traced with Playwright: window.cartAction / openCartDrawer / showToast / toggleTheme were ALL undefined on category.php — meaning main.js never loaded. curl on /category.php confirmed the rendered HTML had ONLY <script src="assets/js/scroll3d.min.js">; bootstrap.bundle.min.js AND main.min.js <script> tags were MISSING. Located in includes/functions.php → mv_minify_html_output(): the <script>/<style>/<pre>/<textarea>/<code> extractor regex ran BEFORE the HTML-comment stripper. footer.php's "Defer non-critical JS" comment block contains the literal text "<script>" (in the phrase "as the previous blocking <script> but with no parser pause") which the extractor mis-identified as a real opening tag and non-greedily matched to the FIRST </script> — the end of bootstrap.bundle. That single placeholder ate the comment's "-->" closer. The follow-up comment stripper's non-greedy .*?--> then extended its delete range to the NEXT --> (past the main.min.js placeholder), removing that placeholder from the HTML. Only scroll3d.min.js survived.
+
+      FIXES APPLIED:
+      A. includes/functions.php — reordered mv_minify_html_output(): extract IE-conditional comments first (preserved), then strip regular HTML comments, THEN run script/style extractors. Scripts inside comment bodies can no longer confuse the greedy matcher.
+      B. includes/footer.php — chat-bubble draggable script updated: new snapRight(y) helper forces x = window.innerWidth - width - 18 (right edge), clamps y. onUp() calls snapRight(currentY) with a 280ms cubic-bezier transition on left/top so the bubble smoothly glides to the right edge after any drag. restorePos() honours only Y from localStorage (X always snaps right). Resize handler re-snaps to right.
+
+      VERIFIED LOCALLY (against http://127.0.0.1:8080 with MariaDB + PHP dev server + Playwright):
+      - /category.php now emits all 3 defer scripts (bootstrap.bundle, main.min.js, scroll3d.min.js)
+      - cartAction/openCartDrawer/showToast/toggleTheme are typeof 'function'
+      - Click .add-to-cart-btn → POST /ajax/cart.php 200; badge 0→1; drawer opens with the item
+      - Click .buy-now-btn → navigates to /cart.php
+      - Drag chat bubble from bottom-right to (400,300): final x=1844 (right edge), y=271 (preserved)
+      - 3 pages tested (home, product.php, page.php, category.php): all now include the 3 defer scripts
+
+      FILES CHANGED:
+      - php-version/includes/functions.php (mv_minify_html_output reordered)
+      - php-version/includes/footer.php (chat bubble drag → snap-right)
+
+      REQUEST TO TESTING AGENT:
+      Please verify against the LOCAL PHP dev server (already running at http://127.0.0.1:8080/):
+      1. On /category.php?slug=office-2024-pc: verify all 4 product rows have working Add to Cart (badge updates, drawer opens with item) AND Buy Now (navigates to /cart.php).
+      2. Repeat on /shop.php and one /product.php page.
+      3. Verify chat bubble drag: after dragging to any (x, y), it animates back to the right edge with a smooth transition; the vertical position is preserved.
+      4. Confirm no console errors and no regressions on other buttons (nav, cart badge, etc.).
+
+      DO NOT INTERACT WITH PRODUCTION maventechsoftware.com — use the local server only.
+
     -agent: "testing"
     -message: |
-      ✅ ITERATION 2026-07-24b COMPANY INFO HISTORY & SWEEP FEATURE VERIFICATION COMPLETE — ALL 9 TESTS PASSED (100% success rate).
+      ✅ ITERATION 2026-07-24c BUG FIXES VERIFICATION COMPLETE — BOTH BUGS FIXED (100% success rate).
       
-      Executed comprehensive backend + frontend testing following exact review_request specifications on http://localhost:3000/.
+      Executed comprehensive Playwright testing on LOCAL PHP dev server at http://127.0.0.1:8080/ following exact review_request specifications.
       
       TEST METHODOLOGY:
-      - MySQL CLI for schema verification and data validation
-      - PHP CLI harness for testing record_company_info_change() and apply_company_branding()
-      - Playwright browser automation for HTTP end-to-end admin form submit
-      - Admin login: services@maventechsoftware.com / Admin@123
-      - Database: ucode_store (MySQL)
+      - Playwright browser automation with Python (desktop viewport 1920x1080)
+      - Network request monitoring for /ajax/cart.php
+      - DOM inspection for script tags and JavaScript globals
+      - Mouse drag simulation for chat bubble behavior
+      - Screenshots captured for visual verification
       
-      RESULTS BY TEST:
+      RESULTS BY BUG:
       
-      ✅ T1 — Schema exists (1/1 tests passed):
-         - company_info_history table exists with all expected columns
-         - Columns: id, field_key, old_value, new_value, changed_by, sweep_count, changed_at
-         - Indexes: field_key, changed_at
+      ✅ BUG 1 — Add to Cart / Buy Now buttons (ALL TESTS PASSED):
+         ✅ All 3 script tags present in HTML (bootstrap.bundle.min.js, main.min.js, scroll3d.min.js)
+         ✅ All JavaScript globals defined as functions (cartAction, openCartDrawer, showToast, toggleTheme)
+         ✅ Add to Cart button works on category.php:
+            - POST /ajax/cart.php returns 200 with {"ok":true,"count":1}
+            - Cart badge updates from 0 → 1 and becomes visible (d-none removed)
+            - Cart drawer opens (class becomes 'mvcart-drawer open')
+            - Drawer shows 1 item with product name "Microsoft Office 2024 Professional Plus (Windows) (Digital Key)"
+            - Button changes to "Added" state (dataset.added === '1')
+         ✅ Buy Now button works on category.php:
+            - Navigates to http://127.0.0.1:8080/cart.php
+         ✅ JavaScript functions available on shop.php
+         ✅ Add to Cart works on shop.php (POST /ajax/cart.php returns 200)
+         ✅ JavaScript functions available on product.php
+         ✅ Add to Cart works on product.php (POST /ajax/cart.php returns 200)
       
-      ✅ T2 — Seed OLD value and simulate admin save (1/1 tests passed):
-         - Seeded test data into 4 tables with OLD value '1-800-OLD-999'
-         - record_company_info_change() returned 'swept: 4'
-         - Successfully swept blog_posts, pages, email_templates, email_outbox
-      
-      ✅ T3 — OLD value scrubbed from database (4/4 tests passed):
-         - blog_posts.content: 0 rows with OLD value ✅
-         - pages.content: 0 rows with OLD value ✅
-         - email_templates.html: 0 rows with OLD value ✅
-         - email_outbox.html: 0 rows with OLD value ✅
-      
-      ✅ T4 — NEW value replaced OLD (4/4 tests passed):
-         - blog_posts.content: 1 row with NEW value ✅
-         - pages.content: 1 row with NEW value ✅
-         - email_templates.html: 1 row with NEW value ✅
-         - email_outbox.html: 1 row with NEW value ✅
-      
-      ✅ T5 — History row recorded (1/1 tests passed):
-         - field_key='company_phone' ✅
-         - old_value='1-800-OLD-999' ✅
-         - new_value='1-800-NEW-777' ✅
-         - sweep_count=4 (matches T2 output) ✅
-      
-      ✅ T6 — Output filter remap (2/2 tests passed):
-         - OLD_STRIPPED: Old value removed from HTML ✅
-         - NEW_INJECTED: New value inserted in place ✅
-         - CAVEAT: Test harness in review_request is incomplete (doesn't set current value in settings first)
-         - In real admin save, settings are updated BEFORE calling record_company_info_change()
-         - Output filter works correctly once current value is set in settings
-      
-      ✅ T7 — Brand-name sweep protection (3/3 tests passed):
-         - blog_posts.content NOT swept for brand name (SEO protection) ✅
-         - blog_posts.title NOT swept for brand name (SEO protection) ✅
-         - email_templates swept for brand name (correct) ✅
-         - sweep_count=2 (only email templates swept, not blog/page content)
-      
-      ✅ T8 — HTTP end-to-end admin form (7/7 tests passed):
-         - Admin login successful ✅
-         - Navigated to Company tab ✅
-         - Clicked Edit button to enable form fields ✅
-         - Changed company_phone from '1-800-NEW-777' to '1-800-TEST-888' ✅
-         - Form saved successfully with success message ✅
-         - New value displayed on page ✅
-         - History row inserted in database ✅
-      
-      ✅ T9 — Cleanup (5/5 tests passed):
-         - All test data deleted successfully ✅
-         - Verification: All counts are 0 ✅
+      ✅ BUG 2 — Chat bubble snap to right edge (ALL TESTS PASSED):
+         ✅ Initial position: x=1838.0, y=998.0 (bottom-right corner)
+         ✅ After drag to (400, 300) and mouseup:
+            - Final position: x=1844.0, y=271.0
+            - Final right edge: 1902.0px (exactly at expected right edge: viewport width 1920 - 18px margin)
+            - Right edge difference: 0.0px ✅ PERFECT SNAP
+            - Y position preserved: expected ~271.0px, actual 271.0px (diff: 0.0px) ✅ PERFECT PRESERVATION
+         ✅ After page reload:
+            - Bubble restored to right edge: 1902.0px from left
+            - X position ignored, only Y restored (as per spec)
       
       EVIDENCE:
-      - MySQL queries verified schema and data state
-      - PHP CLI harness tested sweep and output filter functions
-      - Playwright screenshots: /root/.emergent/automation_output/t8_company_saved.png
-      - Database verification: company_info_history row with sweep_count=4
+      - Screenshots: cart_drawer_with_item.png, chat_bubble_snapped.png
+      - Console logs: /root/.emergent/automation_output/20260725_115750/console_20260725_115750.log
+      - Network requests: All /ajax/cart.php calls returned 200 with correct JSON
       
-      IMPORTANT FINDING:
-      The test harness in T6 (review_request) is incomplete. It doesn't set the NEW value in settings before testing the output filter. The apply_company_branding() function reads the CURRENT value from settings to build the historic mapping (old → current). Without the current value being set, the mapping won't work. In a real admin save scenario, the admin.php handler saves the NEW value to settings FIRST, then calls record_company_info_change(). The output filter works correctly once the current value is set in settings.
+      MINOR NOTES:
+      - Transition CSS property not detected on chat bubble (may be applied inline during drag)
+      - Theme toggle test timed out (selector #theme-toggle not found on homepage) - not critical for bug verification
       
-      NO CRITICAL ISSUES FOUND. The Company Info History & Sweep feature is working correctly and meets all specifications in the review_request. The feature successfully:
-      1. Records OLD values in company_info_history table
-      2. Sweep-replaces OLD values with NEW values across multiple tables
-      3. Remaps OLD → NEW values in the output filter at render time
-      4. Protects blog/page content from brand-name sweeps (SEO protection)
-      5. Integrates correctly with admin form submit path
+      NO CRITICAL ISSUES FOUND. Both bug fixes are working correctly:
+      1. BUG 1 FIXED: All 3 defer scripts now load correctly, Add to Cart and Buy Now buttons work on all pages
+      2. BUG 2 FIXED: Chat bubble snaps to right edge after drag, Y position preserved, X always right-aligned
 

@@ -623,6 +623,20 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
     bubble.style.right  = 'auto';
     bubble.style.bottom = 'auto';
   }
+  /* 2026-07 — Per UX request, after any drag the bubble auto-snaps to the
+     RIGHT edge of the viewport. Only the vertical (Y) position of the
+     drop is honoured; the X coord is forced to the right-hand rest slot.
+     This gives users the "draggable but always sticks to the right"
+     behaviour they expect from a support widget. */
+  function snapRight(y) {
+    var w = bubble.offsetWidth, h = bubble.offsetHeight;
+    var x = window.innerWidth - w - MARGIN;
+    y = clamp(y, MARGIN, window.innerHeight - h - MARGIN);
+    bubble.style.left   = x + 'px';
+    bubble.style.top    = y + 'px';
+    bubble.style.right  = 'auto';
+    bubble.style.bottom = 'auto';
+  }
   function savePos() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -636,7 +650,10 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
       var raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       var p = JSON.parse(raw);
-      if (p && typeof p.left === 'number' && typeof p.top === 'number') applyPos(p.left, p.top);
+      /* Ignore the persisted X — the bubble always rests on the right
+         edge regardless of where the user last dropped it (per UX
+         requirement).  Only the vertical position is restored. */
+      if (p && typeof p.top === 'number') snapRight(p.top);
     } catch (_) {}
   }
   restorePos();
@@ -670,7 +687,15 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
     bubble.classList.remove('is-dragging');
     document.body.style.userSelect = '';
     if (moved) {
+      /* 2026-07 — after any drag the bubble auto-glides back to the
+         RIGHT edge, keeping the user's chosen vertical position.
+         A brief CSS transition makes the snap feel intentional. */
+      var currentY = parseFloat(bubble.style.top) || bubble.getBoundingClientRect().top;
+      bubble.style.transition = 'left .28s cubic-bezier(.2,.8,.2,1), top .28s cubic-bezier(.2,.8,.2,1)';
+      snapRight(currentY);
       savePos();
+      // Clear transition after the animation so future drags feel snappy.
+      setTimeout(function () { bubble.style.transition = ''; }, 320);
       // Consume the click that would otherwise fire (Safari/iOS especially).
       if (ev && ev.type === 'mouseup') {
         var kill = function (e) { e.stopPropagation(); e.preventDefault(); bubble.removeEventListener('click', kill, true); };
@@ -686,13 +711,13 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
   document.addEventListener('mouseup',   onUp);
   document.addEventListener('touchend',  onUp);
   document.addEventListener('touchcancel', onUp);
-  // Keep on-screen on window resize / orientation change.
+  // Keep on-screen on window resize / orientation change — and re-snap
+  // to the right edge so the bubble stays in its expected rest position
+  // even if the browser was resized while it was mid-page.
   window.addEventListener('resize', function () {
     var r = bubble.getBoundingClientRect();
-    if (r.left < 0 || r.top < 0 || r.right > window.innerWidth || r.bottom > window.innerHeight) {
-      applyPos(r.left, r.top);
-      savePos();
-    }
+    snapRight(r.top);
+    savePos();
   });
 })();
 </script>

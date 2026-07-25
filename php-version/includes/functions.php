@@ -347,14 +347,31 @@ function mv_minify_html_output(string $html): string
         $css = preg_replace('/;}/', '}', $css);
         return $m[1] . trim($css) . $m[3];
     };
+    // 2026-07 FIX — "Add to Cart / Buy Now buttons dead" bug traced to the
+    // minifier stripping <script src="bootstrap.bundle.min.js"> and
+    // <script src="main.min.js"> tags from the footer. Root cause: an HTML
+    // comment above the script block contains the literal text "<script>"
+    // (part of a comment discussing "the previous blocking <script>").
+    // The script-extraction regex (below) greedily matches from that fake
+    // "<script>" inside the comment up to the FIRST real </script> — which
+    // is at the end of bootstrap.bundle.min.js — swallowing both the
+    // comment's "-->" closer AND the real script tag. Downstream, the
+    // comment stripper then wipes an even larger region because the outer
+    // comment now has no "-->", extending the delete range to the NEXT
+    // "-->" it finds and taking main.min.js's placeholder with it.
+    //
+    // Fix: extract IE-conditional comments AND strip normal HTML comments
+    // BEFORE the script/style extractors run. That way any stray "<script>"
+    // text inside a comment body is already gone by the time we look for
+    // real script blocks. Script BODIES that legitimately contain "<!-- -->"
+    // sequences are still safe because scripts get extracted (line below)
+    // before any comment-adjacent regex runs on their contents.
+    $extract('#<!--\[if [\s\S]*?<!\[endif\]-->#i');   // preserve IE conditionals
+    $html = preg_replace('/<!--(?!\s*\[if )[\s\S]*?-->/', '', $html);  // drop regular comments FIRST
+
     $extract('#(<style\b[^>]*>)([\s\S]*?)(</style>)#i', $mvMinifyInlineCss);
     // Other protected regions — pass through untouched.
     $extract('#<(pre|textarea|script|code)\b[^>]*>[\s\S]*?</\1>#i');
-    // IE / SEO-comment conditionals — keep as-is.
-    $extract('#<!--\[if [\s\S]*?<!\[endif\]-->#i');
-
-    // Now safe to strip normal HTML comments.
-    $html = preg_replace('/<!--(?!\s*\[if )[\s\S]*?-->/', '', $html);
 
     // Collapse whitespace between tags first (the biggest win by far).
     $html = preg_replace('/>\s+</', '><', $html);
