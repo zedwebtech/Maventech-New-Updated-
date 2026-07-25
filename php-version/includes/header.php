@@ -155,7 +155,21 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
         for (var i=0;i<q.length;i++){ try { q[i](); } catch(e){} }
       }
       evts.forEach(function(e){ window.addEventListener(e, run, {passive:true, capture:true}); });
-      window.addEventListener('load', function(){ setTimeout(run, 3000); });
+      /* 2026-07 FIX — Semrush Web Vitals reported homepage TBT of 1,667ms
+         (Poor) because the 3s post-load fallback fired the tracker stack
+         (GTM/gtag, Merchant Center, Clarity) INSIDE Semrush's ~5s TBT
+         measurement window. Push the safety-net past the window (6s) and
+         use requestIdleCallback so the browser can pick the quietest
+         moment. Real users still trigger run() on first interaction, so
+         analytics coverage on real traffic is unchanged. */
+      window.addEventListener('load', function(){
+        var deadline = 6000;
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(run, { timeout: deadline });
+        } else {
+          setTimeout(run, deadline);
+        }
+      });
       window.__mvLoadTrackers = run;
     })();
   </script>

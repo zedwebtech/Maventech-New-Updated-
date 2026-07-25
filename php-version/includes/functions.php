@@ -2125,7 +2125,7 @@ function render_logo(int $size = 40, ?string $letter = null): string
         . '</defs>'
         . '<rect x="1.5" y="1.5" width="45" height="45" rx="' . $radius . '" fill="url(#' . $id . ')"/>'
         . '<rect x="1.5" y="1.5" width="45" height="45" rx="' . $radius . '" fill="url(#' . $id . '_hl)"/>'
-        . '<text x="24" y="24" text-anchor="middle" dominant-baseline="central" font-family="Inter,Manrope,Segoe UI,Arial,sans-serif" font-weight="800" font-size="' . $fontSize . '" fill="#fff" letter-spacing="-1">' . esc($letter) . '</text>'
+        . '<text x="24" y="24" text-anchor="middle" dominant-baseline="central" font-family="system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Inter,Manrope,Arial,sans-serif" font-weight="800" font-size="' . $fontSize . '" fill="#fff" letter-spacing="-1">' . esc($letter) . '</text>'
         . '<circle cx="40" cy="38" r="2.4" fill="' . esc($accent) . '" opacity=".92"/>'
         . '</svg>';
 }
