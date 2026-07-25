@@ -1542,11 +1542,14 @@ frontend:
     file: "php-version/includes/functions.php, php-version/includes/footer.php"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: "NA"
         -agent: "main"
         -comment: "FIXED THE MINIFIER BUG. Reordered mv_minify_html_output() in includes/functions.php so HTML comments are stripped (regular) or preserved (IE conditionals) BEFORE the <script>/<style>/<pre>/<textarea>/<code> extractor runs. This prevents a stray '<script>' mention inside a comment body (which existed in footer.php's 'Defer non-critical JS' comment block) from confusing the greedy tag-pair matcher and swallowing real script tags. VERIFIED LOCALLY: cURL of /category.php now emits all 3 defer <script> tags (bootstrap.bundle.min.js, main.min.js, scroll3d.min.js). Browser test confirmed: JS globals cartAction/openCartDrawer/showToast/toggleTheme now defined; clicking 'Add to Cart' fires POST /ajax/cart.php, cart badge goes 0→1, drawer opens with the item visible; clicking 'Buy Now' navigates to /cart.php as expected. Also updated the chat-bubble drag script in footer.php: after any drag the bubble now animates back to the right edge of the viewport with a 280ms cubic-bezier transition while preserving the user's chosen vertical position (via new snapRight() helper). restorePos() now ignores the persisted X so the bubble ALWAYS rests on the right edge on page load; only Y is honoured. Resize handler also re-snaps to right. Verified via mcp_screenshot_tool: bubble at x=1844→1844 (right edge) after drag from bottom-right to (400,300), Y correctly persisted at 271. NEEDS TESTING AGENT VERIFICATION on live-simulated flows across category.php, shop.php, product.php."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ BOTH BUGS FULLY VERIFIED FIXED (2026-07-25). Tested on local PHP dev server http://127.0.0.1:8080/ via Playwright automation. BUG 1 (Add to Cart / Buy Now): All 3 defer scripts now load correctly (bootstrap.bundle.min.js, main.min.js, scroll3d.min.js). JS globals defined (cartAction, openCartDrawer, showToast, toggleTheme). Add to Cart: POST /ajax/cart.php → 200, badge 0→1, drawer opens with item, button changes to 'Added'. Buy Now: navigates to /cart.php. Verified on category.php, shop.php, and product.php. BUG 2 (Chat bubble snap-to-right): Drag from (1838, 998) to (400, 300) → snaps to final position (1844, 271). Right edge = 1902px = viewport 1920 - 18px margin (perfect). Y position = 271px (exactly as dropped, preserved). After reload: bubble restored to right edge, X ignored, Y preserved. No console errors, no regressions on nav/theme/cart icon."
 
   - task: "Checkout — address input auto-suggest dropdown with click-to-autofill (fix: dropdown STAYS closed after selection)"
     implemented: true
