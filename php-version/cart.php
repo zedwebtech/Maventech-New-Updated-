@@ -93,7 +93,7 @@ include __DIR__ . '/includes/header.php';
           <?php endif; ?>
           <hr>
           <div class="d-flex justify-content-between mb-3"><span class="fw-bold">Total</span><span class="fw-bold text-primary fs-5"><?= format_price($subtotal) ?></span></div>
-          <a href="checkout.php" class="btn btn-primary btn-lg rounded-pill w-100" data-testid="proceed-checkout">Proceed to Checkout</a>
+          <a href="checkout.php" rel="nofollow" class="btn btn-primary btn-lg rounded-pill w-100" data-testid="proceed-checkout">Proceed to Checkout</a>
           <div class="text-center mt-3 small text-secondary"><i class="bi bi-shield-lock me-1"></i>Secure 256-bit SSL checkout</div>
         </div>
       </div>

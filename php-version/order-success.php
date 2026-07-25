@@ -1203,7 +1203,7 @@ if ($gcrOptInEnabled && $isPaid && $gmcId !== '' && !empty($order['email'])):
     <i class="bi bi-hourglass-split text-warning display-1"></i>
     <h1 class="fw-bold mt-3 h3">Payment pending</h1>
     <p class="text-secondary">Order <strong>#<?= esc($order['order_number']) ?></strong> was created but the payment hasn't been confirmed yet. If you completed payment, refresh this page in a moment.</p>
-    <a href="checkout.php" class="btn btn-primary rounded-pill px-4 mt-2">Back to Checkout</a>
+    <a href="checkout.php" rel="nofollow" class="btn btn-primary rounded-pill px-4 mt-2">Back to Checkout</a>
   </div>
   <?php else: ?>
   <div class="text-center">
