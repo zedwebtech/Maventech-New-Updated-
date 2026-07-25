@@ -282,7 +282,52 @@ if ($isSub) {
         if ($__resumeError !== '') {
             $_SESSION['flash_error'] = $__resumeError;
         }
-        header('Location: cart.php');
+        /* 2026-07 FIX — Semrush "80 outgoing internal links contain nofollow
+           attribute". The site-wide mini-cart drawer links to /checkout.php on
+           every crawled page. Previously we 302-redirected empty-cart hits to
+           /cart.php (which drew the earlier "temporary redirect" flag), and
+           then rel="nofollow" was added to work around that (which now draws
+           this "internal nofollow" flag). Break the cycle: render an inline
+           empty-cart page here so the crawler gets a normal 200 response, the
+           drawer link doesn't need nofollow, and the page stays out of the
+           index via the pre-existing <meta name="robots" content="noindex,
+           nofollow"> tag emitted from includes/header.php. Real users still
+           see the same "your cart is empty" outcome, just as a rendered page
+           instead of a redirect. */
+        $pageTitle = 'Your cart is empty | ' . SITE_BRAND;
+        $noIndex   = true; // belt-and-suspenders — header.php already noindexes checkout.php
+        include __DIR__ . '/includes/header.php';
+        ?>
+        <div class="container py-5 my-md-4">
+          <div class="row justify-content-center">
+            <div class="col-lg-7 col-xl-6 text-center">
+              <div class="p-4 p-md-5 rounded-4 border bg-body-tertiary" data-testid="checkout-empty-cart">
+                <div class="mb-3" style="font-size:3rem;line-height:1;">
+                  <i class="bi bi-bag" aria-hidden="true"></i>
+                </div>
+                <h1 class="h3 fw-bold mb-2">Your cart is empty</h1>
+                <p class="text-secondary mb-4">
+                  Add a product to your cart before continuing to checkout.
+                </p>
+                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                  <a href="shop.php" class="btn btn-primary rounded-pill px-4" data-testid="checkout-empty-shop">
+                    <i class="bi bi-shop me-1"></i>Browse products
+                  </a>
+                  <a href="cart.php" class="btn btn-outline-secondary rounded-pill px-4" data-testid="checkout-empty-view-cart">
+                    <i class="bi bi-cart me-1"></i>View cart
+                  </a>
+                </div>
+                <?php if ($__resumeError !== ''): ?>
+                <div class="alert alert-warning small mt-4 mb-0" role="alert" data-testid="checkout-empty-resume-error">
+                  <?= esc($__resumeError) ?>
+                </div>
+                <?php endif; ?>
+              </div>
+            </div>
+          </div>
+        </div>
+        <?php
+        include __DIR__ . '/includes/footer.php';
         exit;
     }
     // Compliance: ProAssist Premium Installation (paid tech-support add-on) is

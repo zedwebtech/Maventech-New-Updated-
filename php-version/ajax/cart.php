@@ -17,6 +17,26 @@ $slug   = (string)($in['slug']   ?? '');
 
 if (!isset($_SESSION['cart'])) $_SESSION['cart'] = [];
 
+/* 2026-07 FIX — "Add to Cart on Microsoft Project product not working"
+   report. Previously an `add`/`set` action for a slug that get_product()
+   couldn't resolve (e.g. product's region column not in an active region,
+   or the slug was mistyped from a stale link) SILENTLY fell through to
+   the final `ok:true, count:cart_count()` response. Front-end saw ok:true
+   and reported success while the cart never grew — the exact symptom
+   reported. Return an explicit error now so the front-end can toast a
+   real message AND so future breakages surface immediately instead of
+   masquerading as a working call. */
+if (in_array($action, ['add', 'set'], true) && $slug !== '' && !get_product($slug)) {
+    http_response_code(422);
+    echo json_encode([
+        'ok'    => false,
+        'error' => 'This product is not available for your region right now. Please refresh and try again.',
+        'slug'  => $slug,
+        'count' => cart_count(),
+    ]);
+    exit;
+}
+
 if ($action === 'add' && $slug && get_product($slug)) {
     $qty = max(1, (int)($in['qty'] ?? 1));
     $cur = (int)($_SESSION['cart'][$slug] ?? 0);

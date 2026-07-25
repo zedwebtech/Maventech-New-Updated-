@@ -26,14 +26,15 @@
     <div class="mvcart-line d-none" id="mvCartDiscRow"><span class="text-success">Discount</span><span class="text-success" id="mvCartDisc"></span></div>
     <div class="mvcart-total"><span>Total</span><span id="mvCartTotal"></span></div>
     <div class="mvcart-note">No subscription, no recurring fees.</div>
-    <!-- 2026-07 FIX — Semrush "69 URLs with a temporary redirect" flagged
-         every crawled page for linking to /checkout.php, which 302-redirects
-         to /cart.php when the crawler's session has an empty cart.  The
-         drawer's "Proceed to Checkout" is a transactional, per-user link —
-         never an indexable page — so add rel="nofollow" (industry-standard
-         treatment for cart/checkout links) to stop bots from following it.
-         Real customer clicks are unaffected. -->
-    <a href="checkout.php" rel="nofollow" class="btn btn-primary w-100 rounded-pill fw-bold mvcart-checkout" data-testid="cart-drawer-checkout">Proceed to Checkout <i class="bi bi-arrow-right ms-1"></i></a>
+    <!-- 2026-07 FIX — Semrush "80 outgoing internal links contain nofollow
+         attribute" flagged the drawer's <a href="checkout.php" rel="nofollow">
+         on every crawled page. The earlier rel="nofollow" was added to hide a
+         302 → /cart.php redirect from bots; that redirect is now removed
+         (checkout.php renders a 200 "Your cart is empty" page on empty-cart
+         hits and is still noindex,nofollow via meta from includes/header.php).
+         With no redirect chain to hide, the internal nofollow becomes pure
+         crawl-equity waste — removed. -->
+    <a href="checkout.php" class="btn btn-primary w-100 rounded-pill fw-bold mvcart-checkout" data-testid="cart-drawer-checkout">Proceed to Checkout <i class="bi bi-arrow-right ms-1"></i></a>
     <button type="button" class="btn btn-link w-100 mvcart-continue" id="mvCartContinue">Continue Shopping</button>
     <button type="button" class="mvcart-clear" id="mvCartClear">Clear cart</button>
     <div class="mvcart-guarantee"><i class="bi bi-shield-fill-check me-1"></i>Backed by our money-back guarantee</div>

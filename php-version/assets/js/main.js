@@ -132,6 +132,19 @@ document.addEventListener('click', async (e) => {
     if (btn.dataset.added) { if (window.openCartDrawer) { openCartDrawer(); } else { window.location.href = 'cart.php'; } return; }
     const qty = parseInt(btn.dataset.qty || document.getElementById('pd-qty')?.value || '1', 10);
     const data = await cartAction({ action: 'add', slug: btn.dataset.slug, qty });
+    /* 2026-07 FIX — "Add to Cart not working on Microsoft Project product"
+       report.  ajax/cart.php now returns { ok:false, error:'…' } when the
+       slug can't be resolved instead of silently reporting ok:true count:0.
+       Surface the message to the user so they know the click was
+       registered but the add failed — no more silent no-op. */
+    if (data && data.ok === false) {
+      showToast(data.error || 'We could not add that item to your cart. Please refresh and try again.', {
+        title: 'Add to cart failed',
+        icon: '<i class="bi bi-exclamation-triangle-fill"></i>',
+        duration: 5000,
+      });
+      return;
+    }
     updateCartBadge(data.count);
     markAdded(btn);
     if (window.CART_SLUGS && !window.CART_SLUGS.includes(btn.dataset.slug)) window.CART_SLUGS.push(btn.dataset.slug);
@@ -182,7 +195,17 @@ document.addEventListener('click', async (e) => {
     // Buy Now semantics: set the cart line to EXACTLY the selected qty (1 by default).
     // Clicking Buy Now repeatedly never accumulates extra units.
     const qty = parseInt(buy.dataset.qty || document.getElementById('pd-qty')?.value || '1', 10);
-    await cartAction({ action: 'set', slug: buy.dataset.slug, qty });
+    const buyData = await cartAction({ action: 'set', slug: buy.dataset.slug, qty });
+    // 2026-07 FIX — same defensive surface as Add to Cart above: don't
+    // silently navigate to /cart.php if the server rejected the slug.
+    if (buyData && buyData.ok === false) {
+      showToast(buyData.error || 'We could not process Buy Now. Please refresh and try again.', {
+        title: 'Buy Now failed',
+        icon: '<i class="bi bi-exclamation-triangle-fill"></i>',
+        duration: 5000,
+      });
+      return;
+    }
     window.location.href = 'cart.php';
     return;
   }
