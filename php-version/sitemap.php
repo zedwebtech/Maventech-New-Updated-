@@ -88,7 +88,7 @@ $groups = [
         ['Terms of Service', 'page.php?slug=terms-of-service'],
         ['Refund Policy', 'refund-policy.php'],
         ['Return Policy', 'return-policy.php'],
-        ['Shipping & Delivery', 'page.php?slug=shipping-delivery'],
+        ['Shipping & Delivery', 'shipping-delivery.php'],
         ['Payment Policy', 'page.php?slug=payment-policy'],
         ['Cookie Policy', 'page.php?slug=cookie-policy'],
         ['Do Not Sell My Info', 'page.php?slug=do-not-sell'],

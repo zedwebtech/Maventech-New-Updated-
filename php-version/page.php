@@ -19,6 +19,16 @@ if ($slug === 'return-policy') {
     header('Location: /return-policy.php', true, 301);
     exit;
 }
+/* 2026-07 FIX — Semrush "2 issues with duplicate title tags" flagged
+   /shipping-delivery.php and /page.php?slug=shipping-delivery as sharing
+   the same "Shipping & Delivery | Maventech" title.  The dedicated
+   /shipping-delivery.php file is the canonical fulfilment-policy page
+   (Google Ads compliance), so 301-redirect the legacy DB-backed slug
+   here — same treatment as refund-policy / return-policy above. */
+if ($slug === 'shipping-delivery') {
+    header('Location: /shipping-delivery.php', true, 301);
+    exit;
+}
 // Ensure policy pages use the dynamic company phone (one-time cleanup).
 mv_placeholderize_legacy_page_phones();
 $page = null;

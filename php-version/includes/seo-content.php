@@ -1454,6 +1454,17 @@ function category_itemlist_jsonld(array $products, string $title): array
     $items = [];
     $pos = 1;
     $siteUrl = site_url();
+    // 2026-07 FIX — Semrush "244 structured data items are invalid" flagged
+    // each nested Product in this ItemList for "aggregateRating or offers or
+    // review is required".  We do NOT emit ratings/reviews sitewide, so we
+    // satisfy the requirement by attaching a valid `offers` (Offer with
+    // price + priceCurrency + availability) to every nested Product — the
+    // same currency-aware pattern product.php already uses for the single
+    // Product schema.
+    $_cc      = function_exists('current_currency') ? current_currency() : ['code' => 'USD', 'rate' => 1];
+    $ccCode   = (string)($_cc['code'] ?? 'USD');
+    $ccRate   = (float)($_cc['rate'] ?? 1);
+    $priceValidUntil = date('Y-m-d', strtotime('+30 days'));
     foreach ($products as $p) {
         // 2026-07 FIX — Semrush "1 structured data item is invalid" flagged
         // this ItemList (Carousel) for a missing field on ListItem entries.
@@ -1463,16 +1474,32 @@ function category_itemlist_jsonld(array $products, string $title): array
         if ($img !== '' && !preg_match('~^https?://~i', $img)) {
             $img = rtrim($siteUrl, '/') . '/' . ltrim($img, '/');
         }
+        $productUrl  = $siteUrl . '/product.php?slug=' . urlencode((string)$p['slug']);
+        $basePrice   = (float)($p['price'] ?? 0);
+        $shownPrice  = number_format($basePrice * ($ccRate > 0 ? $ccRate : 1), 2, '.', '');
         $productItem = [
             '@type' => 'Product',
             'name'  => (string)$p['name'],
-            'url'   => $siteUrl . '/product.php?slug=' . urlencode((string)$p['slug']),
+            'url'   => $productUrl,
+            // offers — required by Semrush's Product-snippet rule.  Digital
+            // license keys are always in stock (fulfilled by email), so we
+            // pin availability to InStock and mirror product.php's price
+            // conversion so the offer currency matches the visible price.
+            'offers' => [
+                '@type'         => 'Offer',
+                'url'           => $productUrl,
+                'price'         => $shownPrice,
+                'priceCurrency' => $ccCode,
+                'availability'  => 'https://schema.org/InStock',
+                'itemCondition' => 'https://schema.org/NewCondition',
+                'priceValidUntil' => $priceValidUntil,
+            ],
         ];
         if ($img !== '') $productItem['image'] = $img;
         $items[] = [
             '@type'    => 'ListItem',
             'position' => $pos++,
-            'url'      => $siteUrl . '/product.php?slug=' . urlencode((string)$p['slug']),
+            'url'      => $productUrl,
             'name'     => (string)$p['name'],
             'item'     => $productItem,
         ];

@@ -598,7 +598,7 @@ include __DIR__ . '/includes/header.php';
         </div>
         <div class="alert alert-info d-flex align-items-start gap-2 mt-3 mb-0 py-2 px-3 small" role="note" data-testid="product-delivery-notice">
           <i class="bi bi-envelope-check-fill mt-1"></i>
-          <span>Digital product keys are delivered by email once the order is processed. See our <a href="page.php?slug=shipping-delivery" class="fw-semibold">Shipping &amp; Delivery</a> page for full timing details.</span>
+          <span>Digital product keys are delivered by email once the order is processed. See our <a href="shipping-delivery.php" class="fw-semibold">Shipping &amp; Delivery</a> page for full timing details.</span>
         </div>
       </div>
 
