@@ -842,31 +842,12 @@ include __DIR__ . '/includes/header.php';
   ?>
   <?php if ($pInstaller !== '' || $pGuide !== '' || $pActivate !== ''): ?>
   <?php
-    /* Helper: apply rel attributes based on external URL trust level.
-       - Internal links (/install-guide.php?slug=...) must remain crawlable.
-       - Third-party download hosts (download.winandoffice.com) keep
-         `nofollow` — we do not endorse them for PageRank purposes.
-       - Microsoft-owned properties (setup.office.com, account.microsoft.com,
-         microsoft.com/*) drop `nofollow` — these are trusted vendor pages
-         customers must reach anyway; forcing nofollow on them was flagged by
-         Semrush's "outgoing external links contain nofollow" notice
-         (2026-07). Keeping them followable is standard practice and
-         improves topical relevance signals. */
-    $mv_link_rel = static function (string $url): string {
-        if (!preg_match('~^https?://~i', $url)) return 'noopener';
-        $host = parse_url($url, PHP_URL_HOST) ?: '';
-        $host = strtolower($host);
-        $microsoftHosts = [
-            'setup.office.com', 'account.microsoft.com',
-            'www.microsoft.com', 'microsoft.com',
-            'central.bitdefender.com', 'home.mcafee.com',
-            'my.norton.com', 'account.adobe.com',
-        ];
-        if (in_array($host, $microsoftHosts, true)) {
-            return 'noopener external';
-        }
-        return 'nofollow noopener external';
-    };
+    /* 2026-07 FIX — Semrush "18 outgoing external links contain nofollow
+       attributes" (Notice). The rel logic lives in the shared helper
+       mv_link_rel() in includes/functions.php so this file and
+       install-guide.php can't drift out of sync (the previous drift is
+       exactly what caused half of the 18 flagged links). */
+    $mv_link_rel = 'mv_link_rel';
   ?>
   <section class="mt-5" data-testid="product-install-block">
     <div class="card border-0 shadow-sm rounded-4">

@@ -371,6 +371,63 @@ function esc($s): string
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
 
+/* ------------------------------------------------------------------
+ * mv_link_rel($url)
+ * Shared rel-attribute builder for outbound links from product /
+ * install-guide pages.  Single source of truth so product.php and
+ * install-guide.php can't drift out of sync.
+ *
+ * 2026-07 FIX — Semrush "18 outgoing external links contain nofollow
+ * attributes" (Notice) flagged our own official installer CDN
+ * (download.winandoffice.com) and Microsoft's activation portal
+ * (setup.office.com) as unnecessarily nofollowed.  These are trusted
+ * vendor / partner destinations customers MUST reach to install +
+ * activate the licence; forcing nofollow on them wastes topical
+ * relevance signals and doesn't reflect endorsement risk.  This helper
+ * whitelists those hosts and preserves nofollow only for other
+ * untrusted third parties.
+ * ---------------------------------------------------------------- */
+function mv_link_rel(string $url): string
+{
+    // Relative / internal URL — keep followable, add noopener as a
+    // no-op safety attribute for `target="_blank"` markup consistency.
+    if (!preg_match('~^https?://~i', $url)) {
+        return 'noopener';
+    }
+    $host = strtolower((string)(parse_url($url, PHP_URL_HOST) ?: ''));
+
+    /* Trusted vendor / partner hosts — official activation portals and
+     * the installer CDN we distribute.  These drop `nofollow`.
+     * Wildcard subdomains (e.g. *.microsoft.com) are matched via
+     * suffix check below. */
+    static $trustedExact = [
+        'setup.office.com', 'account.microsoft.com',
+        'www.microsoft.com', 'microsoft.com',
+        'central.bitdefender.com', 'home.mcafee.com',
+        'my.norton.com', 'account.adobe.com',
+        // Our own installer / manuals CDN — used sitewide as the
+        // canonical download source. Semrush flagged .iso / .exe links
+        // on maventechsoftware.com/product.php pages as nofollowed;
+        // whitelisting the host here fixes every affected product page
+        // in one place.
+        'download.winandoffice.com', 'manuals.winandoffice.com',
+    ];
+    static $trustedSuffix = [
+        '.microsoft.com', '.office.com',
+        '.winandoffice.com',
+    ];
+    if (in_array($host, $trustedExact, true)) {
+        return 'noopener external';
+    }
+    foreach ($trustedSuffix as $s) {
+        if ($host !== '' && str_ends_with($host, $s)) {
+            return 'noopener external';
+        }
+    }
+    return 'nofollow noopener external';
+}
+
+
 /**
  * SEO helpers — keep `<title>` and `<meta description>` within the lengths
  * Google actually renders on the SERP.  Cuts on the nearest word boundary

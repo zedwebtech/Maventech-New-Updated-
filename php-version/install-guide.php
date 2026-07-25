@@ -135,12 +135,13 @@ include __DIR__ . '/includes/header.php';
       </div>
       <div class="mv-actions d-flex flex-wrap gap-2 mt-3">
         <?php
-          /* Same helper as product.php — nofollow only for external URLs;
-             internal links must be crawlable. */
-          $mv_link_rel = static function (string $url): string {
-              return preg_match('~^https?://~i', $url) === 1
-                  ? 'nofollow noopener external' : 'noopener';
-          };
+          /* 2026-07 FIX — Semrush "18 outgoing external links contain nofollow
+             attributes" (Notice). This page used a naive helper that added
+             nofollow to EVERY external URL, including our own installer CDN
+             (download.winandoffice.com) and Microsoft's activation portal
+             (setup.office.com). Now shares the same trust-aware helper as
+             product.php via mv_link_rel() in includes/functions.php. */
+          $mv_link_rel = 'mv_link_rel';
         ?>
         <?php if ($installer !== ''): ?>
           <a href="<?= esc($installer) ?>" target="_blank" rel="<?= $mv_link_rel($installer) ?>" class="btn rounded-pill px-4" data-testid="guide-download-btn" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi bi-box-arrow-down me-2"></i>Download installer</a>
