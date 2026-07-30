@@ -1396,6 +1396,133 @@ form .row.g-3 { --bs-gutter-y: .75rem; }
    ============================================================ */
 .checkout-addr-parent { position: relative; }
 /* Address auto-suggest CSS removed 2026-07-17e — no longer needed. */
+
+/* ============================================================
+   CHECKOUT REDESIGN (2026-07) — match reference screenshots.
+   Removes the harsh near-black dark-mode background and swaps it
+   for a soft slate-navy that matches the reference (light: off-
+   white gray, dark: slate-900 navy — NOT pure black).
+
+   Scope: EVERYTHING here is gated on `.checkout-canvas` so no
+   other page (product, category, home, admin, blog) can pick
+   these overrides up.  `body:has(.checkout-canvas)` is used to
+   override the site-wide body background ONLY on this page.
+   Modern-browser :has() is baseline (Safari 15.4+, Chrome 105+,
+   Firefox 121+); the `.checkout-canvas` wrapper also carries the
+   background as a belt-and-suspenders fallback for older engines.
+   ============================================================ */
+
+/* — Page canvas — soft off-white gray in light, slate-navy in dark. */
+body:has(.checkout-canvas) {
+  background: #f5f7fb !important;
+  background-image: none !important;
+}
+[data-bs-theme="dark"] body:has(.checkout-canvas),
+body[data-bs-theme="dark"]:has(.checkout-canvas) {
+  background: #0f172a !important;
+  background-image: none !important;
+}
+.checkout-canvas {
+  background: #f5f7fb;
+  min-height: calc(100vh - 64px);
+  padding: 8px 0 32px 0;
+}
+[data-bs-theme="dark"] .checkout-canvas { background: #0f172a; }
+
+/* — Cards on the checkout: white in light, slate-800 in dark.
+     Beats the sitewide dark-mode-polish gradient (which used a
+     linear-gradient(#243049,#1c2538)) so the checkout cards land on
+     a calm, flat colour that reads clean against the navy canvas. */
+.checkout-canvas .co-banner,
+.checkout-canvas .card.co-banner,
+.checkout-canvas #checkout-summary .card {
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 6px 20px rgba(15,23,42,.05) !important;
+  color: #0f172a;
+}
+[data-bs-theme="dark"] .checkout-canvas .co-banner,
+[data-bs-theme="dark"] .checkout-canvas .card.co-banner,
+[data-bs-theme="dark"] .checkout-canvas #checkout-summary .card {
+  background: #1e293b !important;
+  background-image: none !important;
+  border-color: #334155 !important;
+  color: #f1f5f9;
+  box-shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.25) !important;
+}
+
+/* — Need Assistance card: keep the friendly blue tint in light,
+     switch to a soft navy-blue tint in dark (reference matches this). */
+.checkout-canvas .co-help {
+  background: linear-gradient(180deg,#eff6ff,#ffffff) !important;
+  border-color: #dbeafe !important;
+}
+[data-bs-theme="dark"] .checkout-canvas .co-help {
+  background: linear-gradient(180deg,#1e293b,#172033) !important;
+  border-color: #334155 !important;
+}
+
+/* — Form controls on the checkout — a touch brighter in dark so
+     placeholder text is easy to read against the slate card. */
+[data-bs-theme="dark"] .checkout-canvas .form-control,
+[data-bs-theme="dark"] .checkout-canvas .form-select,
+[data-bs-theme="dark"] .checkout-canvas .form-control:focus,
+[data-bs-theme="dark"] .checkout-canvas .form-select:focus {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+[data-bs-theme="dark"] .checkout-canvas .form-control::placeholder {
+  color: #64748b !important;
+}
+
+/* — Section divider hair-line stays subtle in both modes. */
+.checkout-canvas .co-section-divider { border-top-color: #e5e7eb !important; }
+[data-bs-theme="dark"] .checkout-canvas .co-section-divider { border-top-color: #334155 !important; }
+
+/* — Section head icons + heading colours mirror the reference. */
+.checkout-canvas .co-head h6 { color: #0f172a; }
+[data-bs-theme="dark"] .checkout-canvas .co-head h6 { color: #f1f5f9; }
+.checkout-canvas .co-head-icon { color: #2563eb !important; opacity: .9 !important; }
+[data-bs-theme="dark"] .checkout-canvas .co-head-icon { color: #60a5fa !important; }
+
+/* — Payment method tiles — cleaner outline that pops on both bg colours. */
+.checkout-canvas .pay-tile { background: #ffffff !important; border-color: #e5e7eb !important; }
+.checkout-canvas .pay-tile.active {
+  background: #eff6ff !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.15) !important;
+}
+[data-bs-theme="dark"] .checkout-canvas .pay-tile {
+  background: #0f172a !important; border-color: #334155 !important; color: #cbd5e1 !important;
+}
+[data-bs-theme="dark"] .checkout-canvas .pay-tile.active {
+  background: rgba(37,99,235,.16) !important;
+  border-color: #60a5fa !important;
+  box-shadow: 0 0 0 3px rgba(96,165,250,.22) !important;
+  color: #f1f5f9 !important;
+}
+
+/* — Pay button on both themes — match reference solid blue CTA. */
+.checkout-canvas #btn-pay-card {
+  background: linear-gradient(135deg,#2563eb,#3b82f6) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+.checkout-canvas #btn-pay-card:hover { filter: brightness(1.06); }
+
+/* — Total + "You save" line colours in the summary card. */
+.checkout-canvas #checkout-summary .fw-bold,
+.checkout-canvas #checkout-summary h5,
+.checkout-canvas #checkout-summary h6 { color: inherit; }
+.checkout-canvas #checkout-summary .text-success { color: #16a34a !important; }
+[data-bs-theme="dark"] .checkout-canvas #checkout-summary .text-success { color: #4ade80 !important; }
+
+/* — Secondary text throughout: readable on both bg colours. */
+.checkout-canvas .text-secondary { color: #64748b !important; }
+[data-bs-theme="dark"] .checkout-canvas .text-secondary { color: #94a3b8 !important; }
+
 </style>
 <script>
 /* Region-aware checkout address form. The PHP $REGION_FORMS config is the
