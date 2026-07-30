@@ -502,9 +502,9 @@ function seo_clamp_description(string $desc, int $max = 158): string
 }
 
 /**
- * Convert any human-readable phone string (e.g. "1-888-632-9902",
- * "(888) 632-9902 ext. 12") into an RFC-3966-safe `tel:` URI value in
- * E.164 form when possible: "+18886329902".  Falls back gracefully if
+ * Convert any human-readable phone string (e.g. "(805) 294-1524",
+ * "(805) 294-1524 ext. 12") into an RFC-3966-safe `tel:` URI value in
+ * E.164 form when possible: "+18052941524".  Falls back gracefully if
  * the input is too short or already contains a leading "+".
  */
 function tel_e164(string $phone): string
@@ -1105,15 +1105,15 @@ function mv_placeholderize_legacy_page_phones(): void {
         // NB: setting flag intentionally removed — start.sh re-seeds database.sql
         // on a fresh pod which re-populates the legacy hardcoded number, so a
         // one-shot flag would leave the pages permanently stale. This UPDATE
-        // only touches rows whose content still contains "888-632-9902"; on a
+        // only touches rows whose content still contains "(805) 294-1524"; on a
         // clean table it's a fast no-op (LIKE %…% over 15 short rows).
         db()->exec(
             "UPDATE pages SET content = " .
             "REPLACE(REPLACE(REPLACE(content," .
-            "'tel:1-888-632-9902','tel:{{support_phone_tel}}')," .
-            "'+1 888-632-9902','{{support_phone}}')," .
-            "'1-888-632-9902','{{support_phone}}') " .
-            "WHERE content LIKE '%888-632-9902%'"
+            "'tel:(805) 294-1524','tel:{{support_phone_tel}}')," .
+            "'+1 (805) 294-1524','{{support_phone}}')," .
+            "'(805) 294-1524','{{support_phone}}') " .
+            "WHERE content LIKE '%(805) 294-1524%'"
         );
     } catch (Throwable $e) { /* silent — non-critical */ }
 }

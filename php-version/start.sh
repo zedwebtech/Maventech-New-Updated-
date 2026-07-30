@@ -173,6 +173,14 @@ php /app/php-version/scripts/seed-return-policy.php >>/tmp/seed-return-policy.lo
 # Google Search Console "Missing field 'review' / 'aggregateRating'"
 # yellow warnings). Idempotent — only seeds SKUs with 0 published rows.
 php /app/php-version/scripts/seed-baseline-product-reviews.php >>/tmp/seed-baseline-reviews.log 2>&1 || true
+# Company phone rewrite — replace the OLD toll-free 1-888-632-9902 with
+# the CURRENT toll-free (805) 294-1524 across settings, static pages,
+# blog posts, FAQs, email templates and pending email outbox rows. The
+# script is idempotent (guarded by settings.phone_normalized_current);
+# it becomes a ~1 ms no-op after the first successful run.  Whenever
+# the merchant swaps the phone number again in future, bump the
+# constants at the top of the script and this migration runs once more.
+php /app/php-version/scripts/normalize-company-phone.php >>/tmp/normalize-phone.log 2>&1 || true
 # Google Reviews display — extend the curated `reviews` table with the
 # columns needed to render a "Google" badge + external link back to the
 # actual Google Business Profile review page.  These are used by the
