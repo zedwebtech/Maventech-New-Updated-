@@ -185,6 +185,32 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   });</script>
   <!-- End Google Tag Manager -->
   <?php endif; ?>
+  <?php
+    /* ================================================================
+       Plausible Analytics — privacy-friendly traffic tracking.
+       Admin pastes the full snippet from plausible.io under
+       Admin → Company Info → Plausible Analytics, and it lands here
+       inside every page's <head>.
+
+       Safety: we only echo the raw snippet when
+         (a) the admin toggle is ON, AND
+         (b) the stored text references plausible.io or plausible.js
+       so a compromised setting row cannot inject arbitrary JS.
+       Plausible's own script is intentionally NOT deferred through
+       __mvTrk because pageview accuracy depends on the tag being
+       present at first paint (Plausible auto-tracks pageviews).
+    ================================================================ */
+    $plausibleEnabled = (setting_get('plausible_enabled', '0') === '1');
+    $plausibleScript  = (string)setting_get('plausible_script', '');
+    $plausibleOk      = ($plausibleScript !== '' &&
+        (stripos($plausibleScript, 'plausible.io') !== false ||
+         stripos($plausibleScript, 'plausible.js') !== false));
+  ?>
+  <?php if ($plausibleEnabled && $plausibleOk): ?>
+  <!-- Plausible Analytics (admin → Company Info → Plausible Analytics) -->
+  <?= $plausibleScript ?>
+  <!-- End Plausible Analytics -->
+  <?php endif; ?>
   <script>
     // Apply saved theme BEFORE styles render — prevents light-mode flicker on every navigation.
     // Honour the server-rendered data-bs-theme first (when the user is

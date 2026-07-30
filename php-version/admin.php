@@ -1218,6 +1218,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setting_set('company_logo_motion', $motion);
         if (!empty($_POST['company_logo'])) setting_set('company_logo', trim($_POST['company_logo']));
         if (!empty($_POST['clear_logo']))    setting_set('company_logo', '');
+
+        // ------------------------------------------------------------
+        // Plausible Analytics — privacy-friendly traffic tracking.
+        // Admin pastes the FULL snippet from plausible.io (Install →
+        // Script tab) and we inject it into <head> on every page.  A
+        // toggle lets you keep the snippet on file but disable
+        // rendering without losing it.
+        //
+        // Security: we allow-list the snippet on RENDER (must mention
+        // "plausible.io" or "plausible.js") so an attacker who somehow
+        // got write access to this setting cannot inject arbitrary JS.
+        // ------------------------------------------------------------
+        setting_set('plausible_enabled', !empty($_POST['plausible_enabled']) ? '1' : '0');
+        // Strip Windows-style CRs so the stored string is clean unix text.
+        $__plausible = str_replace("\r", '', (string)($_POST['plausible_script'] ?? ''));
+        // Cap size — Plausible snippets are ~1–2 KB; allow 8 KB headroom for
+        // pageview-props / revenue-tracking variants.
+        if (mb_strlen($__plausible) > 8192) $__plausible = mb_substr($__plausible, 0, 8192);
+        setting_set('plausible_script', trim($__plausible));
         if ($__ci_sweptTotal > 0) {
             header('Location: admin.php?tab=company&msg=' . urlencode('Saved. Replaced ' . $__ci_sweptTotal . ' previous value(s) across site content.'));
         } else {
@@ -7098,6 +7117,71 @@ elseif ($tab === 'company'):
           <div id="ciLogoErr" class="small text-danger mt-2 d-none"></div>
         </div>
       </div>
+
+      <!-- ============================================================
+           Plausible Analytics — privacy-friendly traffic tracking.
+           Paste the FULL <script> snippet from plausible.io
+           (Install Plausible → Script tab) and enable the toggle.
+           On save, the snippet is injected into <head> on every
+           page so plausible.io/<your-domain> starts recording
+           pageviews immediately.
+
+           Why this lives under Company Info: it is a site-wide
+           preference bound to the same "company / brand" surface as
+           the logo, email and toll-free number — the natural home
+           for a paste-once, site-wide analytics tag.
+           ============================================================ -->
+      <div class="col-12">
+        <?php
+          $plOn     = (setting_get('plausible_enabled', '0') === '1');
+          $plSnip   = (string)setting_get('plausible_script', '');
+          $plOk     = ($plSnip !== '' && (stripos($plSnip, 'plausible.io') !== false || stripos($plSnip, 'plausible.js') !== false));
+        ?>
+        <div class="p-3" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-2">
+            <div class="flex-grow-1">
+              <label class="form-check-label fw-semibold mb-0" for="ciPlausibleToggle" style="cursor:pointer;">
+                <i class="bi bi-graph-up-arrow me-1 text-primary"></i>Plausible Analytics
+                <?php if ($plOn && $plOk): ?>
+                  <span class="badge bg-success-subtle text-success ms-2" data-testid="ci-plausible-status-live"><i class="bi bi-check-circle-fill me-1"></i>Live on every page</span>
+                <?php elseif ($plOn && !$plOk && $plSnip !== ''): ?>
+                  <span class="badge bg-warning-subtle text-warning ms-2" data-testid="ci-plausible-status-invalid" title="Snippet does not mention plausible.io — rendering is blocked for security."><i class="bi bi-exclamation-triangle-fill me-1"></i>Snippet blocked (not a Plausible script)</span>
+                <?php elseif ($plOn && $plSnip === ''): ?>
+                  <span class="badge bg-secondary-subtle text-secondary ms-2" data-testid="ci-plausible-status-empty">Enabled but empty</span>
+                <?php else: ?>
+                  <span class="badge bg-secondary-subtle text-secondary ms-2" data-testid="ci-plausible-status-off">Off</span>
+                <?php endif; ?>
+              </label>
+              <div class="small text-muted mt-1">
+                Paste the snippet from
+                <a href="https://plausible.io" target="_blank" rel="noopener">plausible.io</a>
+                &rsaquo; Install Plausible &rsaquo; Script tab. Toggle on to inject it into the
+                <code>&lt;head&gt;</code> of every page site-wide.
+              </div>
+            </div>
+            <div class="form-check form-switch mb-0" style="min-width:60px;">
+              <input class="form-check-input" type="checkbox" role="switch" id="ciPlausibleToggle"
+                     name="plausible_enabled" value="1" <?= $plOn ? 'checked' : '' ?>
+                     style="width:48px;height:26px;" data-testid="ci-plausible-toggle">
+            </div>
+          </div>
+          <label class="form-label small fw-semibold mb-1" for="ciPlausibleScript">
+            <i class="bi bi-code-slash me-1"></i>Plausible script snippet
+          </label>
+          <textarea class="form-control font-monospace" id="ciPlausibleScript" name="plausible_script"
+                    rows="6" spellcheck="false" autocomplete="off"
+                    placeholder="&lt;!-- Privacy-friendly analytics by Plausible --&gt;&#10;&lt;script async src=&quot;https://plausible.io/js/pa-XXXXXXXXXX.js&quot;&gt;&lt;/script&gt;&#10;&lt;script&gt;window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)}&lt;/script&gt;"
+                    style="font-size:12.5px;line-height:1.45;"
+                    data-testid="ci-plausible-script-input"><?= esc($plSnip) ?></textarea>
+          <div class="small text-muted mt-1">
+            <i class="bi bi-shield-check me-1 text-success"></i>
+            For safety, the snippet is only rendered if it references
+            <code>plausible.io</code> or <code>plausible.js</code>.
+            Anything else is stored but silently blocked.
+          </div>
+        </div>
+      </div>
+
       <div class="d-flex gap-2 mt-3">
         <button class="btn btn-soft-blue btn-sm" data-testid="ci-save-btn"><i class="bi bi-check2 me-1"></i> Save Company Info</button>
         <button type="button" class="btn btn-soft-gray btn-sm" id="ciCancelBtn" data-testid="ci-cancel-btn">Cancel</button>
