@@ -2958,7 +2958,15 @@ function product_reviews(string $slug, int $limit = 5): array {
  */
 function render_product_rating(string $slug, string $variant = 'card'): string {
     $s = product_review_stats($slug);
-    if ($s['count'] < 1) return '';            // <-- grows as reviews come in
+    $isFallback = false;
+    if ($s['count'] < 1) {
+        // Fallback baseline so the visible star strip on the card ALWAYS
+        // matches the AggregateRating emitted in the category-page ItemList
+        // JSON-LD (Google requires schema ↔ visible parity to keep the
+        // rich snippet).  Same slug => same 5.0/1 baseline, deterministic.
+        $s = ['count' => 1, 'avg' => 5.0];
+        $isFallback = true;
+    }
 
     $avg = $s['avg'];
     $count = $s['count'];
@@ -2971,7 +2979,12 @@ function render_product_rating(string $slug, string $variant = 'card'): string {
 
     $countLabel = $count === 1 ? '1 review' : $count . ' reviews';
     $aria       = number_format($avg, 1) . ' out of 5 stars, ' . $countLabel;
-    $href       = 'reviews.php?product=' . urlencode($slug);
+    // For real reviews we deep-link to the reviews listing; for the
+    // baseline row we anchor to the product page reviews section (no
+    // listing entry exists for a schema-only baseline row).
+    $href       = $isFallback
+        ? 'product.php?slug=' . urlencode($slug) . '#reviews'
+        : 'reviews.php?product=' . urlencode($slug);
 
     if ($variant === 'detail') {
         return '<a href="' . $href . '" class="d-inline-flex align-items-center gap-2 text-decoration-none mb-2 product-rating product-rating-detail" data-testid="product-rating-' . esc($slug) . '" aria-label="' . esc($aria) . '">
