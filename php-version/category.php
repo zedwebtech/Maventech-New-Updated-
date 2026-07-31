@@ -60,17 +60,30 @@ $jsonLdFaq        = faq_to_jsonld($catFaqs);
 
 /* CollectionPage schema — primary type for category landing pages.
  * Tells Google "this is a curated list of related products" so it
- * indexes the URL as a hub page rather than a thin filter. */
+ * indexes the URL as a hub page rather than a thin filter.
+ *
+ * IMPORTANT (2026-08 fix — Search Console "Review has multiple aggregate
+ * ratings" on product snippets / merchant listings / review snippets):
+ * We deliberately do NOT embed $jsonLdItemList here as `mainEntity`.
+ * The header emits $jsonLdItemList as its own JSON-LD script tag, and
+ * each nested Product inside it carries a stable @id (product.php?slug=…#product).
+ * If we also embedded the same ItemList inside CollectionPage.mainEntity,
+ * every Product entity — and therefore its aggregateRating + review
+ * array — would appear TWICE on the page under the same @id. Google
+ * merges those graph nodes and flags "Review has multiple aggregate
+ * ratings". Emitting the ItemList exactly ONCE (as a sibling JSON-LD
+ * block via header.php) keeps the rich snippet valid. This matches the
+ * hub.php pattern, which never had this warning. */
 $jsonLd = [
     '@context'    => 'https://schema.org',
     '@type'       => 'CollectionPage',
+    '@id'         => site_url() . '/category.php?slug=' . urlencode($slug) . '#collection',
     'name'        => $title,
     'description' => $pageDescription,
     'url'         => site_url() . '/category.php?slug=' . urlencode($slug),
     'inLanguage'  => 'en',
     'isPartOf'    => ['@id' => site_url() . '/#website'],
     'about'       => ['@type' => 'Thing', 'name' => $title],
-    'mainEntity'  => $jsonLdItemList,
 ];
 
 include __DIR__ . '/includes/header.php';
