@@ -45,12 +45,63 @@ $installer = trim((string)($product['installer_url']  ?? ''));
 $activation= trim((string)($product['activation_url'] ?? ''));
 $actHost   = $activation !== '' ? (parse_url($activation, PHP_URL_HOST) ?: $activation) : '';
 
-/* Fill activation copy placeholders with the product's own links. */
-$activationCopy = strtr($g['activation'], [
-    '{{activation}}'      => esc($activation !== '' ? $activation : '#'),
-    '{{activation_host}}' => esc($actHost !== '' ? $actHost : 'the official site'),
-    '{{installer}}'       => esc($installer !== '' ? $installer : '#'),
-]);
+/* Self-referential activation URL detection
+ *
+ * Per user request, every product's activation_url now points at OUR
+ * on-site install-guide page ("/install-guide.php?slug=<slug>").  When
+ * the customer clicks "Sign in to activate" in their order email, they
+ * land HERE — so the hero "Activate / Sign in" CTA would otherwise
+ * loop back to itself, and the "License & activation" copy would
+ * embed a link back to this very page.  Detect that case and:
+ *   1. Hide the redundant hero button (there is no external portal to
+ *      send them to — activation happens INSIDE the app itself using
+ *      the product key from their order email).
+ *   2. Swap the activation copy for an on-site variant that walks the
+ *      customer through in-app activation without linking outside the
+ *      site (matches the "No setup Microsoft link should be showed"
+ *      requirement).
+ */
+$actPath        = $activation !== '' ? (string)(parse_url($activation, PHP_URL_PATH) ?: '') : '';
+$actQuery       = $activation !== '' ? (string)(parse_url($activation, PHP_URL_QUERY) ?: '') : '';
+parse_str($actQuery, $actQs);
+$actSlug        = (string)($actQs['slug'] ?? '');
+$isSelfActivate = ($actPath === '/install-guide.php' && $actSlug === $slug);
+
+if ($isSelfActivate) {
+    /* On-site activation copy — no external portal link. Chooses the
+       right wording based on the guide template so the instructions
+       match how each product family is actually activated. */
+    switch ($template) {
+        case 'office_mac':
+            $activationCopy = 'Activation lives on <strong>this page</strong> — there is no separate portal to visit. Download the installer above, install Office, open Word or Excel from Launchpad, then use the <strong>25-character product key</strong> from your order email during first-run sign-in. Confirm activation any time under <strong>File ▸ Account</strong>. If an older Office trial is already on the Mac, uninstall it first (drag those apps from <em>Applications</em> to the Trash) to avoid conflicts.';
+            break;
+        case 'windows':
+            $activationCopy = 'Activation happens right inside Windows using the <strong>25-character product key</strong> from your order email — no external portal is needed. After installing, open <strong>Settings ▸ System ▸ Activation ▸ Change product key</strong>, paste your key and click <strong>Activate</strong>. Your digital licence is permanent on this device.';
+            break;
+        case 'office_retail':
+            $activationCopy = 'Activation happens directly inside the Office app — no external portal is needed. After installing, open any Office app, go to <strong>File ▸ Account ▸ Change Product Key</strong> and enter the <strong>25-character key</strong> from your order email. Remove any older pre-installed Office trial and restart before activating.';
+            break;
+        case 'bitdefender':
+            $activationCopy = 'Follow the flowchart above — activation is entirely on-site. Create a free <em>Bitdefender Central</em> account, redeem the <strong>10-character activation code</strong> from your order email, then download the app and sign in with the same account on every device you want to protect. There is no product-key box inside the app itself.';
+            break;
+        case 'mcafee':
+            $activationCopy = 'Follow the flowchart above — activation is entirely on-site. Create a free McAfee account, redeem the <strong>activation code</strong> from your order email, then download the McAfee app on each device and sign in with the same account. Your subscription and seat count are managed from that single account — no product-key box inside the app.';
+            break;
+        case 'office_key':
+        default:
+            $activationCopy = 'Activation happens directly inside the Office app — no external portal is needed. After installing, open <strong>Word</strong> or <strong>Excel</strong>, go to <strong>File ▸ Account ▸ Change Product Key</strong> and enter the <strong>25-character key</strong> from your order email. Your copy is genuinely activated for life on this PC.';
+            break;
+    }
+} else {
+    /* Fill activation copy placeholders with the product's own links
+       (legacy path — kept for backwards compatibility when an admin
+       manually points activation_url at an external portal). */
+    $activationCopy = strtr($g['activation'], [
+        '{{activation}}'      => esc($activation !== '' ? $activation : '#'),
+        '{{activation_host}}' => esc($actHost !== '' ? $actHost : 'the official site'),
+        '{{installer}}'       => esc($installer !== '' ? $installer : '#'),
+    ]);
+}
 
 /* ---- SEO ---- */
 $pageTitle       = 'How to Install ' . $name . ' — Step-by-step Guide';
@@ -146,7 +197,7 @@ include __DIR__ . '/includes/header.php';
         <?php if ($installer !== ''): ?>
           <a href="<?= esc($installer) ?>" target="_blank" rel="<?= $mv_link_rel($installer) ?>" class="btn rounded-pill px-4" data-testid="guide-download-btn" style="background:linear-gradient(135deg,#16a34a,#15803d) !important;color:#fff !important;border:0;"><i class="bi bi-box-arrow-down me-2"></i>Download installer</a>
         <?php endif; ?>
-        <?php if ($activation !== ''): ?>
+        <?php if ($activation !== '' && !$isSelfActivate): ?>
           <a href="<?= esc($activation) ?>" target="_blank" rel="<?= $mv_link_rel($activation) ?>" class="btn btn-outline-primary rounded-pill px-4" data-testid="guide-activate-btn"><i class="bi bi-key me-2"></i>Activate / Sign in</a>
         <?php endif; ?>
         <a href="<?= esc('product.php?slug=' . urlencode($slug)) ?>" class="btn btn-link text-decoration-none px-2" data-testid="guide-back-btn"><i class="bi bi-arrow-left me-1"></i>Back to product</a>

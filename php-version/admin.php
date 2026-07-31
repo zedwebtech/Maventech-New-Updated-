@@ -8725,9 +8725,14 @@ elseif ($tab === 'products'):
                       <span>Where should the customer go to activate? <span class="badge bg-success ms-1" style="font-size:9px;">used in order email</span></span>
                     </label>
                     <div class="js-url-manual" data-key="activation-url">
-                      <input class="form-control form-control-sm" name="activation_url" value="<?= esc($editing['activation_url'] ?? '') ?>" placeholder="https://setup.office.com" data-testid="f-activation-url">
-                      <small class="text-muted">Enter the activation URL manually. Customers see a "Sign in to activate &rarr;" button in the order email that opens this URL.</small>
+                      <input class="form-control form-control-sm" name="activation_url" value="<?= esc($editing['activation_url'] ?? '') ?>" placeholder="/install-guide.php?slug=<product-slug>" data-testid="f-activation-url">
+                      <small class="text-muted">Customers see a "Sign in to activate &rarr;" button in the order email that opens this URL. <strong>Default: our own on-site install &amp; activation guide</strong> — the site auto-sets this to <code>/install-guide.php?slug=&lt;this-product&gt;</code> on every boot, so the customer stays on <em>your</em> domain and sees the per-product flowchart + download URL. Override below only if you want to send them off-site.</small>
                       <div class="d-flex gap-1 flex-wrap mt-1">
+                        <?php
+                          $editingSlug = trim((string)($editing['slug'] ?? ''));
+                          $ownGuideUrl = $editingSlug !== '' ? ('/install-guide.php?slug=' . rawurlencode($editingSlug)) : '/install-guide.php';
+                        ?>
+                        <button type="button" class="btn btn-primary btn-sm py-0 px-2" style="font-size:11px;" onclick="document.querySelector('[name=activation_url]').value='<?= esc($ownGuideUrl) ?>';">&#127968; Our install guide (recommended)</button>
                         <?php foreach ([
                           'Office (setup)'  => 'https://setup.office.com',
                           'Microsoft Account' => 'https://account.microsoft.com',

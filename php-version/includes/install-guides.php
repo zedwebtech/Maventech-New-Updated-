@@ -52,6 +52,15 @@ function mv_guide_template_for_slug(string $slug): ?string
         'windows-11-pro'  => 'windows',
         'windows-10-home' => 'windows',
         'windows-10-pro'  => 'windows',
+        // ── Bitdefender (antivirus / VPN) ───────────────────────────────────
+        'bitdefender-premium-vpn-unlimited-devices-1-year'    => 'bitdefender',
+        'bitdefender-antivirus-for-mac-1-mac-1-year'          => 'bitdefender',
+        'bitdefender-antivirus-for-mac-1-mac-2-years'         => 'bitdefender',
+        'bitdefender-antivirus-for-mac-3-mac-1-year'          => 'bitdefender',
+        'bitdefender-antivirus-for-mac-3-mac-2-years'         => 'bitdefender',
+        'bitdefender-small-office-security-5-devices-1-year'  => 'bitdefender',
+        // ── McAfee ──────────────────────────────────────────────────────────
+        'mcafee-premium-individual-1-year-unlimited-devices-usa' => 'mcafee',
     ];
     return $map[$slug] ?? null;
 }
@@ -353,6 +362,90 @@ function mv_install_guides(): array
              'img'   => 'windows/step-activated.jpg'],
         ],
         'activation' => 'Activate from <strong>Settings ▸ System ▸ Activation ▸ Change product key</strong> as shown above. To make re-installs effortless, sign in with a free Microsoft account at <a href="{{activation}}" target="_blank" rel="noopener">{{activation_host}}</a> so your digital licence is linked to your account.',
+    ],
+
+    /* ───────────────────────── Bitdefender (Antivirus / VPN) ─────────────── */
+    'bitdefender' => [
+        'label'    => 'Bitdefender Antivirus / VPN',
+        'platform' => 'Windows & macOS',
+        'flow' => [
+            ['icon' => 'bi-person-plus',        'label' => 'Create Bitdefender account'],
+            ['icon' => 'bi-key',                'label' => 'Redeem key'],
+            ['icon' => 'bi-cloud-arrow-down',   'label' => 'Download app'],
+            ['icon' => 'bi-gear-wide-connected','label' => 'Install'],
+            ['icon' => 'bi-box-arrow-in-right', 'label' => 'Sign in'],
+            ['icon' => 'bi-patch-check',        'label' => 'Protected'],
+        ],
+        'system' => [
+            'Windows 10 / 11, or macOS 11 (Big Sur) or newer',
+            '2 GB RAM (4 GB recommended)',
+            '2.5 GB of free disk space',
+            'Active internet connection for activation and updates',
+            'An email address to create a free Bitdefender Central account',
+        ],
+        'steps' => [
+            ['title' => 'Create a free Bitdefender Central account',
+             'html'  => 'Bitdefender licences are managed through <em>Bitdefender Central</em>. Create a free account with the email address you want the licence attached to (or sign in if you already have one). Your product key is redeemed against this account — it is the same account you sign into on every device you protect.',
+             'img'   => null],
+            ['title' => 'Redeem your product key',
+             'html'  => 'Inside your Bitdefender Central account, open <strong>My Subscriptions ▸ Activation code</strong>, paste the <strong>10-character activation code</strong> from your order email and click <strong>Activate</strong>. The subscription appears immediately with its expiry date.',
+             'img'   => null],
+            ['title' => 'Download the Bitdefender app',
+             'html'  => 'From the same account page, click <strong>Install on this device</strong> to download the installer for your operating system (Windows <em>.exe</em> or macOS <em>.pkg</em>). Save it to your <em>Downloads</em> folder.',
+             'img'   => null],
+            ['title' => 'Run the installer',
+             'html'  => 'Double-click the downloaded file, approve the Windows / macOS security prompt and let Bitdefender install. It automatically removes any older or trial version of Bitdefender it finds.',
+             'img'   => null],
+            ['title' => 'Sign in with your Central account',
+             'html'  => 'When the app launches, sign in with the same Bitdefender Central account you redeemed the key against. The device is now linked to your subscription — no product-key box needs to be filled in inside the app.',
+             'img'   => null],
+            ['title' => 'You are protected',
+             'html'  => 'Bitdefender starts protecting the device immediately and shows a green <strong>&ldquo;You are safe&rdquo;</strong> status. You can add more devices any time from <em>Bitdefender Central</em> up to the number of seats included in your plan.',
+             'img'   => null],
+        ],
+        'activation' => 'Bitdefender licences live in your free <em>Bitdefender Central</em> account. Redeem your activation code there, then simply sign into the Bitdefender app on each device with the same account — there is no product-key box inside the app itself. Uninstall any older or trial Bitdefender build first to avoid activation conflicts.',
+    ],
+
+    /* ───────────────────────── McAfee ────────────────────────────────────── */
+    'mcafee' => [
+        'label'    => 'McAfee+ / McAfee Total Protection',
+        'platform' => 'Windows, macOS, Android, iOS',
+        'flow' => [
+            ['icon' => 'bi-person-plus',        'label' => 'Create McAfee account'],
+            ['icon' => 'bi-key',                'label' => 'Redeem code'],
+            ['icon' => 'bi-cloud-arrow-down',   'label' => 'Download app'],
+            ['icon' => 'bi-gear-wide-connected','label' => 'Install'],
+            ['icon' => 'bi-box-arrow-in-right', 'label' => 'Sign in'],
+            ['icon' => 'bi-patch-check',        'label' => 'Protected'],
+        ],
+        'system' => [
+            'Windows 10 / 11, macOS 11 or newer, Android 8+, iOS 15+',
+            '2 GB RAM',
+            '1 GB of free disk space',
+            'Active internet connection for activation and updates',
+            'An email address to create a free McAfee account',
+        ],
+        'steps' => [
+            ['title' => 'Create a free McAfee account',
+             'html'  => 'McAfee subscriptions are tied to an account (like Netflix). Create a free McAfee account with the email you want to use, or sign in if you already have one. Every device you protect signs into this same account.',
+             'img'   => null],
+            ['title' => 'Redeem your activation code',
+             'html'  => 'Inside your McAfee account, open <strong>My Account ▸ Redeem retail card</strong>, paste the <strong>activation code</strong> from your order email and click <strong>Submit</strong>. Your McAfee+ subscription appears with its start / end dates.',
+             'img'   => null],
+            ['title' => 'Download the McAfee app',
+             'html'  => 'From the account dashboard, click <strong>Download</strong> next to McAfee+ for your operating system. Save the installer to your <em>Downloads</em> folder.',
+             'img'   => null],
+            ['title' => 'Run the installer',
+             'html'  => 'Double-click the file, approve the security prompt and let McAfee install. It removes any older McAfee build automatically. Setup takes a few minutes.',
+             'img'   => null],
+            ['title' => 'Sign in inside the McAfee app',
+             'html'  => 'When McAfee opens, sign in with the same McAfee account you redeemed the code against. The device now appears in <em>My Account ▸ Devices</em> and counts against your seats.',
+             'img'   => null],
+            ['title' => 'Protection is active',
+             'html'  => 'McAfee runs its first quick scan and shows a green <strong>&ldquo;Your PC is protected&rdquo;</strong> status. Repeat the download + sign-in on every device covered by your subscription (McAfee+ Premium Individual includes unlimited devices for one person).',
+             'img'   => null],
+        ],
+        'activation' => 'McAfee subscriptions live in your free McAfee account. Redeem your activation code there, then sign into the McAfee app on each device with the same account — there is no product-key box inside the app. If an older McAfee build is present it will be replaced automatically during setup.',
     ],
 
     ];

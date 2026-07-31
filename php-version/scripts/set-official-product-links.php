@@ -2,68 +2,84 @@
 /**
  * scripts/set-official-product-links.php
  *
- * Standardise every product's DOWNLOAD (installer_url) and ACTIVATION
- * (activation_url) links to the official Microsoft / vendor destinations
- * that gosoftwarebuy uses ("download directly from Microsoft"), instead of
- * third-party mirrors. Idempotent — safe to run on every deploy (called from
- * start.sh AFTER seed-manual-urls.php so it wins).
+ * Standardise every product's ACTIVATION (activation_url) link to OUR OWN
+ * on-site install & activation guide (/install-guide.php?slug=<slug>) —
+ * per user request "please create our own page for activation and sign-in
+ * URL. So if a customer click on this activation and sign-in URL, our
+ * website page should be open up. No setup Microsoft link should be
+ * shown."  The guide page renders a per-product flowchart, step-by-step
+ * screenshots and the exact installer download URL for that SKU, so the
+ * customer stays on OUR domain end-to-end instead of being bounced off
+ * to setup.office.com / account.microsoft.com / central.bitdefender.com /
+ * mcafee.com/activate.
  *
- * Rules:
- *   Office family (Office suites, Word/Excel/PowerPoint/Outlook/Access/
- *   Publisher, Project, Visio — PC & Mac) -> setup.office.com for BOTH
- *   download & activation (Microsoft's own redeem+download portal).
- *   Windows 11 -> download microsoft.com/software-download/windows11,
- *                 activate account.microsoft.com
- *   Windows 10 -> download microsoft.com/software-download/windows10,
- *                 activate account.microsoft.com
- *   Bitdefender -> central.bitdefender.com
- *   McAfee      -> mcafee.com/activate
- * The per-product install GUIDE (install_guide_url) is left untouched.
+ * installer_url is NOT set here anymore — the per-SKU installer URLs from
+ * the merchant's products_list.docx are applied by set-manual-installer-
+ * links.php, which runs AFTER this script.
+ *
+ * Idempotent — safe to run on every deploy (called from start.sh AFTER
+ * seed-manual-urls.php so it wins).
  */
 require_once __DIR__ . '/../includes/functions.php';
 
-$SETUP   = 'https://setup.office.com';
-$MSACCT  = 'https://account.microsoft.com';
-$WIN11   = 'https://www.microsoft.com/software-download/windows11';
-$WIN10   = 'https://www.microsoft.com/software-download/windows10';
-$BITDEF  = 'https://central.bitdefender.com';
-$MCAFEE  = 'https://www.mcafee.com/activate';
-
 $pdo = db();
-$rows = $pdo->query("SELECT id, slug, name, brand, category, platform FROM products")->fetchAll(PDO::FETCH_ASSOC);
+
+/**
+ * Resolve an absolute base URL that the customer's browser / email client
+ * can actually follow.
+ *
+ * Order of preference:
+ *   1. site_url()  — uses HTTP_HOST when serving a real request, or the
+ *      admin-configured settings.main_url in CLI mode. Perfect for
+ *      production (customer's real domain).
+ *   2. /app/frontend/.env → REACT_APP_BACKEND_URL — set by the Emergent
+ *      preview infrastructure. Used on FRESH preview pods where start.sh
+ *      has not yet run the block that copies REACT_APP_BACKEND_URL into
+ *      settings.main_url (that happens AFTER this script).
+ *   3. Empty string — the DB stores a relative URL. Emails may not open
+ *      it, but /install-guide.php works fine from any product page.
+ */
+function mv_resolve_activation_base(): string {
+    $base = rtrim((string)site_url(), '/');
+    if ($base !== '' && $base !== 'http://localhost') {
+        $host = strtolower((string)parse_url($base, PHP_URL_HOST));
+        if ($host !== '' && $host !== 'localhost' && $host !== '127.0.0.1') {
+            return $base;
+        }
+    }
+    // Fresh-pod fallback: read REACT_APP_BACKEND_URL directly from the
+    // frontend .env (mirrors what start.sh does a bit later on boot).
+    $envFile = '/app/frontend/.env';
+    if (is_readable($envFile)) {
+        foreach (@file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+            if (!preg_match('/^\s*REACT_APP_BACKEND_URL\s*=\s*(.+?)\s*$/', $line, $m)) continue;
+            $u = trim($m[1], " \t\"'");
+            if ($u !== '' && filter_var($u, FILTER_VALIDATE_URL)) return rtrim($u, '/');
+        }
+    }
+    return '';
+}
+
+$base = mv_resolve_activation_base();
+
+$rows = $pdo->query("SELECT id, slug, name, brand FROM products")->fetchAll(PDO::FETCH_ASSOC);
 
 $upd = $pdo->prepare(
-    "UPDATE products SET installer_url = ?, activation_url = ?, install_url_mode = 'manual', activation_url_mode = 'manual' WHERE id = ?"
+    "UPDATE products SET activation_url = ?, activation_url_mode = 'manual' WHERE id = ?"
 );
 
 $changed = 0;
 foreach ($rows as $r) {
-    $cat   = strtolower((string)$r['category']);
-    $name  = strtolower((string)$r['name']);
-    $brand = strtolower((string)$r['brand']);
+    $slug = trim((string)$r['slug']);
+    if ($slug === '') continue;
 
-    $installer = null; $activation = null;
+    // Every product's activation link now points at OUR on-site guide.
+    // No external Microsoft / vendor setup portal is exposed anywhere.
+    $activation = $base . '/install-guide.php?slug=' . urlencode($slug);
 
-    if (str_contains($cat, 'windows-11') || str_contains($name, 'windows 11')) {
-        $installer = $WIN11;  $activation = $MSACCT;
-    } elseif (str_contains($cat, 'windows-10') || str_contains($name, 'windows 10')) {
-        $installer = $WIN10;  $activation = $MSACCT;
-    } elseif ($brand === 'bitdefender') {
-        $installer = $BITDEF; $activation = $BITDEF;
-    } elseif ($brand === 'mcafee') {
-        $installer = $MCAFEE; $activation = $MCAFEE;
-    } elseif ($brand === 'microsoft' || str_starts_with($cat, 'office-')
-              || str_contains($cat, 'project') || str_contains($cat, 'visio')
-              || preg_match('/\b(office|word|excel|powerpoint|outlook|access|publisher|project|visio|microsoft 365)\b/', $name)) {
-        // Office / Project / Visio (PC & Mac) — Microsoft's own portal.
-        $installer = $SETUP;  $activation = $SETUP;
-    } else {
-        continue; // unknown brand — leave links untouched
-    }
-
-    $upd->execute([$installer, $activation, $r['id']]);
+    $upd->execute([$activation, $r['id']]);
     $changed++;
-    echo sprintf("  [%s] %s -> dl=%s | act=%s\n", $r['brand'], $r['slug'], $installer, $activation);
+    echo sprintf("  [%s] %s -> %s\n", $r['brand'], $slug, $activation);
 }
 
-echo "Done. Updated {$changed} products with official download/activation links.\n";
+echo "Done. Updated {$changed} products with on-site activation links.\n";
