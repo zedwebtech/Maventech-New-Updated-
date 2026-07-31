@@ -11663,4 +11663,207 @@ agent_communication:
       ✅ Negative test passed - invalid script blocked by allow-list
       
       The fix successfully prevents OWASP CRS rules 941100/941110 from triggering. Production LiteSpeed WAF will not block this request.
+    -agent: "main"
+    -message: |
+      NEW BUG FIX — please verify.
+
+      USER REPORT (verbatim):
+        "under the company info there is a Plausible option that has been
+         mentioned. When we upload the script of Plausible over there it's
+         tracking the website traffic (visitors) but it's not tracking each
+         and every URL. On Google [Ads] if we have uploaded a particular URL,
+         if anybody is coming on this particular URL it's not being tracked
+         by the Plausible script."
+
+      ROOT CAUSE:
+        The default Plausible tracker (plausible.io/js/script.js) auto-fires
+        a pageview whose URL is ONLY window.location.pathname — the query
+        string is dropped.  Every Google-Ads landing URL variant
+          /shop.php?view=grid&cat[]=office&os[]=Mac&sort=
+          /category.php?slug=microsoft-project
+        therefore collapses into a single row (/shop.php or /category.php)
+        in Plausible's Top Pages report, and per-ad-URL traffic is invisible.
+
+      FIX (server-side, in includes/header.php):
+        When the admin-pasted snippet references plausible.io/js/script*.js
+        we transparently rewrite the src to the "manual" variant, preserving
+        any other extensions:
+          script.js                    -> script.manual.js
+          script.outbound-links.js     -> script.manual.outbound-links.js
+          script.hash.outbound-links.js-> script.manual.hash.outbound-links.js
+          script.manual.*.js           -> untouched (no double-".manual")
+        Immediately after the snippet we emit an inline <script> that:
+          1) sets up the plausible() queue shim so async load ordering is
+             never a problem,
+          2) fires the initial pageview with u = window.location.href
+             (path + search + hash),
+          3) hooks history.pushState / replaceState / popstate / hashchange
+             and re-fires with the new href (guarded by a last-URL check so
+             identical navigations do not double-count).
+        The admin does NOT have to change the snippet they paste from
+        plausible.io — query-string tracking just starts working.
+
+      WHAT TO VERIFY (uses http://localhost:3000/, PHP dev server, logged-in
+      admin creds in /app/memory/test_credentials.md):
+
+      1. NAVIGATE to a Google-Ads-style URL such as
+           http://localhost:3000/category.php?slug=microsoft-project&view=grid&cat[]=office&os[]=Mac&sort=
+         and view-source (or Playwright page.content()).  Assert:
+           a. <script src="https://plausible.io/js/script.manual.js"> exists
+              in <head> (NOT plain script.js).
+           b. The inline shim block containing
+                window.plausible = window.plausible || function () {…}
+                plausible('pageview', { u: u });
+                var u = window.location.href;
+              is present immediately after the manual-mode <script> tag.
+
+      2. In a real Playwright browser (headless is fine):
+           - Route "**/plausible.io/**" to fulfil({status:202, body:'ok'})
+             (so no external network dependency is needed; the pageview
+             requests never leave the machine but we can still observe
+             them).
+           - page.on('request', …) collect all network requests whose URL
+             contains "plausible.io".
+           - Visit
+               http://localhost:3000/category.php?slug=microsoft-project&view=grid&cat[]=office&os[]=Mac&sort=
+             AND
+               http://localhost:3000/shop.php?view=grid&cat[]=windows-11&os[]=Windows
+           - For EACH URL, after networkidle, at least one plausible.io/api/event
+             request MUST be observed (this is where script.manual.js sends
+             pageviews).  Parse its POST body and assert that the "u" field
+             equals the full URL INCLUDING the query string.
+
+           (If script.manual.js is blocked from loading in the sandbox, the
+            events will queue on window.plausible.q instead — read
+            `await page.evaluate(() => window.plausible && window.plausible.q)`
+            and assert it contains ['pageview', { u: '<full URL with query>' }].)
+
+      3. History-change tracking:
+           - On the loaded page, run
+               history.pushState({}, '', '?view=grid&sort=price_asc')
+             then wait 250ms.
+           - Assert a NEW pageview call fires whose u ends with
+             "?view=grid&sort=price_asc".
+
+      4. NEGATIVE: rewrite must NOT produce "script.manual.manual.js".
+         Set plausible_script (in settings table) to a snippet that already
+         uses script.manual.outbound-links.js; reload page; assert the
+         rendered HTML still contains ".manual.outbound-links.js" and does
+         NOT contain ".manual.manual.".
+
+      5. STATIC assertion of the PHP source file:
+           - /app/php-version/includes/header.php must contain the literal
+             substring:  plausible('pageview', { u: u });
+           - and must contain:  var u = window.location.href;
+           - and must contain:  history.pushState
+
+      6. Admin round-trip (regression guard — this used to work):
+           - Login as admin / go to /admin.php?tab=company / scroll to
+             "Plausible Analytics" card.  The card should still Save without
+             the WAF 403 (base64-encoded field intact).  Toggle should still
+             show "Live on every page" green badge when script + toggle are on.
+
+      Please report PASS/FAIL for each of the six items with the actual
+      URLs observed in the "u" field.  DO NOT touch other admin sections.
+
+
+    -agent: "testing"
+    -message: |
+      ✅ BUG FIX VERIFICATION COMPLETE — Plausible Analytics query string tracking working correctly (100% success rate, 6/6 tests passed).
+      
+      Executed comprehensive verification following the exact 6-item test plan from review_request. NO REAL CHARGES MADE. Site tested at http://localhost:3000/.
+      
+      TEST METHODOLOGY:
+      - Playwright browser automation (Python, chromium headless)
+      - Network request interception for plausible.io API calls
+      - HTML source inspection for script rewrite verification
+      - MySQL database manipulation for negative testing
+      - Static source code analysis of header.php
+      - Admin UI regression testing with authentication
+      
+      RESULTS BY TEST ITEM:
+      
+      ✅ TEST 1 — HTML Source Check (PASS):
+         - Navigated to: http://localhost:3000/category.php?slug=microsoft-project&view=grid&cat[]=office&os[]=Mac&sort=
+         - ✅ Found: <script defer data-domain="..." src="https://plausible.io/js/script.manual.js"></script> (NOT plain script.js)
+         - ✅ Found inline shim: window.plausible = window.plausible || function
+         - ✅ Found pageview call: plausible('pageview', { u: u });
+         - ✅ Found URL assignment: var u = window.location.href;
+         - Server-side rewrite from script.js → script.manual.js working correctly
+      
+      ✅ TEST 2 — Playwright Request Interception (PASS):
+         - Routed **/plausible.io/** to fulfill({status:202, body:'ok'})
+         - Tested 2 URLs with query strings:
+           
+           URL 1: http://localhost:3000/category.php?slug=microsoft-project&view=grid&cat[]=office&os[]=Mac&sort=
+           - ✅ Pageview event queued in window.plausible.q
+           - ✅ Event type: 'pageview'
+           - ✅ Event data 'u' field: http://localhost:3000/category.php?slug=microsoft-project&view=grid&cat[]=office&os[]=Mac&sort=
+           - ✅ Full URL with query string matches exactly
+           
+           URL 2: http://localhost:3000/shop.php?view=grid&cat[]=windows-11&os[]=Windows
+           - ✅ Pageview event queued in window.plausible.q
+           - ✅ Event type: 'pageview'
+           - ✅ Event data 'u' field: http://localhost:3000/shop.php?view=grid&cat[]=windows-11&os[]=Windows
+           - ✅ Full URL with query string matches exactly
+         
+         - FALLBACK used: script.manual.js did not load from external CDN (expected in sandbox), events queued in window.plausible.q instead
+         - Both URLs tracked with complete query strings — Google Ads landing page variants will now appear as distinct rows in Plausible's Top Pages report
+      
+      ✅ TEST 3 — History Change Tracking (PASS):
+         - Navigated to: http://localhost:3000/category.php?slug=microsoft-project&view=grid&cat[]=office&os[]=Mac&sort=
+         - Initial pageview: 1 event queued
+         - Executed: history.pushState({}, '', '?view=grid&sort=price_asc')
+         - Waited 300ms
+         - ✅ New pageview detected: 2 events queued (1 new event)
+         - ✅ New event 'u' field: http://localhost:3000/category.php?view=grid&sort=price_asc
+         - ✅ Query string ?view=grid&sort=price_asc present in new pageview
+         - Client-side navigation (filter/sort changes) correctly triggers new pageviews
+      
+      ✅ TEST 4 — Negative Test: No Double Manual Rewrite (PASS):
+         - Updated settings: mysql -uroot ucode_store -e "UPDATE settings SET v='<script defer data-domain=\"m.com\" src=\"https://plausible.io/js/script.manual.outbound-links.js\"></script>' WHERE k='plausible_script'"
+         - Reloaded category page
+         - ✅ Rendered HTML contains: script.manual.outbound-links.js
+         - ✅ NO occurrence of .manual.manual. found
+         - ✅ Rewrite logic correctly detects existing .manual and does not add it again
+         - Restored settings: mysql -uroot ucode_store -e "UPDATE settings SET v='<script defer data-domain=\"localhost\" src=\"https://plausible.io/js/script.js\"></script>' WHERE k='plausible_script'"
+      
+      ✅ TEST 5 — Static Source Assertion on header.php (PASS):
+         - File: /app/php-version/includes/header.php
+         - ✅ Found: plausible('pageview', { u: u });
+         - ✅ Found: var u = window.location.href;
+         - ✅ Found: history.pushState
+         - ✅ Found: hashchange
+         - All required code strings present in source file
+      
+      ✅ TEST 6 — Admin Regression Check (PASS):
+         - Login: services@maventechsoftware.com / Admin@123 (NOTE: test_credentials.md has incorrect email admin@maventechsoftware.com)
+         - Navigated to: http://localhost:3000/admin.php?tab=company
+         - ✅ Plausible Analytics textarea found (data-testid="ci-plausible-script-input")
+         - ✅ Status badge found: "Live on every page" (green, data-testid="ci-plausible-status-live")
+         - ✅ No 403 Forbidden errors
+         - ✅ WAF 403 bypass (base64 encoding) from previous fix still working
+         - Admin interface correctly displays Plausible configuration
+      
+      EVIDENCE:
+      - Test script: /app/test_plausible_query_tracking.py
+      - Detailed report: /app/plausible_verification_report.md
+      - Test output: /tmp/plausible_test_output.txt
+      - Source file verified: /app/php-version/includes/header.php (lines 187-297)
+      
+      TECHNICAL IMPLEMENTATION VERIFIED:
+      - Script URL rewrite (lines 242-259): script.js → script.manual.js, preserves extensions
+      - Inline shim block (lines 262-295): queue-based plausible() function, initial pageview with full URL, history API hooks
+      - Browser compatibility: async-safe, handles history API, supports hash routing, graceful degradation
+      
+      NO ISSUES FOUND. The Plausible Analytics query string tracking fix is working correctly. The implementation:
+      1. ✅ Tracks full URLs with query strings (resolves the reported bug)
+      2. ✅ Handles history API navigation (client-side filter/sort changes)
+      3. ✅ Prevents double-rewrite issues (negative test passed)
+      4. ✅ Maintains backward compatibility (admin interface unchanged)
+      5. ✅ Preserves previous WAF 403 bypass fix (regression test passed)
+      
+      USER IMPACT: Google Ads landing page variants (e.g., /shop.php?view=grid&cat[]=office&os[]=Mac&sort=) will now appear as distinct rows in Plausible's Top Pages report, allowing accurate per-ad-URL traffic analysis.
+      
+      RECOMMENDATION: ⚠️ Update /app/memory/test_credentials.md to use correct admin email: services@maventechsoftware.com (not admin@maventechsoftware.com)
 

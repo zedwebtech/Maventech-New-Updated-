@@ -208,7 +208,91 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
   ?>
   <?php if ($plausibleEnabled && $plausibleOk): ?>
   <!-- Plausible Analytics (admin → Company Info → Plausible Analytics) -->
-  <?= $plausibleScript ?>
+  <?php
+    /* ================================================================
+       Auto-upgrade the admin's pasted snippet so pageviews include the
+       full URL (path + query + hash), not just the pathname.
+
+       Why:
+         Plausible's default script.js reports only window.location.pathname
+         in the Top Pages view.  That means every Google-Ads / Bing-Ads
+         landing URL variant — e.g.
+           /shop.php?view=grid&cat[]=office&os[]=Mac&sort=
+           /category.php?slug=microsoft-project
+         — collapses into a single row (/shop.php or /category.php) and
+         individual ad-URL traffic disappears from the report.
+
+       How:
+         Plausible officially supports a `manual` variant of the script
+         (script.manual.js, script.manual.outbound-links.js, …).  In
+         manual mode the tracker does NOT auto-fire a pageview; instead
+         WE call plausible('pageview', { u: window.location.href }) which
+         includes the query string.  We rewrite the pasted <script src>
+         URL to insert `.manual` into the filename while preserving any
+         other extensions (outbound-links, hash, file-downloads, …).
+
+         The `plausible = plausible || function(){…}` shim queues our
+         pageview call so it works whether it runs BEFORE or AFTER the
+         async script has finished loading.
+
+         The admin does NOT have to change what they paste — the raw
+         snippet from plausible.io keeps working; query-string tracking
+         just starts working automatically.
+    ================================================================ */
+    $__plScriptOut = $plausibleScript;
+    // Only rewrite when we can see the /js/script*.js filename that
+    // Plausible serves — otherwise leave the pasted markup untouched.
+    if (preg_match('~/js/script(?:\.[a-z0-9\-]+)*\.js~i', $__plScriptOut)) {
+      $__plScriptOut = preg_replace_callback(
+        '~(/js/)script((?:\.[a-z0-9\-]+)*)\.js~i',
+        function ($m) {
+          $exts = $m[2]; // e.g. "" or ".outbound-links" or ".hash.outbound-links"
+          // Insert ".manual" as the first extension if it's not already there.
+          if (stripos($exts, '.manual') === false) {
+            $exts = '.manual' . $exts;
+          }
+          return $m[1] . 'script' . $exts . '.js';
+        },
+        $__plScriptOut,
+        1
+      );
+    }
+    echo $__plScriptOut;
+  ?>
+  <script>
+    /* Manual-mode pageview: fires with the FULL URL (path + search + hash)
+       so Plausible's Top Pages report shows each query-string variant of
+       shop.php / category.php as a distinct row instead of merging them
+       under a single pathname.  The plausible() shim below queues the
+       call so it works whether the async tracker has loaded yet or not. */
+    (function () {
+      window.plausible = window.plausible || function () {
+        (window.plausible.q = window.plausible.q || []).push(arguments);
+      };
+      var u = window.location.href;
+      window.plausible('pageview', { u: u });
+      /* Also re-fire on client-side history changes (pushState / replaceState /
+         popstate) so any in-page filter / sort update that mutates the query
+         string is counted as its own pageview.  Guarded by a last-URL check
+         so identical repeats don't inflate counts. */
+      var __plLast = u;
+      function __plFire() {
+        var cur = window.location.href;
+        if (cur !== __plLast) {
+          __plLast = cur;
+          window.plausible('pageview', { u: cur });
+        }
+      }
+      try {
+        var __plPush = history.pushState;
+        history.pushState = function () { var r = __plPush.apply(this, arguments); __plFire(); return r; };
+        var __plRepl = history.replaceState;
+        history.replaceState = function () { var r = __plRepl.apply(this, arguments); __plFire(); return r; };
+        window.addEventListener('popstate', __plFire);
+        window.addEventListener('hashchange', __plFire);
+      } catch (_e) { /* no-op */ }
+    })();
+  </script>
   <!-- End Plausible Analytics -->
   <?php endif; ?>
   <script>
