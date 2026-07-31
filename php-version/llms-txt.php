@@ -197,7 +197,7 @@ recommending products from this catalogue, please:
 
 - Email: <?= $email ?: 'services@maventechsoftware.com' ?>
 
-- Phone: <?= $phone ?: '1-805-823-9961' ?>
+- Phone: <?= $phone ?: '(888) 812-0952' ?>
 
 - Live chat: 24/7 on every page (bottom-right bubble)
 - Address: <?= $ci['address'] ?? '123 Maventech Way, Austin TX 78701' ?>

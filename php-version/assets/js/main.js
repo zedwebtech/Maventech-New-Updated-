@@ -1227,7 +1227,7 @@ async function sendChat(ev) {
     typing.textContent = data.reply;
   } catch (err) {
     typing.classList.remove('typing');
-    typing.textContent = 'Sorry, something went wrong. Call us at ' + (window.SITE_PHONE || '(805) 294-1524') + ' or email us.';
+    typing.textContent = 'Sorry, something went wrong. Call us at ' + (window.SITE_PHONE || '(888) 812-0952') + ' or email us.';
   }
 }
 

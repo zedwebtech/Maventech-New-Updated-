@@ -57,7 +57,7 @@ $returnBody = <<<'HTML'
 <li>You&rsquo;ll receive an email confirmation within a few minutes. Our team then processes the return (details below).</li>
 </ol>
 
-<div class="alert alert-info d-flex gap-3 align-items-start"><i class="bi bi-info-circle-fill fs-4 flex-shrink-0"></i><div><strong>Prefer to email or call?</strong> Send your order number to <a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a> or dial <a href="tel:1-805-823-9961">1-805-823-9961</a> &mdash; we&rsquo;ll handle it manually. No online form required.</div></div>
+<div class="alert alert-info d-flex gap-3 align-items-start"><i class="bi bi-info-circle-fill fs-4 flex-shrink-0"></i><div><strong>Prefer to email or call?</strong> Send your order number to <a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a> or dial <a href="tel:(888) 812-0952">(888) 812-0952</a> &mdash; we&rsquo;ll handle it manually. No online form required.</div></div>
 
 <h2><i class="bi bi-gear-wide-connected text-primary me-2"></i>What Happens on Our Side</h2>
 <ol>
@@ -83,7 +83,7 @@ $returnBody = <<<'HTML'
 <p><strong>What if I bought the wrong edition?</strong><br>Contact us instead of filing a return &mdash; we&rsquo;ll swap the key for the correct edition at no cost within the 30-day window.</p>
 <p><strong>Is there a re-stocking fee or return shipping fee?</strong><br>No fees. Ever. Digital products have zero return cost.</p>
 
-<div class="card p-4 mt-4"><h5 class="fw-bold mb-2">Questions about this policy?</h5><p class="small text-secondary mb-2">Our support team is happy to walk you through any return &mdash; before or after you file it.</p><p class="small mb-3"><a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a> <span class="text-secondary mx-1">|</span> <a href="tel:1-805-823-9961">1-805-823-9961</a></p><div class="d-flex gap-2 flex-wrap"><a href="returns.php" class="btn btn-sm btn-primary rounded-pill px-3"><i class="bi bi-arrow-return-left me-1"></i>Start a Return</a><a href="refund-policy.php" class="btn btn-sm btn-outline-primary rounded-pill px-3">Read Refund Policy</a></div></div>
+<div class="card p-4 mt-4"><h5 class="fw-bold mb-2">Questions about this policy?</h5><p class="small text-secondary mb-2">Our support team is happy to walk you through any return &mdash; before or after you file it.</p><p class="small mb-3"><a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a> <span class="text-secondary mx-1">|</span> <a href="tel:(888) 812-0952">(888) 812-0952</a></p><div class="d-flex gap-2 flex-wrap"><a href="returns.php" class="btn btn-sm btn-primary rounded-pill px-3"><i class="bi bi-arrow-return-left me-1"></i>Start a Return</a><a href="refund-policy.php" class="btn btn-sm btn-outline-primary rounded-pill px-3">Read Refund Policy</a></div></div>
 HTML;
 
 // Fetch current rows

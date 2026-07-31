@@ -29,21 +29,44 @@ require_once __DIR__ . '/../includes/functions.php';
 
 /* ─── Configure the phone numbers here ────────────────────── */
 // New target number — canonical display, no country code
-const NEW_PHONE_DISPLAY   = '(805) 294-1524';
+const NEW_PHONE_DISPLAY   = '(888) 812-0952';
 // tel: href form (E.164, no formatting)
-const NEW_PHONE_E164      = '+18052941524';
+const NEW_PHONE_E164      = '+18888120952';
 // With country code, human-readable
-const NEW_PHONE_WITH_CC   = '+1 (805) 294-1524';
+const NEW_PHONE_WITH_CC   = '+1 (888) 812-0952';
 
 // Every variant of the OLD number that ever shipped in this
 // codebase.  ORDER MATTERS — longest / most-specific variants
 // come first so shorter matches inside them don't fire early.
 $REPLACEMENTS = [
+    // Previous generation (888) 632-9902 — still present on some pods.
     '+18886329902'      => NEW_PHONE_E164,
     '+1 888-632-9902'   => NEW_PHONE_WITH_CC,
     '1-888-632-9902'    => NEW_PHONE_DISPLAY,
     '(888) 632-9902'    => NEW_PHONE_DISPLAY,
     '888-632-9902'      => NEW_PHONE_DISPLAY,
+    // Immediate-previous number (805) 294-1524 — every seed row, email
+    // template, chat greeting, DB page and admin note still points at
+    // this one.  ORDER: E.164 first so the digit-only match doesn't
+    // eat the leading '+1'.
+    '+18052941524'      => NEW_PHONE_E164,
+    '+1 (805) 294-1524' => NEW_PHONE_WITH_CC,
+    '+1 805-294-1524'   => NEW_PHONE_WITH_CC,
+    '1-805-294-1524'    => NEW_PHONE_DISPLAY,
+    '(805) 294-1524'    => NEW_PHONE_DISPLAY,
+    '805-294-1524'      => NEW_PHONE_DISPLAY,
+    '805.294.1524'      => NEW_PHONE_DISPLAY,
+    '8052941524'        => str_replace([' ', '(', ')', '-'], '', NEW_PHONE_DISPLAY),
+    // Older legacy 1-805-823-9961 — still baked into some pod DBs,
+    // llms.txt, seed scripts and refund-policy HTML.  Sweep so the
+    // whole stack (rendered pages, AI-manifests, admin notes) lands
+    // on the current toll-free number in one pass.
+    '+18058239961'      => NEW_PHONE_E164,
+    '+1 805-823-9961'   => NEW_PHONE_WITH_CC,
+    '1-805-823-9961'    => NEW_PHONE_DISPLAY,
+    '(805) 823-9961'    => NEW_PHONE_DISPLAY,
+    '805-823-9961'      => NEW_PHONE_DISPLAY,
+    '8058239961'        => str_replace([' ', '(', ')', '-'], '', NEW_PHONE_DISPLAY),
 ];
 
 /* ─── Idempotency guard ───────────────────────────────────── */

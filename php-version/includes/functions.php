@@ -220,7 +220,7 @@ function apply_company_branding(string $html): string
             $phone = trim((string)($co['phone'] ?? ''));
             $email = trim((string)($co['email'] ?? ''));
             $defName  = defined('SITE_BRAND') ? SITE_BRAND : 'Maventech';
-            $defPhone = defined('SITE_PHONE') ? SITE_PHONE : '1-805-823-9961';
+            $defPhone = defined('SITE_PHONE') ? SITE_PHONE : '(888) 812-0952';
             $defEmail = defined('SITE_EMAIL') ? SITE_EMAIL : 'services@maventechsoftware.com';
 
             if ($name !== '' && $name !== $defName) {
@@ -502,9 +502,9 @@ function seo_clamp_description(string $desc, int $max = 158): string
 }
 
 /**
- * Convert any human-readable phone string (e.g. "(805) 294-1524",
- * "(805) 294-1524 ext. 12") into an RFC-3966-safe `tel:` URI value in
- * E.164 form when possible: "+18052941524".  Falls back gracefully if
+ * Convert any human-readable phone string (e.g. "(888) 812-0952",
+ * "(888) 812-0952 ext. 12") into an RFC-3966-safe `tel:` URI value in
+ * E.164 form when possible: "+18888120952".  Falls back gracefully if
  * the input is too short or already contains a leading "+".
  */
 function tel_e164(string $phone): string
@@ -1104,16 +1104,28 @@ function mv_placeholderize_legacy_page_phones(): void {
     try {
         // NB: setting flag intentionally removed — start.sh re-seeds database.sql
         // on a fresh pod which re-populates the legacy hardcoded number, so a
-        // one-shot flag would leave the pages permanently stale. This UPDATE
-        // only touches rows whose content still contains "(805) 294-1524"; on a
-        // clean table it's a fast no-op (LIKE %…% over 15 short rows).
+        // one-shot flag would leave the pages permanently stale.  This UPDATE
+        // only touches rows whose content still contains a literal phone
+        // number; on a clean table it's a fast no-op (LIKE %…% over ~15 rows).
+        //
+        // We placeholderize BOTH the previous number (805) 294-1524 AND the
+        // current toll-free (888) 812-0952 so any future admin phone-number
+        // change propagates via Company Info without re-editing seed pages.
+        // The nested REPLACE()s are cheap and idempotent.
         db()->exec(
             "UPDATE pages SET content = " .
+            // (805) 294-1524 legacy variants
+            "REPLACE(REPLACE(REPLACE(" .
+            // (888) 812-0952 current variants — placeholderize these too so
+            // the number never gets baked into DB content again.
             "REPLACE(REPLACE(REPLACE(content," .
+            "'tel:(888) 812-0952','tel:{{support_phone_tel}}')," .
+            "'+1 (888) 812-0952','{{support_phone}}')," .
+            "'(888) 812-0952','{{support_phone}}')," .
             "'tel:(805) 294-1524','tel:{{support_phone_tel}}')," .
             "'+1 (805) 294-1524','{{support_phone}}')," .
             "'(805) 294-1524','{{support_phone}}') " .
-            "WHERE content LIKE '%(805) 294-1524%'"
+            "WHERE content LIKE '%(805) 294-1524%' OR content LIKE '%(888) 812-0952%'"
         );
     } catch (Throwable $e) { /* silent — non-critical */ }
 }

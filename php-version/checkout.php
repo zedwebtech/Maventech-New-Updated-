@@ -1145,7 +1145,7 @@ include __DIR__ . '/includes/header.php';
           </div>
         </div>
         <?php
-          $__helpPhone = trim((string)($brandPhone ?? setting_get('contact_phone', '(805) 294-1524')));
+          $__helpPhone = trim((string)($brandPhone ?? setting_get('contact_phone', '(888) 812-0952')));
           $__helpEmail = trim((string)setting_get('support_email', setting_get('contact_email', 'support@' . ($_SERVER['HTTP_HOST'] ?? 'store'))));
         ?>
         <div class="card co-banner co-help no-3d p-3" data-testid="co-need-help">

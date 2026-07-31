@@ -91,7 +91,7 @@ $newRefundPolicyContent = '<p class="lead">This Refund Policy explains how, when
 <p>Maventech LLC reserves the right to reverse a previously-issued refund where the underlying transaction is subsequently determined to be fraudulent, unauthorised, or in breach of our <a href="page.php?slug=terms-of-service">Terms of Service</a>. Refund reversals are applied only where the payment provider issues a chargeback ruling in our favour or where verifiable evidence of fraud is established. This clause does not affect your statutory consumer-protection rights under applicable law.</p>
 
 <h2><i class="bi bi-headset text-primary me-2"></i>8. Escalations &amp; Contact</h2>
-<p>If your refund has not been processed within the timelines set out in Section 4 &mdash; or if you have any other question about a refund &mdash; contact <a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a>, open a live chat, or call <a href="tel:1-805-823-9961">1-805-823-9961</a>, quoting your order number. Escalations are acknowledged within 24 hours, Monday to Saturday, 9 AM &ndash; 6 PM EST.</p>
+<p>If your refund has not been processed within the timelines set out in Section 4 &mdash; or if you have any other question about a refund &mdash; contact <a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a>, open a live chat, or call <a href="tel:(888) 812-0952">(888) 812-0952</a>, quoting your order number. Escalations are acknowledged within 24 hours, Monday to Saturday, 9 AM &ndash; 6 PM EST.</p>
 
 <h2><i class="bi bi-info-circle text-primary me-2"></i>9. Governing Law</h2>
 <p>This Refund Policy is governed by the laws of the State of California, United States, without regard to conflict-of-law principles, and forms part of the wider agreement between you and Maventech LLC set out in our <a href="page.php?slug=terms-of-service">Terms of Service</a>. Where this policy conflicts with any statutory consumer right that applies to your purchase, the statutory right prevails.</p>
@@ -163,7 +163,7 @@ $newReturnPolicyContent = '<p class="lead">This Return Policy explains what you 
 <p>Maventech LLC reserves the right to refuse a return request where the underlying order is identified as fraudulent, was placed with an unauthorised payment method, or where the same customer has repeatedly abused the return process across multiple prior orders in a manner inconsistent with genuine consumer use. Refusal of a fraudulent return does not affect statutory consumer-protection rights that apply under the law of your jurisdiction.</p>
 
 <h2><i class="bi bi-headset text-primary me-2"></i>11. Contact</h2>
-<p>Questions about a specific return, or about this Return Policy generally, can be sent to <a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a> or raised on live chat. Phone: <a href="tel:1-805-823-9961">1-805-823-9961</a> (Mon &ndash; Sat, 9 AM &ndash; 6 PM EST).</p>
+<p>Questions about a specific return, or about this Return Policy generally, can be sent to <a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a> or raised on live chat. Phone: <a href="tel:(888) 812-0952">(888) 812-0952</a> (Mon &ndash; Sat, 9 AM &ndash; 6 PM EST).</p>
 
 <h2><i class="bi bi-info-circle text-primary me-2"></i>12. Governing Law</h2>
 <p>This Return Policy is governed by the laws of the State of California, United States, without regard to conflict-of-law principles, and forms part of the wider agreement between you and Maventech LLC set out in our <a href="page.php?slug=terms-of-service">Terms of Service</a>. Where this policy conflicts with any statutory consumer right that applies to your purchase, the statutory right prevails.</p>
@@ -186,7 +186,7 @@ $newReturnsRefundsContent = '<p class="lead">Our returns and refunds are documen
 
 <div class="text-center my-4"><a href="returns.php" class="btn btn-primary rounded-pill px-4 fw-semibold">Start a Return / Refund Request</a></div>
 
-<div class="card p-4 mt-4"><h5 class="fw-bold mb-2">Questions?</h5><p class="small text-secondary mb-2">Our support team is happy to help.</p><p class="small mb-3"><a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a> <span class="text-secondary mx-1">|</span> <a href="tel:1-805-823-9961">1-805-823-9961</a> <span class="text-secondary mx-1">|</span> Live chat available on every page</p></div>';
+<div class="card p-4 mt-4"><h5 class="fw-bold mb-2">Questions?</h5><p class="small text-secondary mb-2">Our support team is happy to help.</p><p class="small mb-3"><a href="mailto:services@maventechsoftware.com">services@maventechsoftware.com</a> <span class="text-secondary mx-1">|</span> <a href="tel:(888) 812-0952">(888) 812-0952</a> <span class="text-secondary mx-1">|</span> Live chat available on every page</p></div>';
 
 /**
  * Apply the update to a page slug only when the existing content still

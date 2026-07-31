@@ -26,7 +26,7 @@ $defaults = [
     'company_email'               => 'services@maventechsoftware.com',
     'support_email'               => 'services@maventechsoftware.com',
     'company_address'             => '135 CAROLINA ST APT G2, VALLEJO, CA 94590',
-    'company_phone'               => '1-805-823-9961',
+    'company_phone'               => '(888) 812-0952',
     'company_legal_name'          => 'Maventech LLC',
 ];
 

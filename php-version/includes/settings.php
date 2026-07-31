@@ -235,7 +235,7 @@ function company_info(): array {
 // that still references these constants (footer, contact, emails, PDFs, schema).
 if (!defined('SITE_PHONE')) {
     $__ci = company_info();
-    define('SITE_PHONE',   $__ci['phone']   !== '' ? $__ci['phone']   : '1-805-823-9961');
+    define('SITE_PHONE',   $__ci['phone']   !== '' ? $__ci['phone']   : '(888) 812-0952');
     define('SITE_EMAIL',   $__ci['email']   !== '' ? $__ci['email']   : 'services@maventechsoftware.com');
     define('SITE_ADDRESS', $__ci['address'] !== '' ? $__ci['address'] : '135 Carolina St G2, Vallejo, CA 94590, USA');
     define('SITE_HOURS',   setting_get('company_hours', 'Mon-Sat, 9 AM - 6 PM EST'));
