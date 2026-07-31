@@ -875,14 +875,11 @@ if ($gcrMid !== '' && ctype_digit($gcrMid)):
 -->
 <script defer src="assets/vendor/bootstrap.bundle.min.js?v=<?= esc(@filemtime(__DIR__ . '/../assets/vendor/bootstrap.bundle.min.js')) ?>"></script>
 <script defer src="<?= esc(min_js_url(__DIR__ . '/../assets/js/main.js', 'assets/js/main.js')) ?>"></script>
-<!-- 3D scroll effects (reveal-on-scroll + subtle pointer tilt; reduced-motion aware) -->
-<!-- `defer` added 2026-07-07 — PageSpeed Insights (desktop + mobile) flagged
-     this script as render-blocking (~590 ms savings). scroll3d.js only wires
-     up IntersectionObservers + mouseenter handlers, none of which need to
-     run before DOMContentLoaded, so `defer` is fully safe here. Also
-     eliminates a script-eval spike that was contributing to Total Blocking
-     Time (was 550 ms). -->
-<script defer src="<?= esc(min_js_url(__DIR__ . '/../assets/js/scroll3d.js', 'assets/js/scroll3d.js')) ?>"></script>
+<!-- 3D scroll effect (assets/js/scroll3d.js) removed per merchant request
+     2026-07-16 — the reveal-on-scroll / pointer-tilt animations were
+     disabled site-wide. The source file remains on disk so the effect
+     can be re-enabled by restoring this <script defer …> tag if ever
+     needed (paired with the scroll3d.css include in includes/header.php). -->
 
 <!--
    Lazy-load + async-decode every image that's not already in the initial

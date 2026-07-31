@@ -792,17 +792,16 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
     // any change (see includes/functions.php).
     $darkCss = min_css_url(__DIR__ . '/../assets/css/dark-mode-polish.css', 'assets/css/dark-mode-polish.css');
     $themeCss = min_css_url(__DIR__ . '/../assets/css/theme-refresh.css', 'assets/css/theme-refresh.css');
-    $scrollCss = min_css_url(__DIR__ . '/../assets/css/scroll3d.css', 'assets/css/scroll3d.css');
   ?>
   <link href="<?= 'assets/vendor/bootstrap-icons.min.css?v=' . esc(@filemtime(__DIR__ . '/../assets/vendor/bootstrap-icons.min.css')) ?>" rel="stylesheet">
   <link href="<?= esc(min_css_url(__DIR__ . '/../assets/css/style.css', 'assets/css/style.css')) ?>" rel="stylesheet">
   <link href="<?= esc($darkCss) ?>" rel="stylesheet">
   <!-- theme-refresh.css: global clean/spacious typography layer — must load LAST so it overrides. -->
   <link href="<?= esc($themeCss) ?>" rel="stylesheet">
-  <!-- scroll3d.css is a progressive-enhancement (scroll reveal + tilt) — load it
-       async so it never blocks first render (PageSpeed: render-blocking CSS). -->
-  <link rel="preload" as="style" href="<?= esc($scrollCss) ?>" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link href="<?= esc($scrollCss) ?>" rel="stylesheet"></noscript>
+  <!-- scroll3d.css removed per merchant request 2026-07-16 — the 3D reveal /
+       tilt effect was disabled site-wide. The source files remain on disk
+       (assets/css/scroll3d.css + assets/js/scroll3d.js) so the effect can
+       be re-enabled by restoring these two include tags if ever needed. -->
   <script>window.SITE_PHONE = '<?= esc($brandPhone) ?>'; window.CART_SLUGS = <?= json_encode(array_keys(cart())) ?>;</script>
 
   <?php
