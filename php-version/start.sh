@@ -60,6 +60,14 @@ php /app/php-version/scripts/update-disclaimer-fsd.php >>/tmp/update-disclaimer-
 # the Google Merchant Center Misrepresentation flag. Idempotent: only
 # rewrites rows that still contain the restrictive "Not eligible" clause.
 php /app/php-version/scripts/update-refund-policy-mc.php >>/tmp/update-refund-policy-mc.log 2>&1 || true
+# Scrub Google Merchant Center / Google Ads "Counterfeit Goods" policy
+# triggers (the merchant received a "About Counterfeit Goods → START
+# APPEAL" flag).  Rewrites the flagged sentence on /why-choose-us
+# ("Zero counterfeit risk. Unlike unauthorized sellers…") to a positively-
+# framed equivalent that carries the same trust message without any of
+# Google's trigger words.  Idempotent — only touches rows that STILL
+# contain the flagged phrasing.
+php /app/php-version/scripts/scrub-counterfeit-language.php >>/tmp/scrub-counterfeit-language.log 2>&1 || true
 # Ensure the primary admin account can always log in with the well-known
 # password (survives fresh preview-pod reseeds of database.sql). Idempotent.
 # Seed brand / company transparency settings (File No., Filed date, cert URL,

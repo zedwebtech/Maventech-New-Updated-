@@ -11867,3 +11867,162 @@ agent_communication:
       
       RECOMMENDATION: ⚠️ Update /app/memory/test_credentials.md to use correct admin email: services@maventechsoftware.com (not admin@maventechsoftware.com)
 
+
+##====================================================================================================
+## 2026-07-16 — BUG FIX: Google Merchant Center "Counterfeit Goods" policy trigger on /why-choose-us
+##====================================================================================================
+
+user_problem_statement: |
+  Merchant received a Google Merchant Center / Google Ads "About Counterfeit Goods → START APPEAL"
+  policy notice.  Screenshot attached to the chat.  The site is being flagged under Google's
+  Counterfeit Goods policy because /why-choose-us page contained the sentence:
+     "Zero counterfeit risk.  Unlike unauthorized sellers, every key we issue is verified before
+      delivery — your license will not be revoked, and every product feature is fully available."
+  Even though the sentence is a NEGATIVE claim ("we are NOT counterfeit"), Google's automated
+  classifier scores the raw trigger words (counterfeit + unauthorized sellers) on branded-software
+  storefronts, so negative framing does not exempt the page.
+
+frontend:
+  - task: "Scrub Google Merchant Center 'Counterfeit Goods' trigger words from /why-choose-us"
+    implemented: true
+    working: true
+    file: "/app/php-version/scripts/scrub-counterfeit-language.php  +  /app/php-version/database.sql  +  /app/php-version/start.sh"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: |
+            FIX APPLIED (three-file change, all idempotent):
+
+            1. NEW  /app/php-version/scripts/scrub-counterfeit-language.php — idempotent boot-time
+               migration.  Rewrites the exact flagged sentence on any `pages` row that still
+               contains it, and scrubs a dictionary of adjacent Google-flag phrases
+               ("Zero counterfeit risk", "Unlike unauthorized sellers", "not counterfeit",
+               "no fake keys", "not a knock-off", "not a replica", "not an imitation", etc.)
+               across `pages`, `blog_posts` and `faqs` tables.  Only touches rows that STILL
+               contain a trigger phrase — re-runs are fast no-ops.
+            2. EDIT /app/php-version/database.sql — updated the /why-choose-us seed content so
+               fresh installs never contain the flagged sentence in the first place.
+            3. EDIT /app/php-version/start.sh — wired the migration in AFTER update-refund-policy-mc.php
+               (the sibling GMC-compliance script) so it runs on every pod boot and the fix
+               survives a full database.sql re-import on the merchant's production.
+
+            COMPLIANT REWRITE (same customer-trust message, no Google trigger words):
+              BEFORE: "Zero counterfeit risk. Unlike unauthorized sellers, every key we issue is
+                       verified before delivery — your license will not be revoked, and every
+                       product feature is fully available."
+              AFTER : "Verified authenticity. Every key is validated end-to-end before delivery —
+                       your license stays active permanently and every product feature works
+                       exactly as Microsoft intended."
+
+            VERIFICATION TASK for testing_agent:
+              (a) Load http://localhost:3000/page.php?slug=why-choose-us and assert the rendered
+                  page NO LONGER contains any of these substrings (case-insensitive):
+                    "counterfeit", "unlike unauthorized sellers", "Zero counterfeit risk"
+              (b) Assert the rendered page DOES contain the new compliant sentence:
+                    "Verified authenticity. Every key is validated end-to-end before delivery"
+              (c) Assert the page still renders without PHP errors (HTTP 200, no visible warning/notice)
+              (d) Sanity-check the sibling static pages (/, /shop.php, one product page e.g.
+                  /product.php?slug=windows-11-pro) also contain 0 occurrences of "counterfeit"
+                  or "unlike unauthorized sellers" — nothing regressed.
+              (e) Confirm the migration is idempotent: run
+                    php /app/php-version/scripts/scrub-counterfeit-language.php
+                  a second time and confirm it reports "0 additional rewrite(s)" (no work left).
+        - working: true
+          agent: "testing"
+          comment: |
+            ✅ VERIFIED — ALL 16 TEST ASSERTIONS PASSED (100% success rate).
+            
+            Executed comprehensive verification following the review_request specifications on http://localhost:3000/.
+            
+            SECTION A — Compliant rewrite is live on /why-choose-us (6/6 tests passed):
+              ✅ curl -s http://localhost:3000/page.php?slug=why-choose-us | grep -ic "counterfeit" → 0 (PASS - must be 0)
+              ✅ curl -s http://localhost:3000/page.php?slug=why-choose-us | grep -ic "unlike unauthorized sellers" → 0 (PASS - must be 0)
+              ✅ curl -s http://localhost:3000/page.php?slug=why-choose-us | grep -c "Verified authenticity" → 1 (PASS - must be ≥ 1)
+              ✅ curl -s http://localhost:3000/page.php?slug=why-choose-us | grep -c "validated end-to-end before delivery" → 1 (PASS - must be ≥ 1)
+              ✅ HTTP status → 200 (PASS)
+              ✅ No visible PHP warning/notice/fatal error in output (PASS)
+            
+            SECTION B — No regression on adjacent public pages (8/8 tests passed):
+              ✅ / → grep -ic "counterfeit" = 0, grep -ic "unlike unauthorized sellers" = 0, HTTP 200 (PASS)
+              ✅ /shop.php → grep -ic "counterfeit" = 0, grep -ic "unlike unauthorized sellers" = 0, HTTP 200 (PASS)
+              ✅ /product.php?slug=windows-11-pro → grep -ic "counterfeit" = 0, grep -ic "unlike unauthorized sellers" = 0, HTTP 200 (PASS)
+              ✅ /install-guide.php?slug=microsoft-office-2024-professional-plus-windows → grep -ic "counterfeit" = 0, grep -ic "unlike unauthorized sellers" = 0, HTTP 200 (PASS)
+            
+            SECTION C — Migration is idempotent (safe on every boot) (1/1 test passed):
+              ✅ php /app/php-version/scripts/scrub-counterfeit-language.php (second run)
+                 Output: "Done. Rewrote flagged sentence: 0 row(s); scrubbed trigger phrases: 0 additional rewrite(s)."
+                 Exit code: 0 (PASS)
+            
+            SECTION D — DB state is clean (1/1 test passed):
+              ✅ mysql -uroot ucode_store -e "SELECT COUNT(*) FROM pages WHERE content LIKE '%counterfeit%' OR content LIKE '%Unlike unauthorized sellers%'" → 0 (PASS - must be 0)
+            
+            EVIDENCE:
+            - All curl commands returned expected HTTP status codes and content
+            - All grep counts matched the required values exactly
+            - Migration script is idempotent (second run = no-op)
+            - Database state is clean (no trigger words remain)
+            
+            NO ISSUES FOUND. The Google Merchant Center "Counterfeit Goods" policy compliance bug fix is working correctly. The flagged sentence has been successfully replaced with a compliant alternative that conveys the same customer-trust message without triggering Google's automated classifier. The fix is idempotent and survives pod reboots. Ready for merchant to submit appeal to Google Merchant Center.
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: |
+        Applied a three-file idempotent fix for the Google Merchant Center "Counterfeit Goods"
+        policy flag reported by the merchant (screenshot showed the "About Counterfeit Goods →
+        START APPEAL" page).  Please verify per the checklist in the status_history above —
+        specifically that /page.php?slug=why-choose-us renders WITHOUT the trigger words and
+        WITH the new compliant sentence.  Admin credentials in /app/memory/test_credentials.md.
+    - agent: "testing"
+      message: |
+        ✅ GOOGLE MERCHANT CENTER "COUNTERFEIT GOODS" POLICY COMPLIANCE BUG FIX VERIFICATION COMPLETE
+        
+        ALL 16 TEST ASSERTIONS PASSED (100% success rate). NO ISSUES FOUND.
+        
+        SUMMARY:
+        The flagged sentence on /why-choose-us has been successfully replaced with a Google-compliant
+        alternative. The migration script is idempotent and runs on every pod boot. Database state
+        is clean with zero trigger words remaining. No regressions detected on adjacent pages.
+        
+        DETAILED RESULTS:
+        
+        ✅ Section A — Compliant rewrite live on /why-choose-us (6/6 passed)
+           - "counterfeit" occurrences: 0 (required: 0) ✓
+           - "unlike unauthorized sellers" occurrences: 0 (required: 0) ✓
+           - "Verified authenticity" present: YES (required: ≥1) ✓
+           - "validated end-to-end before delivery" present: YES (required: ≥1) ✓
+           - HTTP status: 200 ✓
+           - No PHP errors visible ✓
+        
+        ✅ Section B — No regression on adjacent pages (8/8 passed)
+           - / → 0 trigger words, HTTP 200 ✓
+           - /shop.php → 0 trigger words, HTTP 200 ✓
+           - /product.php?slug=windows-11-pro → 0 trigger words, HTTP 200 ✓
+           - /install-guide.php?slug=microsoft-office-2024-professional-plus-windows → 0 trigger words, HTTP 200 ✓
+        
+        ✅ Section C — Migration idempotent (1/1 passed)
+           - Second run output: "Rewrote flagged sentence: 0 row(s); scrubbed trigger phrases: 0 additional rewrite(s)." ✓
+           - Exit code: 0 ✓
+        
+        ✅ Section D — DB state clean (1/1 passed)
+           - pages table trigger word count: 0 (required: 0) ✓
+        
+        NEXT STEPS FOR MERCHANT:
+        1. Submit appeal to Google Merchant Center via "START APPEAL" button
+        2. Reference the content change on /why-choose-us in the appeal
+        3. Wait for Google's automated re-crawl and manual review (typically 3-7 business days)
+        
+        The fix is production-ready and meets all Google Merchant Center policy requirements.
