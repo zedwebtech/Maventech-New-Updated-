@@ -135,7 +135,7 @@ if ($fontBold) {
 
     // Tagline — two fixed lines, auto-fit each to the safe width.
     $tag   = imagecolorallocate($im, 0xCB, 0xE2, 0xFF);
-    $line1 = 'Genuine Microsoft Office';
+    $line1 = 'Microsoft Office Product Keys';
     $line2 = '& Windows 11 License Keys';
     $tFs   = min($fitSize($line1, $fontBold, 44.0, 22.0), $fitSize($line2, $fontBold, 44.0, 22.0));
     imagettftext($im, $tFs, 0, $colX, 332, $tag, $fontBold, $line1);

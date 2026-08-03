@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/seo-content.php';
-$pageTitle = 'Microsoft Office & Windows 11 Keys | ' . SITE_BRAND;
-$pageDescription = 'Buy genuine Microsoft Office 2024, Windows 11 and antivirus product keys at transparent, competitive prices. One-time purchase — no subscription — with a 30-day money-back guarantee.';
+$pageTitle = 'Software Product Keys — Independent Reseller | ' . SITE_BRAND;
+$pageDescription = 'Original, previously-licensed Microsoft Office, Windows and antivirus software product keys. One-time purchase, delivered by email, 30-day money-back guarantee. Independent third-party reseller — not affiliated with Microsoft, Norton, McAfee or any other trademark holder.';
 $pageKeywords    = marquee_page_keywords('home');
 
 /* ================== SEO + GEO: WebSite + SearchAction schema =====
@@ -55,11 +55,11 @@ include __DIR__ . '/includes/header.php';
   <div class="container">
     <div class="row align-items-center g-4 g-lg-5">
       <div class="col-lg-7">
-        <span class="hero-badge mb-3"><i class="bi bi-patch-check-fill me-1"></i>Authentic · Verified · Trusted</span>
-        <h1 class="display-4">Genuine Office Suite &amp; <span class="accent">Windows 11 License Keys</span></h1>
-        <p class="text-secondary fs-5 mt-3">Direct-from-source product keys — one-time payment, no recurring bills, delivered to your inbox.</p>
+        <span class="hero-badge mb-3"><i class="bi bi-patch-check-fill me-1"></i>Independent Reseller · Previously-Licensed · Trusted</span>
+        <h1 class="display-4">Original Office Suite &amp; <span class="accent">Windows 11 Product Keys</span></h1>
+        <p class="text-secondary fs-5 mt-3">Previously-licensed product keys sourced from legitimate secondary-market channels — one-time payment, no recurring bills, delivered to your inbox.</p>
         <ul class="list-unstyled d-grid gap-2 my-4">
-          <li><i class="bi bi-check-circle-fill text-success me-2"></i>100% authentic keys, sourced through legitimate channels</li>
+          <li><i class="bi bi-check-circle-fill text-success me-2"></i>Original, previously-licensed keys sourced through legitimate channels</li>
           <li><i class="bi bi-check-circle-fill text-success me-2"></i>Perpetual access — no subscription</li>
           <li><i class="bi bi-check-circle-fill text-success me-2"></i>30-day money-back guarantee</li>
         </ul>
@@ -139,21 +139,24 @@ include __DIR__ . '/includes/header.php';
   <div class="container d-flex justify-content-center gap-4 flex-wrap small trust-strip-row">
     <span class="trust-strip-item"><i class="bi bi-shield-check"></i>SSL Secured</span>
     <span class="trust-strip-item"><i class="bi bi-check2-circle"></i>30-Day Guarantee</span>
-    <span class="trust-strip-item"><i class="bi bi-patch-check"></i>100% Authentic Product Guarantee</span>
+    <span class="trust-strip-item"><i class="bi bi-patch-check"></i>Independent Reseller — Previously-Licensed Keys</span>
   </div>
 </div>
 
-<!-- Google Merchant Center compliance: a positively-framed authorized-reseller
-     trust pill.  The full first-sale-doctrine legal disclosure lives on
-     /about-us.php + the footer + the inline notice below Add-to-Cart on
-     every product page — so nothing is hidden, just repositioned. -->
+<!-- Google Merchant Center / Google Ads counterfeit-policy compliance:
+     an independent-reseller trust pill with an explicit non-affiliation
+     line.  The word "authorized" has been intentionally REMOVED — Google
+     Ads' counterfeit policy reserves it for merchants who hold a formal
+     trademark-owner authorisation, which we do not.  The full first-sale-
+     doctrine legal disclosure lives on /about-us.php + the footer + the
+     inline notice below Add-to-Cart on every product page. -->
 <section class="pt-4">
   <div class="container text-center">
-    <div class="home-disc-pill d-inline-flex align-items-center gap-3 px-4 py-2 text-start" data-testid="home-authorized-reseller-pill" role="note">
+    <div class="home-disc-pill d-inline-flex align-items-center gap-3 px-4 py-2 text-start" data-testid="home-independent-reseller-pill" role="note">
       <span class="logo-mark home-disc-mark"><i class="bi bi-shield-check"></i></span>
       <div class="lh-sm">
-        <div class="fw-bold small">Authorized Independent Reseller</div>
-        <small class="text-secondary" style="font-size:.74rem;">Genuine, previously-licensed software product keys sourced through legitimate distribution channels. Business-to-business and consumer procurement, backed by our 30-day money-back guarantee.</small>
+        <div class="fw-bold small">Independent Third-Party Reseller</div>
+        <small class="text-secondary" style="font-size:.74rem;">Original, previously-licensed software product keys sourced through legitimate secondary-market distribution channels. <?= esc(SITE_BRAND) ?> is <strong>not affiliated with, endorsed by, or sponsored by</strong> Microsoft Corporation, Norton, McAfee or any other trademark holder — all product names, logos and brands are the property of their respective owners.</small>
       </div>
     </div>
   </div>
@@ -212,7 +215,7 @@ include __DIR__ . '/includes/header.php';
     <div class="row g-3 text-center" data-testid="trust-badges-row">
       <?php
       $tb = [
-        ['bi-patch-check-fill', 'Genuine Licenses', '100% Authentic Guarantee'],
+        ['bi-patch-check-fill', 'Previously-Licensed', 'Original Product Keys'],
         ['bi-envelope-check', 'Digital Delivery', 'By Email'],
         ['bi-infinity', 'One-Time Purchase', 'No Subscription'],
         ['bi-headset', 'Order Support', SITE_HOURS],
@@ -287,7 +290,7 @@ include __DIR__ . '/includes/header.php';
             <div class="col-sm-7">
 <?php /* product rating stars removed per request */ ?>
               <h3 class="h4 fw-bold mb-2"><a href="product.php?slug=<?= esc($feat['slug']) ?>" class="text-decoration-none text-body"><?= esc($feat['name']) ?></a></h3>
-              <p class="small text-secondary mb-3">Genuine one-time purchase — no subscription — with a step-by-step activation guide and a 30-day money-back guarantee.</p>
+              <p class="small text-secondary mb-3">One-time purchase — no subscription — with a step-by-step activation guide and a 30-day money-back guarantee.</p>
               <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                 <span class="fw-bold text-primary fs-3 lh-1"><?= format_price((float)$feat['price']) ?></span>
               </div>
@@ -389,7 +392,7 @@ include __DIR__ . '/includes/header.php';
     <div class="text-center mb-5">
       <span class="eyebrow">SIMPLE PROCESS</span>
       <h2 class="fw-bold mt-1">How It Works</h2>
-      <p class="text-secondary mx-auto" style="max-width:560px;">Get your authentic Microsoft Office license in four simple steps. Professional support available throughout the process.</p>
+      <p class="text-secondary mx-auto" style="max-width:560px;">Get your original, previously-licensed Microsoft Office product key in four simple steps. Professional order support available throughout the process.</p>
     </div>
     <div class="row g-4" data-testid="how-it-works">
       <?php
@@ -416,9 +419,9 @@ include __DIR__ . '/includes/header.php';
 <section class="py-5 bg-soft">
   <div class="container text-center">
     <h2 class="fw-bold">Trusted by Thousands of Customers</h2>
-    <p class="text-secondary">Join satisfied customers who chose authentic Microsoft Office software</p>
+    <p class="text-secondary">Join satisfied customers who chose original, previously-licensed Microsoft Office product keys</p>
     <div class="row g-4 mt-2" data-testid="trusted-stats">
-      <?php foreach ([['2+ Yrs', 'In Business'], ['30-Day', 'Money-Back'], ['100%', 'Genuine Keys']] as [$v, $l]): ?>
+      <?php foreach ([['2+ Yrs', 'In Business'], ['30-Day', 'Money-Back'], ['100%', 'Original Keys']] as [$v, $l]): ?>
         <div class="col-md-4 col-6"><div class="fs-2 fw-bold text-primary"><?= $v ?></div><small class="text-secondary"><?= $l ?></small></div>
       <?php endforeach; ?>
     </div>
@@ -524,8 +527,8 @@ include __DIR__ . '/includes/header.php';
     <div class="row g-4 g-lg-5 align-items-center justify-content-center">
       <div class="col-lg-10">
         <h2 class="fw-bold">Your Trusted Software Partner</h2>
-        <p class="text-secondary mt-3">At <?= SITE_BRAND ?>, we're committed to providing genuine Microsoft software at competitive prices. Our team of experts ensures every customer receives the support they need for a seamless experience.</p>
-        <p class="text-secondary">We focus on fast, reliable order fulfillment — making sure your genuine license key is delivered promptly and that you have a clear, step-by-step digital activation guide for every purchase.</p>
+        <p class="text-secondary mt-3">At <?= SITE_BRAND ?>, we're committed to providing original, previously-licensed Microsoft software product keys at competitive prices as an independent third-party reseller (not affiliated with Microsoft). Our team of experts ensures every customer receives the support they need for a seamless experience.</p>
+        <p class="text-secondary">We focus on fast, reliable order fulfillment — making sure your previously-licensed product key is delivered promptly and that you have a clear, step-by-step digital activation guide for every purchase.</p>
         <div class="row g-2 small mt-2">
           <?php
           $partnerPoints = [
@@ -548,7 +551,7 @@ include __DIR__ . '/includes/header.php';
   <div class="container" style="max-width: 860px;">
     <div class="text-center mb-4">
       <h2 class="fw-bold">Frequently Asked Questions</h2>
-      <p class="text-secondary">Get answers to common questions about our authentic Microsoft Office licenses</p>
+      <p class="text-secondary">Get answers to common questions about our original, previously-licensed Microsoft Office product keys</p>
     </div>
     <div class="accordion" id="faqAcc">
       <?php foreach ($faqs as $i => $f): ?>
@@ -575,9 +578,9 @@ include __DIR__ . '/includes/header.php';
   <div class="container">
     <div class="rounded-4 text-center text-white p-4" style="background: linear-gradient(120deg, #2a1430 0%, #1b2240 50%, #0e4f5c 100%);" data-testid="cta-band">
       <h2 class="fw-bold">Get Your Microsoft Office License Today</h2>
-      <p class="opacity-75 mx-auto" style="max-width:540px;">Authentic perpetual licenses with professional support.</p>
+      <p class="opacity-75 mx-auto" style="max-width:540px;">Original, previously-licensed perpetual product keys with professional order support.</p>
       <div class="d-flex justify-content-center gap-4 flex-wrap small my-3 opacity-75">
-        <span><i class="bi bi-check-circle me-1"></i>Genuine Licenses</span>
+        <span><i class="bi bi-check-circle me-1"></i>Previously-Licensed Keys</span>
         <span><i class="bi bi-download me-1"></i>Instant Download</span>
         <span><i class="bi bi-headset me-1"></i>Professional Support</span>
         <span><i class="bi bi-shield-lock me-1"></i>Secure Checkout</span>

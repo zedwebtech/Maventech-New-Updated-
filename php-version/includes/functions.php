@@ -2283,7 +2283,7 @@ function product_img_alt(array $p): string
     // listings (these are 100% digital keys, no physical media).
     // Use plain dashes (not HTML entities) so the alt text isn't double-
     // encoded when the caller pipes it through esc().
-    $alt = $p['name'] . ' digital product key - genuine one-time purchase for ' . $platform . ', digital delivery by email';
+    $alt = $p['name'] . ' digital product key - original, previously-licensed one-time purchase for ' . $platform . ', digital delivery by email';
     // Compliance: do NOT append "X% off" to product image alt text.  Google
     // Merchant Center's automated review flags large discount-percent tokens
     // in alt attributes as "too good to be true" pricing (a common signal of

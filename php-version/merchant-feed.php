@@ -202,7 +202,7 @@ function _product_highlights(array $p, string $brand): array {
     $license     = strtolower(trim((string)($p['license_type'] ?? '')));
     $licenseText = $license === 'subscription' ? '1-year subscription'
                  : ($license === 'lifetime' ? 'One-time purchase, no recurring fee'
-                                            : 'Genuine perpetual license');
+                                            : 'Perpetual product key (one-time purchase)');
 
     // Apps line — only emitted when DB stores comma-separated apps.
     $apps = trim((string)($p['apps'] ?? ''));
@@ -218,7 +218,7 @@ function _product_highlights(array $p, string $brand): array {
         }
     }
 
-    $out[] = sprintf('Genuine %s license for 1 %s device', $brand, $platform ?: 'Windows');
+    $out[] = sprintf('Original %s product key for 1 %s device (previously licensed)', $brand, $platform ?: 'Windows');
     $out[] = $licenseText;
     if ($appsBullet !== '') {
         $out[] = $appsBullet;
@@ -329,7 +329,7 @@ echo "  <channel>\n";
 echo "    <title>" . feed_xml_esc($feedTitle) . "</title>\n";
 echo "    <link>" . feed_xml_esc($site) . "</link>\n";
 echo "    <atom:link href=\"" . feed_xml_esc($linkRss) . "\" rel=\"self\" type=\"application/rss+xml\"/>\n";
-echo "    <description>" . feed_xml_esc('Genuine digital software product keys delivered by email - Microsoft Office, Windows, Bitdefender, Norton, McAfee, Adobe and more. ' . $brand . ' is an authorized independent reseller of previously-licensed software product keys.') . "</description>\n";
+echo "    <description>" . feed_xml_esc('Previously-licensed digital software product keys delivered by email - Microsoft Office, Windows, Bitdefender, Norton, McAfee, Adobe and more. ' . $brand . ' is an independent third-party reseller of previously-licensed software product keys and is not affiliated with, endorsed by, or sponsored by Microsoft Corporation, Bitdefender, McAfee, Norton, or any other trademark holder. All product names, logos and brands are the property of their respective owners.') . "</description>\n";
 echo "    <language>en-US</language>\n";
 echo "    <lastBuildDate>" . feed_xml_esc($updated) . "</lastBuildDate>\n";
 
@@ -362,11 +362,13 @@ foreach ($products as $p) {
     $descRaw = trim((string)($p['description'] ?? ''));
     if ($descRaw === '') {
         $descRaw = sprintf(
-            'Genuine %s product key for %s%s. Digital delivery by email once the order is verified. One-time purchase, 24/7 support and 30-day money-back guarantee — sold by %s, an authorized independent reseller of previously-licensed software product keys.',
+            'Original %s product key for %s%s. Digital delivery by email once the order is verified. One-time purchase, 24/7 order support and 30-day money-back guarantee. Sold by %s, an independent third-party reseller of previously-licensed software product keys. %s is not affiliated with, endorsed by, or sponsored by %s or any other trademark holder; all product names, logos and brands are the property of their respective owners.',
             $brandPi,
             $title,
             $p['version'] ? ' ' . $p['version'] : '',
-            $brand
+            $brand,
+            $brand,
+            $brandPi
         );
     }
     if (strlen($descRaw) > 5000) $descRaw = substr($descRaw, 0, 4997) . '...'; // Google limit

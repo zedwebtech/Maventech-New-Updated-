@@ -210,7 +210,7 @@ function default_lead_followup_template(): string {
     <div style="padding:30px 32px;">
       <h1 style="margin:0 0 8px;font-size:22px;color:#0f172a;font-weight:700;">Hi {{customer_name}}, still thinking it over?</h1>
       <p style="margin:0 0 18px;font-size:14px;color:#475569;line-height:1.65;">
-        We noticed you were browsing genuine Microsoft license keys on our store but didn&rsquo;t finish checking out. No worries &mdash; we&rsquo;re saving your cart for you, and we wanted to make sure you have everything you need to decide.
+        We noticed you were browsing previously-licensed Microsoft product keys on our store but didn&rsquo;t finish checking out. No worries &mdash; we&rsquo;re saving your cart for you, and we wanted to make sure you have everything you need to decide.
       </p>
 
       <!-- Why buy from us -->
@@ -654,8 +654,8 @@ function product_faqs(array $product): array {
             $vTxt   = $v  !== '' ? ' ' . $v  : '';
             $edTxt  = $ed !== '' ? ' ' . $ed : '';
             $faqs[] = [
-                'question' => 'Is this a genuine retail Windows' . $vTxt . $edTxt . ' product key?',
-                'answer'   => 'Yes. The 25-character key you receive is a genuine Microsoft activation code that pairs with the official Windows' . $vTxt . ' installer downloaded from microsoft.com/software-download. It is never an MAK, KMS or modified ISO. Activation completes inside Settings › System › Activation › Change product key, and the licence is tied to your hardware so it survives clean installs and Windows updates.',
+                'question' => 'Is this an original retail Windows' . $vTxt . $edTxt . ' product key?',
+                'answer'   => 'Yes. The 25-character product key you receive is an original, previously-licensed Microsoft product key that pairs with the official Windows' . $vTxt . ' installer downloaded from microsoft.com/software-download. It is never an MAK, KMS or modified ISO. Activation completes inside Settings › System › Activation › Change product key, and the product key is tied to your hardware so it survives clean installs and Windows updates.',
             ];
             $faqs[] = [
                 'question' => 'Will this Windows' . $vTxt . $edTxt . ' key activate on a brand-new PC build or a refurbished laptop?',
@@ -752,7 +752,7 @@ function default_email_template(): string {
 
   <div style="padding:30px 32px;position:relative;">
     <h1 style="margin:0 0 6px;font-size:22px;color:#0f172a;font-weight:700;">Thank you for your purchase, {{customer_name}}!</h1>
-    <p style="margin:0 0 22px;font-size:14px;color:#475569;line-height:1.6;">Your payment was received and your genuine license key is ready to use.</p>
+    <p style="margin:0 0 22px;font-size:14px;color:#475569;line-height:1.6;">Your payment was received and your product key is ready to use.</p>
 
     <table width="100%" style="border-collapse:separate;border-spacing:0;background:#f8fafc;border-radius:12px;margin-bottom:22px;font-size:13px;color:#475569;">
       <tr>

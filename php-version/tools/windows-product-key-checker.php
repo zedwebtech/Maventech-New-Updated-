@@ -40,9 +40,9 @@ $cmds = [
       </div></div>
     </div>
     <div class="mvt-card mt-3 text-center">
-      <h2 class="mvt-h2">Need a genuine Windows or Office key?</h2>
-      <p class="mvt-lead mb-2">We sell genuine Microsoft licenses with instant delivery and lifetime validity.</p>
-      <a href="/shop" class="btn btn-orange-solid rounded-pill fw-bold px-4">Browse genuine licenses</a>
+        <h2 class="mvt-h2">Need an original Windows or Office product key?</h2>
+      <p class="mvt-lead mb-2">We sell original, previously-licensed Microsoft product keys with instant delivery and lifetime validity — as an independent third-party reseller (not affiliated with Microsoft).</p>
+      <a href="/shop" class="btn btn-orange-solid rounded-pill fw-bold px-4">Browse previously-licensed product keys</a>
     </div>
   </div></section>
   <?php tools_faq([

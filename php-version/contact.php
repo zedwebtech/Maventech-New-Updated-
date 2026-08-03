@@ -152,7 +152,7 @@ include __DIR__ . '/includes/header.php';
     <h1 class="fw-bold display-6 mt-1" data-testid="contact-title">Contact <?= esc(SITE_BRAND) ?> — Sales &amp; Support</h1>
     <p class="text-secondary mx-auto" style="max-width:620px;">Questions about your order, license-key delivery, or activation? Our order-fulfillment team is ready to help.</p>
     <div class="d-flex justify-content-center gap-4 flex-wrap small mt-3">
-      <span><i class="bi bi-patch-check-fill text-success me-1"></i>Genuine Microsoft Licenses</span>
+      <span><i class="bi bi-patch-check-fill text-success me-1"></i>Previously-Licensed Microsoft Product Keys</span>
       <span><i class="bi bi-shield-check text-primary me-1"></i>Secure Checkout</span>
       <span><i class="bi bi-arrow-counterclockwise text-primary me-1"></i>30-Day Money Back Guarantee</span>
     </div>

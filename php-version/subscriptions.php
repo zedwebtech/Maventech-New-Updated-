@@ -329,7 +329,7 @@ html[data-bs-theme="dark"] .ph-price-row .price {
         ],
         [
           'q' => 'Can I transfer my licence key to a new PC later?',
-          'a' => 'Yes &mdash; Pro Shield and Lifetime Elite both include our <em>Hardware-to-Hardware Key Transfer</em> service. If you upgrade or replace your PC, our support team will help you reactivate your genuine Microsoft key on the new machine at no extra cost, without needing to re-purchase.',
+          'a' => 'Yes &mdash; Pro Shield and Lifetime Elite both include our <em>Hardware-to-Hardware Key Transfer</em> service. If you upgrade or replace your PC, our support team will help you reactivate your Microsoft product key on the new machine at no extra cost, without needing to re-purchase.',
         ],
         [
           'q' => 'What is your refund policy?',

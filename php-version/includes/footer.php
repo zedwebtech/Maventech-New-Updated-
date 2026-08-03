@@ -139,11 +139,11 @@
             ?>
             <span class="brand-text d-block lh-1 text-white"><?= esc($bnHead) ?><?php if ($bnHead !== ''): ?> <?php endif; ?><span class="brand-grad"><?= esc($bnLast) ?></span></span>
             <?php if (setting_get('show_authorized_reseller_badge', '0') === '1'): ?>
-            <small class="brand-tag" data-testid="brand-tag-authorized-reseller-footer">GENUINE LICENSES</small>
+            <small class="brand-tag" data-testid="brand-tag-independent-reseller-footer">INDEPENDENT RESELLER</small>
             <?php endif; ?>
           </span>
         </div>
-        <p class="small mb-3" style="line-height:1.55;">Your trusted source for genuine Microsoft Office licenses at competitive prices. One-time purchase — no recurring fees.</p>
+        <p class="small mb-3" style="line-height:1.55;">Your independent third-party reseller for original, previously-licensed Microsoft Office and Windows product keys at competitive prices. One-time purchase — no recurring fees.</p>
 
         <!-- Contact block: tight vertical rhythm, aligned icons -->
         <ul class="list-unstyled small mb-3 footer-contact-list">
@@ -168,7 +168,7 @@
 
         <!-- Compliance disclaimer -->
         <p class="small mb-0 fst-italic" style="line-height:1.5;color:#94a3b8;font-size:.78rem;" data-testid="footer-brand-disclaimer">
-          <strong>Disclaimer:</strong> <?= esc($brandLegalName) ?> is an independent reseller of authentic software licenses. All product names, logos, and brands are property of their respective owners.
+          <strong>Disclaimer:</strong> <?= esc($brandLegalName) ?> is an <strong>independent third-party reseller</strong> of previously-licensed software product keys and is <strong>not affiliated with, endorsed by, or sponsored by</strong> Microsoft Corporation, Bitdefender, McAfee, Norton, or any other trademark holder. All product names, logos and brands are the property of their respective trademark owners and are used strictly for identification purposes.
         </p>
       </div>
 
@@ -244,7 +244,7 @@
     <!-- Trademark + legal -->
     <hr class="border-secondary my-4">
 
-    <p class="small text-center mx-auto" style="max-width: 820px;">Maventech LLC is an independent marketplace provider of genuine, surplus product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
+    <p class="small text-center mx-auto" style="max-width: 820px;">Maventech LLC is an <strong>independent third-party reseller</strong> and marketplace of previously-licensed, unused digital software product keys, resold under the First Sale Doctrine (17 U.S.C. &sect; 109) and its EU equivalents (<em>UsedSoft GmbH v. Oracle Int'l Corp.</em>, CJEU C-128/11). We are <strong>not affiliated with, endorsed by, or sponsored by</strong> Microsoft Corporation, Bitdefender, McAfee, Norton, or any other trademark holder referenced on this site — no official-partner, distributor, franchise, or reseller-of-record relationship exists. All product names, logos and brands are the property of their respective trademark owners and are used strictly for identification and nominative-fair-use purposes.</p>
 
     <div class="d-flex justify-content-center flex-wrap gap-2 small mb-3">
       <?php

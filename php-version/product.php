@@ -125,7 +125,7 @@ if (!empty($product['meta_description'])) {
  * raw product webp because the price + trust line are visible inside
  * the share preview.  Cached on disk; auto-rebuilds on price changes. */
 $ogImage     = rtrim(site_url(), '/') . '/og-product.png?slug=' . rawurlencode($product['slug']);
-$ogImageAlt  = $product['name'] . ' — buy genuine license key';
+$ogImageAlt  = $product['name'] . ' — original, previously-licensed product key';
 $ogType      = 'product';
 /* Product-specific OG (Facebook product pin, WhatsApp price chip) */
 $productPriceAmount   = number_format((float)$product['price'], 2, '.', '');
@@ -548,6 +548,22 @@ include __DIR__ . '/includes/header.php';
               page with the canonical product name (`name` in JSON-LD
               already uses $product['name']). */ ?>
       <div class="small text-secondary mb-2" data-testid="product-canonical-name"><?= esc($product['name']) ?></div>
+
+      <?php /* Google Ads / Merchant Center counterfeit-policy compliance:
+              a compact, ABOVE-THE-FOLD reseller banner that appears on
+              every product page BEFORE the price.  Explicitly states our
+              independent-reseller nature and non-affiliation with the
+              trademark owner — the single most important signal Google
+              Ads' counterfeit classifier looks for on branded-software
+              landing pages.  Kept small so it doesn't visually dominate
+              the buy box while remaining unmissable. */ ?>
+      <div class="d-flex align-items-start gap-2 p-2 mb-3 rounded" data-testid="pd-compliance-banner" role="note" style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.25);">
+        <i class="bi bi-info-circle-fill mt-1" style="color:#3b82f6;flex-shrink:0;"></i>
+        <small class="lh-sm" style="font-size:.75rem;line-height:1.35;">
+          <strong>Independent reseller:</strong> <?= esc(SITE_BRAND) ?> is a third-party reseller of previously-licensed software product keys and is <strong>not affiliated with, endorsed by, or sponsored by</strong> <?= esc(product_detected_brand($product) ?: 'the trademark owner') ?>. All product names, logos and brands are the property of their respective trademark owners.
+        </small>
+      </div>
+
       <?= render_product_rating($product['slug'], 'detail') ?>
 
       <?php if ($apps): ?>
@@ -652,17 +668,19 @@ include __DIR__ . '/includes/header.php';
         <button class="btn btn-orange-outline btn-lg rounded-pill px-4 fw-bold buy-now-btn" data-slug="<?= esc($product['slug']) ?>" data-testid="pd-buy-now"><i class="bi bi-lightning-charge-fill me-1"></i>Buy Now</button>
       </div>
 
-      <!-- Google Ads compliance: inline disclaimer immediately under the
-           Add to Cart / Buy Now buttons.  Explicitly discloses (a) digital-only
-           delivery, (b) no physical media, and (c) our independent-reseller
-           relationship to Microsoft.  Styled plain (no highlight box) to match
-           the surrounding "Important Licensing Note:" tone. -->
+      <!-- Google Ads / Google Merchant Center counterfeit-policy compliance:
+           inline disclaimer immediately under the Add to Cart / Buy Now
+           buttons.  Explicitly discloses (a) digital-only delivery, (b) no
+           physical media, (c) our INDEPENDENT-reseller relationship, and
+           (d) our non-affiliation with the trademark owner.  The word
+           "authorized" has been intentionally REMOVED — Google Ads reserves
+           it for merchants who hold formal trademark-owner authorisation. -->
       <p class="small text-secondary mt-3 mb-0" data-testid="pd-inline-disclaimer" role="note">
-        <strong>Notice:</strong> This is a 100% digital software product key. No physical media or packaging is shipped. Sold by <?= esc(SITE_LEGAL) ?>, an authorized independent reseller of previously-licensed software product keys. All product names, logos and brands are the property of their respective trademark owners.
+        <strong>Notice:</strong> This is a 100% digital software product key. No physical media or packaging is shipped. Sold by <?= esc(SITE_LEGAL) ?>, an <strong>independent third-party reseller</strong> of previously-licensed software product keys. <?= esc(SITE_BRAND) ?> is <strong>not affiliated with, endorsed by, or sponsored by</strong> Microsoft Corporation or any other trademark holder. All product names, logos and brands are the property of their respective trademark owners and are used strictly for identification purposes.
       </p>
 
       <p class="small text-secondary mt-3 mb-0" data-testid="product-licensing-note">
-        <strong>Important Licensing Note:</strong> This is an authentic, previously-licensed perpetual product key sourced legally through legitimate distribution channels. It is not an OEM bundle or a subscription. Support is strictly limited to key delivery and product-activation assistance. <?= esc(SITE_BRAND) ?> does not provide official vendor technical support or software troubleshooting.
+        <strong>Important Licensing Note:</strong> This is an original, previously-licensed perpetual product key acquired legally through legitimate secondary-market channels, resold under the First Sale Doctrine (17 U.S.C. &sect; 109) and its EU equivalents. It is not an OEM bundle or a subscription. Support is strictly limited to key delivery and product-activation assistance. <?= esc(SITE_BRAND) ?> does not provide official vendor technical support or software troubleshooting.
       </p>
 
       <?php if (false): /* Out-of-stock "Notify When Available" removed — every product is always purchasable (backorders are delivered within the hour). */ ?>
@@ -753,7 +771,7 @@ include __DIR__ . '/includes/header.php';
 
       <div class="row g-3 small mt-3">
         <div class="col-sm-6"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Digital delivery by email (digital)</div>
-        <div class="col-sm-6"><i class="bi bi-patch-check-fill text-success me-2"></i>Genuine Microsoft key</div>
+        <div class="col-sm-6"><i class="bi bi-patch-check-fill text-success me-2"></i>Previously-licensed product key</div>
         <div class="col-sm-6"><i class="bi bi-arrow-counterclockwise text-primary me-2"></i>Money-back guarantee</div>
         <div class="col-sm-6"><i class="bi bi-journal-text text-primary me-2"></i>Step-by-step activation guide included</div>
       </div>
@@ -892,8 +910,8 @@ include __DIR__ . '/includes/header.php';
   <!-- AEO: Quick-Answer callout — 40-60 word direct answer Google AI
        Overviews + Perplexity routinely grab as the citation snippet. -->
   <?= render_aeo_answer(
-        'Is ' . esc($product['name']) . ' a genuine, one-time purchase?',
-        'Yes &mdash; ' . esc($product['name']) . ' on ' . esc(SITE_BRAND) . ' is a <strong>genuine perpetual licence</strong> at <strong>' . esc(format_price((float)$product['price'])) . '</strong>. Pay once, activate inside the official ' . esc(product_detected_brand($product)) . ' installer, and use it for life on your ' . esc($product['platform'] ?: 'Windows') . ' device. Delivery is by email in 15&ndash;30 minutes; every order is protected by a 30-day money-back guarantee.',
+        'Is ' . esc($product['name']) . ' an original, one-time purchase?',
+        'Yes &mdash; ' . esc($product['name']) . ' on ' . esc(SITE_BRAND) . ' is an <strong>original, previously-licensed perpetual product key</strong> at <strong>' . esc(format_price((float)$product['price'])) . '</strong>. Pay once, activate inside the official ' . esc(product_detected_brand($product)) . ' installer, and use it for life on your ' . esc($product['platform'] ?: 'Windows') . ' device. Delivery is by email in 15&ndash;30 minutes; every order is protected by a 30-day money-back guarantee. Sold by ' . esc(SITE_BRAND) . ', an independent third-party reseller (not affiliated with ' . esc(product_detected_brand($product)) . ').',
         'product-quick-answer'
     ) ?>
 
@@ -1167,7 +1185,7 @@ include __DIR__ . '/includes/header.php';
         <div class="fw-bold small text-uppercase text-secondary mb-2"><i class="bi bi-collection me-1"></i>Browse related categories</div>
         <ul class="list-unstyled small">
           <?php if ($catTitle): ?>
-            <li class="mb-2">&rsaquo; <a class="text-decoration-none" href="category.php?slug=<?= esc($catSlug) ?>" data-testid="cluster-parent-category">All <?= esc($catTitle) ?> &mdash; genuine license keys</a></li>
+            <li class="mb-2">&rsaquo; <a class="text-decoration-none" href="category.php?slug=<?= esc($catSlug) ?>" data-testid="cluster-parent-category">All <?= esc($catTitle) ?> &mdash; previously-licensed product keys</a></li>
           <?php endif; ?>
           <?php if ($sister): ?>
             <li class="mb-2">&rsaquo; <a class="text-decoration-none" href="category.php?slug=<?= esc($sister['slug']) ?>" data-testid="cluster-sister-category"><?= esc($sister['title']) ?> &mdash; sister edition</a></li>

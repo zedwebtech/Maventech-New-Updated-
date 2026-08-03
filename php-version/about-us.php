@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
-$pageTitle = 'About ' . SITE_BRAND . ' | Genuine Software Licenses';
-$pageDescription = SITE_BRAND . ' resells genuine Microsoft Office, Windows and antivirus product keys at transparent, competitive prices — independent software reseller with a 30-day money-back guarantee.';
+$pageTitle = 'About ' . SITE_BRAND . ' | Independent Software Reseller';
+$pageDescription = SITE_BRAND . ' is an independent third-party reseller of original, previously-licensed Microsoft Office, Windows and antivirus software product keys. Not affiliated with Microsoft or any other trademark holder. 30-day money-back guarantee.';
 
 /* AboutPage schema — gives AI search engines and Google a clear,
    citation-friendly snapshot of who we are, what we sell, and why
@@ -23,8 +23,8 @@ $jsonLdAboutPage = [
         'logo'     => site_url() . '/assets/images/badges/microsoft-verified.svg',
         'foundingDate'    => '2024',
         'numberOfEmployees' => ['@type' => 'QuantitativeValue', 'value' => 12],
-        'slogan'     => 'Genuine software, digital delivery, dedicated support.',
-        'description'=> SITE_BRAND . ' has shipped genuine Microsoft, Adobe and antivirus licence keys since 2024. Every key is verified pre-dispatch and backed by a 30-day money-back guarantee.',
+        'slogan'     => 'Original software product keys, digital delivery, dedicated support.',
+        'description'=> SITE_BRAND . ' has delivered original, previously-licensed Microsoft, Adobe and antivirus software product keys since 2024, operating as an independent third-party reseller under the First Sale Doctrine. Every key is verified pre-dispatch and backed by a 30-day money-back guarantee.',
         'knowsAbout' => ['Microsoft Office', 'Microsoft 365', 'Windows 11', 'Windows 10', 'Bitdefender', 'McAfee', 'Adobe', 'software licensing', 'digital downloads', 'SaaS subscriptions'],
         'award'   => ['Independent software key provider', '30-day money-back guarantee since 2024'],
     ],
@@ -86,7 +86,7 @@ $features = [
       <div class="d-flex justify-content-center mb-3"><?= render_logo(56) ?></div>
       <span class="eyebrow">OUR STORY</span>
       <h1 class="display-5 fw-bold mt-1">About <span class="brand-grad">Maventech</span></h1>
-      <p class="text-secondary mt-2 fs-5">Your trusted partner for genuine Microsoft software</p>
+      <p class="text-secondary mt-2 fs-5">Your trusted independent third-party reseller for previously-licensed software product keys</p>
     </div>
   </div>
 </div>
@@ -97,9 +97,9 @@ $features = [
     <div class="row g-4 g-lg-5 align-items-center">
       <div class="col-lg-6">
         <span class="eyebrow">WHO WE ARE</span>
-        <h2 class="fw-bold mt-1">Your Trusted Software Partner</h2>
-        <p class="text-secondary mt-3">At <?= SITE_LEGAL ?>, we are committed to delivering genuine Microsoft software at honest, competitive prices. Our team of specialists makes sure every customer gets the guidance they need for a seamless experience — from checkout to activation.</p>
-        <p class="text-secondary">We see ourselves as more than a storefront. Our focus is fast, reliable order fulfillment — making sure your genuine license key is delivered promptly, along with a clear, step-by-step digital activation guide for every purchase.</p>
+        <h2 class="fw-bold mt-1">Your Trusted Independent Software Reseller</h2>
+        <p class="text-secondary mt-3">At <?= SITE_LEGAL ?>, we are committed to delivering original, previously-licensed Microsoft software product keys at honest, competitive prices as an <strong>independent third-party reseller</strong> — we are not affiliated with, endorsed by, or sponsored by Microsoft or any other trademark holder. Our team of specialists makes sure every customer gets the guidance they need for a seamless experience — from checkout to activation.</p>
+        <p class="text-secondary">We see ourselves as more than a storefront. Our focus is fast, reliable order fulfillment — making sure your previously-licensed product key is delivered promptly, along with a clear, step-by-step digital activation guide for every purchase.</p>
         <a href="page.php?slug=why-choose-us" class="btn btn-outline-primary rounded-pill px-4 mt-2" data-testid="about-learn-more">Learn More About Us <i class="bi bi-arrow-right ms-1"></i></a>
       </div>
       <div class="col-lg-6">
@@ -176,7 +176,7 @@ $features = [
             <?php if ($brandRegCertUrl): ?><div class="col-12 d-flex align-items-start gap-2 pt-1" data-testid="about-reg-certificate"><i class="bi bi-file-earmark-pdf text-danger mt-1"></i><div><div class="text-secondary text-uppercase" style="font-size:.65rem;letter-spacing:.06em;">Articles of Organization</div><a class="fw-semibold" href="<?= esc($brandRegCertUrl) ?>" target="_blank" rel="noopener" data-testid="about-reg-certificate-link">View certificate (PDF) <i class="bi bi-box-arrow-up-right ms-1"></i></a></div></div><?php endif; ?>
           </div>
           <hr class="my-3">
-          <p class="small text-secondary mb-0"><?= esc($brandLegalName) ?> is an independent reseller of genuine, previously-licensed digital product keys. We are not an official partner, authorized distributor, franchise, or direct affiliate of Microsoft Corporation, Bitdefender, or McAfee. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification purposes.</p>
+          <p class="small text-secondary mb-0"><?= esc($brandLegalName) ?> is an <strong>independent third-party reseller</strong> of original, previously-licensed digital software product keys. We are <strong>not affiliated with, endorsed by, or sponsored by</strong> Microsoft Corporation, Bitdefender, McAfee, Norton, or any other trademark holder referenced on this site — no official-partner, distributor, franchise, or reseller-of-record relationship exists. All product names, logos, and brands are the property of their respective trademark owners and are used strictly for identification (nominative fair use) purposes.</p>
         </div>
       </div>
     </div>
@@ -206,7 +206,7 @@ $features = [
       $trustRows = [
         ['bi-shield-check',   'Independent reseller — not Microsoft', 'Microsoft® is a trademark of Microsoft Corporation. We are independent of, and not affiliated with, Microsoft Corporation.', 'page.php?slug=disclaimer'],
         ['bi-arrow-counterclockwise', '30-day money-back guarantee', 'Refund any licence within 30 days of purchase — full amount, no questions asked.',         'return-policy.php'],
-        ['bi-clock-history',  'Founded 2024 · California LLC', 'MavenTech LLC was formed in California on September 3, 2024 (LLC No. 202463711253) and has shipped genuine licences ever since.',         'page.php?slug=terms-of-service'],
+        ['bi-clock-history',  'Founded 2024 · California LLC', 'MavenTech LLC was formed in California on September 3, 2024 (LLC No. 202463711253) and has delivered original, previously-licensed software product keys as an independent third-party reseller ever since.',         'page.php?slug=terms-of-service'],
         ['bi-lock-fill',      'PCI-DSS-secured checkout',                'Payments processed by Stripe & PayPal; we never see or store full card numbers.',             'page.php?slug=payment-policy'],
         ['bi-eye-slash-fill', 'GDPR + CCPA-aware data handling',         'Customer data is collected for fulfilment only and never sold to third parties.',              'page.php?slug=privacy-policy'],
         ['bi-headset',        'Real human support — Mon–Sat, 9am–6pm ET','Live phone + chat. Average first-response time under 15 minutes during business hours.',     'contact.php'],

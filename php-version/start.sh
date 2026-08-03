@@ -68,6 +68,14 @@ php /app/php-version/scripts/update-refund-policy-mc.php >>/tmp/update-refund-po
 # Google's trigger words.  Idempotent — only touches rows that STILL
 # contain the flagged phrasing.
 php /app/php-version/scripts/scrub-counterfeit-language.php >>/tmp/scrub-counterfeit-language.log 2>&1 || true
+# ---------------------------------------------------------------
+# Google Ads counterfeit-policy compliance — sweep DB text for
+# "authorized reseller" / "genuine Microsoft" / other classifier-
+# trigger phrases and rewrite them to policy-safe equivalents
+# ("independent third-party reseller", "original, previously-
+# licensed"). Runs AFTER scrub-counterfeit-language.php so the
+# two scrubs compose. Idempotent — safe to re-run on every boot.
+php /app/php-version/scripts/enforce-brand-compliance.php >>/tmp/enforce-brand-compliance.log 2>&1 || true
 # Ensure the primary admin account can always log in with the well-known
 # password (survives fresh preview-pod reseeds of database.sql). Idempotent.
 # Seed brand / company transparency settings (File No., Filed date, cert URL,

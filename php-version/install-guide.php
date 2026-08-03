@@ -20,7 +20,7 @@ $template = $product ? mv_guide_template_for_slug((string)$product['slug']) : nu
 if (!$product || !$template) {
     http_response_code($product ? 200 : 404);
     $pageTitle       = 'Installation Guide | ' . (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech');
-    $pageDescription = 'Step-by-step installation and activation guides for genuine Microsoft software.';
+    $pageDescription = 'Step-by-step installation and activation guides for Microsoft software product keys purchased from ' . SITE_BRAND . ' (independent third-party reseller).';
     $noIndex = true;
     include __DIR__ . '/includes/header.php';
     ?>

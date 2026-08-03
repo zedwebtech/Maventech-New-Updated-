@@ -40,7 +40,7 @@ $year = date('Y');
 /* SEO: tight 50-60 char title and 120-160 char description.
  * Example: "Microsoft Office 2024 License Keys (2026) | Maventech" */
 $pageTitle       = $title . ' License Keys (' . $year . ') | ' . SITE_BRAND;
-$pageDescription = 'Buy genuine ' . $title . ' product keys at transparent, competitive prices from ' . SITE_BRAND . ' — one-time purchase, no subscription, 30-day money-back guarantee.';
+$pageDescription = 'Shop original, previously-licensed ' . $title . ' product keys from ' . SITE_BRAND . ', an independent third-party reseller (not affiliated with the trademark owner). One-time purchase, digital delivery by email, 30-day money-back guarantee.';
 $pageKeywords    = category_long_tail_keywords($title, $platform);
 
 $products = get_products($cats, $platform, $sort);
@@ -100,7 +100,7 @@ include __DIR__ . '/includes/header.php';
         'category-title',
         [
             ['icon' => 'box-seam',           'label' => count($products) . ' product' . (count($products) === 1 ? '' : 's') . ' available'],
-            ['icon' => 'patch-check-fill',   'label' => 'Genuine licenses'],
+            ['icon' => 'patch-check-fill',   'label' => 'Previously-licensed product keys'],
             ['icon' => 'lightning-charge-fill', 'label' => '15-min delivery'],
         ]
     ) ?>

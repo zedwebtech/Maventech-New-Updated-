@@ -30,12 +30,12 @@ $brandRegNumber      = $co['reg_number'] ?? '';
 $brandRegDateFiled   = $co['reg_date_filed'] ?? '';
 $brandRegCertUrl     = $co['reg_certificate_url'] ?? '';
 $brandRegJurisdiction = $co['reg_jurisdiction'] ?? 'California, USA';
-$pageTitle = $pageTitle ?? ($brandName . ' | Genuine Microsoft Software Keys');
+$pageTitle = $pageTitle ?? ($brandName . ' | Software Product Keys — Independent Reseller');
 $cur = current_currency();
 $checkoutHeader = $checkoutHeader ?? false;
 
 /* ---- SEO defaults (pages may override before including this header) ---- */
-$pageDescription = $pageDescription ?? 'Buy genuine Microsoft Office, Windows 11 & antivirus product keys at transparent, competitive prices from ' . (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech') . ' — one-time purchase, no subscription, 30-day money-back guarantee.';
+$pageDescription = $pageDescription ?? 'Shop original, previously-licensed Microsoft Office, Windows 11 & antivirus software product keys from ' . (defined('SITE_BRAND') ? SITE_BRAND : 'Maventech') . ', an independent third-party reseller — one-time purchase, no subscription, 30-day money-back guarantee. Not affiliated with Microsoft, Norton, McAfee or any other trademark holder.';
 /* Auto-clamp every page title (50-60 chars) and description (120-160 chars)
    so admin-edited copy can never blow past Google's SERP cut-off. */
 $pageTitle       = seo_clamp_title($pageTitle, 60);
@@ -613,8 +613,8 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
                 'postalCode'      => $addr['postalCode'] ?: null,
                 'addressCountry'  => $addr['addressCountry'] ?: null,
             ]) : null,
-            'slogan'=> 'Genuine software product keys. Digital delivery by email.',
-            'description' => 'Authorized independent reseller of genuine software product keys (Microsoft, Bitdefender, Norton, McAfee, Adobe, Autodesk and more) with digital delivery by email to ' . implode(', ', array_column($areaServed, 'name')) . '. All trademarks are the property of their respective owners.',
+            'slogan'=> 'Original, previously-licensed software product keys. Digital delivery by email.',
+            'description' => 'Independent third-party reseller of original, previously-licensed software product keys (Microsoft, Bitdefender, Norton, McAfee, Adobe, Autodesk and more) with digital delivery by email to ' . implode(', ', array_column($areaServed, 'name')) . '. Not affiliated with, endorsed by, or sponsored by any of the trademark holders referenced; all trademarks are the property of their respective owners.',
             'brand' => ['@id' => site_url() . '/#brand'],
             // sameAs — Google Ads / Bing Ads trust auditors expect this
             // array to be present and non-empty on the Organization entity.
@@ -670,7 +670,7 @@ echo $initialTheme !== '' ? ' data-bs-theme="' . esc($initialTheme) . '"' : '';
             '@id'   => site_url() . '/#brand',
             'name'  => $brandName,
             'logo'  => $brandLogoAbs,
-            'slogan'=> 'Genuine software product keys. Digital delivery by email.',
+            'slogan'=> 'Original, previously-licensed software product keys. Digital delivery by email.',
             'url'   => site_url() . '/',
         ]),
         // LocalBusiness — qualifies for AI "near me" answers + Google's
@@ -921,8 +921,9 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
 <div class="trustbar trustbar-sticky py-1 px-3 d-none d-md-block">
   <div class="container d-flex justify-content-between align-items-center">
     <div class="d-flex gap-3 align-items-center flex-wrap">
-      <span><i class="bi bi-patch-check-fill text-success me-1"></i>Authentic Software Store</span>
-      <span><i class="bi bi-shield-check text-primary me-1"></i>30-Day Money-Back Guarantee</span>
+      <span><i class="bi bi-shield-check text-primary me-1"></i>Independent Third-Party Software Reseller</span>
+      <span><i class="bi bi-check-circle-fill text-success me-1"></i>Previously-Licensed Product Keys</span>
+      <span><i class="bi bi-award-fill text-primary me-1"></i>30-Day Money-Back Guarantee</span>
       <!-- Inline promo strip: admin-toggleable (Company Info → Show promo bar). -->
       <?php if ($_promoBarOn): ?>
       <span class="trustbar-deal d-inline-flex align-items-center gap-2" data-testid="trustbar-deal">
@@ -945,7 +946,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
            (Bootstrap's text-bg-warning + bg-white both wash out against the
            Zoom-navy topbar). -->
       <span class="trustbar-store-pill" data-testid="trustbar-store">
-        <i class="bi bi-star-fill"></i>Trusted Software Store
+        <i class="bi bi-star-fill"></i>Independent Reseller
       </span>
       <span class="trustbar-age-pill" data-testid="trustbar-age">2 <small>YRS</small></span>
       <a href="tel:<?= esc(tel_e164($brandPhone)) ?>" class="trustbar-phone-link" data-testid="trustbar-phone">
@@ -1022,6 +1023,20 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
   </a>
 </div>
 
+<!-- MOBILE-ONLY compliance strip (Google Ads counterfeit-policy).
+     The desktop trustbar already renders our independent-reseller message,
+     but that bar is `d-none d-md-block`. On phones (60-70% of traffic and
+     what Google Ads' policy reviewers see when they open the LP on a
+     handset) it is invisible. This strip provides the same disclosure on
+     mobile so the "independent reseller · not affiliated with Microsoft"
+     signal is present on EVERY device. -->
+<div class="d-md-none px-3 py-2 text-center" style="background:rgba(96,165,250,.08);border-bottom:1px solid rgba(96,165,250,.25);" data-testid="mobile-compliance-strip">
+  <small style="font-size:.72rem;line-height:1.35;color:var(--bs-body-color);opacity:.85;">
+    <i class="bi bi-shield-check me-1" style="color:#3b82f6;"></i>
+    <strong>Independent third-party reseller</strong> of previously-licensed software product keys. Not affiliated with Microsoft, Norton, McAfee or any other trademark holder.
+  </small>
+</div>
+
 <!-- Main navbar -->
 <nav class="navbar navbar-expand-lg bg-body border-bottom sticky-top navbar-below-trustbar">
   <div class="container position-relative">
@@ -1040,7 +1055,7 @@ if ($_vibePromo && !empty($_vibePromo['coupon_code']) && (int)$_vibePromo['coupo
         ?>
         <span class="brand-text d-block lh-1"><?= esc($bnHead) ?><?php if ($bnHead !== ''): ?> <?php endif; ?><span class="brand-grad"><?= esc($bnLast) ?></span></span>
         <?php if (setting_get('show_authorized_reseller_badge', '0') === '1'): ?>
-        <small class="brand-tag" data-testid="brand-tag-authorized-reseller">GENUINE LICENSES</small>
+        <small class="brand-tag" data-testid="brand-tag-independent-reseller">INDEPENDENT RESELLER</small>
         <?php endif; ?>
       </span>
     </a>

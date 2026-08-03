@@ -75,7 +75,7 @@ reset($editions);
 
 /* Standard per-edition selling points. */
 $stdBullets = [
-    'Genuine Microsoft License Key',
+    'Original, Previously-Licensed Microsoft Product Key',
     'One-Time Purchase — Own It Forever',
     'Free Lifetime Updates',
     'Instant Email Delivery',
@@ -305,7 +305,7 @@ include __DIR__ . '/header.php';
       <div class="row g-3">
         <?php
           $why = [
-            ['bi-patch-check-fill','Genuine Licenses','All product keys are authentic Microsoft licenses with full activation guarantee.'],
+            ['bi-patch-check-fill','Original Product Keys','All product keys are original, previously-licensed Microsoft product keys backed by a full activation guarantee.'],
             ['bi-shield-fill-check','30-Day Guarantee','If your key does not work, we replace it or give you a full refund. No questions asked.'],
             ['bi-lightning-charge-fill','Instant Delivery','Receive your product key via email in minutes, not days. Available 24/7.'],
             ['bi-headset','Free Support','Our expert team provides free installation and activation support with every purchase.'],
@@ -324,7 +324,7 @@ include __DIR__ . '/header.php';
       <div class="accordion olp-faq" id="olpFaq">
         <?php
           $faqs = [
-            ['Is this a genuine Microsoft license?','Yes. Every key is an authentic, genuine Microsoft license backed by a full activation guarantee.'],
+            ['Is this an original Microsoft product key?','Yes. Every product key is an original, previously-licensed Microsoft product key sourced through legitimate secondary-market channels and backed by a full activation guarantee. Sold by an independent third-party reseller (not affiliated with Microsoft).'],
             ['How quickly will I receive my product key?','Your key is emailed automatically, usually within 15–30 minutes of a successful order — 24/7.'],
             ['What is the difference between Office ' . $VER . ' and Microsoft 365?','Office ' . $VER . ' is a one-time purchase you own forever with free lifetime updates and no subscription. Microsoft 365 is a recurring annual subscription.'],
             ['Which edition should I choose?','Home for Word/Excel/PowerPoint, Home & Business if you also need Outlook, or Professional Plus for all five apps plus Access.'],
@@ -352,7 +352,7 @@ include __DIR__ . '/header.php';
   <section class="olp-section olp-cta">
     <div class="container text-center">
       <h2 class="olp-h2 text-white">Ready to Get Microsoft Office <?= esc($VER) ?>?</h2>
-      <p class="olp-lead text-white-50">Join 5,686+ satisfied customers. Genuine license, instant delivery, lifetime access — no subscription ever.</p>
+      <p class="olp-lead text-white-50">Join 5,686+ satisfied customers. Original, previously-licensed product key, instant delivery, lifetime access — no subscription ever. Sold by an independent third-party reseller.</p>
       <a href="#editions" class="btn btn-orange-solid btn-lg rounded-pill px-4 fw-bold mb-4"><i class="bi bi-cart-plus me-2"></i>Shop Now — From <?= format_price($minPrice) ?></a>
       <div class="olp-otherver">
         <span class="text-white-50 me-2">Looking for another year?</span>

@@ -252,7 +252,7 @@ include __DIR__ . '/includes/header.php';
         <div style="flex:1;min-width:0;">
           <div class="small text-uppercase text-secondary" style="letter-spacing:1px;font-weight:700;font-size:10px;color:#4338ca !important;">Article featured product</div>
           <div class="fw-bold" style="font-size:16px;color:#0f172a;line-height:1.3;"><?= esc($featuredProduct['name']) ?></div>
-          <div class="small text-secondary mt-1"><?= esc($featuredProduct['brand'] ?: 'Genuine license') ?> · From $<?= number_format((float)$featuredProduct['price'], 2) ?></div>
+          <div class="small text-secondary mt-1"><?= esc($featuredProduct['brand'] ?: 'Previously-licensed') ?> · From $<?= number_format((float)$featuredProduct['price'], 2) ?></div>
         </div>
         <a href="product.php?slug=<?= urlencode($featuredProduct['slug']) ?>" class="btn btn-primary rounded-pill px-4 flex-shrink-0" data-testid="featured-product-link">View product →</a>
       </div>
@@ -291,7 +291,7 @@ include __DIR__ . '/includes/header.php';
     <hr class="my-4">
     <div class="card p-4 text-center">
       <h5 class="fw-bold">Ready to upgrade your software?</h5>
-      <p class="small text-secondary">Genuine Microsoft licenses with digital delivery.</p>
+      <p class="small text-secondary">Original, previously-licensed Microsoft product keys with digital delivery.</p>
       <a href="shop.php" class="btn btn-primary rounded-pill px-4 mx-auto">Shop Now</a>
     </div>
   <?php else: ?>

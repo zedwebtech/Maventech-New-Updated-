@@ -26,7 +26,7 @@ if (mb_strlen($short) > 12) $short = mb_substr($short, 0, 12);
 $manifest = [
     'name'             => $brand,
     'short_name'       => $short,
-    'description'      => 'Buy genuine Microsoft Office, Windows 11 and antivirus product keys — digital delivery by email, lifetime activation.',
+    'description'      => 'Original, previously-licensed Microsoft Office, Windows 11 and antivirus software product keys sold by an independent third-party reseller — digital delivery by email, one-time purchase. Not affiliated with Microsoft, Norton or McAfee.',
     'start_url'        => '/?source=pwa',
     'scope'            => '/',
     'display'          => 'standalone',

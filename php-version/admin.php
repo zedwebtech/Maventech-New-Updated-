@@ -1181,8 +1181,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $__adminEmail = (string)($_SESSION['admin_email'] ?? ($_SESSION['user_email'] ?? 'admin'));
             $__ci_sweptTotal += record_company_info_change($__k, $__oldVal, $__newVal, $__adminEmail);
         }
-        // "Authorized Reseller" trust badge — toggleable so brands that haven't
-        // yet finalised an OEM agreement can hide the claim site-wide.
+        // "Independent Reseller" trust badge — toggleable. Google Ads counterfeit
+        // policy: previously labelled "Authorized Reseller" which implies a
+        // formal trademark-owner authorization we do not hold. Setting KEY is
+        // preserved for backwards compatibility with existing DB rows; only the
+        // displayed label was updated in header.php / footer.php.
         setting_set('show_authorized_reseller_badge', !empty($_POST['show_authorized_reseller_badge']) ? '1' : '0');
         // Promo bar (the "Save up to 10% · MAVEN10" strip in the top trust bar).
         // Admin-toggleable so it only shows on the storefront when switched on.

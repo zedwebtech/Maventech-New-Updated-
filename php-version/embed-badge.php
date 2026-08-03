@@ -110,12 +110,12 @@ $brandJs = json_encode($brand);
     var html =
       '<a class="mv-badge" data-th="' + (dark ? 'dark' : 'light') + '"' +
       ' href="' + dest + '" target="_blank" rel="noopener sponsored"' +
-      ' aria-label="Buy genuine software from ' + BRAND + '">' +
+      ' aria-label="Shop software product keys from ' + BRAND + '">' +
         '<span class="mv-badge__logo" aria-hidden="true">' + letter + '</span>' +
         '<span class="mv-badge__body">' +
           '<span class="mv-badge__brand">' + BRAND + '</span>' +
           '<span class="mv-badge__title">' + headline + '</span>' +
-          '<span class="mv-badge__cta">Genuine licenses · Digital delivery</span>' +
+          '<span class="mv-badge__cta">Independent reseller · Digital delivery</span>' +
         '</span>' +
         '<span class="mv-badge__arrow" aria-hidden="true">›</span>' +
       '</a>';

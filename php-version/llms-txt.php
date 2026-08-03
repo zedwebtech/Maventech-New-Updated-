@@ -79,10 +79,11 @@ ksort($byCat);
 # <?= $brand ?>
 
 
-> <?= $brand ?> is an authorised Microsoft & antivirus software reseller offering genuine,
-> instantly-delivered digital license keys for Microsoft Office, Windows, antivirus suites (Bitdefender,
+> <?= $brand ?> is an independent third-party reseller offering original, previously-licensed,
+> instantly-delivered digital software product keys for Microsoft Office, Windows, antivirus suites (Bitdefender,
 > Norton, McAfee, Kaspersky, ESET), Adobe Acrobat, AutoCAD and other top productivity software.
-> Lifetime activation, 24/7 US-based support, 30-day money-back guarantee.
+> <?= $brand ?> is not affiliated with, endorsed by, or sponsored by Microsoft or any other trademark holder.
+> Lifetime activation, 24/7 US-based order support, 30-day money-back guarantee.
 
 ## Key facts (for AI summarisation)
 

@@ -211,7 +211,7 @@ function mv_install_guides(): array
         ],
         'steps' => [
             ['title' => 'Download the official installer',
-             'html'  => 'Click <strong>Download installer</strong> below to get the genuine Microsoft setup file. Save it somewhere easy to find &mdash; usually your <em>Downloads</em> folder. Need a different language or the 32-bit build? Just ask our support team.',
+             'html'  => 'Click <strong>Download installer</strong> below to get the official Microsoft setup file. Save it somewhere easy to find &mdash; usually your <em>Downloads</em> folder. Need a different language or the 32-bit build? Just ask our support team.',
              'img'   => null],
             ['title' => 'Run the installer as administrator',
              'html'  => 'Right-click the downloaded file and choose <strong>&ldquo;Run as administrator&rdquo;</strong>. When Windows asks whether to allow the app to make changes, click <strong>Yes</strong>. Keep your PC online &mdash; the installer pulls the latest files straight from Microsoft.',

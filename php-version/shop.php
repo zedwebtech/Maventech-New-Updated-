@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/seo-content.php';
 $pageTitle = 'Shop Microsoft Office & Windows Keys | ' . SITE_BRAND;
-$pageDescription = 'Browse genuine Microsoft Office, Windows, Project, Visio and antivirus license keys. Filter by year, platform and price — digital delivery.';
+$pageDescription = 'Browse original, previously-licensed Microsoft Office, Windows, Project, Visio and antivirus software product keys. Filter by year, platform and price — digital delivery. Sold by an independent third-party reseller.';
 $pageKeywords    = marquee_page_keywords('shop');
 
 $selCats = array_values((array)($_GET['cat'] ?? []));
@@ -70,7 +70,7 @@ $jsonLd = [
     'url'         => site_url() . '/shop.php',
     'inLanguage'  => 'en',
     'isPartOf'    => ['@id' => site_url() . '/#website'],
-    'about'       => ['@type' => 'Thing', 'name' => 'Genuine Microsoft software licenses'],
+    'about'       => ['@type' => 'Thing', 'name' => 'Previously-licensed software product keys'],
     'mainEntity'  => [
         '@type'           => 'ItemList',
         'name'            => 'All Products',
